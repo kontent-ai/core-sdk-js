@@ -22,6 +22,10 @@ export interface IHttpPutQueryCall<TError extends any> extends IHttpQueryCall<TE
     body: any;
 }
 
+export interface IHttpPatchQueryCall<TError extends any> extends IHttpQueryCall<TError> {
+    body: any;
+}
+
 export interface IHttpDeleteQueryCall<TError extends any> extends IHttpQueryCall<TError> {
 }
 
