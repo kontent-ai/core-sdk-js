@@ -15,6 +15,7 @@ import {
   IHttpRequestConfig,
   IHttpRequestResponse,
   IHttpRequestResult,
+  IHttpPatchQueryCall,
 } from './http.models';
 import { IHttpService } from './ihttp.service';
 import { retryService } from './retry-service';
@@ -109,6 +110,18 @@ export class HttpService implements IHttpService {
 
   put<TError extends any, TRawData extends any>(
     call: IHttpPutQueryCall<TError>,
+    options?: IHttpQueryOptions
+  ): Observable<IBaseResponse<TRawData>> {
+
+    // bind callback from axios promise
+    const axiosObservable = bindCallback(HttpFunctions.putCallback);
+
+    // map axios observable
+    return this.mapAxiosObservable(this.axiosInstance, axiosObservable, call, options);
+  }
+
+  patch<TError extends any, TRawData extends any>(
+    call: IHttpPatchQueryCall<TError>,
     options?: IHttpQueryOptions
   ): Observable<IBaseResponse<TRawData>> {
 

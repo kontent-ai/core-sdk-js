@@ -7,6 +7,7 @@ import {
   IHttpPostQueryCall,
   IHttpPutQueryCall,
   IHttpQueryOptions,
+  IHttpPatchQueryCall,
 } from './http.models';
 
 export interface IHttpService {
@@ -28,6 +29,11 @@ export interface IHttpService {
 
   put<TError extends any, TRawData extends any>(
     call: IHttpPutQueryCall<TError>,
+    options?: IHttpQueryOptions
+  ): Observable<IBaseResponse<TRawData>>;
+
+  patch<TError extends any, TRawData extends any>(
+    call: IHttpPatchQueryCall<TError>,
     options?: IHttpQueryOptions
   ): Observable<IBaseResponse<TRawData>>;
 
