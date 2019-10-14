@@ -27,5 +27,16 @@ describe('Promise execution', () => {
         expect(response.data).toBeDefined();
         expect(response.data.item).toBeDefined();
     });
+
+    it(`Response status and headers should be set`, () => {
+        expect(response.status).toEqual(200);
+        expect(response.headers).toEqual(jasmine.any(Array));
+        expect(response.headers.length).toBeGreaterThan(0);
+    });
+
+    it(`X-Stale-Content is not available in Browser context`, () => {
+        const staleContentHeader = response.headers.find(m => m.header.toLowerCase() === 'x-stale-content'.toLowerCase());
+        expect(staleContentHeader).toBeUndefined();
+    });
 });
 
