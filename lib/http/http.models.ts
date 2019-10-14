@@ -1,7 +1,9 @@
 
 export interface IBaseResponse<TRawData> {
     data: TRawData;
+    headers: IHeader[];
     response: any;
+    status: number;
 }
 
 export interface IBaseResponseError<TError extends any> {

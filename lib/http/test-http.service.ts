@@ -46,14 +46,18 @@ export class TestHttpService implements IHttpService {
             };
             return throwError(<IBaseResponseError<TError>>{
                 originalError: fakeError,
-                mappedError: call.mapError(fakeError)
+                mappedError: call.mapError(fakeError),
+                headers: [],
+                status: 200
             });
         }
 
         // return fake response
         return of(<IBaseResponse<TRawData>>{
             data: this.fakeResponseJson,
-            response: undefined
+            response: undefined,
+            headers: [],
+            status: 200
         });
     }
 
@@ -77,7 +81,9 @@ export class TestHttpService implements IHttpService {
         // return fake response
         return of(<IBaseResponse<TRawData>>{
             data: this.fakeResponseJson,
-            response: undefined
+            response: undefined,
+            headers: [],
+            status: 200
         });
     }
 
@@ -89,7 +95,7 @@ export class TestHttpService implements IHttpService {
         if (this.throwError) {
             const fakeError = {
                 response: {
-                    data: this.errorJson
+                    data: this.errorJson,
                 }
             };
             return throwError(<IBaseResponseError<TError>>{
@@ -125,7 +131,9 @@ export class TestHttpService implements IHttpService {
         // return fake response
         return of(<IBaseResponse<TRawData>>{
             data: this.fakeResponseJson,
-            response: undefined
+            response: undefined,
+            headers: [],
+            status: 200
         });
     }
 
@@ -149,7 +157,9 @@ export class TestHttpService implements IHttpService {
         // return fake response
         return of(<IBaseResponse<TRawData>>{
             data: this.fakeResponseJson,
-            response: undefined
+            response: undefined,
+            headers: [],
+            status: 200
         });
     }
 }

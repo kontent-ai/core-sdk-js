@@ -16,6 +16,7 @@ import {
   IHttpRequestResponse,
   IHttpRequestResult,
   IHttpPatchQueryCall,
+  IHeader,
 } from './http.models';
 import { IHttpService } from './ihttp.service';
 import { retryService } from './retry-service';
@@ -186,8 +187,23 @@ export class HttpService implements IHttpService {
 
     return <IBaseResponse<TRawData>>{
       data: result.response.data,
-      response: result.response
+      response: result.response,
+      headers: this.extractHeadersFromAxiosResponse(result.response),
+      status: result.response.status
     };
+  }
+
+  private extractHeadersFromAxiosResponse(response: AxiosResponse): IHeader[] {
+    const headers: IHeader[] = [];
+
+    for (const headerKey of Object.keys(response.headers)) {
+      headers.push({
+        header: headerKey,
+        value: response.headers[headerKey]
+      });
+    }
+
+    return headers;
   }
 
   private promiseRetryWait(ms: number): Promise<number> {
