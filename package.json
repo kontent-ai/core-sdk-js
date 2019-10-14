@@ -18,8 +18,13 @@
   },
   "main": "./_commonjs/index.js",
   "types": "./_commonjs/index.d.ts",
+  "standard-version": {
+    "scripts": {
+      "postchangelog": "npm run set-sdk-version"
+    }
+  },
   "scripts": {
-    "release": "npm run set-sdk-version && standard-version",
+    "release": "standard-version",
     "tsc-local": "./node_modules/.bin/tsc",
     "webpack-local": "./node_modules/.bin/webpack",
     "karma-local": "node ./node_modules/karma/bin/karma",
