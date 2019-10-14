@@ -160,9 +160,8 @@ export class HttpService implements IHttpService {
       catchError(error => {
         // Handling errors: https://github.com/axios/axios#handling-errors
         if (options && options.logErrorToConsole) {
-          console.warn(
-            `Kentico Kontent SDK encountered an error: `,
-            error
+          console.error(
+            `Kentico Kontent Core SDK encountered an error: `, error
           );
         }
 
