@@ -19,7 +19,7 @@
   "main": "./_commonjs/index.js",
   "types": "./_commonjs/index.d.ts",
   "scripts": {
-    "release": "standard-version",
+    "release": "npm run build:all && npm run set-sdk-version && standard-version",
     "tsc-local": "./node_modules/.bin/tsc",
     "webpack-local": "./node_modules/.bin/webpack",
     "karma-local": "node ./node_modules/karma/bin/karma",
