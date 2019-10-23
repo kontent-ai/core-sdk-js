@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [3.2.1](https://github.com///compare/v3.2.0...v3.2.1) (2019-10-23)
+
+
+### Bug Fixes
+
+* makes fake headers optional in test http service ([400eeaa](https://github.com///commit/400eeaadef2c381cbd45caf65326b6b9b9906622))
+
 ## [3.2.0](https://github.com///compare/v3.1.0...v3.2.0) (2019-10-23)
 
 
