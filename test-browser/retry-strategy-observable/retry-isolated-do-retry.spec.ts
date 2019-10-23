@@ -1,10 +1,11 @@
 import { of, throwError } from 'rxjs';
 import { catchError, retryWhen, switchMap } from 'rxjs/operators';
 
-import { retryService, retryStrategy } from '../../lib';
+import { retryService, observableRetryStrategy } from '../../lib';
+import { AxiosError } from 'axios';
 
-describe('Retry - isolated - retry', () => {
-    const retryAttempts = 3;
+describe('Retry Rxjs - isolated - retry', () => {
+    const retryAttemptsMin = 2;
     const MAX_SAFE_TIMEOUT = Math.pow(2, 31) - 1;
 
     jasmine.DEFAULT_TIMEOUT_INTERVAL = MAX_SAFE_TIMEOUT;
@@ -14,10 +15,11 @@ describe('Retry - isolated - retry', () => {
 
         // fake error
         const error: any = {
-            originalError: {
+            originalError: <AxiosError>{
                 response: {
-                    status: 500
-                }
+                    status: 401
+                },
+                isAxiosError: true
             }
         };
 
@@ -26,9 +28,12 @@ describe('Retry - isolated - retry', () => {
                 switchMap(() => {
                     return throwError(error);
                 }),
-                retryWhen(retryStrategy.strategy({
-                    maxRetryAttempts: retryAttempts,
-                    useRetryForResponseCodes: [500]
+                retryWhen(observableRetryStrategy.strategy({
+                    deltaBackoffMs: 1000,
+                    maxCumulativeWaitTimeMs: 3000,
+                    useRetryForResponseCodes: [401]
+                }, {
+                    startTime:  new Date()
                 })),
                 catchError((err, t) => {
                     return of(true);
@@ -38,8 +43,8 @@ describe('Retry - isolated - retry', () => {
 
     });
 
-    it(`Warning for retry attempt should have been called '${retryAttempts}'`, () => {
-        expect(retryService.debugLogAttempt).toHaveBeenCalledTimes(retryAttempts);
+    it(`Warning for retry attempt should have been called '${retryAttemptsMin}'`, () => {
+        expect(retryService.debugLogAttempt).toHaveBeenCalledTimes(retryAttemptsMin);
     });
 });
 

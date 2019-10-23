@@ -1,9 +1,23 @@
-
 export interface IBaseResponse<TRawData> {
     data: TRawData;
     headers: IHeader[];
     response: any;
     status: number;
+}
+
+export interface IRetryStrategyOptions {
+    /**
+     * Status code subject to retry policy
+     */
+    useRetryForResponseCodes: number[];
+    /**
+     * back-off interval between retries
+     */
+    deltaBackoffMs: number;
+    /**
+     * If the cumulative wait time exceeds this value, the client will stop retrying and return the error to the application.
+     */
+    maxCumulativeWaitTimeMs: number;
 }
 
 export interface IBaseResponseError<TError extends any> {
@@ -28,17 +42,34 @@ export interface IHttpPatchQueryCall<TError extends any> extends IHttpQueryCall<
     body: any;
 }
 
-export interface IHttpDeleteQueryCall<TError extends any> extends IHttpQueryCall<TError> {
-}
+export interface IHttpDeleteQueryCall<TError extends any> extends IHttpQueryCall<TError> {}
 
-export interface IHttpGetQueryCall<TError extends any> extends IHttpQueryCall<TError> {
-}
+export interface IHttpGetQueryCall<TError extends any> extends IHttpQueryCall<TError> {}
 
 export interface IHttpQueryOptions {
+    /**
+     * Status code subject to retry policy
+     */
     useRetryForResponseCodes?: number[];
-    maxRetryAttempts?: number;
+    /**
+     * back-off interval between retries
+     */
+    deltaBackoffMs?: number;
+    /**
+     * If the cumulative wait time exceeds this value, the client will stop retrying and return the error to the application.
+     */
+    maxCumulativeWaitTimeMs?: number;
+    /**
+     * Request headers
+     * */
     headers?: IHeader[];
+    /**
+     * Indicates if errors are logged to console
+     */
     logErrorToConsole?: boolean;
+    /**
+     * Response type
+     */
     responseType?: HttpResponseType;
 }
 
@@ -62,21 +93,22 @@ export interface IHttpRequestProfxyConfig {
 }
 
 export type HttpRequestMethod =
-    | 'get' | 'GET'
-    | 'delete' | 'DELETE'
-    | 'head' | 'HEAD'
-    | 'options' | 'OPTIONS'
-    | 'post' | 'POST'
-    | 'put' | 'PUT'
-    | 'patch' | 'PATCH';
+    | 'get'
+    | 'GET'
+    | 'delete'
+    | 'DELETE'
+    | 'head'
+    | 'HEAD'
+    | 'options'
+    | 'OPTIONS'
+    | 'post'
+    | 'POST'
+    | 'put'
+    | 'PUT'
+    | 'patch'
+    | 'PATCH';
 
-export type HttpResponseType =
-    | 'arraybuffer'
-    | 'blob'
-    | 'document'
-    | 'json'
-    | 'text'
-    | 'stream';
+export type HttpResponseType = 'arraybuffer' | 'blob' | 'document' | 'json' | 'text' | 'stream';
 
 export interface IHttpRequestConfig {
     url?: string;
@@ -110,9 +142,5 @@ export interface IHttpRequestResponse {
 }
 
 export class IHttpRequestResult<TResponse> {
-    constructor(
-        public response?: TResponse,
-        public error?: any
-    ) { }
+    constructor(public response?: TResponse, public error?: any) {}
 }
-

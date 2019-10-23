@@ -1,9 +1,6 @@
 import { HttpService, retryService } from '../../lib';
 
 describe('Retry Promise - isolated do not retry', () => {
-    const retryAttempts = 3;
-    const useRetryForResponseCodes: number[] = [500];
-
     const MAX_SAFE_TIMEOUT = Math.pow(2, 31) - 1;
     const httpService = new HttpService();
 
@@ -20,8 +17,9 @@ describe('Retry Promise - isolated do not retry', () => {
         }).toPromise();
 
         httpService.retryPromise(promise, {
-            maxRetryAttempts: retryAttempts,
-            useRetryForResponseCodes: useRetryForResponseCodes
+            deltaBackoffMs: 1000,
+            maxCumulativeWaitTimeMs: 0,
+            useRetryForResponseCodes: [500]
         }).then(() => {
             throw Error(`Promise should not succeed`);
         }).catch(err => {

@@ -1,8 +1,8 @@
 import { HttpService, retryService } from '../../lib';
+import { AxiosError } from 'axios';
 
 describe('Retry Promise - isolated - retry', () => {
     const retryAttempts = 3;
-    const useRetryForResponseCodes: number[] = [0];
 
     const MAX_SAFE_TIMEOUT = Math.pow(2, 31) - 1;
     const httpService = new HttpService();
@@ -14,14 +14,23 @@ describe('Retry Promise - isolated - retry', () => {
 
         const promise = httpService.get({
             mapError: (err => {
-                return err;
+                const error: any = {
+                    originalError: <AxiosError>{
+                        response: {
+                            status: 401
+                        },
+                        isAxiosError: true
+                    }
+                };
+                return error;
             }),
             url: 'http://localhost/fail'
         }).toPromise();
 
         httpService.retryPromise(promise, {
-            maxRetryAttempts: retryAttempts,
-            useRetryForResponseCodes: useRetryForResponseCodes
+            deltaBackoffMs: 1000,
+            maxCumulativeWaitTimeMs: 10000,
+            useRetryForResponseCodes: [500]
         }).then(() => {
             throw Error(`Promise should not succeed`);
         }).catch(err => {

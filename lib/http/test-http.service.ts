@@ -9,7 +9,8 @@ import {
     IHttpPostQueryCall,
     IHttpPutQueryCall,
     IHttpQueryOptions,
-    IHeader
+    IHeader,
+    IRetryStrategyOptions
 } from './http.models';
 import { IHttpService } from './ihttp.service';
 
@@ -26,11 +27,7 @@ export class TestHttpService implements IHttpService {
 
     retryPromise<T>(
         promise: Promise<T>,
-        options: {
-            maxRetryAttempts: number;
-            useRetryForResponseCodes: number[];
-            delay: number;
-        }
+        options?: IRetryStrategyOptions
     ): Promise<T> {
         console.log('Retry is not implemented in test service. Returning original Promise');
         return promise;
@@ -51,7 +48,7 @@ export class TestHttpService implements IHttpService {
                 originalError: fakeError,
                 mappedError: call.mapError(fakeError),
                 headers: this.fakeHeaders,
-                status: this.fakeStatusCode
+                status: this.fakeStatusCode,
             });
         }
 

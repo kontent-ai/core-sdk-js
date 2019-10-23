@@ -16,14 +16,17 @@ import {
     IHttpRequestResponse,
     IHttpRequestResult,
     IHttpPatchQueryCall,
-    IHeader
+    IHeader,
+    IRetryStrategyOptions
 } from './http.models';
 import { IHttpService } from './ihttp.service';
 import { retryService } from './retry-service';
-import { retryStrategy } from './retry-strategy';
+import { observableRetryStrategy } from './observable-retry-strategy';
+import { promiseRetryStrategy } from './promise-retry-strategy';
 
 export class HttpService implements IHttpService {
-    private axiosInstance: AxiosInstance;
+
+    private readonly axiosInstance: AxiosInstance;
 
     constructor(opts?: {
         requestInterceptor?: (config: IHttpRequestConfig) => IHttpRequestConfig;
@@ -49,42 +52,12 @@ export class HttpService implements IHttpService {
      */
     retryPromise<T>(
         promise: Promise<T>,
-        options: {
-            maxRetryAttempts: number;
-            useRetryForResponseCodes: number[];
-        },
-        currentAttempt: number = 1
+        options?: IRetryStrategyOptions
     ): Promise<T> {
-        return new Promise((resolve, reject) =>
-            promise
-                .then(response => {
-                    resolve(response);
-                })
-                .catch((reason: any) => {
-                    let statusCode = 0;
-
-                    if (reason && reason.originalError && reason.originalError.request) {
-                        statusCode = reason.originalError.request.status;
-                    }
-
-                    const retryCode = options.useRetryForResponseCodes.find(m => m === statusCode);
-                    if (!retryCode && retryCode !== 0) {
-                        return reject(reason);
-                    }
-
-                    const retryTimeout = retryService.getRetryTimeout(currentAttempt);
-                    if (currentAttempt <= options.maxRetryAttempts) {
-                        return this.promiseRetryWait(retryTimeout)
-                            .then(() => {
-                                retryService.debugLogAttempt(currentAttempt, retryTimeout);
-                                return this.retryPromise(promise, options, currentAttempt + 1);
-                            })
-                            .then(response => resolve(response))
-                            .catch(error => reject(error));
-                    }
-                    return reject(reason);
-                })
-        );
+        return promiseRetryStrategy.getPromiseWithRetryStrategy(promise, retryService.getRetryStrategyOptions(options), {
+            retryAttempt: 0,
+            startTime: new Date()
+        });
     }
 
     get<TError extends any, TRawData extends any>(
@@ -150,10 +123,8 @@ export class HttpService implements IHttpService {
     ): Observable<IBaseResponse<TRawData>> {
         return axiosObservable(axiosInstance, call, options).pipe(
             retryWhen(
-                retryStrategy.strategy({
-                    maxRetryAttempts: options && options.maxRetryAttempts ? options.maxRetryAttempts : 0,
-                    useRetryForResponseCodes:
-                        options && options.useRetryForResponseCodes ? options.useRetryForResponseCodes : []
+                observableRetryStrategy.strategy(retryService.getRetryStrategyOptions(options), {
+                    startTime:  new Date()
                 })
             ),
             map((result: IHttpRequestResult<AxiosResponse>) => this.mapResult<TRawData>(result)),
@@ -201,9 +172,5 @@ export class HttpService implements IHttpService {
         }
 
         return headers;
-    }
-
-    private promiseRetryWait(ms: number): Promise<number> {
-        return new Promise<number>(r => setTimeout(r, ms));
     }
 }

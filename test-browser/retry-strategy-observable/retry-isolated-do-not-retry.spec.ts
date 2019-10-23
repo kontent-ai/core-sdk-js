@@ -1,10 +1,11 @@
 import { of, throwError } from 'rxjs';
 import { catchError, retryWhen, switchMap } from 'rxjs/operators';
 
-import { retryService, retryStrategy } from '../../lib';
+import { retryService, observableRetryStrategy } from '../../lib';
+import { AxiosError } from 'axios';
 
-describe('Retry - isolated - do not retry', () => {
-    const retryAttempts = 3;
+describe('Retry Rxjs - isolated - do not retry', () => {
+    const retryAttempts = 0;
     const MAX_SAFE_TIMEOUT = Math.pow(2, 31) - 1;
 
     jasmine.DEFAULT_TIMEOUT_INTERVAL = MAX_SAFE_TIMEOUT;
@@ -14,10 +15,11 @@ describe('Retry - isolated - do not retry', () => {
 
         // fake error
         const error: any = {
-            originalError: {
+            originalError: <AxiosError>{
                 response: {
                     status: 401
-                }
+                },
+                isAxiosError: true
             }
         };
 
@@ -26,9 +28,12 @@ describe('Retry - isolated - do not retry', () => {
                 switchMap(() => {
                     return throwError(error);
                 }),
-                retryWhen(retryStrategy.strategy({
-                    maxRetryAttempts: retryAttempts,
-                    useRetryForResponseCodes: [500]
+                retryWhen(observableRetryStrategy.strategy({
+                    deltaBackoffMs: 1000,
+                    maxCumulativeWaitTimeMs: 0,
+                    useRetryForResponseCodes: [401]
+                }, {
+                    startTime:  new Date()
                 })),
                 catchError((err, t) => {
                     return of(true);
@@ -39,7 +44,7 @@ describe('Retry - isolated - do not retry', () => {
     });
 
     it(`Warning for retry attempt should have been called '${retryAttempts}' times`, () => {
-        expect(retryService.debugLogAttempt).toHaveBeenCalledTimes(0);
+        expect(retryService.debugLogAttempt).toHaveBeenCalledTimes(retryAttempts);
     });
 });
 
