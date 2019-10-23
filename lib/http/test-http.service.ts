@@ -20,7 +20,7 @@ export class TestHttpService implements IHttpService {
     public fakeHeaders: IHeader[] = [];
     public fakeStatusCode: number = 200;
 
-    constructor(config: { fakeStatusCode?: number, fakeResponseJson?: any; throwError?: boolean; errorJson?: any, fakeHeaders: IHeader[] }) {
+    constructor(config: { fakeStatusCode?: number, fakeResponseJson?: any; throwError?: boolean; errorJson?: any, fakeHeaders?: IHeader[] }) {
         Object.assign(this, config);
     }
 
