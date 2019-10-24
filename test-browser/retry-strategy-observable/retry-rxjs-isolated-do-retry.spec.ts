@@ -5,7 +5,7 @@ import { retryService, observableRetryStrategy } from '../../lib';
 import { AxiosError } from 'axios';
 
 describe('Retry Rxjs - isolated - retry', () => {
-    const retryAttemptsMin = 2;
+    const expectedRetryAttempts = 2;
     const MAX_SAFE_TIMEOUT = Math.pow(2, 31) - 1;
 
     jasmine.DEFAULT_TIMEOUT_INTERVAL = MAX_SAFE_TIMEOUT;
@@ -43,8 +43,8 @@ describe('Retry Rxjs - isolated - retry', () => {
 
     });
 
-    it(`Warning for retry attempt should have been called '${retryAttemptsMin}'`, () => {
-        expect(retryService.debugLogAttempt).toHaveBeenCalledTimes(retryAttemptsMin);
+    it(`Warning for retry attempt should have been called '${expectedRetryAttempts}'`, () => {
+        expect(retryService.debugLogAttempt).toHaveBeenCalledTimes(expectedRetryAttempts);
     });
 });
 

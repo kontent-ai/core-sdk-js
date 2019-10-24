@@ -20,8 +20,6 @@ export class PromiseRetryStrategy {
                 .catch((promiseError: any) => {
                     internal.retryAttempt++;
 
-                    console.warn('fejsafesa', promiseError);
-
                     const currentAttempt = internal.retryAttempt;
                     const statusCode: number = retryService.getStatusCodeFromError(promiseError);
 

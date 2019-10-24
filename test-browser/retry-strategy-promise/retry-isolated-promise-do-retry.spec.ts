@@ -2,7 +2,7 @@ import { HttpService, retryService } from '../../lib';
 import { AxiosError } from 'axios';
 
 describe('Retry Promise - isolated - retry', () => {
-    const retryAttempts = 3;
+    const retryAttempts = 2;
 
     const MAX_SAFE_TIMEOUT = Math.pow(2, 31) - 1;
     const httpService = new HttpService();
@@ -12,25 +12,24 @@ describe('Retry Promise - isolated - retry', () => {
     beforeAll((done) => {
         spyOn(retryService, 'debugLogAttempt').and.callThrough();
 
-        const promise = httpService.get({
-            mapError: (err => {
-                const error: any = {
-                    originalError: <AxiosError>{
-                        response: {
-                            status: 401
-                        },
-                        isAxiosError: true
-                    }
-                };
-                return error;
-            }),
-            url: 'http://localhost/fail'
-        }).toPromise();
+         // fake error
+         const error: any = {
+            originalError: <AxiosError>{
+                response: {
+                    status: 401
+                },
+                isAxiosError: true
+            }
+        };
+
+        const promise = new Promise((resolve, reject) => {
+            reject(error);
+        });
 
         httpService.retryPromise(promise, {
             deltaBackoffMs: 1000,
-            maxCumulativeWaitTimeMs: 10000,
-            useRetryForResponseCodes: [500]
+            maxCumulativeWaitTimeMs: 3000,
+            useRetryForResponseCodes: [401]
         }).then(() => {
             throw Error(`Promise should not succeed`);
         }).catch(err => {

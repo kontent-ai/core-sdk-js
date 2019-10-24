@@ -2,7 +2,8 @@ import { AxiosError } from 'axios';
 
 import { HttpService, retryService } from '../../lib';
 
-describe('Retry Promise - isolated do not retry', () => {
+describe('Retry Promise - skipped retry codes', () => {
+    const retryAttempts: number = 0;
     const MAX_SAFE_TIMEOUT = Math.pow(2, 31) - 1;
     const httpService = new HttpService();
 
@@ -15,7 +16,7 @@ describe('Retry Promise - isolated do not retry', () => {
         const error: any = {
             originalError: <AxiosError>{
                 response: {
-                    status: 401
+                    status: 421
                 },
                 isAxiosError: true
             }
@@ -28,8 +29,8 @@ describe('Retry Promise - isolated do not retry', () => {
         httpService
             .retryPromise(promise, {
                 deltaBackoffMs: 1000,
-                maxCumulativeWaitTimeMs: 0,
-                useRetryForResponseCodes: [500]
+                maxCumulativeWaitTimeMs: 10000,
+                useRetryForResponseCodes: [401, 500, 420, 422]
             })
             .then(() => {
                 throw Error(`Promise should not succeed`);
@@ -40,7 +41,7 @@ describe('Retry Promise - isolated do not retry', () => {
             });
     });
 
-    it(`Warning for retry attempt should have been called '0'`, () => {
+    it(`Warning for retry attempt should have been called '${retryAttempts}'`, () => {
         expect(retryService.debugLogAttempt).toHaveBeenCalledTimes(0);
     });
 });
