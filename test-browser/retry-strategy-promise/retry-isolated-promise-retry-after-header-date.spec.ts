@@ -1,8 +1,8 @@
 import { HttpService, retryService } from '../../lib';
 import { AxiosError } from 'axios';
 
-describe('Retry Promise - isolated - retry', () => {
-    const retryAttempts = 2;
+describe('Retry Promise - retry after header in date format', () => {
+    const retryAttempts = 1;
 
     const MAX_SAFE_TIMEOUT = Math.pow(2, 31) - 1;
     const httpService = new HttpService();
@@ -12,11 +12,18 @@ describe('Retry Promise - isolated - retry', () => {
     beforeAll((done) => {
         spyOn(retryService, 'debugLogAttempt').and.callThrough();
 
+        const retryAfterSeconds: number = 5;
+        const retryAfterDate: Date = new Date();
+        retryAfterDate.setSeconds(retryAfterDate.getSeconds() + retryAfterSeconds);
+
          // fake error
          const error: any = {
             originalError: <AxiosError>{
                 response: {
-                    status: 401
+                    status: 401,
+                    headers: {
+                        'Retry-After': retryAfterDate.toUTCString()
+                    }
                 },
                 isAxiosError: true
             }
@@ -27,8 +34,8 @@ describe('Retry Promise - isolated - retry', () => {
         });
 
         httpService.retryPromise(promise, {
-            deltaBackoffMs: 1000,
-            maxCumulativeWaitTimeMs: 3000,
+            deltaBackoffMs: 0,
+            maxCumulativeWaitTimeMs: 4,
             useRetryForResponseCodes: [401],
             addJitter: false
         }).then(() => {

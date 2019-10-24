@@ -16,6 +16,7 @@ export class ObservableRetryStrategy {
             mergeMap((error: IBaseResponseError<any>, i: number) => {
                 const retryAttempt = i + 1;
                 const statusCode: number = retryService.getStatusCodeFromError(error);
+                const retryAfter: number | undefined = retryService.tryGetRetryAfterInMsFromError(error);
 
                 if (!retryService.canRetryStatusCode(statusCode, options.useRetryForResponseCodes)) {
                     // request with given status code cannot be retried
@@ -28,7 +29,7 @@ export class ObservableRetryStrategy {
                 }
 
                 // get wait time
-                const waitTime = retryService.getNextWaitTimeMs(options.deltaBackoffMs, retryAttempt);
+                const waitTime = retryService.getNextWaitTimeMs(options.addJitter, options.deltaBackoffMs, retryAttempt, retryAfter);
 
                 // debug log attempt
                 retryService.debugLogAttempt(retryAttempt, waitTime);

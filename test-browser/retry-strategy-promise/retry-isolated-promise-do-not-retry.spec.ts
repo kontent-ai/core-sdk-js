@@ -3,6 +3,7 @@ import { AxiosError } from 'axios';
 import { HttpService, retryService } from '../../lib';
 
 describe('Retry Promise - isolated do not retry', () => {
+    const retryAttempts: number = 0;
     const MAX_SAFE_TIMEOUT = Math.pow(2, 31) - 1;
     const httpService = new HttpService();
 
@@ -29,7 +30,8 @@ describe('Retry Promise - isolated do not retry', () => {
             .retryPromise(promise, {
                 deltaBackoffMs: 1000,
                 maxCumulativeWaitTimeMs: 0,
-                useRetryForResponseCodes: [500]
+                useRetryForResponseCodes: [500],
+                addJitter: false
             })
             .then(() => {
                 throw Error(`Promise should not succeed`);
@@ -40,7 +42,7 @@ describe('Retry Promise - isolated do not retry', () => {
             });
     });
 
-    it(`Warning for retry attempt should have been called '0'`, () => {
-        expect(retryService.debugLogAttempt).toHaveBeenCalledTimes(0);
+    it(`Warning for retry attempt should have been called '${retryAttempts}' times`, () => {
+        expect(retryService.debugLogAttempt).toHaveBeenCalledTimes(retryAttempts);
     });
 });

@@ -30,7 +30,8 @@ describe('Retry Promise - skipped retry codes', () => {
             .retryPromise(promise, {
                 deltaBackoffMs: 1000,
                 maxCumulativeWaitTimeMs: 10000,
-                useRetryForResponseCodes: [401, 500, 420, 422]
+                useRetryForResponseCodes: [401, 500, 420, 422],
+                addJitter: false
             })
             .then(() => {
                 throw Error(`Promise should not succeed`);
@@ -41,7 +42,7 @@ describe('Retry Promise - skipped retry codes', () => {
             });
     });
 
-    it(`Warning for retry attempt should have been called '${retryAttempts}'`, () => {
+    it(`Warning for retry attempt should have been called '${retryAttempts}' times`, () => {
         expect(retryService.debugLogAttempt).toHaveBeenCalledTimes(0);
     });
 });

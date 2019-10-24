@@ -18,6 +18,10 @@ export interface IRetryStrategyOptions {
      * If the cumulative wait time exceeds this value, the client will stop retrying and return the error to the application.
      */
     maxCumulativeWaitTimeMs: number;
+    /**
+     * indicates if jitter is added to retry
+     */
+    addJitter: boolean;
 }
 
 export interface IBaseResponseError<TError extends any> {
@@ -47,6 +51,10 @@ export interface IHttpDeleteQueryCall<TError extends any> extends IHttpQueryCall
 export interface IHttpGetQueryCall<TError extends any> extends IHttpQueryCall<TError> {}
 
 export interface IHttpQueryOptions {
+    /**
+     * Indicates if jitter is added to retry requests
+     */
+    addJitterToRetryAttempts?: boolean;
     /**
      * Status code subject to retry policy
      */

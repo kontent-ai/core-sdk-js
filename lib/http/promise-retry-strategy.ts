@@ -22,6 +22,7 @@ export class PromiseRetryStrategy {
 
                     const currentAttempt = internal.retryAttempt;
                     const statusCode: number = retryService.getStatusCodeFromError(promiseError);
+                    const retryAfter: number | undefined = retryService.tryGetRetryAfterInMsFromError(promiseError);
 
                     if (!retryService.canRetryStatusCode(statusCode, options.useRetryForResponseCodes)) {
                         // request with given status code cannot be retried
@@ -34,7 +35,7 @@ export class PromiseRetryStrategy {
                     }
 
                     // get wait time
-                    const waitTime = retryService.getNextWaitTimeMs(options.deltaBackoffMs, currentAttempt);
+                    const waitTime = retryService.getNextWaitTimeMs(options.addJitter, options.deltaBackoffMs, currentAttempt, retryAfter);
 
                     // debug log attempt
                     retryService.debugLogAttempt(currentAttempt, waitTime);

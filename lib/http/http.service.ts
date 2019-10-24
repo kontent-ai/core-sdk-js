@@ -1,13 +1,15 @@
-import axios, { AxiosInstance, AxiosResponse, AxiosRequestConfig } from 'axios';
+import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
 import { bindCallback, Observable, throwError } from 'rxjs';
 import { catchError, map, retryWhen } from 'rxjs/operators';
 
+import { extractHeadersFromAxiosResponse } from './headers-helper';
 import * as HttpFunctions from './http.functions';
 import {
     IBaseResponse,
     IBaseResponseError,
     IHttpDeleteQueryCall,
     IHttpGetQueryCall,
+    IHttpPatchQueryCall,
     IHttpPostQueryCall,
     IHttpPutQueryCall,
     IHttpQueryCall,
@@ -15,17 +17,14 @@ import {
     IHttpRequestConfig,
     IHttpRequestResponse,
     IHttpRequestResult,
-    IHttpPatchQueryCall,
-    IHeader,
-    IRetryStrategyOptions
+    IRetryStrategyOptions,
 } from './http.models';
 import { IHttpService } from './ihttp.service';
-import { retryService } from './retry-service';
 import { observableRetryStrategy } from './observable-retry-strategy';
 import { promiseRetryStrategy } from './promise-retry-strategy';
+import { retryService } from './retry-service';
 
 export class HttpService implements IHttpService {
-
     private readonly axiosInstance: AxiosInstance;
 
     constructor(opts?: {
@@ -50,14 +49,15 @@ export class HttpService implements IHttpService {
      * @param promise Promise to retry
      * @param options Configuration options
      */
-    retryPromise<T>(
-        promise: Promise<T>,
-        options?: IRetryStrategyOptions
-    ): Promise<T> {
-        return promiseRetryStrategy.getPromiseWithRetryStrategy(promise, retryService.getRetryStrategyOptions(options), {
-            retryAttempt: 0,
-            startTime: new Date()
-        });
+    retryPromise<T>(promise: Promise<T>, options?: IRetryStrategyOptions): Promise<T> {
+        return promiseRetryStrategy.getPromiseWithRetryStrategy(
+            promise,
+            retryService.getRetryStrategyFromStrategyOptions(options),
+            {
+                retryAttempt: 0,
+                startTime: new Date()
+            }
+        );
     }
 
     get<TError extends any, TRawData extends any>(
@@ -123,8 +123,8 @@ export class HttpService implements IHttpService {
     ): Observable<IBaseResponse<TRawData>> {
         return axiosObservable(axiosInstance, call, options).pipe(
             retryWhen(
-                observableRetryStrategy.strategy(retryService.getRetryStrategyOptions(options), {
-                    startTime:  new Date()
+                observableRetryStrategy.strategy(retryService.getRetryStrategyFromHttpQueryOptions(options), {
+                    startTime: new Date()
                 })
             ),
             map((result: IHttpRequestResult<AxiosResponse>) => this.mapResult<TRawData>(result)),
@@ -156,21 +156,8 @@ export class HttpService implements IHttpService {
         return <IBaseResponse<TRawData>>{
             data: result.response.data,
             response: result.response,
-            headers: this.extractHeadersFromAxiosResponse(result.response),
+            headers: extractHeadersFromAxiosResponse(result.response),
             status: result.response.status
         };
-    }
-
-    private extractHeadersFromAxiosResponse(response: AxiosResponse): IHeader[] {
-        const headers: IHeader[] = [];
-
-        for (const headerKey of Object.keys(response.headers)) {
-            headers.push({
-                header: headerKey,
-                value: response.headers[headerKey]
-            });
-        }
-
-        return headers;
     }
 }
