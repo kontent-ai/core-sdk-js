@@ -34,8 +34,8 @@ describe('Retry Promise - retry after header in date format', () => {
         });
 
         httpService.retryPromise(promise, {
-            deltaBackoffMs: 0,
-            maxCumulativeWaitTimeMs: 4,
+            deltaBackoffMs: 100,
+            maxCumulativeWaitTimeMs: 100,
             useRetryForResponseCodes: [401],
             addJitter: false
         }).then(() => {

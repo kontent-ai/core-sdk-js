@@ -38,8 +38,8 @@ describe('Retry Rxjs - retry after header in date format', () => {
                 retryWhen(
                     observableRetryStrategy.strategy(
                         {
-                            deltaBackoffMs: 0,
-                            maxCumulativeWaitTimeMs: 4,
+                            deltaBackoffMs: 100,
+                            maxCumulativeWaitTimeMs: 100,
                             useRetryForResponseCodes: [401],
                             addJitter: false
                         },
