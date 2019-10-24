@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [4.0.2](https://github.com///compare/v4.0.1...v4.0.2) (2019-10-24)
+
+
+### Bug Fixes
+
+* fixes retry policy for observables executed through http service, makes error handling more robust ([4696831](https://github.com///commit/469683196094cc789be18f68a809247a993966ca))
+
 ### [4.0.1](https://github.com///compare/v4.0.0...v4.0.1) (2019-10-24)
 
 
