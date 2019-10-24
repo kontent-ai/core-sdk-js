@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [4.0.1](https://github.com///compare/v4.0.0...v4.0.1) (2019-10-24)
+
+
+### Bug Fixes
+
+* handles exception that might occur in retry service + adds checks for existence of original error to prevent exception for unknown objects ([8cc08c1](https://github.com///commit/8cc08c194cd743baf612286e895ca56025fa9729))
+
 ## [4.0.0](https://github.com///compare/v3.2.1...v4.0.0) (2019-10-24)
 
 
