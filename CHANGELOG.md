@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [4.0.0](https://github.com///compare/v3.2.1...v4.0.0) (2019-10-24)
+
+
+### ⚠ BREAKING CHANGES
+
+* Refactors retry policy. Retry policy now uses jitter in combination with exponential wait time and changes configuration from retry attemps to max. allowed wait time
+
+### Features
+
+* Refactors retry policy. Retry policy now uses jitter in combination with exponential wait time and changes configuration from retry attemps to max. allowed wait time ([ba4d439](https://github.com///commit/ba4d43948be800a6ce52ac3e6643acdaae056c58))
+* takes 'retry-after' header into consideration when retrying requests, adds ability to disable jitter ([d84c021](https://github.com///commit/d84c021fd1ffa9d7c67308e24da6a131701334f7))
+
 ### [3.2.1](https://github.com///compare/v3.2.0...v3.2.1) (2019-10-23)
 
 

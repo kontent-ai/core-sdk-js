@@ -1,6 +1,6 @@
 {
   "name": "@kentico/kontent-core",
-  "version": "3.2.1",
+  "version": "4.0.0",
   "repository": {
     "type": "git",
     "url": "https://github.com/Kentico/kontent-core-js/tree/master"
