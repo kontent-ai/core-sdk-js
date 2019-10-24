@@ -16,7 +16,8 @@ describe('Retry Promise - isolated - retry', () => {
          const error: any = {
             originalError: <AxiosError>{
                 response: {
-                    status: 401
+                    status: 401,
+                    headers: {}
                 },
                 isAxiosError: true
             }

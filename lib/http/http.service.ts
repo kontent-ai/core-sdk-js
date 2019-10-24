@@ -122,12 +122,12 @@ export class HttpService implements IHttpService {
         options?: IHttpQueryOptions
     ): Observable<IBaseResponse<TRawData>> {
         return axiosObservable(axiosInstance, call, options).pipe(
+            map((result: IHttpRequestResult<AxiosResponse>) => this.mapResult<TRawData>(result)),
             retryWhen(
                 observableRetryStrategy.strategy(retryService.getRetryStrategyFromHttpQueryOptions(options), {
                     startTime: new Date()
                 })
             ),
-            map((result: IHttpRequestResult<AxiosResponse>) => this.mapResult<TRawData>(result)),
             catchError(error => {
                 // Handling errors: https://github.com/axios/axios#handling-errors
                 if (options && options.logErrorToConsole) {

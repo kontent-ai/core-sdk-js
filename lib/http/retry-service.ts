@@ -1,10 +1,9 @@
 import { AxiosError } from 'axios';
 
-import { IBaseResponseError, IHttpQueryOptions, IRetryStrategyOptions, IHeader } from './http.models';
 import { extractHeadersFromAxiosResponse } from './headers-helper';
+import { IHeader, IHttpQueryOptions, IRetryStrategyOptions } from './http.models';
 
 export class RetryService {
-
     private readonly retryAfterHeaderName: string = 'Retry-After';
 
     private readonly defaultRetryPolicy: IRetryStrategyOptions = {
@@ -39,7 +38,10 @@ export class RetryService {
         }
 
         return {
-            addJitter: this.getBoolOrDefault(httpQueryOptions.addJitterToRetryAttempts, this.defaultRetryPolicy.addJitter),
+            addJitter: this.getBoolOrDefault(
+                httpQueryOptions.addJitterToRetryAttempts,
+                this.defaultRetryPolicy.addJitter
+            ),
             deltaBackoffMs: httpQueryOptions.deltaBackoffMs
                 ? httpQueryOptions.deltaBackoffMs
                 : this.defaultRetryPolicy.deltaBackoffMs,
@@ -69,7 +71,12 @@ export class RetryService {
         console.warn(`Attempt ${attempt}: retrying in ${waitTime}ms`);
     }
 
-    getNextWaitTimeMs(addJitter: boolean, deltaBackoffMs: number, retryAttempts: number, retryAfterInMs: number | undefined): number {
+    getNextWaitTimeMs(
+        addJitter: boolean,
+        deltaBackoffMs: number,
+        retryAttempts: number,
+        retryAfterInMs: number | undefined
+    ): number {
         if (retryAfterInMs) {
             return retryAfterInMs;
         }
@@ -88,28 +95,20 @@ export class RetryService {
         return useRetryForResponseCodes.includes(statusCode);
     }
 
-    getStatusCodeFromError(error: IBaseResponseError<any>): number {
-        const originalError = error.originalError;
-        if (!originalError || !originalError.isAxiosError) {
-            return 0;
-        }
-        const axiosError: AxiosError = originalError as AxiosError;
-        if (!axiosError.response) {
+    getStatusCodeFromError(error: any): number {
+        const axiosError = this.tryGetAxiosError(error);
+
+        if (!axiosError || !axiosError.response) {
             return 0;
         }
 
         return axiosError.response.status;
     }
 
-    tryGetRetryAfterInMsFromError(error: IBaseResponseError<any>): number | undefined {
-        const originalError = error.originalError;
-        if (!originalError || !originalError.isAxiosError) {
-            return undefined;
-        }
+    tryGetRetryAfterInMsFromError(error: any): number | undefined {
+        const axiosError = this.tryGetAxiosError(error);
 
-        const axiosError: AxiosError = originalError as AxiosError;
-
-        if (!axiosError.response || !axiosError.response.headers) {
+        if (!axiosError || !axiosError.response) {
             return undefined;
         }
 
@@ -129,13 +128,29 @@ export class RetryService {
 
             const differenceInMs = retryAfter - now;
             return differenceInMs;
-
-
         } else {
             // header is number
-            const retryValueInMs = (+retryValue) * 1000;
+            const retryValueInMs = +retryValue * 1000;
             return retryValueInMs;
         }
+    }
+
+    private tryGetAxiosError(error: any): AxiosError | undefined {
+        console.warn('try get axios', error);
+        if (!error) {
+            return undefined;
+        }
+
+        if (error.isAxiosError) {
+            return error as AxiosError;
+        }
+
+        const originalError = error.originalError;
+        if (originalError && originalError.isAxiosError) {
+            return originalError as AxiosError;
+        }
+
+        return undefined;
     }
 
     private getBoolOrDefault(value: boolean | undefined, defaultValue: boolean): boolean {
