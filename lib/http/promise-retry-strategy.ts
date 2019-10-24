@@ -18,37 +18,46 @@ export class PromiseRetryStrategy {
                     resolve(response);
                 })
                 .catch((promiseError: any) => {
-                    internal.retryAttempt++;
+                    try {
+                        internal.retryAttempt++;
 
-                    const currentAttempt = internal.retryAttempt;
-                    const statusCode: number = retryService.getStatusCodeFromError(promiseError);
-                    const retryAfter: number | undefined = retryService.tryGetRetryAfterInMsFromError(promiseError);
+                        const currentAttempt = internal.retryAttempt;
+                        const statusCode: number = retryService.getStatusCodeFromError(promiseError);
+                        const retryAfter: number | undefined = retryService.tryGetRetryAfterInMsFromError(promiseError);
 
-                    if (!retryService.canRetryStatusCode(statusCode, options.useRetryForResponseCodes)) {
-                        // request with given status code cannot be retried
-                        return reject(promiseError);
+                        if (!retryService.canRetryStatusCode(statusCode, options.useRetryForResponseCodes)) {
+                            // request with given status code cannot be retried
+                            return reject(promiseError);
+                        }
+
+                        if (!retryService.canRetry(internal.startTime, options.maxCumulativeWaitTimeMs)) {
+                            // request should not be retried anymore
+                            return reject(promiseError);
+                        }
+
+                        // get wait time
+                        const waitTime = retryService.getNextWaitTimeMs(
+                            options.addJitter,
+                            options.deltaBackoffMs,
+                            currentAttempt,
+                            retryAfter
+                        );
+
+                        // debug log attempt
+                        retryService.debugLogAttempt(currentAttempt, waitTime);
+
+                        return this.promiseRetryWait(waitTime)
+                            .then(() => {
+                                return this.getPromiseWithRetryStrategy(promise, options, {
+                                    retryAttempt: currentAttempt,
+                                    startTime: internal.startTime
+                                });
+                            })
+                            .then(response => resolve(response))
+                            .catch(error => reject(error));
+                    } catch (error) {
+                        reject(error);
                     }
-
-                    if (!retryService.canRetry(internal.startTime, options.maxCumulativeWaitTimeMs)) {
-                        // request should not be retried anymore
-                        return reject(promiseError);
-                    }
-
-                    // get wait time
-                    const waitTime = retryService.getNextWaitTimeMs(options.addJitter, options.deltaBackoffMs, currentAttempt, retryAfter);
-
-                    // debug log attempt
-                    retryService.debugLogAttempt(currentAttempt, waitTime);
-
-                    return this.promiseRetryWait(waitTime)
-                        .then(() => {
-                            return this.getPromiseWithRetryStrategy(promise, options, {
-                                retryAttempt: currentAttempt,
-                                startTime: internal.startTime
-                            });
-                        })
-                        .then(response => resolve(response))
-                        .catch(error => reject(error));
                 })
         );
     }

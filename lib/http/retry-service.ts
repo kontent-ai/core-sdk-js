@@ -90,7 +90,7 @@ export class RetryService {
 
     getStatusCodeFromError(error: IBaseResponseError<any>): number {
         const originalError = error.originalError;
-        if (!originalError.isAxiosError) {
+        if (!originalError || !originalError.isAxiosError) {
             return 0;
         }
         const axiosError: AxiosError = originalError as AxiosError;
@@ -103,7 +103,7 @@ export class RetryService {
 
     tryGetRetryAfterInMsFromError(error: IBaseResponseError<any>): number | undefined {
         const originalError = error.originalError;
-        if (!originalError.isAxiosError) {
+        if (!originalError || !originalError.isAxiosError) {
             return undefined;
         }
 
