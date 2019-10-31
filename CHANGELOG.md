@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [4.0.3](https://github.com///compare/v4.0.2...v4.0.3) (2019-10-31)
+
+
+### Bug Fixes
+
+* use patch callback for patch method ([2c6e46a](https://github.com///commit/2c6e46a9cf2350a0b796061f8dd00ab17244719c))
+
 ### [4.0.2](https://github.com///compare/v4.0.1...v4.0.2) (2019-10-24)
 
 
