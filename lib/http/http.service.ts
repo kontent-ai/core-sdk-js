@@ -98,7 +98,7 @@ export class HttpService implements IHttpService {
         options?: IHttpQueryOptions
     ): Observable<IBaseResponse<TRawData>> {
         // bind callback from axios promise
-        const axiosObservable = bindCallback(HttpFunctions.putCallback);
+        const axiosObservable = bindCallback(HttpFunctions.patchCallback);
 
         // map axios observable
         return this.mapAxiosObservable(this.axiosInstance, axiosObservable, call, options);
