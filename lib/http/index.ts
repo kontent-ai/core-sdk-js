@@ -1,6 +1,5 @@
 export * from './ihttp.service';
 export * from './observable-retry-strategy';
-export * from './promise-retry-strategy';
 export * from './http.service';
 export * from './http.models';
 export * from './http.functions';

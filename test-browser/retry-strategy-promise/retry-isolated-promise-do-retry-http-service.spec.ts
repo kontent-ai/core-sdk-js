@@ -11,21 +11,30 @@ describe('Retry Promise - isolated retry through Http service', () => {
     beforeAll(done => {
         spyOn(retryService, 'debugLogAttempt').and.callThrough();
 
-        const promise = httpService
+        const promise = () => httpService
             .get(
                 {
                     mapError: err => err,
-                    url: 'https://deliver.kenticocloud.com/da5abe9f-fdad-4168-97cd-b3464be2ccb9/items/warriorasfsefase'
+                    url: 'https://deliver.kenticocloud.com/da5abe9f-fdad-4168-97cd-b3464be2ccb9/items/warrior-invalid-promise'
                 },
                 {
                     deltaBackoffMs: 1000,
-                    maxCumulativeWaitTimeMs: 3000,
+                    maxCumulativeWaitTimeMs: 4000,
                     useRetryForResponseCodes: [404],
                     addJitterToRetryAttempts: false
                 }
             )
             .toPromise();
 
+
+        promise().then(() => {
+            throw Error(`Promise should not succeed`);
+        })
+        .catch(err => {
+            console.error('Error: ', err);
+            done();
+        });
+            /*
         httpService
             .retryPromise(promise, {
                 deltaBackoffMs: 1000,
@@ -40,6 +49,7 @@ describe('Retry Promise - isolated retry through Http service', () => {
                 console.error('Error: ', err);
                 done();
             });
+            */
     });
 
     it(`Warning for retry attempt should have been called '${retryAttempts}' times`, () => {

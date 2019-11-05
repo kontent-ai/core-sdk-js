@@ -13,7 +13,7 @@ describe('Retry Rxjs - retry after header in date format', () => {
     beforeAll(done => {
         spyOn(retryService, 'debugLogAttempt').and.callThrough();
 
-        const retryAfterSeconds: number = 5;
+        const retryAfterSeconds: number = 2;
         const retryAfterDate: Date = new Date();
         retryAfterDate.setSeconds(retryAfterDate.getSeconds() + retryAfterSeconds);
 

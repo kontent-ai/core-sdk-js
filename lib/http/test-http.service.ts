@@ -3,14 +3,13 @@ import { Observable, of, throwError } from 'rxjs';
 import {
     IBaseResponse,
     IBaseResponseError,
+    IHeader,
     IHttpDeleteQueryCall,
     IHttpGetQueryCall,
     IHttpPatchQueryCall,
     IHttpPostQueryCall,
     IHttpPutQueryCall,
     IHttpQueryOptions,
-    IHeader,
-    IRetryStrategyOptions
 } from './http.models';
 import { IHttpService } from './ihttp.service';
 
@@ -21,16 +20,14 @@ export class TestHttpService implements IHttpService {
     public fakeHeaders: IHeader[] = [];
     public fakeStatusCode: number = 200;
 
-    constructor(config: { fakeStatusCode?: number, fakeResponseJson?: any; throwError?: boolean; errorJson?: any, fakeHeaders?: IHeader[] }) {
+    constructor(config: {
+        fakeStatusCode?: number;
+        fakeResponseJson?: any;
+        throwError?: boolean;
+        errorJson?: any;
+        fakeHeaders?: IHeader[];
+    }) {
         Object.assign(this, config);
-    }
-
-    retryPromise<T>(
-        promise: Promise<T>,
-        options?: IRetryStrategyOptions
-    ): Promise<T> {
-        console.log('Retry is not implemented in test service. Returning original Promise');
-        return promise;
     }
 
     get<TError extends any, TRawData extends any>(
@@ -48,7 +45,7 @@ export class TestHttpService implements IHttpService {
                 originalError: fakeError,
                 mappedError: call.mapError(fakeError),
                 headers: this.fakeHeaders,
-                status: this.fakeStatusCode,
+                status: this.fakeStatusCode
             });
         }
 

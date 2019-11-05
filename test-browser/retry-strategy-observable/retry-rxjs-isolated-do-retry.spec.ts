@@ -30,8 +30,8 @@ describe('Retry Rxjs - isolated - retry', () => {
                     return throwError(error);
                 }),
                 retryWhen(observableRetryStrategy.strategy({
-                    deltaBackoffMs: 1000,
-                    maxCumulativeWaitTimeMs: 3000,
+                    deltaBackoffMs: 100,
+                    maxCumulativeWaitTimeMs: 300,
                     useRetryForResponseCodes: [401],
                     addJitter: false
                 }, {

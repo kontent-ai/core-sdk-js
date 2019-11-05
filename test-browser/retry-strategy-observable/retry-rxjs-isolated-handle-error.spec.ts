@@ -26,7 +26,7 @@ describe('Retry Rxjs - handle error in retry functionality', () => {
                     retryWhen(
                         observableRetryStrategy.strategy(
                             {
-                                deltaBackoffMs: 1000,
+                                deltaBackoffMs: 100,
                                 maxCumulativeWaitTimeMs: 0,
                                 useRetryForResponseCodes: [],
                                 addJitter: false

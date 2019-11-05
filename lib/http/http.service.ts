@@ -1,5 +1,5 @@
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
-import { bindCallback, Observable, throwError } from 'rxjs';
+import { defer, from, Observable, throwError } from 'rxjs';
 import { catchError, map, retryWhen } from 'rxjs/operators';
 
 import { extractHeadersFromAxiosResponse } from './headers-helper';
@@ -17,11 +17,9 @@ import {
     IHttpRequestConfig,
     IHttpRequestResponse,
     IHttpRequestResult,
-    IRetryStrategyOptions,
 } from './http.models';
 import { IHttpService } from './ihttp.service';
 import { observableRetryStrategy } from './observable-retry-strategy';
-import { promiseRetryStrategy } from './promise-retry-strategy';
 import { retryService } from './retry-service';
 
 export class HttpService implements IHttpService {
@@ -44,31 +42,15 @@ export class HttpService implements IHttpService {
         }
     }
 
-    /**
-     * Retries given promise based on given configuration
-     * @param promise Promise to retry
-     * @param options Configuration options
-     */
-    retryPromise<T>(promise: Promise<T>, options?: IRetryStrategyOptions): Promise<T> {
-        return promiseRetryStrategy.getPromiseWithRetryStrategy(
-            promise,
-            retryService.getRetryStrategyFromStrategyOptions(options),
-            {
-                retryAttempt: 0,
-                startTime: new Date()
-            }
-        );
-    }
-
     get<TError extends any, TRawData extends any>(
         call: IHttpGetQueryCall<TError>,
         options?: IHttpQueryOptions
     ): Observable<IBaseResponse<TRawData>> {
         // bind callback from axios promise
-        const axiosObservable = bindCallback(HttpFunctions.getCallback);
+        const axiosObservable = defer(() => from(HttpFunctions.getCallback(this.axiosInstance, call, options)));
 
         // map axios observable
-        return this.mapAxiosObservable(this.axiosInstance, axiosObservable, call, options);
+        return this.mapAxiosObservable(axiosObservable, call, options);
     }
 
     post<TError extends any, TRawData extends any>(
@@ -76,10 +58,10 @@ export class HttpService implements IHttpService {
         options?: IHttpQueryOptions
     ): Observable<IBaseResponse<TRawData>> {
         // bind callback from axios promise
-        const axiosObservable = bindCallback(HttpFunctions.postCallback);
+        const axiosObservable = defer(() => from(HttpFunctions.postCallback(this.axiosInstance, call, options)));
 
         // map axios observable
-        return this.mapAxiosObservable(this.axiosInstance, axiosObservable, call, options);
+        return this.mapAxiosObservable(axiosObservable, call, options);
     }
 
     put<TError extends any, TRawData extends any>(
@@ -87,10 +69,10 @@ export class HttpService implements IHttpService {
         options?: IHttpQueryOptions
     ): Observable<IBaseResponse<TRawData>> {
         // bind callback from axios promise
-        const axiosObservable = bindCallback(HttpFunctions.putCallback);
+        const axiosObservable = defer(() => from(HttpFunctions.putCallback(this.axiosInstance, call, options)));
 
         // map axios observable
-        return this.mapAxiosObservable(this.axiosInstance, axiosObservable, call, options);
+        return this.mapAxiosObservable(axiosObservable, call, options);
     }
 
     patch<TError extends any, TRawData extends any>(
@@ -98,10 +80,10 @@ export class HttpService implements IHttpService {
         options?: IHttpQueryOptions
     ): Observable<IBaseResponse<TRawData>> {
         // bind callback from axios promise
-        const axiosObservable = bindCallback(HttpFunctions.putCallback);
+        const axiosObservable = defer(() => from(HttpFunctions.patchCallback(this.axiosInstance, call, options)));
 
         // map axios observable
-        return this.mapAxiosObservable(this.axiosInstance, axiosObservable, call, options);
+        return this.mapAxiosObservable(axiosObservable, call, options);
     }
 
     delete<TError extends any, TRawData extends any>(
@@ -109,19 +91,18 @@ export class HttpService implements IHttpService {
         options?: IHttpQueryOptions
     ): Observable<IBaseResponse<TRawData>> {
         // bind callback from axios promise
-        const axiosObservable = bindCallback(HttpFunctions.deleteCallback);
+        const axiosObservable = defer(() => from(HttpFunctions.deleteCallback(this.axiosInstance, call, options)));
 
         // map axios observable
-        return this.mapAxiosObservable(this.axiosInstance, axiosObservable, call, options);
+        return this.mapAxiosObservable(axiosObservable, call, options);
     }
 
     private mapAxiosObservable<TRawData, TError>(
-        axiosInstance: AxiosInstance,
-        axiosObservable: (...args: any[]) => Observable<any>,
+        axiosObservable: Observable<any>,
         call: IHttpQueryCall<TError>,
         options?: IHttpQueryOptions
     ): Observable<IBaseResponse<TRawData>> {
-        return axiosObservable(axiosInstance, call, options).pipe(
+        return axiosObservable.pipe(
             map((result: IHttpRequestResult<AxiosResponse>) => this.mapResult<TRawData>(result)),
             retryWhen(
                 observableRetryStrategy.strategy(retryService.getRetryStrategyFromHttpQueryOptions(options), {

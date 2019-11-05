@@ -15,11 +15,11 @@ describe('Retry Rxjs - retry through Http service', () => {
             .get(
                 {
                     mapError: err => err,
-                    url: 'https://deliver.kenticocloud.com/da5abe9f-fdad-4168-97cd-b3464be2ccb9/items/warriorasfsefase'
+                    url: 'https://deliver.kenticocloud.com/da5abe9f-fdad-4168-97cd-b3464be2ccb9/items/warrior-invalid-rxjs'
                 },
                 {
                     deltaBackoffMs: 1000,
-                    maxCumulativeWaitTimeMs: 3000,
+                    maxCumulativeWaitTimeMs: 4000,
                     useRetryForResponseCodes: [404],
                     addJitterToRetryAttempts: false
                 }

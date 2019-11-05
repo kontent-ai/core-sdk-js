@@ -5,7 +5,7 @@ import { retryService, observableRetryStrategy } from '../../lib';
 import { AxiosError } from 'axios';
 
 describe('Retry Rxjs - retry after header in seconds format', () => {
-    const expectedRetryAttempts = 3;
+    const expectedRetryAttempts = 2;
     const MAX_SAFE_TIMEOUT = Math.pow(2, 31) - 1;
 
     jasmine.DEFAULT_TIMEOUT_INTERVAL = MAX_SAFE_TIMEOUT;
@@ -19,7 +19,7 @@ describe('Retry Rxjs - retry after header in seconds format', () => {
                 response: {
                     status: 401,
                     headers: {
-                        'Retry-After': '5'
+                        'Retry-After': '1'
                     }
                 },
                 isAxiosError: true
@@ -32,8 +32,8 @@ describe('Retry Rxjs - retry after header in seconds format', () => {
                     return throwError(error);
                 }),
                 retryWhen(observableRetryStrategy.strategy({
-                    deltaBackoffMs: 1000,
-                    maxCumulativeWaitTimeMs: 12000,
+                    deltaBackoffMs: 100,
+                    maxCumulativeWaitTimeMs: 1200,
                     useRetryForResponseCodes: [401],
                     addJitter: false
                 }, {

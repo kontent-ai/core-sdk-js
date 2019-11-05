@@ -46,9 +46,8 @@ export function registerRequestInterceptor(
 export function getCallback<TError>(
     instance: AxiosInstance,
     call: IHttpGetQueryCall<TError>,
-    options: IHttpQueryOptions | undefined,
-    callback: (response: IHttpRequestResult<AxiosResponse>) => void
-): void {
+    options: IHttpQueryOptions | undefined
+): Promise<IHttpRequestResult<AxiosResponse>> {
     httpDebugger.debugStartHttpRequest();
 
     const axiosPromise = instance.get(call.url, {
@@ -56,28 +55,14 @@ export function getCallback<TError>(
         responseType: options && options.responseType ? options.responseType : undefined
     });
 
-    axiosPromise.then(
-        response => {
-            httpDebugger.debugResolveHttpRequest();
-            callback({
-                response: response
-            });
-        },
-        error => {
-            httpDebugger.debugFailedHttpRequest();
-            callback({
-                error: error
-            });
-        }
-    );
+    return mapRequestResult(axiosPromise);
 }
 
 export function putCallback<TError>(
     instance: AxiosInstance,
     call: IHttpPutQueryCall<TError>,
-    options: IHttpQueryOptions | undefined,
-    callback: (response: IHttpRequestResult<AxiosResponse>) => void
-): void {
+    options: IHttpQueryOptions | undefined
+): Promise<IHttpRequestResult<AxiosResponse>> {
     httpDebugger.debugStartHttpRequest();
 
     const axiosPromise = instance.put(call.url, call.body, {
@@ -85,28 +70,14 @@ export function putCallback<TError>(
         responseType: options && options.responseType ? options.responseType : undefined
     });
 
-    axiosPromise.then(
-        response => {
-            httpDebugger.debugResolveHttpRequest();
-            callback({
-                response: response
-            });
-        },
-        error => {
-            httpDebugger.debugFailedHttpRequest();
-            callback({
-                error: error
-            });
-        }
-    );
+    return mapRequestResult(axiosPromise);
 }
 
 export function patchCallback<TError>(
     instance: AxiosInstance,
     call: IHttpPatchQueryCall<TError>,
-    options: IHttpQueryOptions | undefined,
-    callback: (response: IHttpRequestResult<AxiosResponse>) => void
-): void {
+    options: IHttpQueryOptions | undefined
+): Promise<IHttpRequestResult<AxiosResponse>> {
     httpDebugger.debugStartHttpRequest();
 
     const axiosPromise = instance.patch(call.url, call.body, {
@@ -114,28 +85,14 @@ export function patchCallback<TError>(
         responseType: options && options.responseType ? options.responseType : undefined
     });
 
-    axiosPromise.then(
-        response => {
-            httpDebugger.debugResolveHttpRequest();
-            callback({
-                response: response
-            });
-        },
-        error => {
-            httpDebugger.debugFailedHttpRequest();
-            callback({
-                error: error
-            });
-        }
-    );
+    return mapRequestResult(axiosPromise);
 }
 
 export function deleteCallback<TError>(
     instance: AxiosInstance,
     call: IHttpDeleteQueryCall<TError>,
-    options: IHttpQueryOptions | undefined,
-    callback: (response: IHttpRequestResult<AxiosResponse>) => void
-): void {
+    options: IHttpQueryOptions | undefined
+): Promise<IHttpRequestResult<AxiosResponse>> {
     httpDebugger.debugStartHttpRequest();
 
     const axiosPromise = instance.delete(call.url, {
@@ -143,28 +100,14 @@ export function deleteCallback<TError>(
         responseType: options && options.responseType ? options.responseType : undefined
     });
 
-    axiosPromise.then(
-        response => {
-            httpDebugger.debugResolveHttpRequest();
-            callback({
-                response: response
-            });
-        },
-        error => {
-            httpDebugger.debugFailedHttpRequest();
-            callback({
-                error: error
-            });
-        }
-    );
+    return mapRequestResult(axiosPromise);
 }
 
 export function postCallback<TError>(
     instance: AxiosInstance,
     call: IHttpPostQueryCall<TError>,
-    options: IHttpQueryOptions | undefined,
-    callback: (response: IHttpRequestResult<AxiosResponse>) => void
-): void {
+    options: IHttpQueryOptions | undefined
+): Promise<IHttpRequestResult<AxiosResponse>> {
     httpDebugger.debugStartHttpRequest();
 
     const axiosPromise = instance.post(call.url, call.body, {
@@ -172,23 +115,10 @@ export function postCallback<TError>(
         responseType: options && options.responseType ? options.responseType : undefined
     });
 
-    axiosPromise.then(
-        response => {
-            httpDebugger.debugResolveHttpRequest();
-            callback({
-                response: response
-            });
-        },
-        error => {
-            httpDebugger.debugFailedHttpRequest();
-            callback({
-                error: error
-            });
-        }
-    );
+    return mapRequestResult(axiosPromise);
 }
 
-export function getHeadersJson(headers: IHeader[], addContentTypeHeader: boolean): { [header: string]: string } {
+function getHeadersJson(headers: IHeader[], addContentTypeHeader: boolean): { [header: string]: string } {
     const headerJson: { [header: string]: string } = {};
 
     headers.forEach(header => {
@@ -205,4 +135,19 @@ export function getHeadersJson(headers: IHeader[], addContentTypeHeader: boolean
     }
 
     return headerJson;
+}
+
+function mapRequestResult(promise: Promise<AxiosResponse<any>>): Promise<IHttpRequestResult<AxiosResponse>> {
+    return promise.then(response => {
+        httpDebugger.debugResolveHttpRequest();
+        return <IHttpRequestResult<AxiosResponse>>{
+            response: response
+        };
+    },
+    error => {
+        httpDebugger.debugFailedHttpRequest();
+        return <IHttpRequestResult<AxiosResponse>>{
+            error: error
+        };
+    });
 }

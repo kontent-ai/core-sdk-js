@@ -8,12 +8,9 @@ import {
   IHttpPutQueryCall,
   IHttpQueryOptions,
   IHttpPatchQueryCall,
-  IRetryStrategyOptions,
 } from './http.models';
 
 export interface IHttpService {
-
-  retryPromise<T>(promise: Promise<T>, options?: IRetryStrategyOptions): Promise<T>;
 
   post<TError extends any, TRawData extends any>(
     call: IHttpPostQueryCall<TError>,

@@ -149,6 +149,6 @@ export interface IHttpRequestResponse {
     request?: any;
 }
 
-export class IHttpRequestResult<TResponse> {
+export class IHttpRequestResult<TResponse = any> {
     constructor(public response?: TResponse, public error?: any) {}
 }
