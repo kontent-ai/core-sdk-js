@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [5.0.0](https://github.com///compare/v4.0.3...v5.0.0) (2019-11-05)
+
+
+### ⚠ BREAKING CHANGES
+
+* Fixes retry strategy not making HTTP calls, removes Promise specific retry policy and relies on observable conversion
+
+### Bug Fixes
+
+* Fixes retry strategy not making HTTP calls, removes Promise specific retry policy and relies on observable conversion ([79f7341](https://github.com///commit/79f734109a73c6e53ec9125aee419641ab1b935e))
+
 ### [4.0.3](https://github.com///compare/v4.0.2...v4.0.3) (2019-10-31)
 
 
