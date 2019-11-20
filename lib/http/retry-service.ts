@@ -136,7 +136,6 @@ export class RetryService {
     }
 
     private tryGetAxiosError(error: any): AxiosError | undefined {
-        console.warn('try get axios', error);
         if (!error) {
             return undefined;
         }
