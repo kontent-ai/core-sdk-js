@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [5.0.1](https://github.com///compare/v5.0.0...v5.0.1) (2019-11-20)
+
+
+### Bug Fixes
+
+* removes test warn error message ([b3fbe08](https://github.com///commit/b3fbe08ed32708853bfac011705d93321007e3ff))
+
 ## [5.0.0](https://github.com///compare/v4.0.3...v5.0.0) (2019-11-05)
 
 
