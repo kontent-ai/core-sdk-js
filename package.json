@@ -3,7 +3,7 @@
   "version": "6.0.0",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Kentico/kontent-core-js/tree/master"
+    "url": "https://github.com/Kentico/kontent-core-js"
   },
   "private": false,
   "author": "richard sustek",
