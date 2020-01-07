@@ -155,13 +155,6 @@ export class RetryService {
         return undefined;
     }
 
-    private getBoolOrDefault(value: boolean | undefined, defaultValue: boolean): boolean {
-        if (typeof value === 'undefined') {
-            return defaultValue;
-        }
-        return value;
-    }
-
     /**
      * min and max included
      */
