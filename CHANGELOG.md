@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [6.0.0](https://github.com///compare/v5.0.1...v6.0.0) (2020-01-07)
+
+
+### ⚠ BREAKING CHANGES
+
+* refactors retry strategy to allow developers define what errors should or should not be retried using new 'canRetryError' configuration option. Separates retryStrategy options from HTTP query configuration to simplify mapping and increase visibility. Lastly, new retry strategy allows specifying number of maximum retry attempts in combination with cumulative wait time.
+
+### Features
+
+* refactors retry strategy to allow developers define what errors should or should not be retried using new 'canRetryError' configuration option. Separates retryStrategy options from HTTP query configuration to simplify mapping and increase visibility. Lastly, new retry strategy allows specifying number of maximum retry attempts in combination with cumulative wait time. ([779097d](https://github.com///commit/779097d21c3724ef172e0e8ee189d655e31036e4))
+* updates all dependencies to latest versions ([8a8e87a](https://github.com///commit/8a8e87a5186503e381aeb40f63720ceaa7d7b39e))
+
 ### [5.0.1](https://github.com///compare/v5.0.0...v5.0.1) (2019-11-20)
 
 
