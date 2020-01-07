@@ -7,10 +7,6 @@ export interface IBaseResponse<TRawData> {
 
 export interface IRetryStrategyOptions {
     /**
-     * Status code subject to retry policy
-     */
-    useRetryForResponseCodes: number[];
-    /**
      * back-off interval between retries
      */
     deltaBackoffMs: number;
@@ -19,9 +15,17 @@ export interface IRetryStrategyOptions {
      */
     maxCumulativeWaitTimeMs: number;
     /**
-     * indicates if jitter is added to retry
+     * Maximum allowed number of attempts
+     */
+    maxAttempts: number;
+    /**
+     * Indicates if jitter is added to retry
      */
     addJitter: boolean;
+    /**
+     * Determines if error can be retried. By default only axios errors are retried.
+     */
+    canRetryError: (error: any) => boolean;
 }
 
 export interface IBaseResponseError<TError extends any> {
@@ -51,22 +55,8 @@ export interface IHttpDeleteQueryCall<TError extends any> extends IHttpQueryCall
 export interface IHttpGetQueryCall<TError extends any> extends IHttpQueryCall<TError> {}
 
 export interface IHttpQueryOptions {
-    /**
-     * Indicates if jitter is added to retry requests
-     */
-    addJitterToRetryAttempts?: boolean;
-    /**
-     * Status code subject to retry policy
-     */
-    useRetryForResponseCodes?: number[];
-    /**
-     * back-off interval between retries
-     */
-    deltaBackoffMs?: number;
-    /**
-     * If the cumulative wait time exceeds this value, the client will stop retrying and return the error to the application.
-     */
-    maxCumulativeWaitTimeMs?: number;
+    // retry strategy
+    retryStrategy?: IRetryStrategyOptions;
     /**
      * Request headers
      * */

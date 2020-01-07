@@ -31,8 +31,9 @@ describe('Retry Rxjs - skipped status codes', () => {
                 retryWhen(observableRetryStrategy.strategy({
                     deltaBackoffMs: 100,
                     maxCumulativeWaitTimeMs: 150,
-                    useRetryForResponseCodes: [401, 500, 420, 422],
-                    addJitter: false
+                    addJitter: false,
+                    maxAttempts: 100,
+                    canRetryError: (xError) => retryService.canRetryErrorDefault(xError),
                 }, {
                     startTime:  new Date()
                 })),

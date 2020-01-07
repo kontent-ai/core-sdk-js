@@ -28,8 +28,9 @@ describe('Retry Rxjs - handle error in retry functionality', () => {
                             {
                                 deltaBackoffMs: 100,
                                 maxCumulativeWaitTimeMs: 0,
-                                useRetryForResponseCodes: [],
-                                addJitter: false
+                                addJitter: false,
+                                maxAttempts: 100,
+                                canRetryError: (xError) => retryService.canRetryErrorDefault(xError),
                             },
                             {
                                 startTime: new Date()

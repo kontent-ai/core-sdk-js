@@ -14,21 +14,35 @@ export class ObservableRetryStrategy {
     ) => (errorObs: Observable<any>) => {
         return errorObs.pipe(
             flatMap((error: IBaseResponseError<any>, i: number) => {
-                const retryAttempt = i + 1;
-                const statusCode: number = retryService.getStatusCodeFromError(error);
-                const retryAfter: number | undefined = retryService.tryGetRetryAfterInMsFromError(error);
+                const canRetryError: boolean = options.canRetryError(error);
 
-                if (!retryService.canRetryStatusCode(statusCode, options.useRetryForResponseCodes)) {
-                    // request with given status code cannot be retried
+                if (!canRetryError) {
+                    // request cannot be retried
                     return throwError(error);
                 }
 
-                if (!retryService.canRetry(internal.startTime, options.maxCumulativeWaitTimeMs)) {
-                    // request should not be retried anymore
+
+                const retryAttempt = i + 1;
+
+                const maximumRetryAttemptsMet: boolean = retryAttempt > options.maxAttempts;
+
+                if (maximumRetryAttemptsMet) {
+                    // request cannot be retried anymore due to maximum attempts
+                    return throwError(error);
+                }
+
+                const retryInTimeResult = retryService.canRetryInTime(
+                    internal.startTime,
+                    options.maxCumulativeWaitTimeMs
+                );
+
+                if (!retryInTimeResult.canRetry) {
+                    // request should not be retried anymore as allowed time expired
                     return throwError(error);
                 }
 
                 // get wait time
+                const retryAfter: number | undefined = retryService.tryGetRetryAfterInMsFromError(error);
                 const waitTime = retryService.getNextWaitTimeMs(
                     options.addJitter,
                     options.deltaBackoffMs,

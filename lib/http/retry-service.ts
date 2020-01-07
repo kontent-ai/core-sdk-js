@@ -1,16 +1,18 @@
 import { AxiosError } from 'axios';
 
 import { extractHeadersFromAxiosResponse } from './headers-helper';
-import { IHeader, IHttpQueryOptions, IRetryStrategyOptions } from './http.models';
+import { IHeader, IRetryStrategyOptions } from './http.models';
 
 export class RetryService {
     private readonly retryAfterHeaderName: string = 'Retry-After';
+    private readonly useRetryForStatusCodes: number[] = [408, 429, 500, 502, 503, 504];
 
     private readonly defaultRetryPolicy: IRetryStrategyOptions = {
         addJitter: true,
-        useRetryForResponseCodes: [408, 429, 500, 502, 503, 504],
         deltaBackoffMs: 1000, // 1 sec
-        maxCumulativeWaitTimeMs: 30000 // 30 sec
+        maxCumulativeWaitTimeMs: 30000, // 30 sec,
+        maxAttempts: 20, // 20 requests
+        canRetryError: (error) => this.canRetryErrorDefault(error)
     };
 
     getRetryStrategyFromStrategyOptions(retryOptions?: IRetryStrategyOptions): IRetryStrategyOptions {
@@ -18,49 +20,25 @@ export class RetryService {
             return this.defaultRetryPolicy;
         }
 
-        return {
-            addJitter: this.getBoolOrDefault(retryOptions.addJitter, this.defaultRetryPolicy.addJitter),
-            deltaBackoffMs: retryOptions.deltaBackoffMs
-                ? retryOptions.deltaBackoffMs
-                : this.defaultRetryPolicy.deltaBackoffMs,
-            maxCumulativeWaitTimeMs: retryOptions.maxCumulativeWaitTimeMs
-                ? retryOptions.maxCumulativeWaitTimeMs
-                : this.defaultRetryPolicy.maxCumulativeWaitTimeMs,
-            useRetryForResponseCodes: retryOptions.useRetryForResponseCodes
-                ? retryOptions.useRetryForResponseCodes
-                : this.defaultRetryPolicy.useRetryForResponseCodes
-        };
+        return retryOptions;
     }
 
-    getRetryStrategyFromHttpQueryOptions(httpQueryOptions?: IHttpQueryOptions): IRetryStrategyOptions {
-        if (!httpQueryOptions) {
-            return this.defaultRetryPolicy;
-        }
-
-        return {
-            addJitter: this.getBoolOrDefault(
-                httpQueryOptions.addJitterToRetryAttempts,
-                this.defaultRetryPolicy.addJitter
-            ),
-            deltaBackoffMs: httpQueryOptions.deltaBackoffMs
-                ? httpQueryOptions.deltaBackoffMs
-                : this.defaultRetryPolicy.deltaBackoffMs,
-            maxCumulativeWaitTimeMs: httpQueryOptions.maxCumulativeWaitTimeMs
-                ? httpQueryOptions.maxCumulativeWaitTimeMs
-                : this.defaultRetryPolicy.maxCumulativeWaitTimeMs,
-            useRetryForResponseCodes: httpQueryOptions.useRetryForResponseCodes
-                ? httpQueryOptions.useRetryForResponseCodes
-                : this.defaultRetryPolicy.useRetryForResponseCodes
-        };
-    }
-
-    canRetry(startTime: Date, maxCumulativeWaitTimeMs: number): boolean {
+    canRetryInTime(
+        startTime: Date,
+        maxCumulativeWaitTimeMs: number
+    ): {
+        canRetry: boolean;
+        differenceInMs: number;
+    } {
         const start = startTime.getTime();
         const now = new Date().getTime();
 
         const differenceInMs = now - start;
 
-        return differenceInMs < maxCumulativeWaitTimeMs;
+        return {
+            canRetry: differenceInMs < maxCumulativeWaitTimeMs,
+            differenceInMs: differenceInMs
+        };
     }
 
     /**
@@ -91,8 +69,33 @@ export class RetryService {
         return this.randomNumberFromInterval(from, to);
     }
 
+    canRetryErrorDefault(error: any): boolean {
+        const axiosError = this.tryGetAxiosError(error);
+
+        if (!axiosError) {
+            // by default non-axios errors are not retried
+            return false;
+        }
+
+        const statusCode: number = this.getStatusCodeFromError(error);
+        const canRetryStatusCode: boolean = this.canRetryStatusCode(
+            statusCode,
+            this.useRetryForStatusCodes
+        );
+
+        if (canRetryStatusCode) {
+            return true;
+        }
+
+        return false;
+    }
+
     canRetryStatusCode(statusCode: number, useRetryForResponseCodes: number[]): boolean {
         return useRetryForResponseCodes.includes(statusCode);
+    }
+
+    isAxiosError(error: any): boolean {
+        return this.tryGetAxiosError(error)?.isAxiosError ?? false;
     }
 
     getStatusCodeFromError(error: any): number {

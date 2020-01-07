@@ -1,11 +1,10 @@
 import { of, throwError } from 'rxjs';
 import { catchError, retryWhen, switchMap } from 'rxjs/operators';
 
-import { retryService, observableRetryStrategy } from '../../lib';
-import { AxiosError } from 'axios';
+import { observableRetryStrategy, retryService } from '../../lib';
 
-describe('Retry Rxjs - retry after header in date format', () => {
-    const expectedRetryAttempts = 1;
+describe('Retry Rxjs - retry error func', () => {
+    const expectedRetryAttempts = 5;
     const MAX_SAFE_TIMEOUT = Math.pow(2, 31) - 1;
 
     jasmine.DEFAULT_TIMEOUT_INTERVAL = MAX_SAFE_TIMEOUT;
@@ -13,20 +12,10 @@ describe('Retry Rxjs - retry after header in date format', () => {
     beforeAll(done => {
         spyOn(retryService, 'debugLogAttempt').and.callThrough();
 
-        const retryAfterSeconds: number = 2;
-        const retryAfterDate: Date = new Date();
-        retryAfterDate.setSeconds(retryAfterDate.getSeconds() + retryAfterSeconds);
-
         // fake error
         const error: any = {
-            originalError: <AxiosError>{
-                response: {
-                    status: 429,
-                    headers: {
-                        'Retry-After': retryAfterDate.toUTCString()
-                    }
-                },
-                isAxiosError: true
+            originalError: {
+                message: 'Unknown error'
             }
         };
 
@@ -38,11 +27,13 @@ describe('Retry Rxjs - retry after header in date format', () => {
                 retryWhen(
                     observableRetryStrategy.strategy(
                         {
-                            deltaBackoffMs: 100,
-                            maxCumulativeWaitTimeMs: 100,
+                            deltaBackoffMs: 0,
+                            maxCumulativeWaitTimeMs: 50000,
+                            maxAttempts: 5,
                             addJitter: false,
-                            maxAttempts: 100,
-                            canRetryError: (xError) => retryService.canRetryErrorDefault(xError),
+                            canRetryError: (xError: any) => {
+                                return true;
+                            }
                         },
                         {
                             startTime: new Date()

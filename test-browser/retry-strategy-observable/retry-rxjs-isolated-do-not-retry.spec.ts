@@ -17,7 +17,7 @@ describe('Retry Rxjs - isolated - do not retry', () => {
         const error: any = {
             originalError: <AxiosError>{
                 response: {
-                    status: 401
+                    status: 200
                 },
                 isAxiosError: true
             }
@@ -31,8 +31,9 @@ describe('Retry Rxjs - isolated - do not retry', () => {
                 retryWhen(observableRetryStrategy.strategy({
                     deltaBackoffMs: 1000,
                     maxCumulativeWaitTimeMs: 0,
-                    useRetryForResponseCodes: [401],
-                    addJitter: false
+                    addJitter: false,
+                    maxAttempts: 100,
+                    canRetryError: (xError) => retryService.canRetryErrorDefault(xError),
                 }, {
                     startTime:  new Date()
                 })),

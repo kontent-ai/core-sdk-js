@@ -17,7 +17,7 @@ describe('Retry Rxjs - retry after header in seconds format', () => {
         const error: any = {
             originalError: <AxiosError>{
                 response: {
-                    status: 401,
+                    status: 429,
                     headers: {
                         'Retry-After': '1'
                     }
@@ -34,8 +34,9 @@ describe('Retry Rxjs - retry after header in seconds format', () => {
                 retryWhen(observableRetryStrategy.strategy({
                     deltaBackoffMs: 100,
                     maxCumulativeWaitTimeMs: 1200,
-                    useRetryForResponseCodes: [401],
-                    addJitter: false
+                    addJitter: false,
+                    maxAttempts: 100,
+                    canRetryError: (xError) => retryService.canRetryErrorDefault(xError),
                 }, {
                     startTime:  new Date()
                 })),

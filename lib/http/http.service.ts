@@ -105,7 +105,7 @@ export class HttpService implements IHttpService {
         return axiosObservable.pipe(
             map((result: IHttpRequestResult<AxiosResponse>) => this.mapResult<TRawData>(result)),
             retryWhen(
-                observableRetryStrategy.strategy(retryService.getRetryStrategyFromHttpQueryOptions(options), {
+                observableRetryStrategy.strategy(retryService.getRetryStrategyFromStrategyOptions(options?.retryStrategy), {
                     startTime: new Date()
                 })
             ),

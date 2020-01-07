@@ -18,10 +18,13 @@ describe('Retry Promise - isolated retry through Http service', () => {
                     url: 'https://deliver.kenticocloud.com/da5abe9f-fdad-4168-97cd-b3464be2ccb9/items/warrior-invalid-promise'
                 },
                 {
-                    deltaBackoffMs: 1000,
-                    maxCumulativeWaitTimeMs: 4000,
-                    useRetryForResponseCodes: [404],
-                    addJitterToRetryAttempts: false
+                    retryStrategy: {
+                        deltaBackoffMs: 1000,
+                        maxCumulativeWaitTimeMs: 4000,
+                        addJitter: false,
+                        maxAttempts: 100,
+                        canRetryError: (xError) => true,
+                    }
                 }
             )
             .toPromise();
