@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [7.0.2](https://github.com/Kentico/kontent-core-js/compare/v7.0.1...v7.0.2) (2020-07-27)
+
+
+### Bug Fixes
+
+* removes generic Error parameters ([71ffa32](https://github.com/Kentico/kontent-core-js/commit/71ffa32e8e4b11a9b1b0283d48166417faa4d8ad))
+
 ### [7.0.1](https://github.com/Kentico/kontent-core-js/compare/v7.0.0...v7.0.1) (2020-07-27)
 
 
