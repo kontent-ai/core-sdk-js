@@ -2,7 +2,6 @@ import { Observable, of, throwError } from 'rxjs';
 
 import {
     IBaseResponse,
-    IBaseResponseError,
     IHeader,
     IHttpDeleteQueryCall,
     IHttpGetQueryCall,
@@ -41,9 +40,8 @@ export class TestHttpService implements IHttpService {
                     data: this.errorJson
                 }
             };
-            return throwError(<IBaseResponseError<TError>>{
-                originalError: fakeError,
-                mappedError: call.mapError(fakeError),
+            return throwError({
+                error: fakeError,
                 headers: this.fakeHeaders,
                 status: this.fakeStatusCode
             });
@@ -69,9 +67,8 @@ export class TestHttpService implements IHttpService {
                     data: this.errorJson
                 }
             };
-            return throwError(<IBaseResponseError<TError>>{
-                originalError: fakeError,
-                mappedError: call.mapError(fakeError),
+            return throwError({
+                error: fakeError,
                 headers: this.fakeHeaders,
                 status: this.fakeStatusCode
             });
@@ -97,9 +94,8 @@ export class TestHttpService implements IHttpService {
                     data: this.errorJson
                 }
             };
-            return throwError(<IBaseResponseError<TError>>{
-                originalError: fakeError,
-                mappedError: call.mapError(fakeError),
+            return throwError({
+                error: fakeError,
                 headers: this.fakeHeaders,
                 status: this.fakeStatusCode
             });
@@ -125,9 +121,8 @@ export class TestHttpService implements IHttpService {
                     data: this.errorJson
                 }
             };
-            return throwError(<IBaseResponseError<TError>>{
-                originalError: fakeError,
-                mappedError: call.mapError(fakeError),
+            return throwError({
+                error: fakeError,
                 headers: this.fakeHeaders,
                 status: this.fakeStatusCode
             });
@@ -153,9 +148,8 @@ export class TestHttpService implements IHttpService {
                     data: this.errorJson
                 }
             };
-            return throwError(<IBaseResponseError<TError>>{
-                originalError: fakeError,
-                mappedError: call.mapError(fakeError),
+            return throwError({
+                error: fakeError,
                 headers: this.fakeHeaders,
                 status: this.fakeStatusCode
             });

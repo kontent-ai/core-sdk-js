@@ -14,7 +14,6 @@ describe('Retry Rxjs - retry through Http service', () => {
         httpService
             .get(
                 {
-                    mapError: err => err,
                     url: 'https://deliver.kenticocloud.com/da5abe9f-fdad-4168-97cd-b3464be2ccb9/items/warrior-invalid-rxjs'
                 },
                 {

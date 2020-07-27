@@ -14,7 +14,6 @@ describe('Retry Promise - isolated retry through Http service', () => {
         const promise = () => httpService
             .get(
                 {
-                    mapError: err => err,
                     url: 'https://deliver.kenticocloud.com/da5abe9f-fdad-4168-97cd-b3464be2ccb9/items/warrior-invalid-promise'
                 },
                 {
@@ -37,22 +36,6 @@ describe('Retry Promise - isolated retry through Http service', () => {
             console.error('Error: ', err);
             done();
         });
-            /*
-        httpService
-            .retryPromise(promise, {
-                deltaBackoffMs: 1000,
-                maxCumulativeWaitTimeMs: 3000,
-                useRetryForResponseCodes: [401],
-                addJitter: false
-            })
-            .then(() => {
-                throw Error(`Promise should not succeed`);
-            })
-            .catch(err => {
-                console.error('Error: ', err);
-                done();
-            });
-            */
     });
 
     it(`Warning for retry attempt should have been called '${retryAttempts}' times`, () => {

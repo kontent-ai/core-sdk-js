@@ -35,7 +35,6 @@ export interface IBaseResponseError<TError extends any> {
 
 export interface IHttpQueryCall<TError extends any> {
     url: string;
-    mapError: (originalError: any) => TError;
 }
 
 export interface IHttpPostQueryCall<TError extends any> extends IHttpQueryCall<TError> {
@@ -104,7 +103,11 @@ export type HttpRequestMethod =
     | 'put'
     | 'PUT'
     | 'patch'
-    | 'PATCH';
+    | 'PATCH'
+    | 'link'
+    | 'LINK'
+    | 'unlink'
+    | 'UNLINK';
 
 export type HttpResponseType = 'arraybuffer' | 'blob' | 'document' | 'json' | 'text' | 'stream';
 

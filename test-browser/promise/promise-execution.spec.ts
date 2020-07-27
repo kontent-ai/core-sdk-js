@@ -10,7 +10,6 @@ describe('Promise execution', () => {
         spyOn(httpDebugger, 'debugResolveHttpRequest').and.callThrough();
 
         httpService.get({
-            mapError: (err) => new Error('This request should not fail'),
             url: 'https://deliver.kontent.ai/da5abe9f-fdad-4168-97cd-b3464be2ccb9/items/warrior'
         })
         .subscribe(result => {
@@ -34,9 +33,9 @@ describe('Promise execution', () => {
         expect(response.headers.length).toBeGreaterThan(0);
     });
 
-    it(`X-Stale-Content is not available in Browser context`, () => {
+    it(`X-Stale-Content is set to 0 in browser context`, () => {
         const staleContentHeader = response.headers.find(m => m.header.toLowerCase() === 'x-stale-content'.toLowerCase());
-        expect(staleContentHeader).toBeUndefined();
+        expect(staleContentHeader?.value).toEqual('0');
     });
 });
 

@@ -6,13 +6,11 @@ import { extractHeadersFromAxiosResponse } from './headers-helper';
 import * as HttpFunctions from './http.functions';
 import {
     IBaseResponse,
-    IBaseResponseError,
     IHttpDeleteQueryCall,
     IHttpGetQueryCall,
     IHttpPatchQueryCall,
     IHttpPostQueryCall,
     IHttpPutQueryCall,
-    IHttpQueryCall,
     IHttpQueryOptions,
     IHttpRequestConfig,
     IHttpRequestResponse,
@@ -50,7 +48,7 @@ export class HttpService implements IHttpService {
         const axiosObservable = defer(() => from(HttpFunctions.getCallback(this.axiosInstance, call, options)));
 
         // map axios observable
-        return this.mapAxiosObservable(axiosObservable, call, options);
+        return this.mapAxiosObservable(axiosObservable, options);
     }
 
     post<TError extends any, TRawData extends any>(
@@ -61,7 +59,7 @@ export class HttpService implements IHttpService {
         const axiosObservable = defer(() => from(HttpFunctions.postCallback(this.axiosInstance, call, options)));
 
         // map axios observable
-        return this.mapAxiosObservable(axiosObservable, call, options);
+        return this.mapAxiosObservable(axiosObservable, options);
     }
 
     put<TError extends any, TRawData extends any>(
@@ -72,7 +70,7 @@ export class HttpService implements IHttpService {
         const axiosObservable = defer(() => from(HttpFunctions.putCallback(this.axiosInstance, call, options)));
 
         // map axios observable
-        return this.mapAxiosObservable(axiosObservable, call, options);
+        return this.mapAxiosObservable(axiosObservable, options);
     }
 
     patch<TError extends any, TRawData extends any>(
@@ -83,7 +81,7 @@ export class HttpService implements IHttpService {
         const axiosObservable = defer(() => from(HttpFunctions.patchCallback(this.axiosInstance, call, options)));
 
         // map axios observable
-        return this.mapAxiosObservable(axiosObservable, call, options);
+        return this.mapAxiosObservable(axiosObservable, options);
     }
 
     delete<TError extends any, TRawData extends any>(
@@ -94,12 +92,11 @@ export class HttpService implements IHttpService {
         const axiosObservable = defer(() => from(HttpFunctions.deleteCallback(this.axiosInstance, call, options)));
 
         // map axios observable
-        return this.mapAxiosObservable(axiosObservable, call, options);
+        return this.mapAxiosObservable(axiosObservable, options);
     }
 
     private mapAxiosObservable<TRawData, TError>(
         axiosObservable: Observable<any>,
-        call: IHttpQueryCall<TError>,
         options?: IHttpQueryOptions
     ): Observable<IBaseResponse<TRawData>> {
         return axiosObservable.pipe(
@@ -115,10 +112,7 @@ export class HttpService implements IHttpService {
                     console.error(`Kentico Kontent Core SDK encountered an error: `, error);
                 }
 
-                return throwError(<IBaseResponseError<TError>>{
-                    originalError: error,
-                    mappedError: call.mapError(error)
-                });
+                return throwError(error);
             })
         );
     }
