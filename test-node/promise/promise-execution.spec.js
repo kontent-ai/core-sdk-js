@@ -8,7 +8,6 @@ describe('Promise execution under node.js', () => {
 
     before((done) => {
         httpService.get({
-            mapError: (err) => new Error('This request should not fail'),
             url: 'https://deliver.kontent.ai/da5abe9f-fdad-4168-97cd-b3464be2ccb9/items/warrior'
         })  .subscribe(result => {
             response = result;
