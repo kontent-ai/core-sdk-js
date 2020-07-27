@@ -1,7 +1,7 @@
 import { Observable, throwError, timer } from 'rxjs';
 import { flatMap } from 'rxjs/operators';
 
-import { IBaseResponseError, IRetryStrategyOptions } from './http.models';
+import { IRetryStrategyOptions } from './http.models';
 import { retryService } from './retry-service';
 
 export class ObservableRetryStrategy {
@@ -13,7 +13,7 @@ export class ObservableRetryStrategy {
         }
     ) => (errorObs: Observable<any>) => {
         return errorObs.pipe(
-            flatMap((error: IBaseResponseError<any>, i: number) => {
+            flatMap((error: any, i: number) => {
                 const canRetryError: boolean = options.canRetryError(error);
 
                 if (!canRetryError) {

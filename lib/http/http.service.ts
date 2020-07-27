@@ -40,8 +40,8 @@ export class HttpService implements IHttpService {
         }
     }
 
-    get<TError extends any, TRawData extends any>(
-        call: IHttpGetQueryCall<TError>,
+    get<TRawData extends any>(
+        call: IHttpGetQueryCall,
         options?: IHttpQueryOptions
     ): Observable<IBaseResponse<TRawData>> {
         // bind callback from axios promise
@@ -51,8 +51,8 @@ export class HttpService implements IHttpService {
         return this.mapAxiosObservable(axiosObservable, options);
     }
 
-    post<TError extends any, TRawData extends any>(
-        call: IHttpPostQueryCall<TError>,
+    post<TRawData extends any>(
+        call: IHttpPostQueryCall,
         options?: IHttpQueryOptions
     ): Observable<IBaseResponse<TRawData>> {
         // bind callback from axios promise
@@ -62,8 +62,8 @@ export class HttpService implements IHttpService {
         return this.mapAxiosObservable(axiosObservable, options);
     }
 
-    put<TError extends any, TRawData extends any>(
-        call: IHttpPutQueryCall<TError>,
+    put<TRawData extends any>(
+        call: IHttpPutQueryCall,
         options?: IHttpQueryOptions
     ): Observable<IBaseResponse<TRawData>> {
         // bind callback from axios promise
@@ -73,8 +73,8 @@ export class HttpService implements IHttpService {
         return this.mapAxiosObservable(axiosObservable, options);
     }
 
-    patch<TError extends any, TRawData extends any>(
-        call: IHttpPatchQueryCall<TError>,
+    patch<TRawData extends any>(
+        call: IHttpPatchQueryCall,
         options?: IHttpQueryOptions
     ): Observable<IBaseResponse<TRawData>> {
         // bind callback from axios promise
@@ -84,8 +84,8 @@ export class HttpService implements IHttpService {
         return this.mapAxiosObservable(axiosObservable, options);
     }
 
-    delete<TError extends any, TRawData extends any>(
-        call: IHttpDeleteQueryCall<TError>,
+    delete<TRawData extends any>(
+        call: IHttpDeleteQueryCall,
         options?: IHttpQueryOptions
     ): Observable<IBaseResponse<TRawData>> {
         // bind callback from axios promise
@@ -95,7 +95,7 @@ export class HttpService implements IHttpService {
         return this.mapAxiosObservable(axiosObservable, options);
     }
 
-    private mapAxiosObservable<TRawData, TError>(
+    private mapAxiosObservable<TRawData>(
         axiosObservable: Observable<any>,
         options?: IHttpQueryOptions
     ): Observable<IBaseResponse<TRawData>> {

@@ -28,30 +28,25 @@ export interface IRetryStrategyOptions {
     canRetryError: (error: any) => boolean;
 }
 
-export interface IBaseResponseError<TError extends any> {
-    mappedError: TError;
-    originalError: any;
-}
-
-export interface IHttpQueryCall<TError extends any> {
+export interface IHttpQueryCall {
     url: string;
 }
 
-export interface IHttpPostQueryCall<TError extends any> extends IHttpQueryCall<TError> {
+export interface IHttpPostQueryCall extends IHttpQueryCall {
     body: any;
 }
 
-export interface IHttpPutQueryCall<TError extends any> extends IHttpQueryCall<TError> {
+export interface IHttpPutQueryCall extends IHttpQueryCall {
     body: any;
 }
 
-export interface IHttpPatchQueryCall<TError extends any> extends IHttpQueryCall<TError> {
+export interface IHttpPatchQueryCall extends IHttpQueryCall {
     body: any;
 }
 
-export interface IHttpDeleteQueryCall<TError extends any> extends IHttpQueryCall<TError> {}
+export interface IHttpDeleteQueryCall extends IHttpQueryCall {}
 
-export interface IHttpGetQueryCall<TError extends any> extends IHttpQueryCall<TError> {}
+export interface IHttpGetQueryCall extends IHttpQueryCall {}
 
 export interface IHttpQueryOptions {
     // retry strategy

@@ -29,8 +29,8 @@ export class TestHttpService implements IHttpService {
         Object.assign(this, config);
     }
 
-    get<TError extends any, TRawData extends any>(
-        call: IHttpGetQueryCall<TError>,
+    get<TRawData extends any>(
+        call: IHttpGetQueryCall,
         options?: IHttpQueryOptions
     ): Observable<IBaseResponse<TRawData>> {
         // throw kontent error
@@ -56,8 +56,8 @@ export class TestHttpService implements IHttpService {
         });
     }
 
-    post<TError extends any, TRawData extends any>(
-        call: IHttpPostQueryCall<TError>,
+    post<TRawData extends any>(
+        call: IHttpPostQueryCall,
         options?: IHttpQueryOptions
     ): Observable<IBaseResponse<TRawData>> {
         // throw kontent error
@@ -83,8 +83,8 @@ export class TestHttpService implements IHttpService {
         });
     }
 
-    put<TError extends any, TRawData extends any>(
-        call: IHttpPutQueryCall<TError>,
+    put<TRawData extends any>(
+        call: IHttpPutQueryCall,
         options?: IHttpQueryOptions
     ): Observable<IBaseResponse<TRawData>> {
         // throw kontent error
@@ -110,8 +110,8 @@ export class TestHttpService implements IHttpService {
         });
     }
 
-    patch<TError extends any, TRawData extends any>(
-        call: IHttpPatchQueryCall<TError>,
+    patch<TRawData extends any>(
+        call: IHttpPatchQueryCall,
         options?: IHttpQueryOptions
     ): Observable<IBaseResponse<TRawData>> {
         // throw kontent error
@@ -137,8 +137,8 @@ export class TestHttpService implements IHttpService {
         });
     }
 
-    delete<TError extends any, TRawData extends any>(
-        call: IHttpDeleteQueryCall<TError>,
+    delete<TRawData extends any>(
+        call: IHttpDeleteQueryCall,
         options?: IHttpQueryOptions
     ): Observable<IBaseResponse<TRawData>> {
         // throw kontent error

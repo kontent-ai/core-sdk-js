@@ -43,9 +43,9 @@ export function registerRequestInterceptor(
     );
 }
 
-export function getCallback<TError>(
+export function getCallback(
     instance: AxiosInstance,
-    call: IHttpGetQueryCall<TError>,
+    call: IHttpGetQueryCall,
     options: IHttpQueryOptions | undefined
 ): Promise<IHttpRequestResult<AxiosResponse>> {
     httpDebugger.debugStartHttpRequest();
@@ -58,9 +58,9 @@ export function getCallback<TError>(
     return mapRequestResult(axiosPromise);
 }
 
-export function putCallback<TError>(
+export function putCallback(
     instance: AxiosInstance,
-    call: IHttpPutQueryCall<TError>,
+    call: IHttpPutQueryCall,
     options: IHttpQueryOptions | undefined
 ): Promise<IHttpRequestResult<AxiosResponse>> {
     httpDebugger.debugStartHttpRequest();
@@ -73,9 +73,9 @@ export function putCallback<TError>(
     return mapRequestResult(axiosPromise);
 }
 
-export function patchCallback<TError>(
+export function patchCallback(
     instance: AxiosInstance,
-    call: IHttpPatchQueryCall<TError>,
+    call: IHttpPatchQueryCall,
     options: IHttpQueryOptions | undefined
 ): Promise<IHttpRequestResult<AxiosResponse>> {
     httpDebugger.debugStartHttpRequest();
@@ -88,9 +88,9 @@ export function patchCallback<TError>(
     return mapRequestResult(axiosPromise);
 }
 
-export function deleteCallback<TError>(
+export function deleteCallback(
     instance: AxiosInstance,
-    call: IHttpDeleteQueryCall<TError>,
+    call: IHttpDeleteQueryCall,
     options: IHttpQueryOptions | undefined
 ): Promise<IHttpRequestResult<AxiosResponse>> {
     httpDebugger.debugStartHttpRequest();
@@ -103,9 +103,9 @@ export function deleteCallback<TError>(
     return mapRequestResult(axiosPromise);
 }
 
-export function postCallback<TError>(
+export function postCallback(
     instance: AxiosInstance,
-    call: IHttpPostQueryCall<TError>,
+    call: IHttpPostQueryCall,
     options: IHttpQueryOptions | undefined
 ): Promise<IHttpRequestResult<AxiosResponse>> {
     httpDebugger.debugStartHttpRequest();

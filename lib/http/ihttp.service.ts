@@ -12,28 +12,28 @@ import {
 
 export interface IHttpService {
 
-  post<TError extends any, TRawData extends any>(
-    call: IHttpPostQueryCall<TError>,
+  post<TRawData extends any>(
+    call: IHttpPostQueryCall,
     options?: IHttpQueryOptions
   ): Observable<IBaseResponse<TRawData>>;
 
-  get<TError extends any, TRawData extends any>(
-    call: IHttpGetQueryCall<TError>,
+  get<TRawData extends any>(
+    call: IHttpGetQueryCall,
     options?: IHttpQueryOptions
   ): Observable<IBaseResponse<TRawData>>;
 
-  put<TError extends any, TRawData extends any>(
-    call: IHttpPutQueryCall<TError>,
+  put<TRawData extends any>(
+    call: IHttpPutQueryCall,
     options?: IHttpQueryOptions
   ): Observable<IBaseResponse<TRawData>>;
 
-  patch<TError extends any, TRawData extends any>(
-    call: IHttpPatchQueryCall<TError>,
+  patch<TRawData extends any>(
+    call: IHttpPatchQueryCall,
     options?: IHttpQueryOptions
   ): Observable<IBaseResponse<TRawData>>;
 
-  delete<TError extends any, TRawData extends any>(
-    call: IHttpDeleteQueryCall<TError>,
+  delete<TRawData extends any>(
+    call: IHttpDeleteQueryCall,
     options?: IHttpQueryOptions
   ): Observable<IBaseResponse<TRawData>>;
 }
