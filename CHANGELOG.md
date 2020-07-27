@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [7.0.0](https://github.com/Kentico/kontent-core-js/compare/v6.0.0...v7.0.0) (2020-07-27)
+
+
+### ⚠ BREAKING CHANGES
+
+* removes error mapping from core database. Errors should be mapped in each sdk directly.
+
+### Features
+
+* removes error mapping from core database. Errors should be mapped in each sdk directly. ([b645633](https://github.com/Kentico/kontent-core-js/commit/b645633092893a3254f5c5ec06fad92ad17ea640))
+* udpates dependencies ([325d4ca](https://github.com/Kentico/kontent-core-js/commit/325d4ca8fc28f478aca1cae3c04a4d7cf0cb69d8))
+
 ## [6.0.0](https://github.com///compare/v5.0.1...v6.0.0) (2020-01-07)
 
 
