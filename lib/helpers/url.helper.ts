@@ -11,10 +11,12 @@ export class UrlHelper {
         if (options) {
             options.forEach(filter => {
                 if (url.indexOf('?') > -1) {
-                    url = url + '&' + filter.getParam() + '=' + filter.getParamValue();
+                    url += '&';
                 } else {
-                    url = url + '?' + filter.getParam() + '=' + filter.getParamValue();
+                    url += '?';
                 }
+
+                url += filter.getParam();
             });
         }
         return url;
