@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [7.1.0](https://github.com/Kentico/kontent-core-js/compare/v7.0.2...v7.1.0) (2020-08-25)
+
+
+### Features
+
+* refactors IQueryParameter to allow value-less params + adds tests for urlHelper ([b061e2e](https://github.com/Kentico/kontent-core-js/commit/b061e2e6c4b5a5300e163dcdfc71bff31169c539))
+
 ### [7.0.2](https://github.com/Kentico/kontent-core-js/compare/v7.0.1...v7.0.2) (2020-07-27)
 
 
