@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [7.2.0](https://github.com/Kentico/kontent-core-js/compare/v7.1.0...v7.2.0) (2020-09-25)
+
+
+### Features
+
+* adds 'isAxiosError' configuration option to 'TestHttpService' ([5b55751](https://github.com/Kentico/kontent-core-js/commit/5b557517cf150fd58ce5c801083020e1c3e9dd52))
+
 ## [7.1.0](https://github.com/Kentico/kontent-core-js/compare/v7.0.2...v7.1.0) (2020-08-25)
 
 
