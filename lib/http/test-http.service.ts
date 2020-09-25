@@ -18,11 +18,13 @@ export class TestHttpService implements IHttpService {
     public errorJson: any = undefined;
     public fakeHeaders: IHeader[] = [];
     public fakeStatusCode: number = 200;
+    public isAxiosError?: boolean = false;
 
     constructor(config: {
         fakeStatusCode?: number;
         fakeResponseJson?: any;
         throwError?: boolean;
+        isAxiosError?: boolean;
         errorJson?: any;
         fakeHeaders?: IHeader[];
     }) {
@@ -36,6 +38,7 @@ export class TestHttpService implements IHttpService {
         // throw kontent error
         if (this.throwError) {
             const fakeError = {
+                isAxiosError: this.isAxiosError,
                 response: {
                     data: this.errorJson
                 }
@@ -63,6 +66,7 @@ export class TestHttpService implements IHttpService {
         // throw kontent error
         if (this.throwError) {
             const fakeError = {
+                isAxiosError: this.isAxiosError,
                 response: {
                     data: this.errorJson
                 }
@@ -90,6 +94,7 @@ export class TestHttpService implements IHttpService {
         // throw kontent error
         if (this.throwError) {
             const fakeError = {
+                isAxiosError: this.isAxiosError,
                 response: {
                     data: this.errorJson
                 }
@@ -117,6 +122,7 @@ export class TestHttpService implements IHttpService {
         // throw kontent error
         if (this.throwError) {
             const fakeError = {
+                isAxiosError: this.isAxiosError,
                 response: {
                     data: this.errorJson
                 }
@@ -144,6 +150,7 @@ export class TestHttpService implements IHttpService {
         // throw kontent error
         if (this.throwError) {
             const fakeError = {
+                isAxiosError: this.isAxiosError,
                 response: {
                     data: this.errorJson
                 }
