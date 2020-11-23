@@ -1,3 +1,5 @@
+import { ResponseType } from 'axios';
+
 export interface IBaseResponse<TRawData> {
     data: TRawData;
     headers: IHeader[];
@@ -62,7 +64,7 @@ export interface IHttpQueryOptions {
     /**
      * Response type
      */
-    responseType?: HttpResponseType;
+    responseType?: ResponseType;
 }
 
 export interface IHeader {
@@ -82,59 +84,6 @@ export interface IHttpRequestProfxyConfig {
         username: string;
         password: string;
     };
-}
-
-export type HttpRequestMethod =
-    | 'get'
-    | 'GET'
-    | 'delete'
-    | 'DELETE'
-    | 'head'
-    | 'HEAD'
-    | 'options'
-    | 'OPTIONS'
-    | 'post'
-    | 'POST'
-    | 'put'
-    | 'PUT'
-    | 'patch'
-    | 'PATCH'
-    | 'link'
-    | 'LINK'
-    | 'unlink'
-    | 'UNLINK';
-
-export type HttpResponseType = 'arraybuffer' | 'blob' | 'document' | 'json' | 'text' | 'stream';
-
-export interface IHttpRequestConfig {
-    url?: string;
-    method?: HttpRequestMethod;
-    baseURL?: string;
-    headers?: any;
-    params?: any;
-    paramsSerializer?: (params: any) => string;
-    data?: any;
-    timeout?: number;
-    withCredentials?: boolean;
-    auth?: IHttpRequestCredentials;
-    responseType?: HttpResponseType;
-    xsrfCookieName?: string;
-    xsrfHeaderName?: string;
-    maxContentLength?: number;
-    validateStatus?: (status: number) => boolean;
-    maxRedirects?: number;
-    httpAgent?: any;
-    httpsAgent?: any;
-    proxy?: IHttpRequestProfxyConfig | false;
-}
-
-export interface IHttpRequestResponse {
-    data: any;
-    status: number;
-    statusText: string;
-    headers: any;
-    config: IHttpRequestConfig;
-    request?: any;
 }
 
 export class IHttpRequestResult<TResponse = any> {

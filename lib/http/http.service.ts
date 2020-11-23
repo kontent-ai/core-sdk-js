@@ -12,8 +12,6 @@ import {
     IHttpPostQueryCall,
     IHttpPutQueryCall,
     IHttpQueryOptions,
-    IHttpRequestConfig,
-    IHttpRequestResponse,
     IHttpRequestResult,
 } from './http.models';
 import { IHttpService } from './ihttp.service';
@@ -24,8 +22,8 @@ export class HttpService implements IHttpService {
     private readonly axiosInstance: AxiosInstance;
 
     constructor(opts?: {
-        requestInterceptor?: (config: IHttpRequestConfig) => IHttpRequestConfig;
-        responseInterceptor?: (config: IHttpRequestResponse) => IHttpRequestResponse;
+        requestInterceptor?: (config: AxiosRequestConfig) => AxiosRequestConfig;
+        responseInterceptor?: (config: AxiosResponse<any>) => AxiosResponse<any>;
         axiosRequestConfig?: AxiosRequestConfig;
     }) {
         this.axiosInstance = axios.create(opts && opts.axiosRequestConfig ? opts.axiosRequestConfig : undefined);

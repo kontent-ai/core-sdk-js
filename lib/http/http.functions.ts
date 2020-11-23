@@ -1,4 +1,4 @@
-import { AxiosInstance, AxiosResponse } from 'axios';
+import { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
 
 import { httpDebugger } from './http.debugger';
 import {
@@ -9,14 +9,12 @@ import {
     IHttpPostQueryCall,
     IHttpPutQueryCall,
     IHttpQueryOptions,
-    IHttpRequestConfig,
-    IHttpRequestResponse,
     IHttpRequestResult,
 } from './http.models';
 
 export function registerResponseInterceptor(
     instance: AxiosInstance,
-    interceptor: (response: IHttpRequestResponse) => IHttpRequestResponse
+    interceptor: (response: AxiosResponse<any>) => AxiosResponse<any>
 ) {
     instance.interceptors.response.use(
         response => {
@@ -30,7 +28,7 @@ export function registerResponseInterceptor(
 
 export function registerRequestInterceptor(
     instance: AxiosInstance,
-    interceptor: (config: IHttpRequestConfig) => IHttpRequestConfig
+    interceptor: (config: AxiosRequestConfig) => AxiosRequestConfig
 ) {
     // Add a request interceptor
     instance.interceptors.request.use(
