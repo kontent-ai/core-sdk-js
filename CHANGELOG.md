@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [8.0.0](https://github.com/Kentico/kontent-core-js/compare/v7.2.0...v8.0.0) (2020-11-23)
+
+
+### ⚠ BREAKING CHANGES
+
+* updates all dependecies, uses Axios types directly instead of custom type proxies
+
+### Features
+
+* updates all dependecies, uses Axios types directly instead of custom type proxies ([a9f494c](https://github.com/Kentico/kontent-core-js/commit/a9f494c212f06f6da6ab8edf04fb0cc48120d063))
+
 ## [7.2.0](https://github.com/Kentico/kontent-core-js/compare/v7.1.0...v7.2.0) (2020-09-25)
 
 
