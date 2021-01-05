@@ -54,7 +54,7 @@
     "bundle-stats": "npm run build:umd && webpack-bundle-analyzer _bundles/stats.json"
   },
   "dependencies": {
-    "axios": "0.21.0"
+    "axios": "0.21.1"
   },
   "peerDependencies": {
     "rxjs": "^6.0.0"
