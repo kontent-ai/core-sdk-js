@@ -45,7 +45,7 @@ module.exports = function (config) {
         port: 9669,
         colors: true,
         autoWatch: true,
-        singleRun: false,
+        singleRun: true,
         client: {
             clearContext: false // leave Jasmine Spec Runner output visible in browser
         },
