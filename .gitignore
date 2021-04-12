@@ -5,9 +5,7 @@
 
 # compiled output
 /definitions
-/_commonjs
-/_es2015
-/_bundles
+/dist
 /tmp
 /coverage
 /out-tsc

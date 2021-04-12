@@ -42,10 +42,13 @@
     "check-version": "ts-node ./misc/verify-sdk-version.ts",
     "publish:beta": "npm publish --tag=next",
     "build:umd": "npm run webpack:dev && npm run webpack:prod",
-    "build:es2015": "tsc -m es2015 --outDir _es2015 --p tsconfig.prod.json",
-    "build:commonjs": "tsc -m commonjs --outDir _commonjs --p tsconfig.prod.json",
-    "build:all": "npm run build:umd && npm run build:es2015 && npm run build:commonjs",
-    "bundle-stats": "npm run build:umd && webpack-bundle-analyzer _bundles/stats.json"
+    "build:es6": "tsc -m es6 --outDir dist/_es6 --p tsconfig.prod.json",
+    "build:es2020": "tsc -m es2020 --outDir dist/_es2020 --p tsconfig.prod.json",
+    "build:esnext": "tsc -m esnext --outDir dist/_esnext --p tsconfig.prod.json",
+    "build:commonjs": "tsc -m commonjs --outDir dist/_commonjs --p tsconfig.prod.json",
+    "build:all": "npm run build:umd && npm run build:es6 && npm run build:es2020 && npm run build:esnext && npm run build:commonjs",
+    "bundle-stats:min": "npm run build:umd && webpack-bundle-analyzer dist/_bundles/stats.min.json",
+    "bundle-stats": "npm run build:umd && webpack-bundle-analyzer dist/_bundles/stats.json"
   },
   "dependencies": {
     "axios": "0.21.1"
@@ -75,8 +78,12 @@
     "karma-chrome-launcher": "3.1.0",
     "karma-webpack": "4.0.2",
     "lcov-parse": "1.0.0",
+    "ts-loader": "8.1.0",
     "mocha": "8.2.1",
-    "ts-loader": "8.0.14",
+    "babel-loader": "8.2.2",
+    "@babel/preset-env": "7.13.10",
+    "@babel/core": "7.13.10",
+    "@babel/preset-typescript": "7.13.0",
     "ts-node": "9.1.1",
     "tslint": "6.1.3",
     "url-parse": "1.4.7",

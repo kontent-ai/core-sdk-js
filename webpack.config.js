@@ -2,13 +2,21 @@ const path = require('path');
 const webpack = require('webpack');
 const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 
-const libName = 'kontent-core';
+const isProd = (args) => {
+    return args.mode === 'production'
+}
 
-module.exports = (env, argv) => ({
+const outputFolder = (args) => path.resolve(__dirname, 'dist/_bundles');
+const bundleFilename = (args) => {
+    return 'kontent-core.umd' + (isProd(args) ? '.min.js' : '.js');
+}
+
+module.exports = (env, args) => ({
+    mode: args.mode,
     entry: {
         'index': './lib/index.ts',
     },
-    resolve: { 
+    resolve: {
         extensions: ['.ts', '.js']
     },
     externals: [{
@@ -26,9 +34,8 @@ module.exports = (env, argv) => ({
         },
     }],
     output: {
-        // Puts the output at the root of the dist folder
-        path: path.join(__dirname, '_bundles'),
-        filename: libName + (argv.mode === 'production' ? '.umd.min.js' : '.umd.js'),
+        path: outputFolder(args),
+        filename: bundleFilename(args),
         libraryTarget: 'umd',
         umdNamedDefine: true,
         library: 'kontentCore'
@@ -37,22 +44,28 @@ module.exports = (env, argv) => ({
     module: {
         rules: [
             {
-                test: /\.ts$/, 
+                test: /\.ts$/,
                 loader: 'ts-loader',
                 include: [
-                    path.resolve(__dirname, 'lib'), // library
+                    path.resolve(__dirname, 'lib'),
                 ],
                 options: {
                     configFile: require.resolve('./tsconfig.webpack.json')
                 }
             },
-        ]
-    },
-    performance: { hints: false }, // this disables warning about large output file (in our case its ~300Kb which is fine)
+          {
+            test: /\.js?$/,
+            loader: 'babel-loader',
+          }
+        ],
+      },
+    performance: { hints: 'error' },
     plugins: [
         new BundleAnalyzerPlugin({
             generateStatsFile: true,
-            analyzerMode: 'disabled'
+            analyzerMode: 'json',
+            reportFilename: (isProd(args) ? 'report.min' : 'report') + '.json',
+            statsFilename: (isProd(args) ? 'stats.min' : 'stats') + '.json'
         })
     ]
 });

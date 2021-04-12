@@ -10,6 +10,7 @@
     "experimentalDecorators": true,
     "module": "commonjs",
     "target": "es5",
+    "strict": true,
     "strictNullChecks": true,
     "strictPropertyInitialization": true,
     "resolveJsonModule": true,
@@ -25,7 +26,7 @@
       "./node_modules/@types"
     ],
     "lib": [
-      "es2015",
+      "ESNext",
       "dom"
     ],
     "paths": {
