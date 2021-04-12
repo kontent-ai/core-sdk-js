@@ -3,10 +3,10 @@ const fs = require('fs');
 
 exports.verifySdkVersion = (sdkInfo, versionInPackage) => {
     if (sdkInfo.version !== versionInPackage) {
-        const msg = 'Versions of \'' + sdkInfo.name + '\' SDK don\'t match. Lib version is \'' + sdkInfo.version + '\' while package version is \'' + versionInPackage + '\'. Please make sure to use identical versions.';
+        const msg = 'Versions of \'' + sdkInfo.name + '\' SDK don\'t match. Lib version is \'' + colors.yellow(sdkInfo.version) + '\' while package version is \'' + colors.yellow(versionInPackage) + '\'. Please make sure to use identical versions.';
         throw Error(colors.red(msg));
     } else {
-        console.log(colors.green('Version check successful for \'' + sdkInfo.version + '\' and package \'' + sdkInfo.name + '\''));
+        console.log(colors.green('Version check successful for \'' + colors.yellow(sdkInfo.version) + '\' and package \'' + colors.yellow(sdkInfo.name) + '\''));
     }
 }
 
