@@ -19,20 +19,6 @@ module.exports = (env, args) => ({
     resolve: {
         extensions: ['.ts', '.js']
     },
-    externals: [{
-        'rxjs': {
-            commonjs: 'rxjs',
-            commonjs2: 'rxjs',
-            amd: 'rxjs',
-            root: 'rxjs'
-        },
-        'rxjs/operators': {
-            commonjs: 'rxjs/operators',
-            commonjs2: 'rxjs/operators',
-            amd: 'rxjs/operators',
-            root: ['rxjs', 'operators']
-        },
-    }],
     output: {
         path: outputFolder(args),
         filename: bundleFilename(args),
