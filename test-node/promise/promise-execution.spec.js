@@ -6,12 +6,9 @@ describe('Promise execution under node.js', () => {
     const httpService = new Lib.HttpService();
     let response = null;
 
-    before((done) => {
-        httpService.get({
+    before(async () => {
+        response = await httpService.getAsync({
             url: 'https://deliver.kontent.ai/da5abe9f-fdad-4168-97cd-b3464be2ccb9/items/warrior'
-        })  .subscribe(result => {
-            response = result;
-            done();
         });
     });
 

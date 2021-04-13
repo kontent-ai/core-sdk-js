@@ -1,173 +1,59 @@
-import { Observable, of, throwError } from 'rxjs';
+import { AxiosError } from 'axios';
 
 import {
-    IBaseResponse,
-    IHeader,
+    IResponse,
     IHttpDeleteQueryCall,
     IHttpGetQueryCall,
     IHttpPatchQueryCall,
     IHttpPostQueryCall,
     IHttpPutQueryCall,
-    IHttpQueryOptions,
+    IHttpQueryOptions
 } from './http.models';
 import { IHttpService } from './ihttp.service';
 
 export class TestHttpService implements IHttpService {
-    public throwError: boolean = false;
-    public fakeResponseJson: any = undefined;
-    public errorJson: any = undefined;
-    public fakeHeaders: IHeader[] = [];
-    public fakeStatusCode: number = 200;
-    public isAxiosError?: boolean = false;
+    public genericError?: any;
+    public response?: IResponse<any> = undefined;
+    public axiosError?: AxiosError = undefined;
 
-    constructor(config: {
-        fakeStatusCode?: number;
-        fakeResponseJson?: any;
-        throwError?: boolean;
-        isAxiosError?: boolean;
-        errorJson?: any;
-        fakeHeaders?: IHeader[];
-    }) {
+    constructor(config: { genericError?: any; response?: IResponse<any>; axiosError?: AxiosError }) {
         Object.assign(this, config);
     }
 
-    get<TRawData extends any>(
-        call: IHttpGetQueryCall,
-        options?: IHttpQueryOptions
-    ): Observable<IBaseResponse<TRawData>> {
-        // throw kontent error
-        if (this.throwError) {
-            const fakeError = {
-                isAxiosError: this.isAxiosError,
-                response: {
-                    data: this.errorJson
-                }
-            };
-            return throwError({
-                error: fakeError,
-                headers: this.fakeHeaders,
-                status: this.fakeStatusCode
-            });
-        }
-
-        // return fake response
-        return of(<IBaseResponse<TRawData>>{
-            data: this.fakeResponseJson,
-            response: undefined,
-            headers: this.fakeHeaders,
-            status: this.fakeStatusCode
-        });
+    getAsync<TRawData>(call: IHttpGetQueryCall, options?: IHttpQueryOptions): Promise<IResponse<TRawData>> {
+        return this.resolveTestCall();
     }
 
-    post<TRawData extends any>(
-        call: IHttpPostQueryCall,
-        options?: IHttpQueryOptions
-    ): Observable<IBaseResponse<TRawData>> {
-        // throw kontent error
-        if (this.throwError) {
-            const fakeError = {
-                isAxiosError: this.isAxiosError,
-                response: {
-                    data: this.errorJson
-                }
-            };
-            return throwError({
-                error: fakeError,
-                headers: this.fakeHeaders,
-                status: this.fakeStatusCode
-            });
-        }
-
-        // return fake response
-        return of(<IBaseResponse<TRawData>>{
-            data: this.fakeResponseJson,
-            response: undefined,
-            headers: this.fakeHeaders,
-            status: this.fakeStatusCode
-        });
+    postAsync<TRawData>(call: IHttpPostQueryCall, options?: IHttpQueryOptions): Promise<IResponse<TRawData>> {
+        return this.resolveTestCall();
     }
 
-    put<TRawData extends any>(
-        call: IHttpPutQueryCall,
-        options?: IHttpQueryOptions
-    ): Observable<IBaseResponse<TRawData>> {
-        // throw kontent error
-        if (this.throwError) {
-            const fakeError = {
-                isAxiosError: this.isAxiosError,
-                response: {
-                    data: this.errorJson
-                }
-            };
-            return throwError({
-                error: fakeError,
-                headers: this.fakeHeaders,
-                status: this.fakeStatusCode
-            });
-        }
-
-        // return fake response
-        return of(<IBaseResponse<TRawData>>{
-            data: this.fakeResponseJson,
-            response: undefined,
-            headers: this.fakeHeaders,
-            status: this.fakeStatusCode
-        });
+    putAsync<TRawData>(call: IHttpPutQueryCall, options?: IHttpQueryOptions): Promise<IResponse<TRawData>> {
+        return this.resolveTestCall();
     }
 
-    patch<TRawData extends any>(
-        call: IHttpPatchQueryCall,
-        options?: IHttpQueryOptions
-    ): Observable<IBaseResponse<TRawData>> {
-        // throw kontent error
-        if (this.throwError) {
-            const fakeError = {
-                isAxiosError: this.isAxiosError,
-                response: {
-                    data: this.errorJson
-                }
-            };
-            return throwError({
-                error: fakeError,
-                headers: this.fakeHeaders,
-                status: this.fakeStatusCode
-            });
-        }
-
-        // return fake response
-        return of(<IBaseResponse<TRawData>>{
-            data: this.fakeResponseJson,
-            response: undefined,
-            headers: [],
-            status: this.fakeStatusCode
-        });
+    patchAsync<TRawData>(call: IHttpPatchQueryCall, options?: IHttpQueryOptions): Promise<IResponse<TRawData>> {
+        return this.resolveTestCall();
     }
 
-    delete<TRawData extends any>(
-        call: IHttpDeleteQueryCall,
-        options?: IHttpQueryOptions
-    ): Observable<IBaseResponse<TRawData>> {
-        // throw kontent error
-        if (this.throwError) {
-            const fakeError = {
-                isAxiosError: this.isAxiosError,
-                response: {
-                    data: this.errorJson
-                }
-            };
-            return throwError({
-                error: fakeError,
-                headers: this.fakeHeaders,
-                status: this.fakeStatusCode
-            });
-        }
+    deleteAsync<TRawData>(call: IHttpDeleteQueryCall, options?: IHttpQueryOptions): Promise<IResponse<TRawData>> {
+        return this.resolveTestCall();
+    }
 
-        // return fake response
-        return of(<IBaseResponse<TRawData>>{
-            data: this.fakeResponseJson,
-            response: undefined,
-            headers: this.fakeHeaders,
-            status: this.fakeStatusCode
+    private resolveTestCall(): Promise<IResponse<any>> {
+        const promise = new Promise<IResponse<any>>((resolve, reject) => {
+            if (this.response) {
+                resolve(this.response);
+            }
+            if (this.axiosError) {
+                reject(this.axiosError);
+            }
+            if (this.genericError) {
+                reject(this.genericError);
+            }
+
+            throw Error(`Missing test data`);
         });
+        return promise;
     }
 }

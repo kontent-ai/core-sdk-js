@@ -1,7 +1,5 @@
-import { Observable } from 'rxjs';
-
 import {
-  IBaseResponse,
+  IResponse,
   IHttpDeleteQueryCall,
   IHttpGetQueryCall,
   IHttpPostQueryCall,
@@ -11,29 +9,9 @@ import {
 } from './http.models';
 
 export interface IHttpService {
-
-  post<TRawData extends any>(
-    call: IHttpPostQueryCall,
-    options?: IHttpQueryOptions
-  ): Observable<IBaseResponse<TRawData>>;
-
-  get<TRawData extends any>(
-    call: IHttpGetQueryCall,
-    options?: IHttpQueryOptions
-  ): Observable<IBaseResponse<TRawData>>;
-
-  put<TRawData extends any>(
-    call: IHttpPutQueryCall,
-    options?: IHttpQueryOptions
-  ): Observable<IBaseResponse<TRawData>>;
-
-  patch<TRawData extends any>(
-    call: IHttpPatchQueryCall,
-    options?: IHttpQueryOptions
-  ): Observable<IBaseResponse<TRawData>>;
-
-  delete<TRawData extends any>(
-    call: IHttpDeleteQueryCall,
-    options?: IHttpQueryOptions
-  ): Observable<IBaseResponse<TRawData>>;
+  getAsync<TRawData>(call: IHttpGetQueryCall, options?: IHttpQueryOptions): Promise<IResponse<TRawData>>;
+  postAsync<TRawData>(call: IHttpPostQueryCall, options?: IHttpQueryOptions): Promise<IResponse<TRawData>>;
+  putAsync<TRawData>(call: IHttpPutQueryCall, options?: IHttpQueryOptions): Promise<IResponse<TRawData>>;
+  patchAsync<TRawData>(call: IHttpPatchQueryCall, options?: IHttpQueryOptions): Promise<IResponse<TRawData>>;
+  deleteAsync<TRawData>(call: IHttpDeleteQueryCall, options?: IHttpQueryOptions): Promise<IResponse<TRawData>>;
 }

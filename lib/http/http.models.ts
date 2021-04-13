@@ -1,9 +1,9 @@
-import { ResponseType } from 'axios';
+import { CancelToken, ResponseType } from 'axios';
 
-export interface IBaseResponse<TRawData> {
+export interface IResponse<TRawData> {
     data: TRawData;
     headers: IHeader[];
-    response: any;
+    rawResponse: any;
     status: number;
 }
 
@@ -11,23 +11,19 @@ export interface IRetryStrategyOptions {
     /**
      * back-off interval between retries
      */
-    deltaBackoffMs: number;
-    /**
-     * If the cumulative wait time exceeds this value, the client will stop retrying and return the error to the application.
-     */
-    maxCumulativeWaitTimeMs: number;
+    deltaBackoffMs?: number;
     /**
      * Maximum allowed number of attempts
      */
-    maxAttempts: number;
+    maxAttempts?: number;
     /**
      * Indicates if jitter is added to retry
      */
-    addJitter: boolean;
+    addJitter?: boolean;
     /**
      * Determines if error can be retried. By default only axios errors are retried.
      */
-    canRetryError: (error: any) => boolean;
+    canRetryError?: (error: any) => boolean;
 }
 
 export interface IHttpQueryCall {
@@ -58,35 +54,16 @@ export interface IHttpQueryOptions {
      * */
     headers?: IHeader[];
     /**
-     * Indicates if errors are logged to console
-     */
-    logErrorToConsole?: boolean;
-    /**
      * Response type
      */
     responseType?: ResponseType;
+    /**
+     * Cancel token
+     */
+    cancelToken?: CancelToken;
 }
 
 export interface IHeader {
     header: string;
     value: string;
-}
-
-export interface IHttpRequestCredentials {
-    username: string;
-    password: string;
-}
-
-export interface IHttpRequestProfxyConfig {
-    host: string;
-    port: number;
-    auth?: {
-        username: string;
-        password: string;
-    };
-}
-
-export class IHttpRequestResult<TResponse = any> {
-    response?: TResponse;
-    error?: any;
 }

@@ -8,13 +8,13 @@ export class HttpDebugger {
     /*
     Called when http request is resolved
     */
-    debugResolveHttpRequest(): void {
+    debugSuccessHttpRequest(): void {
     }
 
     /*
-    Called when http request errored out
+    Called when http request is being retried
     */
-    debugFailedHttpRequest(): void {
+    debugRetryHttpRequest(): void {
     }
 }
 

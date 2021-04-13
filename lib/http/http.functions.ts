@@ -1,4 +1,5 @@
-import { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
+import { AxiosInstance } from 'axios';
+import { extractHeadersFromAxiosResponse } from '../helpers/headers-helper';
 
 import { httpDebugger } from './http.debugger';
 import {
@@ -9,123 +10,229 @@ import {
     IHttpPostQueryCall,
     IHttpPutQueryCall,
     IHttpQueryOptions,
-    IHttpRequestResult,
+    IResponse,
+    IRetryStrategyOptions
 } from './http.models';
+import { retryHelper } from '../helpers/retry-helper';
 
-export function registerResponseInterceptor(
-    instance: AxiosInstance,
-    interceptor: (response: AxiosResponse<any>) => AxiosResponse<any>
-) {
-    instance.interceptors.response.use(
-        response => {
-            return interceptor(response);
-        },
-        error => {
-            return Promise.reject(error);
-        }
-    );
-}
-
-export function registerRequestInterceptor(
-    instance: AxiosInstance,
-    interceptor: (config: AxiosRequestConfig) => AxiosRequestConfig
-) {
-    // Add a request interceptor
-    instance.interceptors.request.use(
-        config => {
-            return interceptor(config);
-        },
-        error => {
-            return Promise.reject(error);
-        }
-    );
-}
-
-export function getCallback(
+export async function getWithRetryAsync<TRawData>(
     instance: AxiosInstance,
     call: IHttpGetQueryCall,
-    options: IHttpQueryOptions | undefined
-): Promise<IHttpRequestResult<AxiosResponse>> {
-    httpDebugger.debugStartHttpRequest();
+    options?: IHttpQueryOptions
+): Promise<IResponse<TRawData>> {
+    return await runWithRetryAsync<TRawData>({
+        retryAttempt: 0,
+        url: call.url,
+        retryStrategy: options?.retryStrategy ?? retryHelper.defaultRetryStrategy,
+        call: async () => {
+            httpDebugger.debugStartHttpRequest();
 
-    const axiosPromise = instance.get(call.url, {
-        headers: getHeadersJson(options && options.headers ? options.headers : [], false),
-        responseType: options && options.responseType ? options.responseType : undefined
+            const axiosResponse = await instance.get<TRawData>(call.url, {
+                headers: getHeadersJson(options?.headers ?? [], false),
+                responseType: options?.responseType,
+                cancelToken: options?.cancelToken
+            });
+
+            const response: IResponse<TRawData> = {
+                data: axiosResponse.data,
+                rawResponse: axiosResponse,
+                headers: extractHeadersFromAxiosResponse(axiosResponse),
+                status: axiosResponse.status
+            };
+
+            httpDebugger.debugSuccessHttpRequest();
+            return response;
+        }
     });
-
-    return mapRequestResult(axiosPromise);
 }
 
-export function putCallback(
-    instance: AxiosInstance,
-    call: IHttpPutQueryCall,
-    options: IHttpQueryOptions | undefined
-): Promise<IHttpRequestResult<AxiosResponse>> {
-    httpDebugger.debugStartHttpRequest();
-
-    const axiosPromise = instance.put(call.url, call.body, {
-        headers: getHeadersJson(options && options.headers ? options.headers : [], true),
-        responseType: options && options.responseType ? options.responseType : undefined
-    });
-
-    return mapRequestResult(axiosPromise);
-}
-
-export function patchCallback(
-    instance: AxiosInstance,
-    call: IHttpPatchQueryCall,
-    options: IHttpQueryOptions | undefined
-): Promise<IHttpRequestResult<AxiosResponse>> {
-    httpDebugger.debugStartHttpRequest();
-
-    const axiosPromise = instance.patch(call.url, call.body, {
-        headers: getHeadersJson(options && options.headers ? options.headers : [], true),
-        responseType: options && options.responseType ? options.responseType : undefined
-    });
-
-    return mapRequestResult(axiosPromise);
-}
-
-export function deleteCallback(
-    instance: AxiosInstance,
-    call: IHttpDeleteQueryCall,
-    options: IHttpQueryOptions | undefined
-): Promise<IHttpRequestResult<AxiosResponse>> {
-    httpDebugger.debugStartHttpRequest();
-
-    const axiosPromise = instance.delete(call.url, {
-        headers: getHeadersJson(options && options.headers ? options.headers : [], true),
-        responseType: options && options.responseType ? options.responseType : undefined
-    });
-
-    return mapRequestResult(axiosPromise);
-}
-
-export function postCallback(
+export async function postWithRetryAsync<TRawData>(
     instance: AxiosInstance,
     call: IHttpPostQueryCall,
-    options: IHttpQueryOptions | undefined
-): Promise<IHttpRequestResult<AxiosResponse>> {
-    httpDebugger.debugStartHttpRequest();
+    options?: IHttpQueryOptions
+): Promise<IResponse<TRawData>> {
+    return await runWithRetryAsync<TRawData>({
+        retryAttempt: 0,
+        url: call.url,
+        retryStrategy: options?.retryStrategy ?? retryHelper.defaultRetryStrategy,
+        call: async () => {
+            httpDebugger.debugStartHttpRequest();
 
-    const axiosPromise = instance.post(call.url, call.body, {
-        headers: getHeadersJson(options && options.headers ? options.headers : [], true),
-        responseType: options && options.responseType ? options.responseType : undefined
+            const axiosResponse = await instance.post<TRawData>(call.url, call.body, {
+                headers: getHeadersJson(options?.headers ?? [], false),
+                responseType: options?.responseType,
+                // required for uploading large files
+                // https://github.com/axios/axios/issues/1362
+                maxContentLength: 'Infinity' as any,
+                maxBodyLength: 'Infinity' as any,
+                cancelToken: options?.cancelToken
+            });
+
+            const response: IResponse<TRawData> = {
+                data: axiosResponse.data,
+                rawResponse: axiosResponse,
+                headers: extractHeadersFromAxiosResponse(axiosResponse),
+                status: axiosResponse.status
+            };
+
+            httpDebugger.debugSuccessHttpRequest();
+            return response;
+        }
     });
-
-    return mapRequestResult(axiosPromise);
 }
 
+export async function putWithRetryAsync<TRawData>(
+    instance: AxiosInstance,
+    call: IHttpPutQueryCall,
+    options?: IHttpQueryOptions
+): Promise<IResponse<TRawData>> {
+    return await runWithRetryAsync<TRawData>({
+        retryAttempt: 0,
+        url: call.url,
+        retryStrategy: options?.retryStrategy ?? retryHelper.defaultRetryStrategy,
+        call: async () => {
+            httpDebugger.debugStartHttpRequest();
+
+            const axiosResponse = await instance.put<TRawData>(call.url, call.body, {
+                headers: getHeadersJson(options?.headers ?? [], false),
+                responseType: options?.responseType,
+                // required for uploading large files
+                // https://github.com/axios/axios/issues/1362
+                maxContentLength: 'Infinity' as any,
+                maxBodyLength: 'Infinity' as any,
+                cancelToken: options?.cancelToken
+            });
+
+            const response: IResponse<TRawData> = {
+                data: axiosResponse.data,
+                rawResponse: axiosResponse,
+                headers: extractHeadersFromAxiosResponse(axiosResponse),
+                status: axiosResponse.status
+            };
+
+            httpDebugger.debugSuccessHttpRequest();
+            return response;
+        }
+    });
+}
+
+export async function patchWithRetryAsync<TRawData>(
+    instance: AxiosInstance,
+    call: IHttpPatchQueryCall,
+    options?: IHttpQueryOptions
+): Promise<IResponse<TRawData>> {
+    return await runWithRetryAsync<TRawData>({
+        retryAttempt: 0,
+        url: call.url,
+        retryStrategy: options?.retryStrategy ?? retryHelper.defaultRetryStrategy,
+        call: async () => {
+            httpDebugger.debugStartHttpRequest();
+
+            const axiosResponse = await instance.patch<TRawData>(call.url, call.body, {
+                headers: getHeadersJson(options?.headers ?? [], false),
+                responseType: options?.responseType,
+                // required for uploading large files
+                // https://github.com/axios/axios/issues/1362
+                maxContentLength: 'Infinity' as any,
+                maxBodyLength: 'Infinity' as any,
+                cancelToken: options?.cancelToken
+            });
+
+            const response: IResponse<TRawData> = {
+                data: axiosResponse.data,
+                rawResponse: axiosResponse,
+                headers: extractHeadersFromAxiosResponse(axiosResponse),
+                status: axiosResponse.status
+            };
+
+            httpDebugger.debugSuccessHttpRequest();
+            return response;
+        }
+    });
+}
+
+export async function deletehWithRetryAsync<TRawData>(
+    instance: AxiosInstance,
+    call: IHttpDeleteQueryCall,
+    options?: IHttpQueryOptions
+): Promise<IResponse<TRawData>> {
+    return await runWithRetryAsync<TRawData>({
+        retryAttempt: 0,
+        url: call.url,
+        retryStrategy: options?.retryStrategy ?? retryHelper.defaultRetryStrategy,
+        call: async () => {
+            httpDebugger.debugStartHttpRequest();
+
+            const axiosResponse = await instance.delete<TRawData>(call.url, {
+                headers: getHeadersJson(options?.headers ?? [], false),
+                responseType: options?.responseType,
+                // required for uploading large files
+                // https://github.com/axios/axios/issues/1362
+                maxContentLength: 'Infinity' as any,
+                maxBodyLength: 'Infinity' as any,
+                cancelToken: options?.cancelToken
+            });
+
+            const response: IResponse<TRawData> = {
+                data: axiosResponse.data,
+                rawResponse: axiosResponse,
+                headers: extractHeadersFromAxiosResponse(axiosResponse),
+                status: axiosResponse.status
+            };
+
+            httpDebugger.debugSuccessHttpRequest();
+            return response;
+        }
+    });
+}
+
+async function runWithRetryAsync<TRawData>(data: {
+    url: string;
+    retryAttempt: number;
+    call: () => Promise<IResponse<TRawData>>;
+    retryStrategy: IRetryStrategyOptions;
+}): Promise<IResponse<TRawData>> {
+    try {
+        return await data.call();
+    } catch (error) {
+        const retryResult = retryHelper.getRetryErrorResult({
+            error: error,
+            retryAttempt: data.retryAttempt,
+            retryStrategy: data.retryStrategy
+        });
+
+        if (retryResult.canRetry) {
+            httpDebugger.debugRetryHttpRequest();
+
+            console.warn(`Attempt '${data.retryAttempt}': retrying in '${retryResult.retryInMs}ms'`);
+
+            // wait time before retrying
+            await new Promise((resolve) => setTimeout(resolve, retryResult.retryInMs));
+
+            // retry request
+            await runWithRetryAsync({
+                call: data.call,
+                retryStrategy: data.retryStrategy,
+                retryAttempt: data.retryAttempt + 1,
+                url: data.url
+            });
+        }
+
+        console.error(`Executing '${data.url}' failed. Request was retried '${data.retryAttempt}' times. `, error);
+
+        throw error;
+    }
+}
 function getHeadersJson(headers: IHeader[], addContentTypeHeader: boolean): { [header: string]: string } {
     const headerJson: { [header: string]: string } = {};
 
-    headers.forEach(header => {
+    headers.forEach((header) => {
         headerJson[header.header] = header.value;
     });
 
     if (addContentTypeHeader) {
         // add default content type header if not present
-        const contentTypeHeader = headers.find(m => m.header.toLowerCase() === 'Content-Type'.toLowerCase());
+        const contentTypeHeader = headers.find((m) => m.header.toLowerCase() === 'Content-Type'.toLowerCase());
 
         if (!contentTypeHeader) {
             headerJson['Content-Type'] = 'application/json';
@@ -133,19 +240,4 @@ function getHeadersJson(headers: IHeader[], addContentTypeHeader: boolean): { [h
     }
 
     return headerJson;
-}
-
-function mapRequestResult(promise: Promise<AxiosResponse<any>>): Promise<IHttpRequestResult<AxiosResponse>> {
-    return promise.then(response => {
-        httpDebugger.debugResolveHttpRequest();
-        return <IHttpRequestResult<AxiosResponse>>{
-            response: response
-        };
-    },
-    error => {
-        httpDebugger.debugFailedHttpRequest();
-        return <IHttpRequestResult<AxiosResponse>>{
-            error: error
-        };
-    });
 }

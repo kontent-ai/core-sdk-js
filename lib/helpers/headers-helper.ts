@@ -1,5 +1,5 @@
 import { AxiosResponse } from 'axios';
-import { IHeader } from './http.models';
+import { IHeader } from '../http/http.models';
 
 export function extractHeadersFromAxiosResponse(response: AxiosResponse): IHeader[] {
     const headers: IHeader[] = [];
