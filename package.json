@@ -16,8 +16,9 @@
   "engines": {
     "node": ">= 8"
   },
-  "main": "./_commonjs/index.js",
-  "types": "./_commonjs/index.d.ts",
+  "main": "./dist/_bundles/kontent-core.umd.min.js",
+  "module": "./dist/es6/index.js",
+  "types": "../dist/es6/index.d.ts",
   "standard-version": {
     "scripts": {
       "postchangelog": "npm run set-sdk-version"
