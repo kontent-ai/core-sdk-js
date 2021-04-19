@@ -1,4 +1,4 @@
-import { IResponse, TestHttpService } from '../../lib';
+import { IResponse, TestHttpService } from '../../../lib';
 
 describe('Test http service - fail', async () => {
     const responseJsonData: any = {

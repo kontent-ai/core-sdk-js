@@ -1,5 +1,5 @@
 import { AxiosResponse } from 'axios';
-import { HttpService, httpDebugger, IResponse } from '../../lib';
+import { HttpService, httpDebugger, IResponse } from '../../../lib';
 
 describe('Execute get request - success', async () => {
     const httpService = new HttpService();

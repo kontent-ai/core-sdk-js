@@ -1,4 +1,4 @@
-import { HttpService, httpDebugger } from '../../lib';
+import { HttpService, httpDebugger } from '../../../lib';
 
 describe('Execute get request - cancel', () => {
     const httpService = new HttpService();

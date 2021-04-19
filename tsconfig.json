@@ -32,8 +32,7 @@
   },
   "include": [
     "lib/**/*",
-    "test-node/**/*",
-    "test-browser/**/*"
+    "test/**/*",
   ],
   "exclude": [
     "node_modules"

@@ -1,29 +1,16 @@
-import { HttpService, httpDebugger } from '../../lib';
-
-function getDeltabackoffTotalTime(retryAttempts: number, deltaBackoffMs: number): number {
-    let totalTime: number = 0;
-    let cumulativeBackoff: number = deltaBackoffMs;
-
-    for (let i = 1; i <= retryAttempts; i++) {
-        if (i === 1) {
-            totalTime = deltaBackoffMs;
-        } else {
-            totalTime += (cumulativeBackoff * 2);
-            cumulativeBackoff = cumulativeBackoff * 2;
-        }
-    }
-
-    return totalTime;
-}
+import { getDeltabackoffTotalTime } from '../../shared/test.shared';
+import { HttpService, httpDebugger } from '../../../lib';
 
 describe('Execute get request - fail', () => {
+    jasmine.DEFAULT_TIMEOUT_INTERVAL = 30000;
+
     const httpService = new HttpService();
     let error: any;
     const deltaBackoffMs: number = 500;
     const retryAttempts: number = 3;
 
     const cumulativeWaitTimeMin: number = getDeltabackoffTotalTime(retryAttempts, deltaBackoffMs);
-    const cumulativeWaitTimeMax: number = cumulativeWaitTimeMin + 2000; // add 2 second for handling http requests
+    const cumulativeWaitTimeMax: number = cumulativeWaitTimeMin + 6000; // add seconds as a buffer for handling http requests
 
     let executionTime: number = 0;
 
@@ -50,10 +37,10 @@ describe('Execute get request - fail', () => {
             );
         } catch (err) {
             error = err;
-
-            const timerB = performance.now();
-            executionTime = (timerB - timerA);
         }
+
+        const timerB = performance.now();
+        executionTime = timerB - timerA;
     });
 
     it(`Error should preserve error message`, () => {

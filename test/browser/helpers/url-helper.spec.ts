@@ -1,4 +1,4 @@
-import { IQueryParameter, urlHelper } from '../../lib';
+import { IQueryParameter, urlHelper } from '../../../lib';
 
 describe('Url helper', () => {
 

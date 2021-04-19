@@ -1,4 +1,4 @@
-import { TestHttpService } from '../../lib';
+import { TestHttpService } from '../../../lib';
 
 describe('Test http service - success', () => {
     const inputError: Error = {

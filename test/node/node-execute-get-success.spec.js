@@ -1,7 +1,7 @@
 const assert = require('assert');
 const Lib = require('../../dist/_commonjs');
 
-describe('Promise execution under node.js', () => {
+describe('Node execute get request - success', () => {
 
     const httpService = new Lib.HttpService();
     let response = null;
