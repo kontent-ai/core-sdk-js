@@ -1,4 +1,4 @@
-import { getDeltabackoffTotalTime } from '../../shared/test.shared';
+import { getDeltabackoffTotalTime } from '../shared/test.shared';
 import { HttpService, httpDebugger } from '../../../lib';
 
 describe('Execute get request - fail', () => {
