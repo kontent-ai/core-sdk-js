@@ -1,7 +1,7 @@
 import { AxiosResponse } from 'axios';
 import { HttpService, httpDebugger, IResponse } from '../../lib';
 
-describe('Execute get request and retry', () => {
+describe('Execute get request - success', () => {
     const httpService = new HttpService();
     let response: IResponse<any>;
 
