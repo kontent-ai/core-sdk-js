@@ -1,4 +1,4 @@
-import { CancelToken, ResponseType } from 'axios';
+import { ResponseType } from 'axios';
 
 export interface IResponse<TRawData> {
     data: TRawData;
@@ -46,7 +46,12 @@ export interface IHttpDeleteQueryCall extends IHttpQueryCall {}
 
 export interface IHttpGetQueryCall extends IHttpQueryCall {}
 
-export interface IHttpQueryOptions {
+export interface IHttpCancelRequestToken<TCancelToken> {
+    token: TCancelToken;
+    cancel: (cancelMessage?: string) => void;
+}
+
+export interface IHttpQueryOptions<TCancelToken> {
     /**
      * retry strategy
      */
@@ -62,7 +67,7 @@ export interface IHttpQueryOptions {
     /**
      * Cancel token
      */
-    cancelToken?: CancelToken;
+    cancelToken?: IHttpCancelRequestToken<TCancelToken>;
 }
 
 export interface IHeader {

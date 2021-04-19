@@ -5,11 +5,12 @@ import {
     IHttpPatchQueryCall,
     IHttpPostQueryCall,
     IHttpPutQueryCall,
-    IHttpQueryOptions
+    IHttpQueryOptions,
+    IHttpCancelRequestToken
 } from './http.models';
 import { IHttpService } from './ihttp.service';
 
-export class TestHttpService implements IHttpService {
+export class TestHttpService implements IHttpService<undefined> {
     public response?: IResponse<any> = undefined;
     public error?: any = undefined;
 
@@ -17,24 +18,40 @@ export class TestHttpService implements IHttpService {
         Object.assign(this, config);
     }
 
-    getAsync<TRawData>(call: IHttpGetQueryCall, options?: IHttpQueryOptions): Promise<IResponse<TRawData>> {
+    getAsync<TRawData>(call: IHttpGetQueryCall, options?: IHttpQueryOptions<undefined>): Promise<IResponse<TRawData>> {
         return this.resolveTestCall();
     }
 
-    postAsync<TRawData>(call: IHttpPostQueryCall, options?: IHttpQueryOptions): Promise<IResponse<TRawData>> {
+    postAsync<TRawData>(
+        call: IHttpPostQueryCall,
+        options?: IHttpQueryOptions<undefined>
+    ): Promise<IResponse<TRawData>> {
         return this.resolveTestCall();
     }
 
-    putAsync<TRawData>(call: IHttpPutQueryCall, options?: IHttpQueryOptions): Promise<IResponse<TRawData>> {
+    putAsync<TRawData>(call: IHttpPutQueryCall, options?: IHttpQueryOptions<undefined>): Promise<IResponse<TRawData>> {
         return this.resolveTestCall();
     }
 
-    patchAsync<TRawData>(call: IHttpPatchQueryCall, options?: IHttpQueryOptions): Promise<IResponse<TRawData>> {
+    patchAsync<TRawData>(
+        call: IHttpPatchQueryCall,
+        options?: IHttpQueryOptions<undefined>
+    ): Promise<IResponse<TRawData>> {
         return this.resolveTestCall();
     }
 
-    deleteAsync<TRawData>(call: IHttpDeleteQueryCall, options?: IHttpQueryOptions): Promise<IResponse<TRawData>> {
+    deleteAsync<TRawData>(
+        call: IHttpDeleteQueryCall,
+        options?: IHttpQueryOptions<undefined>
+    ): Promise<IResponse<TRawData>> {
         return this.resolveTestCall();
+    }
+
+    createCancelToken(): IHttpCancelRequestToken<undefined> {
+        return {
+            cancel: () => {},
+            token: undefined
+        };
     }
 
     private resolveTestCall(): Promise<IResponse<any>> {

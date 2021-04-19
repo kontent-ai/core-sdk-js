@@ -4,6 +4,7 @@ import { extractHeadersFromAxiosResponse } from './headers-helper';
 import { IHeader, IRetryStrategyOptions } from '../http/http.models';
 
 export class RetryHelper {
+    public readonly requestCancelledMessagePrefix: string = 'Request cancelled';
     public readonly retryAfterHeaderName: string = 'Retry-After';
     public readonly defaultRetryStatusCodes: number[] = [408, 429, 500, 502, 503, 504];
     public readonly defaultRetryStrategy = {
@@ -21,6 +22,16 @@ export class RetryHelper {
         retryInMs: number;
         canRetry: boolean;
     } {
+        if (data.error && data.error.message) {
+            if ((<string>data.error.message).startsWith(this.requestCancelledMessagePrefix)) {
+                // request was cancelled by user, do not retry it
+                return {
+                    canRetry: false,
+                    retryInMs: 0
+                };
+            }
+        }
+
         const canRetryError: boolean = data.retryStrategy.canRetryError
             ? data.retryStrategy.canRetryError(data.error)
             : this.defaultRetryStrategy.canRetryError(data.error);

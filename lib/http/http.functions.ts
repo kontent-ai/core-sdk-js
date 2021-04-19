@@ -1,8 +1,9 @@
-import { AxiosInstance } from 'axios';
+import axios, { AxiosInstance, Canceler, CancelToken } from 'axios';
 import { extractHeadersFromAxiosResponse } from '../helpers/headers-helper';
 
 import { httpDebugger } from './http.debugger';
 import {
+    IHttpCancelRequestToken,
     IHeader,
     IHttpDeleteQueryCall,
     IHttpGetQueryCall,
@@ -15,10 +16,11 @@ import {
 } from './http.models';
 import { retryHelper } from '../helpers/retry-helper';
 
+
 export async function getWithRetryAsync<TRawData>(
     instance: AxiosInstance,
     call: IHttpGetQueryCall,
-    options?: IHttpQueryOptions
+    options?: IHttpQueryOptions<CancelToken>
 ): Promise<IResponse<TRawData>> {
     return await runWithRetryAsync<TRawData>({
         retryAttempt: 0,
@@ -30,7 +32,7 @@ export async function getWithRetryAsync<TRawData>(
             const axiosResponse = await instance.get<TRawData>(call.url, {
                 headers: getHeadersJson(options?.headers ?? [], false),
                 responseType: options?.responseType,
-                cancelToken: options?.cancelToken
+                cancelToken: options?.cancelToken?.token
             });
 
             const response: IResponse<TRawData> = {
@@ -49,7 +51,7 @@ export async function getWithRetryAsync<TRawData>(
 export async function postWithRetryAsync<TRawData>(
     instance: AxiosInstance,
     call: IHttpPostQueryCall,
-    options?: IHttpQueryOptions
+    options?: IHttpQueryOptions<CancelToken>
 ): Promise<IResponse<TRawData>> {
     return await runWithRetryAsync<TRawData>({
         retryAttempt: 0,
@@ -65,7 +67,7 @@ export async function postWithRetryAsync<TRawData>(
                 // https://github.com/axios/axios/issues/1362
                 maxContentLength: 'Infinity' as any,
                 maxBodyLength: 'Infinity' as any,
-                cancelToken: options?.cancelToken
+                cancelToken: options?.cancelToken?.token
             });
 
             const response: IResponse<TRawData> = {
@@ -84,7 +86,7 @@ export async function postWithRetryAsync<TRawData>(
 export async function putWithRetryAsync<TRawData>(
     instance: AxiosInstance,
     call: IHttpPutQueryCall,
-    options?: IHttpQueryOptions
+    options?: IHttpQueryOptions<CancelToken>
 ): Promise<IResponse<TRawData>> {
     return await runWithRetryAsync<TRawData>({
         retryAttempt: 0,
@@ -100,7 +102,7 @@ export async function putWithRetryAsync<TRawData>(
                 // https://github.com/axios/axios/issues/1362
                 maxContentLength: 'Infinity' as any,
                 maxBodyLength: 'Infinity' as any,
-                cancelToken: options?.cancelToken
+                cancelToken: options?.cancelToken?.token
             });
 
             const response: IResponse<TRawData> = {
@@ -119,7 +121,7 @@ export async function putWithRetryAsync<TRawData>(
 export async function patchWithRetryAsync<TRawData>(
     instance: AxiosInstance,
     call: IHttpPatchQueryCall,
-    options?: IHttpQueryOptions
+    options?: IHttpQueryOptions<CancelToken>
 ): Promise<IResponse<TRawData>> {
     return await runWithRetryAsync<TRawData>({
         retryAttempt: 0,
@@ -135,7 +137,7 @@ export async function patchWithRetryAsync<TRawData>(
                 // https://github.com/axios/axios/issues/1362
                 maxContentLength: 'Infinity' as any,
                 maxBodyLength: 'Infinity' as any,
-                cancelToken: options?.cancelToken
+                cancelToken: options?.cancelToken?.token
             });
 
             const response: IResponse<TRawData> = {
@@ -154,7 +156,7 @@ export async function patchWithRetryAsync<TRawData>(
 export async function deletehWithRetryAsync<TRawData>(
     instance: AxiosInstance,
     call: IHttpDeleteQueryCall,
-    options?: IHttpQueryOptions
+    options?: IHttpQueryOptions<CancelToken>
 ): Promise<IResponse<TRawData>> {
     return await runWithRetryAsync<TRawData>({
         retryAttempt: 0,
@@ -170,7 +172,7 @@ export async function deletehWithRetryAsync<TRawData>(
                 // https://github.com/axios/axios/issues/1362
                 maxContentLength: 'Infinity' as any,
                 maxBodyLength: 'Infinity' as any,
-                cancelToken: options?.cancelToken
+                cancelToken: options?.cancelToken?.token
             });
 
             const response: IResponse<TRawData> = {
@@ -184,6 +186,20 @@ export async function deletehWithRetryAsync<TRawData>(
             return response;
         }
     });
+}
+
+export function createCancelToken(): IHttpCancelRequestToken<CancelToken> {
+    let canceler: Canceler;
+
+    const token = new axios.CancelToken((c) => {
+        // An executor function receives a cancel function as a parameter
+        canceler = c;
+    });
+
+    return {
+        cancel: (cancelMessage) => canceler(`${retryHelper.requestCancelledMessagePrefix}: ${cancelMessage ?? 'User cancel'}`),
+        token: token
+    };
 }
 
 async function runWithRetryAsync<TRawData>(data: {
@@ -223,6 +239,7 @@ async function runWithRetryAsync<TRawData>(data: {
         throw error;
     }
 }
+
 function getHeadersJson(headers: IHeader[], addContentTypeHeader: boolean): { [header: string]: string } {
     const headerJson: { [header: string]: string } = {};
 
