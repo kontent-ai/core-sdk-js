@@ -204,7 +204,7 @@ async function runWithRetryAsync<TRawData>(data: {
         if (retryResult.canRetry) {
             httpDebugger.debugRetryHttpRequest();
 
-            console.warn(`Attempt '${data.retryAttempt}': retrying in '${retryResult.retryInMs}ms'`);
+            console.warn(`Attempt '${data.retryAttempt + 1}': retrying in '${retryResult.retryInMs}ms'`);
 
             // wait time before retrying
             await new Promise((resolve) => setTimeout(resolve, retryResult.retryInMs));
