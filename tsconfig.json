@@ -9,7 +9,7 @@
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "module": "commonjs",
-    "target": "es5",
+    "target": "es6",
     "strict": true,
     "strictNullChecks": true,
     "strictPropertyInitialization": true,
@@ -28,12 +28,7 @@
     "lib": [
       "ESNext",
       "dom"
-    ],
-    "paths": {
-      "rxjs": [
-        "./node_modules/rxjs"
-      ]
-    }
+    ]
   },
   "include": [
     "lib/**/*",

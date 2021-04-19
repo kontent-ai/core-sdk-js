@@ -38,11 +38,7 @@ module.exports = (env, args) => ({
                 options: {
                     configFile: require.resolve('./tsconfig.webpack.json')
                 }
-            },
-          {
-            test: /\.js?$/,
-            loader: 'babel-loader',
-          }
+            }
         ],
       },
     performance: { hints: 'error' },
