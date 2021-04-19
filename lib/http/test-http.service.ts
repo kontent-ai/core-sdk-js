@@ -1,5 +1,3 @@
-import { AxiosError } from 'axios';
-
 import {
     IResponse,
     IHttpDeleteQueryCall,
@@ -12,11 +10,10 @@ import {
 import { IHttpService } from './ihttp.service';
 
 export class TestHttpService implements IHttpService {
-    public genericError?: any;
     public response?: IResponse<any> = undefined;
-    public axiosError?: AxiosError = undefined;
+    public error?: any = undefined;
 
-    constructor(config: { genericError?: any; response?: IResponse<any>; axiosError?: AxiosError }) {
+    constructor(config: { response?: IResponse<any>; error?: any }) {
         Object.assign(this, config);
     }
 
@@ -45,11 +42,8 @@ export class TestHttpService implements IHttpService {
             if (this.response) {
                 resolve(this.response);
             }
-            if (this.axiosError) {
-                reject(this.axiosError);
-            }
-            if (this.genericError) {
-                reject(this.genericError);
+            if (this.error) {
+                reject(this.error);
             }
 
             throw Error(`Missing test data`);

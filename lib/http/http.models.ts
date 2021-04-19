@@ -47,11 +47,13 @@ export interface IHttpDeleteQueryCall extends IHttpQueryCall {}
 export interface IHttpGetQueryCall extends IHttpQueryCall {}
 
 export interface IHttpQueryOptions {
-    // retry strategy
+    /**
+     * retry strategy
+     */
     retryStrategy?: IRetryStrategyOptions;
     /**
      * Request headers
-     * */
+     */
     headers?: IHeader[];
     /**
      * Response type

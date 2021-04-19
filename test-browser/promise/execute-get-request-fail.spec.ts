@@ -16,14 +16,14 @@ function getDeltabackoffTotalTime(retryAttempts: number, deltaBackoffMs: number)
     return totalTime;
 }
 
-describe('Execute get request - failure', () => {
+describe('Execute get request - fail', () => {
     const httpService = new HttpService();
     let error: any;
     const deltaBackoffMs: number = 500;
     const retryAttempts: number = 3;
 
     const cumulativeWaitTimeMin: number = getDeltabackoffTotalTime(retryAttempts, deltaBackoffMs);
-    const cumulativeWaitTimeMax: number = cumulativeWaitTimeMin + 250;
+    const cumulativeWaitTimeMax: number = cumulativeWaitTimeMin + 2000; // add 2 second for handling http requests
 
     let executionTime: number = 0;
 
