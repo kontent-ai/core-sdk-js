@@ -62,8 +62,8 @@ describe('Execute get request - fail', () => {
 
     it(`Request should success and debug methods called`, () => {
         expect(httpDebugger.debugSuccessHttpRequest).toHaveBeenCalledTimes(0);
-        expect(httpDebugger.debugStartHttpRequest).toHaveBeenCalledTimes(4);
-        expect(httpDebugger.debugRetryHttpRequest).toHaveBeenCalledTimes(3);
+        expect(httpDebugger.debugStartHttpRequest).toHaveBeenCalledTimes(retryAttempts + 1);
+        expect(httpDebugger.debugRetryHttpRequest).toHaveBeenCalledTimes(retryAttempts);
     });
 
     it(`Retry wait time should be between '${cumulativeWaitTimeMin}' and '${cumulativeWaitTimeMax}' ms `, () => {
