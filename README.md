@@ -14,7 +14,19 @@ This package contains core functionality used by dependant Kentico Kontent sdks 
 
 # Testing
 
-If you want to inject testing service as an implementation of [IHttpService](lib/http/ihttp.service.ts), it is possible to use configurable [Kentico Kontent JS SDK Test Http Service](https://www.npmjs.com/package/kentico-kontent-js-sdk-test-http-service).
+If you want to inject testing service as an implementation of [IHttpService](lib/http/ihttp.service.ts), it is possible to use configurable [Test Http Service](lib/http/test-http.service.ts).
+
+```js
+import { TestHttpService } from '@kentico/kontent-core';
+
+const client = new /*(Delivery/Management)*/Client() {
+    // ...
+    httpService: new TestHttpService({
+        fakeResponseJson: json,
+        throwError: false
+    });
+}
+```
 
 
 
