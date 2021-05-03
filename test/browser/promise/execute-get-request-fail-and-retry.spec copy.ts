@@ -1,7 +1,7 @@
 import { getDeltabackoffTotalTime } from '../shared/test.shared';
 import { HttpService, httpDebugger } from '../../../lib';
 
-describe('Execute get request - fail', () => {
+describe('Execute get request - fail and retry', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = 30000;
 
     const httpService = new HttpService();
@@ -47,7 +47,7 @@ describe('Execute get request - fail', () => {
         expect(error.toString()).toContain('Request failed with status code 404');
     });
 
-    it(`Request should success and debug methods called`, () => {
+    it(`Debug methods should be called proper number of times`, () => {
         expect(httpDebugger.debugSuccessHttpRequest).toHaveBeenCalledTimes(0);
         expect(httpDebugger.debugStartHttpRequest).toHaveBeenCalledTimes(retryAttempts + 1);
         expect(httpDebugger.debugRetryHttpRequest).toHaveBeenCalledTimes(retryAttempts);

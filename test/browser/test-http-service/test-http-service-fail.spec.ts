@@ -9,7 +9,11 @@ describe('Test http service - fail', async () => {
         data: responseJsonData,
         headers: [],
         rawResponse: {},
-        status: 200
+        status: 200,
+        retryStrategy: {
+            options: {},
+            retryAttempts: 0
+        }
     };
 
     const httpService = new TestHttpService({

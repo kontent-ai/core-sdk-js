@@ -1,8 +1,8 @@
 import { IQueryParameter, urlHelper } from '../../../lib';
 
-describe('Url helper', () => {
+describe('Default retry strategy verification', () => {
 
-    it(`Url has correct parameters `, () => {
+    it(`Verified default parameters`, () => {
         const params: IQueryParameter[] = [
             {
                 getParam: () => 'x=1'

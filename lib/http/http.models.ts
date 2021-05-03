@@ -1,10 +1,16 @@
 import { ResponseType } from 'axios';
 
+export interface IResponseRetryStrategyResult {
+    options: IRetryStrategyOptions;
+    retryAttempts: number;
+}
+
 export interface IResponse<TRawData> {
     data: TRawData;
     headers: IHeader[];
     rawResponse: any;
     status: number;
+    retryStrategy: IResponseRetryStrategyResult;
 }
 
 export interface IRetryStrategyOptions {

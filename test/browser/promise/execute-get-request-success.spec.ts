@@ -21,7 +21,7 @@ describe('Execute get request - success', async () => {
         expect(httpDebugger.debugRetryHttpRequest).toHaveBeenCalledTimes(0);
     });
 
-    it(`Request reseponse data should be correct`, () => {
+    it(`Request response data should be correct`, () => {
         expect(response.status).toEqual(200);
         expect(response.headers).toEqual(jasmine.any(Array));
         expect(response.headers.length).toBeGreaterThan(0);
@@ -36,5 +36,14 @@ describe('Execute get request - success', async () => {
             (m) => m.header.toLowerCase() === 'x-stale-content'.toLowerCase()
         );
         expect(staleContentHeader?.value).toEqual('0');
+    });
+
+    it(`Verifies default retry strategy configuration`, () => {
+        expect(response.retryStrategy.options.addJitter).toEqual(true);
+        expect(response.retryStrategy.options.canRetryError).toBeDefined();
+        expect(response.retryStrategy.options.deltaBackoffMs).toEqual(1000);
+        expect(response.retryStrategy.options.maxAttempts).toEqual(5);
+
+        expect(response.retryStrategy.retryAttempts).toEqual(0);
     });
 });

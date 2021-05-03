@@ -33,6 +33,7 @@ describe('Execute get request - cancel', () => {
                 done();
             });
 
+            // cancel request right away
             cancelToken.cancel(cancelMessage);
     });
 
