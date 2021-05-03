@@ -2,7 +2,7 @@ const assert = require('assert');
 const {
     performance
 } = require('perf_hooks');
-const Lib = require('../../dist/_commonjs');
+const Lib = require('../../dist/cjs');
 
 
 function getDeltabackoffTotalTime(retryAttempts, deltaBackoffMs) {

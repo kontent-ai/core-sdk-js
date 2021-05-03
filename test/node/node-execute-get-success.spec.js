@@ -1,5 +1,5 @@
 const assert = require('assert');
-const Lib = require('../../dist/_commonjs');
+const Lib = require('../../dist/cjs');
 
 describe('Node execute get request - success', () => {
 
