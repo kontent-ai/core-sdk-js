@@ -1,6 +1,9 @@
 {
-  "extends": "./tsconfig.prod.json",
+  "extends": "./tsconfig.json",
   "compilerOptions": {
     "declaration": false
-  }
+  },
+  "include": [
+    "lib/**/*"
+  ]
 }
