@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [9.0.0](https://github.com/Kentico/kontent-core-js/compare/v8.1.0...v9.0.0) (2021-06-09)
+
+
+### Features
+
+* adds retry strategy details to response, adds more tests ([a8c2008](https://github.com/Kentico/kontent-core-js/commit/a8c2008638524c354be98643218626a3d244a3f5))
+* adds support for cancelling requests via custom proxy cancel token ([2c48113](https://github.com/Kentico/kontent-core-js/commit/2c4811367111c0bdecae4615d5796b73c9287924))
+* improves TestHttpService & adds http service spec ([9534ca5](https://github.com/Kentico/kontent-core-js/commit/9534ca5bb9e320f3d766ce9b64c933f1ad0914d3))
+* refactors http service to use async & promises, removes rxjs dependency, reworks retry strategy ([fc11a6f](https://github.com/Kentico/kontent-core-js/commit/fc11a6fae557ce2a112fc237faa24edb344e99ba))
+* updates deps ([d4f4c2a](https://github.com/Kentico/kontent-core-js/commit/d4f4c2a38d808898ff3984530c031cd3d2703030))
+
+
+### Bug Fixes
+
+* cjs script ([ede96c2](https://github.com/Kentico/kontent-core-js/commit/ede96c2cc55d70468212fb69332a8be6fd8770dc))
+* fixes path to cjs module ([e0570b3](https://github.com/Kentico/kontent-core-js/commit/e0570b3fd5c3c7bf0e3166eb642f78980d3fb3e1))
+* fixes retry attempt index in console ([83e053d](https://github.com/Kentico/kontent-core-js/commit/83e053db21a4871741e980de2166d68b08f50946))
+
 ## [8.1.0](https://github.com/Kentico/kontent-core-js/compare/v8.0.0...v8.1.0) (2021-01-08)
 
 
