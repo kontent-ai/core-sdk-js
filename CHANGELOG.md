@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [9.0.1](https://github.com/Kentico/kontent-core-js/compare/v9.0.0...v9.0.1) (2021-06-15)
+
+
+### Bug Fixes
+
+* fixes retry strategy return value, adds console info message when retrying request ([ab229f2](https://github.com/Kentico/kontent-core-js/commit/ab229f273ed2bd6c4982b94240c23000503078c2))
+
 ## [9.0.0](https://github.com/Kentico/kontent-core-js/compare/v8.1.0...v9.0.0) (2021-06-09)
 
 
