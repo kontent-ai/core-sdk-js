@@ -250,13 +250,13 @@ async function runWithRetryAsync<TRawData>(data: {
         if (retryResult.canRetry) {
             httpDebugger.debugRetryHttpRequest();
 
-            console.warn(`Attempt '${data.retryAttempt + 1}': retrying in '${retryResult.retryInMs}ms'`);
-
             // wait time before retrying
             await new Promise((resolve) => setTimeout(resolve, retryResult.retryInMs));
 
             // retry request
-            await runWithRetryAsync({
+            console.warn(`Retry attempt '${data.retryAttempt + 1}' from a maximum of '${retryResult.maxRetries}' retries. Request url: '${data.url}'`);
+
+            return await runWithRetryAsync({
                 call: data.call,
                 retryStrategy: data.retryStrategy,
                 retryAttempt: data.retryAttempt + 1,

@@ -21,13 +21,15 @@ export class RetryHelper {
     }): {
         retryInMs: number;
         canRetry: boolean;
+        maxRetries: number;
     } {
         if (data.error && data.error.message) {
             if ((<string>data.error.message).startsWith(this.requestCancelledMessagePrefix)) {
                 // request was cancelled by user, do not retry it
                 return {
                     canRetry: false,
-                    retryInMs: 0
+                    retryInMs: 0,
+                    maxRetries: 0
                 };
             }
         }
@@ -40,18 +42,22 @@ export class RetryHelper {
             // request cannot be retried
             return {
                 canRetry: false,
-                retryInMs: 0
+                retryInMs: 0,
+                maxRetries: 0
             };
         }
 
+        const maxRetries: number = (data.retryStrategy.maxAttempts ?? this.defaultRetryStrategy.maxAttempts);
+
         const maxRetriesReached: boolean =
-            data.retryAttempt >= (data.retryStrategy.maxAttempts ?? this.defaultRetryStrategy.maxAttempts);
+            data.retryAttempt >= maxRetries;
 
         if (maxRetriesReached) {
             // request cannot be retried anymore due to maximum attempts
             return {
                 canRetry: false,
-                retryInMs: 0
+                retryInMs: 0,
+                maxRetries: maxRetries
             };
         }
         // get wait time
@@ -61,7 +67,8 @@ export class RetryHelper {
             // retry after header was provided
             return {
                 canRetry: true,
-                retryInMs: retryResult
+                retryInMs: retryResult,
+                maxRetries: maxRetries
             };
         }
 
@@ -74,7 +81,8 @@ export class RetryHelper {
 
         return {
             canRetry: true,
-            retryInMs: waitTimeMs
+            retryInMs: waitTimeMs,
+            maxRetries: maxRetries
         };
     }
 
@@ -125,6 +133,8 @@ export class RetryHelper {
 
         const statusCode: number = this.getStatusCodeFromError(error);
         const canRetryStatusCode: boolean = this.canRetryStatusCode(statusCode, this.defaultRetryStatusCodes);
+
+        console.log('STATUS', statusCode, canRetryStatusCode);
 
         if (canRetryStatusCode) {
             return true;
