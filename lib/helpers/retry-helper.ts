@@ -134,8 +134,6 @@ export class RetryHelper {
         const statusCode: number = this.getStatusCodeFromError(error);
         const canRetryStatusCode: boolean = this.canRetryStatusCode(statusCode, this.defaultRetryStatusCodes);
 
-        console.log('STATUS', statusCode, canRetryStatusCode);
-
         if (canRetryStatusCode) {
             return true;
         }
