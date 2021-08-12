@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [9.1.0](https://github.com/Kentico/kontent-core-js/compare/v9.0.1...v9.1.0) (2021-08-12)
+
+
+### Features
+
+* updates dependencies ([2e62c07](https://github.com/Kentico/kontent-core-js/commit/2e62c077691c828e600dd69e32d2969b2cd75137))
+
+
+### Bug Fixes
+
+* removes console log used for test purposes ([bcb70d9](https://github.com/Kentico/kontent-core-js/commit/bcb70d90aa393a83b49e72e7e3363ae6b32cff68))
+
 ### [9.0.1](https://github.com/Kentico/kontent-core-js/compare/v9.0.0...v9.0.1) (2021-06-15)
 
 
