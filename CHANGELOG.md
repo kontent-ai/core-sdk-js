@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [9.3.0](https://github.com/Kentico/kontent-core-js/compare/v9.2.0...v9.3.0) (2021-11-02)
+
+
+### Features
+
+* adds ability to turn of error logging to console ([535fddc](https://github.com/Kentico/kontent-core-js/commit/535fddc3aefcecc9296625dec6383ac48175a6e0))
+
 ## [9.2.0](https://github.com/Kentico/kontent-core-js/compare/v9.1.0...v9.2.0) (2021-09-24)
 
 
