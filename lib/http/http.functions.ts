@@ -16,10 +16,14 @@ import {
 } from './http.models';
 import { retryHelper } from '../helpers/retry-helper';
 
+export interface IHttpFunctionsConfig {
+    logErrorsToConsole: boolean;
+}
 
 export async function getWithRetryAsync<TRawData>(
     instance: AxiosInstance,
     call: IHttpGetQueryCall,
+    functionsConfig: IHttpFunctionsConfig,
     options?: IHttpQueryOptions<CancelToken>
 ): Promise<IResponse<TRawData>> {
     const retryStrategyOptions = options?.retryStrategy ?? retryHelper.defaultRetryStrategy;
@@ -28,6 +32,7 @@ export async function getWithRetryAsync<TRawData>(
         retryAttempt: 0,
         url: call.url,
         retryStrategy: retryStrategyOptions,
+        functionsConfig: functionsConfig,
         call: async (retryAttempt) => {
             httpDebugger.debugStartHttpRequest();
 
@@ -57,6 +62,7 @@ export async function getWithRetryAsync<TRawData>(
 export async function postWithRetryAsync<TRawData>(
     instance: AxiosInstance,
     call: IHttpPostQueryCall,
+    functionsConfig: IHttpFunctionsConfig,
     options?: IHttpQueryOptions<CancelToken>
 ): Promise<IResponse<TRawData>> {
     const retryStrategyOptions = options?.retryStrategy ?? retryHelper.defaultRetryStrategy;
@@ -65,6 +71,7 @@ export async function postWithRetryAsync<TRawData>(
         retryAttempt: 0,
         url: call.url,
         retryStrategy: retryStrategyOptions,
+        functionsConfig: functionsConfig,
         call: async (retryAttempt) => {
             httpDebugger.debugStartHttpRequest();
 
@@ -98,6 +105,7 @@ export async function postWithRetryAsync<TRawData>(
 export async function putWithRetryAsync<TRawData>(
     instance: AxiosInstance,
     call: IHttpPutQueryCall,
+    functionsConfig: IHttpFunctionsConfig,
     options?: IHttpQueryOptions<CancelToken>
 ): Promise<IResponse<TRawData>> {
     const retryStrategyOptions = options?.retryStrategy ?? retryHelper.defaultRetryStrategy;
@@ -106,6 +114,7 @@ export async function putWithRetryAsync<TRawData>(
         retryAttempt: 0,
         url: call.url,
         retryStrategy: retryStrategyOptions,
+        functionsConfig: functionsConfig,
         call: async (retryAttempt) => {
             httpDebugger.debugStartHttpRequest();
 
@@ -139,6 +148,7 @@ export async function putWithRetryAsync<TRawData>(
 export async function patchWithRetryAsync<TRawData>(
     instance: AxiosInstance,
     call: IHttpPatchQueryCall,
+    functionsConfig: IHttpFunctionsConfig,
     options?: IHttpQueryOptions<CancelToken>
 ): Promise<IResponse<TRawData>> {
     const retryStrategyOptions = options?.retryStrategy ?? retryHelper.defaultRetryStrategy;
@@ -147,6 +157,7 @@ export async function patchWithRetryAsync<TRawData>(
         retryAttempt: 0,
         url: call.url,
         retryStrategy: retryStrategyOptions,
+        functionsConfig: functionsConfig,
         call: async (retryAttempt) => {
             httpDebugger.debugStartHttpRequest();
 
@@ -180,6 +191,7 @@ export async function patchWithRetryAsync<TRawData>(
 export async function deletehWithRetryAsync<TRawData>(
     instance: AxiosInstance,
     call: IHttpDeleteQueryCall,
+    functionsConfig: IHttpFunctionsConfig,
     options?: IHttpQueryOptions<CancelToken>
 ): Promise<IResponse<TRawData>> {
     const retryStrategyOptions = options?.retryStrategy ?? retryHelper.defaultRetryStrategy;
@@ -188,6 +200,7 @@ export async function deletehWithRetryAsync<TRawData>(
         retryAttempt: 0,
         url: call.url,
         retryStrategy: retryStrategyOptions,
+        functionsConfig: functionsConfig,
         call: async (retryAttempt) => {
             httpDebugger.debugStartHttpRequest();
 
@@ -227,7 +240,8 @@ export function createCancelToken(): IHttpCancelRequestToken<CancelToken> {
     });
 
     return {
-        cancel: (cancelMessage) => canceler(`${retryHelper.requestCancelledMessagePrefix}: ${cancelMessage ?? 'User cancel'}`),
+        cancel: (cancelMessage) =>
+            canceler(`${retryHelper.requestCancelledMessagePrefix}: ${cancelMessage ?? 'User cancel'}`),
         token: token
     };
 }
@@ -237,6 +251,7 @@ async function runWithRetryAsync<TRawData>(data: {
     retryAttempt: number;
     call: (retryAttempt: number) => Promise<IResponse<TRawData>>;
     retryStrategy: IRetryStrategyOptions;
+    functionsConfig: IHttpFunctionsConfig;
 }): Promise<IResponse<TRawData>> {
     try {
         return await data.call(data.retryAttempt);
@@ -254,17 +269,24 @@ async function runWithRetryAsync<TRawData>(data: {
             await new Promise((resolve) => setTimeout(resolve, retryResult.retryInMs));
 
             // retry request
-            console.warn(`Retry attempt '${data.retryAttempt + 1}' from a maximum of '${retryResult.maxRetries}' retries. Request url: '${data.url}'`);
+            console.warn(
+                `Retry attempt '${data.retryAttempt + 1}' from a maximum of '${
+                    retryResult.maxRetries
+                }' retries. Request url: '${data.url}'`
+            );
 
             return await runWithRetryAsync({
                 call: data.call,
                 retryStrategy: data.retryStrategy,
                 retryAttempt: data.retryAttempt + 1,
-                url: data.url
+                url: data.url,
+                functionsConfig: data.functionsConfig
             });
         }
 
-        console.error(`Executing '${data.url}' failed. Request was retried '${data.retryAttempt}' times. `, error);
+        if (data.functionsConfig.logErrorsToConsole) {
+            console.error(`Executing '${data.url}' failed. Request was retried '${data.retryAttempt}' times. `, error);
+        }
 
         throw error;
     }
