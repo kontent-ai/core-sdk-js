@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [8.2.0](https://github.com/Kentico/kontent-core-js/compare/v8.1.0...v8.2.0) (2021-11-29)
+
+
+### Features
+
+* updates deps ([9cda5d1](https://github.com/Kentico/kontent-core-js/commit/9cda5d15d44f686dc1d00b945ac2f7b4229f61da))
+
 ## [8.1.0](https://github.com/Kentico/kontent-core-js/compare/v8.0.0...v8.1.0) (2021-01-08)
 
 
