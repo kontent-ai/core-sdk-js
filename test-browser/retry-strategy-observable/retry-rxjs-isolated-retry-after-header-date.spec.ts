@@ -21,12 +21,21 @@ describe('Retry Rxjs - retry after header in date format', () => {
         const error: any = {
             originalError: <AxiosError>{
                 response: {
+                    config: {} as any,
+                    data: {} as any,
+                    statusText: 'z',
                     status: 429,
                     headers: {
                         'Retry-After': retryAfterDate.toUTCString()
                     }
                 },
-                isAxiosError: true
+                isAxiosError: true,
+                config: {} as any,
+                name: 'x',
+                message: 'y',
+                toJSON: () => {
+                    return {};
+                }
             }
         };
 

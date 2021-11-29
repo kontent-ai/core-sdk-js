@@ -17,12 +17,21 @@ describe('Retry Rxjs - retry after header in seconds format', () => {
         const error: any = {
             originalError: <AxiosError>{
                 response: {
+                    config: {} as any,
+                    data: {} as any,
+                    statusText: 'z',
                     status: 429,
                     headers: {
                         'Retry-After': '1'
                     }
                 },
-                isAxiosError: true
+                isAxiosError: true,
+                config: {} as any,
+                name: 'x',
+                message: 'y',
+                toJSON: () => {
+                    return {};
+                }
             }
         };
 
