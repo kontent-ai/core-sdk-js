@@ -17,8 +17,8 @@
     "node": ">= 8"
   },
   "main": "./dist/cjs/index.js",
-  "module": "./dist/esm5/index.js",
-  "es2015": "./dist/esm/index.js",
+  "module": "./dist/es5/index.js",
+  "es2015": "./dist/es2015/index.js",
   "types": "./dist/cjs/index.d.ts",
   "standard-version": {
     "scripts": {
