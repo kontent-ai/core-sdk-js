@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [9.5.0](https://github.com/Kentico/kontent-core-js/compare/v9.4.0...v9.5.0) (2022-03-23)
+
+
+### Features
+
+* updates all deps ([ae2232c](https://github.com/Kentico/kontent-core-js/commit/ae2232cb4dfeb11ba76b3cd82fd67180610ae001))
+
 ## [9.4.0](https://github.com/Kentico/kontent-core-js/compare/v9.3.0...v9.4.0) (2021-11-29)
 
 
