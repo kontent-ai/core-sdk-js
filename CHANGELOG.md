@@ -2,6 +2,8 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [10.0.0-0](https://github.com/kontent-ai/kontent-core-js/compare/v9.5.0...v10.0.0-0) (2022-07-14)
+
 ## [9.5.0](https://github.com/Kentico/kontent-core-js/compare/v9.4.0...v9.5.0) (2022-03-23)
 
 
