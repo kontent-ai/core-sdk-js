@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file. See [standa
 
 ## [10.0.0](https://github.com/kontent-ai/kontent-core-js/compare/v10.0.0-0...v10.0.0) (2022-07-14)
 
+* This release reflects only new Kontent-ai branding and no code changes.
+
 ## [10.0.0-0](https://github.com/kontent-ai/kontent-core-js/compare/v9.5.0...v10.0.0-0) (2022-07-14)
 
 ## [9.5.0](https://github.com/Kentico/kontent-core-js/compare/v9.4.0...v9.5.0) (2022-03-23)
