@@ -1,11 +1,10 @@
 
-[![npm version](https://badge.fury.io/js/%40kentico%2Fkontent-core.svg)](https://badge.fury.io/js/%40kentico%2Fkontent-core)
-[![Build & Test](https://github.com/Kentico/kontent-core-js/actions/workflows/integrate.yml/badge.svg)](https://github.com/Kentico/kontent-core-js/actions/workflows/integrate.yml)
+[![npm version](https://badge.fury.io/js/@kontent-ai/core-sdk.svg)](https://badge.fury.io/js/@kontent-ai/core-sdk)
+[![Build & Test](https://github.com/kontent-ai/core-sdk-js/actions/workflows/integrate.yml/badge.svg)](https://github.com/kontent-ai/core-sdk-js/actions/workflows/integrate.yml)
 [![npm](https://img.shields.io/npm/dt/@kontent-ai/core-sdk.svg)](https://www.npmjs.com/package/@kontent-ai/core-sdk)
-[![Known Vulnerabilities](https://snyk.io/test/github/Kentico/kontent-core-js/badge.svg)](https://snyk.io/test/github/kentico/kontent-core-js)
-[![GitHub license](https://img.shields.io/github/license/Kentico/kontent-core-js.svg)](https://github.com/Kentico/kontent-core-js)
+[![Known Vulnerabilities](https://snyk.io/test/github/Kontent-ai/core-sdk-js/badge.svg)](https://snyk.io/test/github/kontent-ai/core-sdk-js)
+[![GitHub license](https://img.shields.io/github/license/Kontent-ai/core-sdk-js.svg)](https://github.com/kontent-ai/core-sdk-js)
 [![](https://data.jsdelivr.com/v1/package/npm/@kontent-ai/core-sdk/badge)](https://www.jsdelivr.com/package/npm/@kontent-ai/core-sdk)
-
 
 # Core package
 
