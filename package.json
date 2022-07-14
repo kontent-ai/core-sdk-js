@@ -28,6 +28,9 @@
   },
   "scripts": {
     "release": "standard-version",
+    "release:major": "npm run ts-lint:check && standard-version --release-as major",
+    "release:major:beta": "npm run ts-lint:check && standard-version --prerelease --release-as major",
+    "release:beta": "standard-version --prerelease",
     "ts-lint:fix": "tslint --project ./tsconfig.json --fix",
     "ts-lint:check": "tslint --project ./tsconfig.json",
     "test:node": "npm run build:cjs && mocha -- \"test/node/**/*.js\" --timeout 15000",
