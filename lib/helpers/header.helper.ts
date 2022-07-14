@@ -10,7 +10,7 @@ export class HeaderHelper {
     private readonly sdkVersionHeader: string = 'X-KC-SDKID';
 
     /**
-    * Header identifying SDK type & version for internal purposes of Kentico
+    * Header identifying SDK type & version for internal purposes of Kontent.ai
     */
     getSdkIdHeader(info: ISDKInfo): IHeader {
         return {

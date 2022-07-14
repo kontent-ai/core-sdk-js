@@ -188,7 +188,7 @@ export async function patchWithRetryAsync<TRawData>(
     });
 }
 
-export async function deletehWithRetryAsync<TRawData>(
+export async function deleteWithRetryAsync<TRawData>(
     instance: AxiosInstance,
     call: IHttpDeleteQueryCall,
     functionsConfig: IHttpFunctionsConfig,

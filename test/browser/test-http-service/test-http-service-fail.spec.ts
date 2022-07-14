@@ -1,6 +1,6 @@
 import { IResponse, TestHttpService } from '../../../lib';
 
-describe('Test http service - fail', async () => {
+describe('Test http service - fail empty url', async () => {
     const responseJsonData: any = {
         customData: true
     };
@@ -32,3 +32,4 @@ describe('Test http service - fail', async () => {
         expect(response).toEqual(inputResponse);
     });
 });
+

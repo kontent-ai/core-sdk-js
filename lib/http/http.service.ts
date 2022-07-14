@@ -71,7 +71,7 @@ export class HttpService implements IHttpService<CancelToken> {
         call: IHttpDeleteQueryCall,
         options?: IHttpQueryOptions<CancelToken>
     ): Promise<IResponse<TRawData>> {
-        return await HttpFunctions.deletehWithRetryAsync<TRawData>(
+        return await HttpFunctions.deleteWithRetryAsync<TRawData>(
             this.axiosInstance,
             call,
             this.functionsConfig,
