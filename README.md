@@ -1,5 +1,5 @@
 
-[![npm version](https://badge.fury.io/js//%40kontent-ai%2Fcore-sdk.svg)](https://badge.fury.io/js/@kontent-ai/core-sdk)
+[![npm version](https://badge.fury.io/js//%40kontent-ai%2Fcore-sdk.svg)](https://www.npmjs.com/package/@kontent-ai/core-sdk)
 [![Build & Test](https://github.com/kontent-ai/core-sdk-js/actions/workflows/integrate.yml/badge.svg)](https://github.com/kontent-ai/core-sdk-js/actions/workflows/integrate.yml)
 [![npm](https://img.shields.io/npm/dt/@kontent-ai/core-sdk.svg)](https://www.npmjs.com/package/@kontent-ai/core-sdk)
 [![Known Vulnerabilities](https://snyk.io/test/github/Kontent-ai/core-sdk-js/badge.svg)](https://snyk.io/test/github/kontent-ai/core-sdk-js)
