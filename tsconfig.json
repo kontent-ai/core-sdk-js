@@ -8,7 +8,8 @@
     "moduleResolution": "node",
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
-    "target": "esnext",
+    "module": "commonjs",
+    "target": "es6",
     "strict": true,
     "strictNullChecks": true,
     "strictPropertyInitialization": true,
@@ -25,7 +26,7 @@
       "./node_modules/@types"
     ],
     "lib": [
-      "esnext",
+      "ESNext",
       "dom"
     ]
   },

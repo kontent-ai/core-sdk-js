@@ -2,8 +2,5 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "declaration": false
-  },
-  "include": [
-    "lib/**/*"
-  ]
+  }
 }
