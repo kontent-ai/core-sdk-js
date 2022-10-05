@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [10.1.0](https://github.com/kontent-ai/kontent-core-js/compare/v10.0.0...v10.1.0) (2022-10-05)
+
+
+### Features
+
+* use es6 instead of es5 ([623efc2](https://github.com/kontent-ai/kontent-core-js/commit/623efc245b19a1d31d2aa381ed03a9d104824582))
+
 ## [10.0.0](https://github.com/kontent-ai/kontent-core-js/compare/v10.0.0-0...v10.0.0) (2022-07-14)
 
 * This release reflects only new Kontent-ai branding and no code changes.
