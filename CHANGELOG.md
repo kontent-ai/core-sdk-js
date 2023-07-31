@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [10.2.0](https://github.com/kontent-ai/kontent-core-js/compare/v10.1.1...v10.2.0) (2023-07-31)
+
+
+### Features
+
+* updates all deps, migrates to eslint from tslint, removes some unused code ([2774c16](https://github.com/kontent-ai/kontent-core-js/commit/2774c16952e30640cad01d3940ba5acd94372536))
+
 ### [10.1.1](https://github.com/kontent-ai/kontent-core-js/compare/v10.1.0...v10.1.1) (2022-10-05)
 
 ## [10.1.0](https://github.com/kontent-ai/kontent-core-js/compare/v10.0.0...v10.1.0) (2022-10-05)
