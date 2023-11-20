@@ -1,6 +1,6 @@
 {
     "name": "@kontent-ai/core-sdk",
-    "version": "10.3.0",
+    "version": "10.3.1",
     "repository": {
         "type": "git",
         "url": "https://github.com/kontent-ai/kontent-core-js"
