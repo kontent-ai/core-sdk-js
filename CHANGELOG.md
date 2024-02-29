@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [10.4.0](https://github.com/kontent-ai/kontent-core-js/compare/v10.3.1...v10.4.0) (2024-02-29)
+
+
+### Features
+
+* updates deps ([e88baec](https://github.com/kontent-ai/kontent-core-js/commit/e88baec76d955ab4ea238252a9932079c486a7bb))
+
+
+### Bug Fixes
+
+* do not log warning into console if logErrorsToConsole is disabled ([51f0639](https://github.com/kontent-ai/kontent-core-js/commit/51f063999875cada3f7ca542790e32f382f1f9c3))
+
 ### [10.3.1](https://github.com/kontent-ai/kontent-core-js/compare/v10.3.0...v10.3.1) (2023-11-20)
 
 ## [10.3.0](https://github.com/kontent-ai/kontent-core-js/compare/v10.2.0...v10.3.0) (2023-11-16)
