@@ -59,9 +59,9 @@
     },
     "devDependencies": {
         "@types/jasmine": "5.1.4",
-        "@types/node": "20.11.22",
+        "@types/node": "20.12.7",
         "colors": "1.4.0",
-        "core-js": "3.36.0",
+        "core-js": "3.37.0",
         "jasmine-core": "5.1.2",
         "jasmine-spec-reporter": "7.0.0",
         "karma": "6.4.3",
@@ -73,16 +73,16 @@
         "karma-typescript": "5.5.4",
         "karma-typescript-es6-transform": "5.5.4",
         "karma-webpack": "5.0.1",
-        "mocha": "10.3.0",
+        "mocha": "10.4.0",
         "standard-version": "9.5.0",
         "ts-loader": "9.5.1",
         "ts-node": "10.9.2",
-        "@typescript-eslint/eslint-plugin": "7.1.0",
-        "@typescript-eslint/parser": "7.1.0",
+        "@typescript-eslint/eslint-plugin": "7.7.1",
+        "@typescript-eslint/parser": "7.7.1",
         "eslint": "8.57.0",
         "typescript": "5.2.2",
-        "webpack": "5.90.3",
-        "webpack-bundle-analyzer": "4.10.1",
+        "webpack": "5.91.0",
+        "webpack-bundle-analyzer": "4.10.2",
         "webpack-cli": "5.1.4"
     }
 }
