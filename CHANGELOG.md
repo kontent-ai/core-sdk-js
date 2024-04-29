@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [10.5.0](https://github.com/kontent-ai/kontent-core-js/compare/v10.4.0...v10.5.0) (2024-04-29)
+
+
+### Features
+
+* updates deps ([73bfe88](https://github.com/kontent-ai/kontent-core-js/commit/73bfe88574ce5c43cfbac01251751bb8c7819183))
+
+
+### Bug Fixes
+
+* upgrade axios from 1.6.7 to 1.6.8 ([#34](https://github.com/kontent-ai/kontent-core-js/issues/34)) ([ef6904f](https://github.com/kontent-ai/kontent-core-js/commit/ef6904fb27b13c89f2a559452e3e552b8aec5c09))
+
 ## [10.4.0](https://github.com/kontent-ai/kontent-core-js/compare/v10.3.1...v10.4.0) (2024-02-29)
 
 
