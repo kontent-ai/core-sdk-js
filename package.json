@@ -15,7 +15,7 @@
         "Kontent SDK Core"
     ],
     "engines": {
-        "node": ">= 8"
+        "node": ">= 18"
     },
     "main": "./dist/cjs/index.js",
     "module": "./dist/es6/index.js",
@@ -40,7 +40,7 @@
         "new-patch": "npm version patch && npm run set-sdk-version && npm run check-version",
         "new-minor": "npm version minor && npm run set-sdk-version && npm run check-version",
         "new-major": "npm version major && npm run set-sdk-version && npm run check-version",
-        "prepublishOnly": "npm run lint:check && npm run check-version && npm run build:all && npm run test:all",
+        "prepublishOnly": "npm run lint:check && npm run check-version && npm run build:all && npm run test:all && npm run push:tags",
         "webpack:dev": "webpack --mode development --config webpack.config.js --progress",
         "webpack:prod": "webpack  --mode production --config webpack.config.js --progress",
         "set-sdk-version": "node ./misc/set-sdk-version.js",
@@ -52,7 +52,8 @@
         "build:commonjs": "tsc -m commonjs --outDir dist/cjs --p tsconfig.prod.json",
         "build:all": "npm run build:umd && npm run build:es6 && npm run build:esnext && npm run build:commonjs",
         "bundle-stats:min": "npm run build:umd && webpack-bundle-analyzer dist/_bundles/stats.min.json",
-        "bundle-stats": "npm run build:umd && webpack-bundle-analyzer dist/_bundles/stats.json"
+        "bundle-stats": "npm run build:umd && webpack-bundle-analyzer dist/_bundles/stats.json",
+        "push:tags": "git push --tags"
     },
     "dependencies": {
         "axios": "1.6.8"
