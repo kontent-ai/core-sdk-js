@@ -50,10 +50,11 @@
         "build:es6": "tsc -m es6 --outDir dist/es6 --p tsconfig.prod.json",
         "build:esnext": "tsc -m esnext --outDir dist/esnext --p tsconfig.prod.json",
         "build:commonjs": "tsc -m commonjs --outDir dist/cjs --p tsconfig.prod.json",
-        "build:all": "npm run build:umd && npm run build:es6 && npm run build:esnext && npm run build:commonjs",
+        "build:all": "npm run clean && npm run build:umd && npm run build:es6 && npm run build:esnext && npm run build:commonjs",
         "bundle-stats:min": "npm run build:umd && webpack-bundle-analyzer dist/_bundles/stats.min.json",
         "bundle-stats": "npm run build:umd && webpack-bundle-analyzer dist/_bundles/stats.json",
-        "push:tags": "git push --tags"
+        "push:tags": "git push --tags",
+        "clean": "tsx clean.ts"
     },
     "dependencies": {
         "axios": "1.7.3"
@@ -85,6 +86,7 @@
         "typescript": "5.2.2",
         "webpack": "5.93.0",
         "webpack-bundle-analyzer": "4.10.2",
-        "webpack-cli": "5.1.4"
+        "webpack-cli": "5.1.4",
+        "tsx": "4.17.0"
     }
 }
