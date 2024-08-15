@@ -14,6 +14,7 @@ export default tseslint.config(eslint.configs.recommended, ...tseslint.configs.r
         '@typescript-eslint/no-namespace': 'off',
         '@typescript-eslint/no-unsafe-member-access': 'off',
         '@typescript-eslint/no-unsafe-assignment': 'off',
+        '@typescript-eslint/no-unsafe-argument': 'off',
         '@typescript-eslint/no-empty-object-type': 'off',
         '@typescript-eslint/no-unsafe-return': 'off',
         '@typescript-eslint/prefer-promise-reject-errors': 'off'
