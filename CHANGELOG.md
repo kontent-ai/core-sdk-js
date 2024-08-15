@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [10.7.0](https://github.com/kontent-ai/kontent-core-js/compare/v10.6.0...v10.7.0) (2024-08-15)
+
+
+### Features
+
+* updates deps ([c18e905](https://github.com/kontent-ai/kontent-core-js/commit/c18e905b068675f675249108427fd3cc3b2ce719))
+* updates deps (& fixes Axios vulnerability) ([bd82a96](https://github.com/kontent-ai/kontent-core-js/commit/bd82a9617f6721c31e9198bc5787550cf7b8a485))
+
 ## [10.6.0](https://github.com/kontent-ai/kontent-core-js/compare/v10.4.0...v10.6.0) (2024-06-28)
 
 
