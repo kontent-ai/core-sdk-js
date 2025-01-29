@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [10.9.0](https://github.com/kontent-ai/kontent-core-js/compare/v10.8.0...v10.9.0) (2025-01-29)
+
+
+### Features
+
+* updates deps ([4ec2ddd](https://github.com/kontent-ai/kontent-core-js/commit/4ec2ddd783ae7dde17aa394e56fdbde12f672dc6))
+
 ## [10.8.0](https://github.com/kontent-ai/kontent-core-js/compare/v10.7.0...v10.8.0) (2024-09-26)
 
 
