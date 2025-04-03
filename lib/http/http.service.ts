@@ -1,91 +1,165 @@
-import axios, { AxiosInstance, AxiosRequestConfig, CancelToken } from 'axios';
+import type { Header, RetryStrategyOptions } from '../models/core.models.js';
+import { getRetryResult, toRequiredRetryStrategyOptions } from '../utils/retry-helper.js';
+import { type HttpQueryOptions, type HttpResponse, type HttpService, CoreSdkError } from './http.models.js';
 
-import * as HttpFunctions from './http.functions';
-import { IHttpFunctionsConfig } from './http.functions';
-import {
-    IResponse,
-    IHttpDeleteQueryCall,
-    IHttpGetQueryCall,
-    IHttpPatchQueryCall,
-    IHttpPostQueryCall,
-    IHttpPutQueryCall,
-    IHttpQueryOptions,
-    IHttpCancelRequestToken
-} from './http.models';
-import { IHttpService } from './ihttp.service';
+export const defaultHttpService: HttpService = {
+    getAsync: async <TResponseData>(url: string, options?: HttpQueryOptions): Promise<HttpResponse<TResponseData>> => {
+        const retryStrategyOptions: Required<RetryStrategyOptions> = toRequiredRetryStrategyOptions(
+            options?.retryStrategy
+        );
 
-export class HttpService implements IHttpService<CancelToken> {
-    private readonly axiosInstance: AxiosInstance;
+        return await runWithRetryAsync<TResponseData>({
+            funcAsync: async () => {
+                const response = await fetch(url);
+                const headers = mapHeaders(response.headers);
 
-    private readonly functionsConfig: IHttpFunctionsConfig;
+                if (!response.ok) {
+                    throw new CoreSdkError(
+                        `Failed to execute request '${url}' with status '${response.status}'`,
+                        undefined,
+                        url,
+                        0,
+                        retryStrategyOptions,
+                        headers
+                    );
+                }
 
-    constructor(
-        private opts?: {
-            axiosRequestConfig?: AxiosRequestConfig;
-            logErrorsToConsole?: boolean;
+                return {
+                    data: (await response.json()) as TResponseData,
+                    responseHeaders: headers,
+                    status: response.status
+                };
+            },
+            retryAttempt: 1,
+            url,
+            retryStrategyOptions
+        });
+    }
+};
+
+function mapHeaders(headers: Headers): readonly Header[] {
+    return Array.from(headers.entries()).map(([key, value]) => ({
+        header: key,
+        value: value
+    }));
+}
+
+async function runWithRetryAsync<TResponseData>(data: {
+    readonly funcAsync: () => Promise<HttpResponse<TResponseData>>;
+    readonly retryStrategyOptions: Required<RetryStrategyOptions>;
+    readonly retryAttempt: number;
+    readonly url: string;
+}): Promise<HttpResponse<TResponseData>> {
+    try {
+        return await data.funcAsync();
+    } catch (error) {
+        const headers = error instanceof CoreSdkError ? error.responseHeaders : [];
+        const retryResult = getRetryResult({
+            error,
+            headers,
+            retryAttempt: data.retryAttempt,
+            options: data.retryStrategyOptions
+        });
+
+        if (!retryResult.canRetry) {
+            throw new CoreSdkError(
+                `Failed to execute request '${data.url}' after ${data.retryAttempt} attempts`,
+                error,
+                data.url,
+                data.retryAttempt,
+                data.retryStrategyOptions,
+                headers
+            );
         }
-    ) {
-        this.axiosInstance = axios.create(opts?.axiosRequestConfig);
-        this.functionsConfig = this.getFunctionsConfig();
-    }
 
-    async getAsync<TRawData>(
-        call: IHttpGetQueryCall,
-        options?: IHttpQueryOptions<CancelToken>
-    ): Promise<IResponse<TRawData>> {
-        return await HttpFunctions.getWithRetryAsync<TRawData>(this.axiosInstance, call, this.functionsConfig, options);
-    }
+        // log retry attempt
+        data.retryStrategyOptions.logRetryAttempt(data.retryAttempt, data.url);
 
-    async postAsync<TRawData>(
-        call: IHttpPostQueryCall,
-        options?: IHttpQueryOptions<CancelToken>
-    ): Promise<IResponse<TRawData>> {
-        return await HttpFunctions.postWithRetryAsync<TRawData>(
-            this.axiosInstance,
-            call,
-            this.functionsConfig,
-            options
-        );
-    }
+        // wait before retrying
+        await new Promise((resolve) => setTimeout(resolve, retryResult.retryInMs));
 
-    async putAsync<TRawData>(
-        call: IHttpPutQueryCall,
-        options?: IHttpQueryOptions<CancelToken>
-    ): Promise<IResponse<TRawData>> {
-        return await HttpFunctions.putWithRetryAsync<TRawData>(this.axiosInstance, call, this.functionsConfig, options);
-    }
-
-    async patchAsync<TRawData>(
-        call: IHttpPatchQueryCall,
-        options?: IHttpQueryOptions<CancelToken>
-    ): Promise<IResponse<TRawData>> {
-        return await HttpFunctions.patchWithRetryAsync<TRawData>(
-            this.axiosInstance,
-            call,
-            this.functionsConfig,
-            options
-        );
-    }
-
-    async deleteAsync<TRawData>(
-        call: IHttpDeleteQueryCall,
-        options?: IHttpQueryOptions<CancelToken>
-    ): Promise<IResponse<TRawData>> {
-        return await HttpFunctions.deleteWithRetryAsync<TRawData>(
-            this.axiosInstance,
-            call,
-            this.functionsConfig,
-            options
-        );
-    }
-
-    createCancelToken(): IHttpCancelRequestToken<CancelToken> {
-        return HttpFunctions.createCancelToken();
-    }
-
-    private getFunctionsConfig(): IHttpFunctionsConfig {
-        return {
-            logErrorsToConsole: this.opts?.logErrorsToConsole ?? true
-        };
+        // retry request
+        return await runWithRetryAsync({
+            funcAsync: data.funcAsync,
+            retryStrategyOptions: data.retryStrategyOptions,
+            retryAttempt: data.retryAttempt + 1,
+            url: data.url
+        });
     }
 }
+
+// export class HttpService2 implements IHttpService<CancelToken> {
+//     private readonly axiosInstance: AxiosInstance;
+
+//     private readonly functionsConfig: IHttpFunctionsConfig;
+
+//     constructor(
+//         private opts?: {
+//             axiosRequestConfig?: AxiosRequestConfig;
+//             logErrorsToConsole?: boolean;
+//         }
+//     ) {
+//         this.axiosInstance = axios.create(opts?.axiosRequestConfig);
+//         this.functionsConfig = this.getFunctionsConfig();
+//     }
+
+//     async getAsync<TRawData>(
+//         call: IHttpGetQueryCall,
+//         options?: IHttpQueryOptions<CancelToken>
+//     ): Promise<IResponse<TRawData>> {
+//         return await HttpFunctions.getWithRetryAsync<TRawData>(this.axiosInstance, call, this.functionsConfig, options);
+//     }
+
+//     async postAsync<TRawData>(
+//         call: IHttpPostQueryCall,
+//         options?: IHttpQueryOptions<CancelToken>
+//     ): Promise<IResponse<TRawData>> {
+//         return await HttpFunctions.postWithRetryAsync<TRawData>(
+//             this.axiosInstance,
+//             call,
+//             this.functionsConfig,
+//             options
+//         );
+//     }
+
+//     async putAsync<TRawData>(
+//         call: IHttpPutQueryCall,
+//         options?: IHttpQueryOptions<CancelToken>
+//     ): Promise<IResponse<TRawData>> {
+//         return await HttpFunctions.putWithRetryAsync<TRawData>(this.axiosInstance, call, this.functionsConfig, options);
+//     }
+
+//     async patchAsync<TRawData>(
+//         call: IHttpPatchQueryCall,
+//         options?: IHttpQueryOptions<CancelToken>
+//     ): Promise<IResponse<TRawData>> {
+//         return await HttpFunctions.patchWithRetryAsync<TRawData>(
+//             this.axiosInstance,
+//             call,
+//             this.functionsConfig,
+//             options
+//         );
+//     }
+
+//     async deleteAsync<TRawData>(
+//         call: IHttpDeleteQueryCall,
+//         options?: IHttpQueryOptions<CancelToken>
+//     ): Promise<IResponse<TRawData>> {
+//         return await HttpFunctions.deleteWithRetryAsync<TRawData>(
+//             this.axiosInstance,
+//             call,
+//             this.functionsConfig,
+//             options
+//         );
+//     }
+
+//     createCancelToken(): IHttpCancelRequestToken<CancelToken> {
+//         return HttpFunctions.createCancelToken();
+//     }
+
+//     private getFunctionsConfig(): IHttpFunctionsConfig {
+//         return {
+//             logErrorsToConsole: this.opts?.logErrorsToConsole ?? true
+//         };
+//     }
+// }
