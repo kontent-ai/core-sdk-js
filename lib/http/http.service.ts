@@ -2,6 +2,20 @@ import type { Header, RetryStrategyOptions } from '../models/core.models.js';
 import { getRetryResult, toRequiredRetryStrategyOptions } from '../utils/retry-helper.js';
 import { type HttpQueryOptions, type HttpResponse, type HttpService, CoreSdkError } from './http.models.js';
 
+export function getDefaultErrorMessage({
+    url,
+    retryAttempts,
+    status
+}: {
+    readonly url: string;
+    readonly retryAttempts: number;
+    readonly status: number | undefined;
+}): string {
+    return `Failed to execute request '${url}' after ${retryAttempts} attempts${
+        status ? ` with status '${status}'` : ''
+    }`;
+}
+
 export const defaultHttpService: HttpService = {
     getAsync: async <TResponseData>(url: string, options?: HttpQueryOptions): Promise<HttpResponse<TResponseData>> => {
         const retryStrategyOptions: Required<RetryStrategyOptions> = toRequiredRetryStrategyOptions(
@@ -15,12 +29,13 @@ export const defaultHttpService: HttpService = {
 
                 if (!response.ok) {
                     throw new CoreSdkError(
-                        `Failed to execute request '${url}' with status '${response.status}'`,
+                        getDefaultErrorMessage({ url, retryAttempts: 0, status: response.status }),
                         undefined,
                         url,
                         0,
                         retryStrategyOptions,
-                        headers
+                        headers,
+                        response.status
                     );
                 }
 
@@ -63,12 +78,13 @@ async function runWithRetryAsync<TResponseData>(data: {
 
         if (!retryResult.canRetry) {
             throw new CoreSdkError(
-                `Failed to execute request '${data.url}' after ${data.retryAttempt} attempts`,
+                getDefaultErrorMessage({ url: data.url, retryAttempts: data.retryAttempt, status: undefined }),
                 error,
                 data.url,
                 data.retryAttempt,
                 data.retryStrategyOptions,
-                headers
+                headers,
+                undefined
             );
         }
 

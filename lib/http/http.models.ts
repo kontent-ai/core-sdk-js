@@ -19,11 +19,12 @@ export type HttpService = {
 export class CoreSdkError extends Error {
     constructor(
         readonly message: string,
-        readonly error: unknown,
+        readonly originalError: unknown,
         readonly url: string,
         readonly retryAttempt: number,
         readonly retryStrategyOptions: Required<RetryStrategyOptions>,
-        readonly responseHeaders: readonly Header[]
+        readonly responseHeaders: readonly Header[],
+        readonly status: number | undefined
     ) {
         super(message);
     }

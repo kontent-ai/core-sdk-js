@@ -24,12 +24,14 @@ export function toRequiredRetryStrategyOptions(options?: RetryStrategyOptions): 
             if (options?.logRetryAttempt) {
                 options.logRetryAttempt(attempt, url);
             } else {
-                console.warn(
-                    `Retry attempt '${attempt}' from a maximum of '${maxAttempts}' retries. Requested url: '${url}'`
-                );
+                console.warn(getDefaultRetryAttemptLogMessage(attempt, maxAttempts, url));
             }
         }
     };
+}
+
+export function getDefaultRetryAttemptLogMessage(retryAttempt: number, maxAttempts: number, url: string): string {
+    return `Retry attempt '${retryAttempt}' from a maximum of '${maxAttempts}' retries. Requested url: '${url}'`;
 }
 
 export function getRetryResult({
@@ -43,7 +45,7 @@ export function getRetryResult({
     readonly options: Required<RetryStrategyOptions>;
     readonly headers: readonly Header[];
 }): RetryResult {
-    if (retryAttempt >= options.maxAttempts) {
+    if (retryAttempt > options.maxAttempts) {
         return {
             canRetry: false
         };
