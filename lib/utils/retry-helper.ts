@@ -1,8 +1,8 @@
+import type { HttpResponse } from '../http/http.models.js';
+import { CoreSdkError } from '../http/http.models.js';
+import { getDefaultErrorMessage } from '../http/http.service.js';
 import type { Header, RetryStrategyOptions } from '../models/core.models.js';
-
-const defaultMaxAttempts: number = 3;
-const defaultDelayBetweenAttemptsMs: number = 1000;
-const defaultCanRetryError: (error: unknown) => boolean = () => true;
+import { getRetryAfterHeaderValue } from './header.utils.js';
 
 type RetryResult =
     | {
@@ -12,6 +12,63 @@ type RetryResult =
           readonly canRetry: true;
           readonly retryInMs: number;
       };
+
+const defaultMaxAttempts: NonNullable<RetryStrategyOptions['maxAttempts']> = 3;
+const defaultDelayBetweenAttemptsMs: NonNullable<RetryStrategyOptions['defaultDelayBetweenRequestsMs']> = 1000;
+const defaultCanRetryError: NonNullable<RetryStrategyOptions['canRetryError']> = (error) => {
+    if (error instanceof CoreSdkError && error.status) {
+        return error.status >= 500 || error.status === 429;
+    }
+
+    return true;
+};
+
+export async function runWithRetryAsync<TResponseData>(data: {
+    readonly funcAsync: () => Promise<HttpResponse<TResponseData>>;
+    readonly retryStrategyOptions: Required<RetryStrategyOptions>;
+    readonly retryAttempt: number;
+    readonly url: string;
+}): Promise<HttpResponse<TResponseData>> {
+    try {
+        return await data.funcAsync();
+    } catch (error) {
+        const headers = error instanceof CoreSdkError ? error.responseHeaders : [];
+        const retryResult = getRetryResult({
+            error,
+            headers,
+            retryAttempt: data.retryAttempt,
+            options: data.retryStrategyOptions
+        });
+
+        if (!retryResult.canRetry) {
+            throw new CoreSdkError(
+                getDefaultErrorMessage({ url: data.url, retryAttempts: data.retryAttempt, status: undefined }),
+                error,
+                data.url,
+                data.retryAttempt,
+                data.retryStrategyOptions,
+                headers,
+                undefined
+            );
+        }
+
+        // log retry attempt
+        if (data.retryStrategyOptions.logRetryAttempt) {
+            data.retryStrategyOptions.logRetryAttempt(data.retryAttempt, data.url);
+        }
+
+        // wait before retrying
+        await new Promise((resolve) => setTimeout(resolve, retryResult.retryInMs));
+
+        // retry request
+        return await runWithRetryAsync({
+            funcAsync: data.funcAsync,
+            retryStrategyOptions: data.retryStrategyOptions,
+            retryAttempt: data.retryAttempt + 1,
+            url: data.url
+        });
+    }
+}
 
 export function toRequiredRetryStrategyOptions(options?: RetryStrategyOptions): Required<RetryStrategyOptions> {
     const maxAttempts: number = options?.maxAttempts ?? defaultMaxAttempts;
@@ -37,7 +94,7 @@ export function getDefaultRetryAttemptLogMessage(retryAttempt: number, maxAttemp
     return `Retry attempt '${retryAttempt}' from a maximum of '${maxAttempts}' retries. Requested url: '${url}'`;
 }
 
-export function getRetryResult({
+function getRetryResult({
     retryAttempt,
     error,
     options,
@@ -73,14 +130,4 @@ export function getRetryResult({
         canRetry: true,
         retryInMs: options.defaultDelayBetweenRequestsMs
     };
-}
-
-function getRetryAfterHeaderValue(headers: readonly Header[]): number | undefined {
-    const retryAfterHeader = headers.find((header) => header.header === 'Retry-After');
-
-    if (!retryAfterHeader) {
-        return undefined;
-    }
-
-    return +retryAfterHeader.value;
 }

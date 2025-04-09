@@ -6,3 +6,13 @@ export function getSdkIdHeader(info: SDKInfo): Header {
         value: `${info.host};${info.name};${info.version}`
     };
 }
+
+export function getRetryAfterHeaderValue(headers: readonly Header[]): number | undefined {
+    const retryAfterHeader = headers.find((header) => header.header === 'Retry-After');
+
+    if (!retryAfterHeader) {
+        return undefined;
+    }
+
+    return +retryAfterHeader.value;
+}
