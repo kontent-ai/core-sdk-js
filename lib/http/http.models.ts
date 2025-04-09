@@ -30,6 +30,11 @@ export type HttpResponse<TResponseData> = {
     readonly data: TResponseData;
 
     /**
+     * The request headers.
+     */
+    readonly requestHeaders: readonly Header[];
+
+    /**
      * The headers of the response.
      */
     readonly responseHeaders: readonly Header[];
@@ -55,7 +60,8 @@ export class CoreSdkError extends Error {
         readonly retryAttempt: number,
         readonly retryStrategyOptions: Required<RetryStrategyOptions>,
         readonly responseHeaders: readonly Header[],
-        readonly status: HttpServiceStatus | undefined
+        readonly status: HttpServiceStatus | undefined,
+        readonly requestHeaders: readonly Header[]
     ) {
         super(message);
     }

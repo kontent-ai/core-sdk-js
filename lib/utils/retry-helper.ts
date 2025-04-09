@@ -28,6 +28,7 @@ export async function runWithRetryAsync<TResponseData>(data: {
     readonly retryStrategyOptions: Required<RetryStrategyOptions>;
     readonly retryAttempt: number;
     readonly url: string;
+    readonly requestHeaders: readonly Header[];
 }): Promise<HttpResponse<TResponseData>> {
     try {
         return await data.funcAsync();
@@ -48,7 +49,8 @@ export async function runWithRetryAsync<TResponseData>(data: {
                 data.retryAttempt,
                 data.retryStrategyOptions,
                 headers,
-                undefined
+                undefined,
+                data.requestHeaders
             );
         }
 
@@ -67,7 +69,8 @@ export async function runWithRetryAsync<TResponseData>(data: {
             funcAsync: data.funcAsync,
             retryStrategyOptions: data.retryStrategyOptions,
             retryAttempt: newRetryAttempt,
-            url: data.url
+            url: data.url,
+            requestHeaders: data.requestHeaders
         });
     }
 }

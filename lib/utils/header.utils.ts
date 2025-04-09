@@ -16,3 +16,17 @@ export function getRetryAfterHeaderValue(headers: readonly Header[]): number | u
 
     return +retryAfterHeader.value;
 }
+
+export function toSdkHeaders(headers: Headers): readonly Header[] {
+    return Array.from(headers.entries()).map(([key, value]) => ({
+        name: key,
+        value: value
+    }));
+}
+
+export function toFetchHeaders(headers: readonly Header[]): Headers {
+    return headers.reduce<Headers>((headers, header) => {
+        headers.append(header.name, header.value);
+        return headers;
+    }, new Headers());
+}

@@ -1,5 +1,7 @@
 import { afterAll, describe, expect, it, vi } from 'vitest';
 import { defaultHttpService } from '../lib/http/http.service.js';
+import { sdkInfo } from '../lib/sdk.generated.js';
+import { getSdkIdHeader } from '../lib/utils/header.utils.js';
 import { getFetchMock } from './_utils/test.utils.js';
 
 type ResponseData = {
@@ -9,6 +11,8 @@ type ResponseData = {
 const data: ResponseData = {
     codename: 'x'
 };
+
+const sdkIdHeader = getSdkIdHeader(sdkInfo);
 
 describe('Success requests', async () => {
     afterAll(() => {
@@ -40,5 +44,9 @@ describe('Success requests', async () => {
         expect(response.responseHeaders.find((m) => m.name.toLowerCase() === 'content-type')?.value).toStrictEqual(
             'application/json'
         );
+    });
+
+    it(`Response should contain '${sdkIdHeader.name}' header`, () => {
+        expect(response.requestHeaders.find((m) => m.name === 'X-KC-SDKID')?.value).toStrictEqual(sdkIdHeader.value);
     });
 });

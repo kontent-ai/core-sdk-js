@@ -1,37 +1,12 @@
 import chalk from 'chalk';
 import fs, { rmSync } from 'fs';
-import { getEnvironmentRequiredValue } from './environment.utils.js';
-
-export async function runScriptAsync(
-    func: (config: {
-        readonly sampleEnv: {
-            readonly environmentId: string;
-        };
-        readonly integrationEnv: {
-            readonly managementApiKey: string;
-            readonly environmentId: string;
-        };
-    }) => Promise<void>
-): Promise<void> {
-    await func({
-        sampleEnv: {
-            environmentId: getEnvironmentRequiredValue('SAMPLE_ENVIRONMENT_ID')
-        },
-        integrationEnv: {
-            environmentId: getEnvironmentRequiredValue('INTEGRATION_ENVIRONMENT_ID'),
-            managementApiKey: getEnvironmentRequiredValue('INTEGRATION_MANAGEMENT_API_KEY')
-        }
-    });
-}
 
 export function createVersionFile({
-    date,
     filePath,
     propertyName,
     packageName,
     packageVersion
 }: {
-    readonly date: Date;
     readonly filePath: string;
     readonly propertyName: string;
     readonly packageName: string;
@@ -44,7 +19,7 @@ export function createVersionFile({
 export const ${propertyName} = {
     host: 'npmjs.com',
 	name: '${packageName}',
-    timestamp: '${date.toUTCString()}',
+    timestamp: '${new Date().toUTCString()}',
     version: '${packageVersion}'
 };
 `;

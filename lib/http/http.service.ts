@@ -1,4 +1,6 @@
 import type { Header, RetryStrategyOptions } from '../models/core.models.js';
+import { sdkInfo } from '../sdk.generated.js';
+import { getSdkIdHeader, toFetchHeaders, toSdkHeaders } from '../utils/header.utils.js';
 import { runWithRetryAsync, toRequiredRetryStrategyOptions } from '../utils/retry-helper.js';
 import { type HttpQueryOptions, type HttpResponse, type HttpService, CoreSdkError } from './http.models.js';
 
@@ -21,11 +23,14 @@ export const defaultHttpService: HttpService = {
         const retryStrategyOptions: Required<RetryStrategyOptions> = toRequiredRetryStrategyOptions(
             options?.retryStrategy
         );
+        const requestHeaders = getRequestHeaders(options?.requestHeaders);
 
         return await runWithRetryAsync<TResponseData>({
             funcAsync: async () => {
-                const response = await fetch(url);
-                const headers = mapHeaders(response.headers);
+                const response = await fetch(url, {
+                    headers: toFetchHeaders(requestHeaders)
+                });
+                const headers = toSdkHeaders(response.headers);
 
                 if (!response.ok) {
                     throw new CoreSdkError(
@@ -35,28 +40,33 @@ export const defaultHttpService: HttpService = {
                         0,
                         retryStrategyOptions,
                         headers,
-                        response.status
+                        response.status,
+                        requestHeaders
                     );
                 }
 
                 return {
                     data: (await response.json()) as TResponseData,
                     responseHeaders: headers,
-                    status: response.status
+                    status: response.status,
+                    requestHeaders
                 };
             },
             retryAttempt: 0,
             url,
-            retryStrategyOptions
+            retryStrategyOptions,
+            requestHeaders
         });
     }
 };
 
-function mapHeaders(headers: Headers): readonly Header[] {
-    return Array.from(headers.entries()).map(([key, value]) => ({
-        name: key,
-        value: value
-    }));
+function getRequestHeaders(headers: readonly Header[] | undefined): readonly Header[] {
+    const allHeaders: readonly Header[] = [
+        ...(headers ?? []),
+        // add tracking header if not already present
+        ...(headers?.find((header) => header.name === 'X-KC-SDKID') ? [] : [getSdkIdHeader(sdkInfo)])
+    ];
+    return allHeaders;
 }
 
 // export class HttpService2 implements IHttpService<CancelToken> {
