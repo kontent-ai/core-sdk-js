@@ -1,4 +1,10 @@
-import type { Header, RetryStrategyOptions } from '../models/core.models.js';
+import type { Header, LiteralUnionNumber, RetryStrategyOptions } from '../models/core.models.js';
+
+/**
+ * Helper status codes for the HTTP service.
+ * It can be any valid number status code as this type only serves as a helper.
+ */
+export type HttpServiceStatus = LiteralUnionNumber<200 | 500 | 429 | 404 | 403 | 401 | 400>;
 
 export type HttpQueryOptions = {
     /**
@@ -31,7 +37,7 @@ export type HttpResponse<TResponseData> = {
     /**
      * The status of the response.
      */
-    readonly status: number;
+    readonly status: HttpServiceStatus;
 };
 
 export type HttpService = {
@@ -49,7 +55,7 @@ export class CoreSdkError extends Error {
         readonly retryAttempt: number,
         readonly retryStrategyOptions: Required<RetryStrategyOptions>,
         readonly responseHeaders: readonly Header[],
-        readonly status: number | undefined
+        readonly status: HttpServiceStatus | undefined
     ) {
         super(message);
     }

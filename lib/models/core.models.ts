@@ -22,7 +22,7 @@ export type Header = {
     /**
      * The header name.
      */
-    readonly header: LiteralUnion<'Retry-After' | 'X-KC-SDKID'>;
+    readonly name: LiteralUnion<'Retry-After' | 'X-KC-SDKID'>;
 
     /**
      * The header value.
@@ -64,3 +64,5 @@ export type RetryStrategyOptions = {
  * Adds intellisense for string union type, but also allows any string
  */
 export type LiteralUnion<T extends string | undefined> = T | (string & NonNullable<unknown>);
+
+export type LiteralUnionNumber<T extends number | undefined> = T | (number & NonNullable<unknown>);

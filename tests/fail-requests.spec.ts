@@ -26,8 +26,7 @@ describe('Failed requests', async () => {
             // undefined because we don't have a response status
             expect(error.status).toStrictEqual(undefined);
 
-            // +1 attempts because we also count the initial attempt and then the retry maxAttempts
-            const retryAttempts = (retryStrategyOptions.maxAttempts ?? 0) + 1;
+            const retryAttempts = retryStrategyOptions.maxAttempts;
 
             expect(error.retryAttempt).toStrictEqual(retryAttempts);
             expect(error.message).toStrictEqual(
@@ -46,8 +45,7 @@ describe('Failed requests', async () => {
 
 async function resolveResponseAsync(): Promise<unknown> {
     try {
-        await defaultHttpService.getAsync(url, { retryStrategy: retryStrategyOptions });
-        throw new Error('Request should have failed');
+        return await defaultHttpService.getAsync(url, { retryStrategy: retryStrategyOptions });
     } catch (error) {
         return error;
     }

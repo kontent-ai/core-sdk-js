@@ -52,9 +52,11 @@ export async function runWithRetryAsync<TResponseData>(data: {
             );
         }
 
+        const newRetryAttempt = data.retryAttempt + 1;
+
         // log retry attempt
         if (data.retryStrategyOptions.logRetryAttempt) {
-            data.retryStrategyOptions.logRetryAttempt(data.retryAttempt, data.url);
+            data.retryStrategyOptions.logRetryAttempt(newRetryAttempt, data.url);
         }
 
         // wait before retrying
@@ -64,7 +66,7 @@ export async function runWithRetryAsync<TResponseData>(data: {
         return await runWithRetryAsync({
             funcAsync: data.funcAsync,
             retryStrategyOptions: data.retryStrategyOptions,
-            retryAttempt: data.retryAttempt + 1,
+            retryAttempt: newRetryAttempt,
             url: data.url
         });
     }
@@ -105,7 +107,7 @@ function getRetryResult({
     readonly options: Required<RetryStrategyOptions>;
     readonly headers: readonly Header[];
 }): RetryResult {
-    if (retryAttempt > options.maxAttempts) {
+    if (retryAttempt >= options.maxAttempts) {
         return {
             canRetry: false
         };

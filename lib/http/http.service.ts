@@ -45,7 +45,7 @@ export const defaultHttpService: HttpService = {
                     status: response.status
                 };
             },
-            retryAttempt: 1,
+            retryAttempt: 0,
             url,
             retryStrategyOptions
         });
@@ -54,7 +54,7 @@ export const defaultHttpService: HttpService = {
 
 function mapHeaders(headers: Headers): readonly Header[] {
     return Array.from(headers.entries()).map(([key, value]) => ({
-        header: key,
+        name: key,
         value: value
     }));
 }

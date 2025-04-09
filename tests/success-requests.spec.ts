@@ -1,19 +1,35 @@
-import { describe, expect, it } from 'vitest';
+import { afterAll, describe, expect, it, vi } from 'vitest';
 import { defaultHttpService } from '../lib/http/http.service.js';
+import { getFetchMock } from './_utils/test.utils.js';
+
+type ResponseData = {
+    readonly codename: string;
+};
+
+const data: ResponseData = {
+    codename: 'x'
+};
 
 describe('Success requests', async () => {
-    const postId = 1;
+    afterAll(() => {
+        vi.resetAllMocks();
+    });
 
-    const response = await defaultHttpService.getAsync<{
-        readonly id: number;
-    }>(`https://jsonplaceholder.typicode.com/posts/${postId}`);
+    global.fetch = getFetchMock<ResponseData>({
+        json: data,
+        status: 200,
+        headers: [{ name: 'Content-Type', value: 'application/json' }]
+    });
+
+    const response = await defaultHttpService.getAsync<ResponseData>(`https://domain.com`);
 
     it('Status should be 200', () => {
         expect(response.status).toStrictEqual(200);
     });
 
-    it(`Post id should be ${postId}`, () => {
-        expect(response.data.id).toStrictEqual(postId);
+    it(`Post id should be ${data.codename}`, () => {
+        expect(response.data.codename).toStrictEqual(data.codename);
+        expect(response.data).toStrictEqual(data);
     });
 
     it('Response should contain headers', () => {
@@ -21,12 +37,8 @@ describe('Success requests', async () => {
     });
 
     it('Response should contain application/json content type header', () => {
-        expect(response.responseHeaders.find((m) => m.header.toLowerCase() === 'content-type')?.value).toStrictEqual(
-            'application/json; charset=utf-8'
+        expect(response.responseHeaders.find((m) => m.name.toLowerCase() === 'content-type')?.value).toStrictEqual(
+            'application/json'
         );
-    });
-
-    it('Status should be 200', () => {
-        expect(response.status).toStrictEqual(200);
     });
 });

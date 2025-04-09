@@ -1,4 +1,7 @@
 /*
  * Public API
  */
-export type { SDKInfo } from './models/core.models.js';
+export { CoreSdkError } from './http/http.models.js';
+export { defaultHttpService } from './http/http.service.js';
+export type { Header, RetryStrategyOptions, SDKInfo } from './models/core.models.js';
+export { toRequiredRetryStrategyOptions } from './utils/retry-helper.js';
