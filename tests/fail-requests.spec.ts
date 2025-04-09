@@ -6,11 +6,13 @@ import { toRequiredRetryStrategyOptions } from '../lib/utils/retry-helper.js';
 
 const url = 'invalid-url';
 const retryStrategyOptions: Required<RetryStrategyOptions> = toRequiredRetryStrategyOptions({
-    maxAttempts: 2
+    maxAttempts: 0,
+    logRetryAttempt: false,
+    delayBetweenAttemptsMs: 0
 });
 
 describe('Failed requests', async () => {
-    const error = await getErrorAsync();
+    const error = await resolveResponseAsync();
 
     it('Error should be instance of CoreSdkError', () => {
         expect(error).toBeInstanceOf(CoreSdkError);
@@ -42,7 +44,7 @@ describe('Failed requests', async () => {
     }
 });
 
-async function getErrorAsync(): Promise<unknown> {
+async function resolveResponseAsync(): Promise<unknown> {
     try {
         await defaultHttpService.getAsync(url, { retryStrategy: retryStrategyOptions });
         throw new Error('Request should have failed');

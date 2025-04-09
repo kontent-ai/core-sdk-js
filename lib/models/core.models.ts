@@ -16,7 +16,7 @@ export type RetryStrategyOptions = {
     readonly maxAttempts?: number;
     readonly canRetryError?: (error: unknown) => boolean;
     readonly delayBetweenAttemptsMs?: number;
-    readonly logRetryAttempt?: (retryAttempt: number, url: string) => void;
+    readonly logRetryAttempt?: false | ((retryAttempt: number, url: string) => void);
 };
 
 /**

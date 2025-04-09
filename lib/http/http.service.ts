@@ -89,7 +89,9 @@ async function runWithRetryAsync<TResponseData>(data: {
         }
 
         // log retry attempt
-        data.retryStrategyOptions.logRetryAttempt(data.retryAttempt, data.url);
+        if (data.retryStrategyOptions.logRetryAttempt) {
+            data.retryStrategyOptions.logRetryAttempt(data.retryAttempt, data.url);
+        }
 
         // wait before retrying
         await new Promise((resolve) => setTimeout(resolve, retryResult.retryInMs));

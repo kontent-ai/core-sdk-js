@@ -20,13 +20,16 @@ export function toRequiredRetryStrategyOptions(options?: RetryStrategyOptions): 
         maxAttempts: maxAttempts,
         canRetryError: options?.canRetryError ?? defaultCanRetryError,
         delayBetweenAttemptsMs: options?.delayBetweenAttemptsMs ?? defaultDelayBetweenAttemptsMs,
-        logRetryAttempt: (attempt, url) => {
-            if (options?.logRetryAttempt) {
-                options.logRetryAttempt(attempt, url);
-            } else {
-                console.warn(getDefaultRetryAttemptLogMessage(attempt, maxAttempts, url));
-            }
-        }
+        logRetryAttempt:
+            options?.logRetryAttempt === false
+                ? false
+                : (attempt, url) => {
+                      if (options?.logRetryAttempt) {
+                          options.logRetryAttempt(attempt, url);
+                      } else {
+                          console.warn(getDefaultRetryAttemptLogMessage(attempt, maxAttempts, url));
+                      }
+                  }
     };
 }
 
