@@ -19,7 +19,7 @@ export function toRequiredRetryStrategyOptions(options?: RetryStrategyOptions): 
     return {
         maxAttempts: maxAttempts,
         canRetryError: options?.canRetryError ?? defaultCanRetryError,
-        delayBetweenAttemptsMs: options?.delayBetweenAttemptsMs ?? defaultDelayBetweenAttemptsMs,
+        defaultDelayBetweenRequestsMs: options?.defaultDelayBetweenRequestsMs ?? defaultDelayBetweenAttemptsMs,
         logRetryAttempt:
             options?.logRetryAttempt === false
                 ? false
@@ -71,7 +71,7 @@ export function getRetryResult({
 
     return {
         canRetry: true,
-        retryInMs: options.delayBetweenAttemptsMs
+        retryInMs: options.defaultDelayBetweenRequestsMs
     };
 }
 

@@ -1,18 +1,43 @@
 import type { Header, RetryStrategyOptions } from '../models/core.models.js';
 
 export type HttpQueryOptions = {
+    /**
+     * The headers to be sent with the request.
+     */
     readonly requestHeaders?: readonly Header[];
+
+    /**
+     * The type of the response.
+     */
     readonly responseType?: string;
+
+    /**
+     * The retry strategy to be used. If not provided, the default retry strategy will be used.
+     */
     readonly retryStrategy?: RetryStrategyOptions;
 };
 
 export type HttpResponse<TResponseData> = {
+    /**
+     * The data of the response.
+     */
     readonly data: TResponseData;
+
+    /**
+     * The headers of the response.
+     */
     readonly responseHeaders: readonly Header[];
+
+    /**
+     * The status of the response.
+     */
     readonly status: number;
 };
 
 export type HttpService = {
+    /**
+     * Executes a GET request
+     */
     getAsync<TResponseData>(url: string, options?: HttpQueryOptions): Promise<HttpResponse<TResponseData>>;
 };
 

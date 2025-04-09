@@ -7,10 +7,10 @@ import { toRequiredRetryStrategyOptions } from '../lib/utils/retry-helper.js';
 const url = 'retry-test-url';
 
 const retryCases: readonly Required<RetryStrategyOptions>[] = [
-    toRequiredRetryStrategyOptions({ maxAttempts: 0, delayBetweenAttemptsMs: 0, logRetryAttempt: false }),
-    toRequiredRetryStrategyOptions({ maxAttempts: 1, delayBetweenAttemptsMs: 0, logRetryAttempt: false }),
-    toRequiredRetryStrategyOptions({ maxAttempts: 2, delayBetweenAttemptsMs: 0, logRetryAttempt: false }),
-    toRequiredRetryStrategyOptions({ maxAttempts: 5, delayBetweenAttemptsMs: 0, logRetryAttempt: false })
+    toRequiredRetryStrategyOptions({ maxAttempts: 0, defaultDelayBetweenRequestsMs: 0, logRetryAttempt: false }),
+    toRequiredRetryStrategyOptions({ maxAttempts: 1, defaultDelayBetweenRequestsMs: 0, logRetryAttempt: false }),
+    toRequiredRetryStrategyOptions({ maxAttempts: 2, defaultDelayBetweenRequestsMs: 0, logRetryAttempt: false }),
+    toRequiredRetryStrategyOptions({ maxAttempts: 5, defaultDelayBetweenRequestsMs: 0, logRetryAttempt: false })
 ];
 
 describe('Retry policy', async () => {

@@ -11,7 +11,7 @@ export function getDefaultErrorMessage({
     readonly retryAttempts: number;
     readonly status: number | undefined;
 }): string {
-    return `Failed to execute request '${url}' after ${retryAttempts} attempts${
+    return `Failed to execute request '${url}' after '${retryAttempts}' attempts${
         status ? ` with status '${status}'` : ''
     }`;
 }

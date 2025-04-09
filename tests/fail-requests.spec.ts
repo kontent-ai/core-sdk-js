@@ -8,7 +8,7 @@ const url = 'invalid-url';
 const retryStrategyOptions: Required<RetryStrategyOptions> = toRequiredRetryStrategyOptions({
     maxAttempts: 0,
     logRetryAttempt: false,
-    delayBetweenAttemptsMs: 0
+    defaultDelayBetweenRequestsMs: 0
 });
 
 describe('Failed requests', async () => {
