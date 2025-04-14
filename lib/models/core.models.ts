@@ -30,6 +30,8 @@ export type Header = {
     readonly value: string;
 };
 
+export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
+
 export type RetryStrategyOptions = {
     /**
      * Maximum number of attempts to retry the request.
