@@ -24,11 +24,16 @@ export type HttpQueryOptions = {
     readonly retryStrategy?: RetryStrategyOptions;
 };
 
-export type HttpResponse<TResponseData> = {
+export type HttpResponse<TResponseData, TBodyData extends JsonValue> = {
     /**
      * The data of the response.
      */
     readonly data: TResponseData;
+
+    /**
+     * The request body data.
+     */
+    readonly body: TBodyData;
 
     /**
      * The request headers.
@@ -46,10 +51,6 @@ export type HttpResponse<TResponseData> = {
     readonly status: HttpServiceStatus;
 };
 
-export type HttpResponseWithBody<TResponseData, TBodyData> = HttpResponse<TResponseData> & {
-    readonly body: TBodyData;
-};
-
 export type HttpService = {
     /**
      * Executes a GET request
@@ -57,7 +58,7 @@ export type HttpService = {
     getAsync<TResponseData extends JsonValue>(
         url: string,
         options?: HttpQueryOptions
-    ): Promise<HttpResponse<TResponseData>>;
+    ): Promise<HttpResponse<TResponseData, null>>;
 
     /**
      * Executes a POST request
@@ -66,7 +67,7 @@ export type HttpService = {
         url: string,
         body: TBodyData,
         options?: HttpQueryOptions
-    ): Promise<HttpResponseWithBody<TResponseData, TBodyData>>;
+    ): Promise<HttpResponse<TResponseData, TBodyData>>;
 };
 
 export class CoreSdkError extends Error {

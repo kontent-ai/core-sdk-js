@@ -15,7 +15,7 @@ export type SDKInfo = {
     /**
      * The host of the SDK.
      */
-    readonly host: string;
+    readonly host: LiteralUnion<'npmjs.com'>;
 };
 
 export type Header = {

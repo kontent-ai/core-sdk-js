@@ -1,6 +1,6 @@
 import { afterAll, describe, expect, it, vi } from 'vitest';
-import { defaultHttpService } from '../lib/http/http.service.js';
-import { getFetchMock } from './_utils/test.utils.js';
+import { defaultHttpService } from '../../lib/http/http.service.js';
+import { getFetchMock } from '../_utils/test.utils.js';
 
 type ResponseData = {
     readonly codename: string;
@@ -26,8 +26,11 @@ describe('Success requests', async () => {
         expect(response.status).toStrictEqual(200);
     });
 
-    it(`Post id should be ${data.codename}`, () => {
-        expect(response.data.codename).toStrictEqual(data.codename);
+    it(`Response data should be set`, () => {
         expect(response.data).toStrictEqual(data);
+    });
+
+    it(`Response body should be null`, () => {
+        expect(response.body).toBeNull();
     });
 });

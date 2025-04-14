@@ -1,6 +1,6 @@
 import { afterAll, describe, expect, it, vi } from 'vitest';
 import { defaultHttpService } from '../../lib/public_api.js';
-import { sdkInfo } from '../../lib/sdk.generated.js';
+import { sdkInfo } from '../../lib/sdk.info.js';
 import { getSdkIdHeader } from '../../lib/utils/header.utils.js';
 import { getFetchMock } from '../_utils/test.utils.js';
 
