@@ -20,11 +20,6 @@ export type HttpQueryOptions = {
     readonly requestHeaders?: readonly Header[];
 
     /**
-     * The type of the response.
-     */
-    readonly responseType?: string;
-
-    /**
      * The retry strategy to be used. If not provided, the default retry strategy will be used.
      */
     readonly retryStrategy?: RetryStrategyOptions;
