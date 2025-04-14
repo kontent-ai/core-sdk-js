@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { CoreSdkError } from '../lib/http/http.models.js';
-import { defaultHttpService, getDefaultErrorMessage } from '../lib/http/http.service.js';
+import { defaultHttpService } from '../lib/http/http.service.js';
 import type { RetryStrategyOptions } from '../lib/models/core.models.js';
-import { toRequiredRetryStrategyOptions } from '../lib/utils/retry-helper.js';
+import { getDefaultErrorMessage } from '../lib/utils/error.utils.js';
+import { toRequiredRetryStrategyOptions } from '../lib/utils/retry.utils.js';
 
 const url = 'invalid-url';
 const retryStrategyOptions: Required<RetryStrategyOptions> = toRequiredRetryStrategyOptions({

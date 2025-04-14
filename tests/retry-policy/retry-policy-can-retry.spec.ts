@@ -2,7 +2,7 @@ import { afterAll, describe, expect, it, vi } from 'vitest';
 import { CoreSdkError } from '../../lib/http/http.models.js';
 import type { RetryStrategyOptions } from '../../lib/models/core.models.js';
 import { defaultHttpService } from '../../lib/public_api.js';
-import { toRequiredRetryStrategyOptions } from '../../lib/utils/retry-helper.js';
+import { toRequiredRetryStrategyOptions } from '../../lib/utils/retry.utils.js';
 import type { FetchResponse } from '../_models/test.models.js';
 import { getFetchMock } from '../_utils/test.utils.js';
 
