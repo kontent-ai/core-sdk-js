@@ -1,3 +1,5 @@
+import type { HttpServiceStatus } from '../http/http.models.js';
+
 /**
  * SDK info for identification of the SDK
  */
@@ -31,6 +33,19 @@ export type Header = {
 };
 
 export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
+
+/**
+ * Contextual data in SDK errors
+ */
+export type SdkErrorData = {
+    readonly originalError: unknown;
+    readonly url: string;
+    readonly retryAttempt: number;
+    readonly retryStrategyOptions: Required<RetryStrategyOptions>;
+    readonly responseHeaders: readonly Header[];
+    readonly status: HttpServiceStatus | undefined;
+    readonly requestHeaders: readonly Header[];
+};
 
 export type RetryStrategyOptions = {
     /**

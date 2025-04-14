@@ -10,7 +10,7 @@ const retryStrategyOptions: Required<RetryStrategyOptions> = toRequiredRetryStra
     defaultDelayBetweenRequestsMs: 0
 });
 
-describe('Failed requests', async () => {
+describe('Execute request - Fail', async () => {
     const error = await resolveResponseAsync();
 
     it('Error should be instance of CoreSdkError', () => {
@@ -19,32 +19,38 @@ describe('Failed requests', async () => {
 
     if (error instanceof CoreSdkError) {
         it('Error properties should be correctly mapped', () => {
-            expect(error.url).toStrictEqual(url);
-            expect(error.responseHeaders).toStrictEqual([]);
+            expect(error.sdk.url).toStrictEqual(url);
+            expect(error.sdk.responseHeaders).toStrictEqual([]);
 
             // undefined because we don't have a response status
-            expect(error.status).toStrictEqual(undefined);
+            expect(error.sdk.status).toStrictEqual(undefined);
 
             const retryAttempts = retryStrategyOptions.maxAttempts;
 
-            expect(error.retryAttempt).toStrictEqual(retryAttempts);
+            expect(error.sdk.retryAttempt).toStrictEqual(retryAttempts);
             expect(error.message).toStrictEqual(
                 getDefaultErrorMessage({
                     url,
                     retryAttempts,
-                    status: undefined
+                    status: undefined,
+                    error: new Error(`Failed to parse URL from ${url}`)
                 })
             );
 
             // original error thrown by the fetch API
-            expect(error.originalError).toBeInstanceOf(Error);
+            expect(error.sdk.originalError).toBeInstanceOf(Error);
         });
     }
 });
 
 async function resolveResponseAsync(): Promise<unknown> {
     try {
-        return await defaultHttpService.getAsync(url, { retryStrategy: retryStrategyOptions });
+        return await defaultHttpService.executeAsync({
+            url,
+            method: 'GET',
+            body: null,
+            options: { retryStrategy: retryStrategyOptions }
+        });
     } catch (error) {
         return error;
     }

@@ -7,36 +7,17 @@ import { runWithRetryAsync, toRequiredRetryStrategyOptions } from '../utils/retr
 import { type HttpQueryOptions, type HttpResponse, type HttpService, CoreSdkError } from './http.models.js';
 
 export const defaultHttpService: HttpService = {
-    getAsync: async <TResponseData>(
-        url: string,
-        options?: HttpQueryOptions
-    ): Promise<HttpResponse<TResponseData, null>> => {
-        const retryStrategyOptions: Required<RetryStrategyOptions> = toRequiredRetryStrategyOptions(
-            options?.retryStrategy
-        );
-        const requestHeaders: readonly Header[] = getRequestHeaders(options?.requestHeaders);
-
-        return await runWithRetryAsync<HttpResponse<TResponseData, null>>({
-            funcAsync: async () => {
-                return await executeFetchRequestAsync({
-                    url,
-                    method: 'GET',
-                    body: null,
-                    requestHeaders,
-                    retryStrategyOptions
-                });
-            },
-            retryAttempt: 0,
-            url,
-            retryStrategyOptions,
-            requestHeaders
-        });
-    },
-    postAsync: async <TResponseData, TBodyData extends JsonValue>(
-        url: string,
-        body: TBodyData,
-        options?: HttpQueryOptions
-    ): Promise<HttpResponse<TResponseData, TBodyData>> => {
+    executeAsync: async <TResponseData extends JsonValue, TBodyData extends JsonValue>({
+        url,
+        method,
+        body,
+        options
+    }: {
+        readonly url: string;
+        readonly method: HttpMethod;
+        readonly body: TBodyData;
+        readonly options?: HttpQueryOptions;
+    }): Promise<HttpResponse<TResponseData, TBodyData>> => {
         const retryStrategyOptions: Required<RetryStrategyOptions> = toRequiredRetryStrategyOptions(
             options?.retryStrategy
         );
@@ -46,10 +27,41 @@ export const defaultHttpService: HttpService = {
             funcAsync: async () => {
                 return await executeFetchRequestAsync({
                     url,
-                    method: 'POST',
+                    method: method,
                     body,
                     requestHeaders,
-                    retryStrategyOptions
+                    retryStrategyOptions,
+                    resolveDataAsync: async (response) => (await response.json()) as TResponseData
+                });
+            },
+            retryAttempt: 0,
+            url,
+            retryStrategyOptions,
+            requestHeaders
+        });
+    },
+
+    downloadFileAsync: async ({
+        url,
+        options
+    }: {
+        readonly url: string;
+        readonly options?: HttpQueryOptions;
+    }): Promise<HttpResponse<Blob, null>> => {
+        const retryStrategyOptions: Required<RetryStrategyOptions> = toRequiredRetryStrategyOptions(
+            options?.retryStrategy
+        );
+        const requestHeaders: readonly Header[] = getRequestHeaders(options?.requestHeaders);
+
+        return await runWithRetryAsync<HttpResponse<Blob, null>>({
+            funcAsync: async () => {
+                return await executeFetchRequestAsync({
+                    url,
+                    method: 'GET',
+                    body: null,
+                    requestHeaders,
+                    retryStrategyOptions,
+                    resolveDataAsync: async (response) => await response.blob()
                 });
             },
             retryAttempt: 0,
@@ -60,42 +72,47 @@ export const defaultHttpService: HttpService = {
     }
 };
 
-async function executeFetchRequestAsync<TResponseData, TBodyData extends JsonValue>({
+async function executeFetchRequestAsync<TResponseData extends JsonValue | Blob, TBodyData extends JsonValue>({
     url,
     method,
     body,
     requestHeaders,
-    retryStrategyOptions
+    retryStrategyOptions,
+    resolveDataAsync
 }: {
     readonly url: string;
     readonly method: HttpMethod;
     readonly body: TBodyData;
     readonly requestHeaders: readonly Header[];
     readonly retryStrategyOptions: Required<RetryStrategyOptions>;
+    readonly resolveDataAsync: (response: Response) => Promise<TResponseData>;
 }): Promise<HttpResponse<TResponseData, TBodyData>> {
     const response = await fetch(url, {
         headers: toFetchHeaders(requestHeaders),
         method: method,
-        body: JSON.stringify(body)
+        body: body ? JSON.stringify(body) : undefined
     });
     const headers = toSdkHeaders(response.headers);
 
     if (!response.ok) {
         throw new CoreSdkError(
-            getDefaultErrorMessage({ url, retryAttempts: 0, status: response.status }),
-            undefined,
-            url,
-            0,
-            retryStrategyOptions,
-            headers,
-            response.status,
-            requestHeaders
+            getDefaultErrorMessage({ url, retryAttempts: 0, status: response.status, error: undefined }),
+            {
+                originalError: undefined,
+                url,
+                retryAttempt: 0,
+                retryStrategyOptions,
+                responseHeaders: headers,
+                status: response.status,
+                requestHeaders
+            }
         );
     }
 
     return {
-        data: (await response.json()) as TResponseData,
+        data: await resolveDataAsync(response),
         body: body,
+        method: method,
         responseHeaders: headers,
         status: response.status,
         requestHeaders

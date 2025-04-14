@@ -15,8 +15,8 @@ type RetryResult =
 const defaultMaxAttempts: NonNullable<RetryStrategyOptions['maxAttempts']> = 3;
 const defaultDelayBetweenAttemptsMs: NonNullable<RetryStrategyOptions['defaultDelayBetweenRequestsMs']> = 1000;
 const defaultCanRetryError: NonNullable<RetryStrategyOptions['canRetryError']> = (error) => {
-    if (error instanceof CoreSdkError && error.status) {
-        return error.status >= 500 || error.status === 429;
+    if (error instanceof CoreSdkError && error.sdk.status) {
+        return error.sdk.status >= 500 || error.sdk.status === 429;
     }
 
     return true;
@@ -32,7 +32,7 @@ export async function runWithRetryAsync<TResult>(data: {
     try {
         return await data.funcAsync();
     } catch (error) {
-        const headers = error instanceof CoreSdkError ? error.responseHeaders : [];
+        const headers = error instanceof CoreSdkError ? error.sdk.responseHeaders : [];
         const retryResult = getRetryResult({
             error,
             headers,
@@ -42,14 +42,16 @@ export async function runWithRetryAsync<TResult>(data: {
 
         if (!retryResult.canRetry) {
             throw new CoreSdkError(
-                getDefaultErrorMessage({ url: data.url, retryAttempts: data.retryAttempt, status: undefined }),
-                error,
-                data.url,
-                data.retryAttempt,
-                data.retryStrategyOptions,
-                headers,
-                undefined,
-                data.requestHeaders
+                getDefaultErrorMessage({ url: data.url, retryAttempts: data.retryAttempt, status: undefined, error }),
+                {
+                    originalError: error,
+                    url: data.url,
+                    retryAttempt: data.retryAttempt,
+                    retryStrategyOptions: data.retryStrategyOptions,
+                    responseHeaders: headers,
+                    status: undefined,
+                    requestHeaders: data.requestHeaders
+                }
             );
         }
 

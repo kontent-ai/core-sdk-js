@@ -1,4 +1,10 @@
-import type { Header, LiteralUnionNumber, RetryStrategyOptions } from '../models/core.models.js';
+import type {
+    Header,
+    HttpMethod,
+    LiteralUnionNumber,
+    RetryStrategyOptions,
+    SdkErrorData
+} from '../models/core.models.js';
 import type { JsonValue } from '../models/json.models.js';
 
 /**
@@ -24,7 +30,7 @@ export type HttpQueryOptions = {
     readonly retryStrategy?: RetryStrategyOptions;
 };
 
-export type HttpResponse<TResponseData, TBodyData extends JsonValue> = {
+export type HttpResponse<TResponseData extends JsonValue | Blob, TBodyData extends JsonValue> = {
     /**
      * The data of the response.
      */
@@ -34,6 +40,11 @@ export type HttpResponse<TResponseData, TBodyData extends JsonValue> = {
      * The request body data.
      */
     readonly body: TBodyData;
+
+    /**
+     * The request method.
+     */
+    readonly method: HttpMethod;
 
     /**
      * The request headers.
@@ -53,34 +64,34 @@ export type HttpResponse<TResponseData, TBodyData extends JsonValue> = {
 
 export type HttpService = {
     /**
-     * Executes a GET request
+     * Executes request with the given method
      */
-    getAsync<TResponseData extends JsonValue>(
-        url: string,
-        options?: HttpQueryOptions
-    ): Promise<HttpResponse<TResponseData, null>>;
+    executeAsync<TResponseData extends JsonValue, TBodyData extends JsonValue>({
+        url,
+        method,
+        body,
+        options
+    }: {
+        readonly url: string;
+        readonly method: HttpMethod;
+        readonly body: TBodyData;
+        readonly options?: HttpQueryOptions;
+    }): Promise<HttpResponse<TResponseData, TBodyData>>;
 
     /**
-     * Executes a POST request
+     * Downloads a file from the given url and gets binary data
      */
-    postAsync<TResponseData extends JsonValue, TBodyData extends JsonValue>(
-        url: string,
-        body: TBodyData,
-        options?: HttpQueryOptions
-    ): Promise<HttpResponse<TResponseData, TBodyData>>;
+    downloadFileAsync({
+        url,
+        options
+    }: {
+        readonly url: string;
+        readonly options?: HttpQueryOptions;
+    }): Promise<HttpResponse<Blob, null>>;
 };
 
 export class CoreSdkError extends Error {
-    constructor(
-        readonly message: string,
-        readonly originalError: unknown,
-        readonly url: string,
-        readonly retryAttempt: number,
-        readonly retryStrategyOptions: Required<RetryStrategyOptions>,
-        readonly responseHeaders: readonly Header[],
-        readonly status: HttpServiceStatus | undefined,
-        readonly requestHeaders: readonly Header[]
-    ) {
+    constructor(readonly message: string, readonly sdk: SdkErrorData) {
         super(message);
     }
 }

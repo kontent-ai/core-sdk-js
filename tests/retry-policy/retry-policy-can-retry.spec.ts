@@ -4,7 +4,7 @@ import type { RetryStrategyOptions } from '../../lib/models/core.models.js';
 import { defaultHttpService } from '../../lib/public_api.js';
 import { toRequiredRetryStrategyOptions } from '../../lib/utils/retry.utils.js';
 import type { FetchResponse } from '../_models/test.models.js';
-import { getFetchMock } from '../_utils/test.utils.js';
+import { getFetchJsonMock } from '../_utils/test.utils.js';
 
 const testCases: readonly {
     readonly canRetryError: NonNullable<RetryStrategyOptions['canRetryError']>;
@@ -60,7 +60,7 @@ describe('Retry policy - Can retry error', async () => {
     });
 
     for (const testCase of testCases) {
-        global.fetch = getFetchMock({
+        global.fetch = getFetchJsonMock({
             json: testCase.fetchResponse.json,
             status: testCase.fetchResponse.statusCode
         });
@@ -73,7 +73,7 @@ describe('Retry policy - Can retry error', async () => {
 
         if (error instanceof CoreSdkError) {
             it(`Should retry '${testCase.expectedRetryAttempts}' times`, () => {
-                expect(error.retryAttempt).toBe(testCase.expectedRetryAttempts);
+                expect(error.sdk.retryAttempt).toBe(testCase.expectedRetryAttempts);
             });
         }
     }
@@ -81,13 +81,18 @@ describe('Retry policy - Can retry error', async () => {
 
 async function resolveResponseAsync(testCase: (typeof testCases)[number]): Promise<unknown> {
     try {
-        return await defaultHttpService.getAsync('', {
-            retryStrategy: toRequiredRetryStrategyOptions({
-                canRetryError: testCase.canRetryError,
-                defaultDelayBetweenRequestsMs: 0,
-                maxAttempts: testCase.maxRetryAttempts,
-                logRetryAttempt: false
-            })
+        return await defaultHttpService.executeAsync({
+            url: '',
+            method: 'GET',
+            body: null,
+            options: {
+                retryStrategy: toRequiredRetryStrategyOptions({
+                    canRetryError: testCase.canRetryError,
+                    defaultDelayBetweenRequestsMs: 0,
+                    maxAttempts: testCase.maxRetryAttempts,
+                    logRetryAttempt: false
+                })
+            }
         });
     } catch (error) {
         return error;

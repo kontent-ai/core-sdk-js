@@ -1,8 +1,8 @@
 import { afterAll, describe, expect, it, vi } from 'vitest';
 import { defaultHttpService } from '../../lib/public_api.js';
-import { sdkInfo } from '../../lib/sdk.info.js';
+import { sdkInfo } from '../../lib/sdk.generated.js';
 import { getSdkIdHeader } from '../../lib/utils/header.utils.js';
-import { getFetchMock } from '../_utils/test.utils.js';
+import { getFetchJsonMock } from '../_utils/test.utils.js';
 
 const sdkIdHeader = getSdkIdHeader(sdkInfo);
 
@@ -11,13 +11,17 @@ describe('Default headers', async () => {
         vi.resetAllMocks();
     });
 
-    global.fetch = getFetchMock({
+    global.fetch = getFetchJsonMock({
         json: {},
         status: 200,
         headers: [{ name: 'Content-Type', value: 'application/json' }]
     });
 
-    const response = await defaultHttpService.getAsync(`https://domain.com`);
+    const response = await defaultHttpService.executeAsync({
+        url: `https://domain.com`,
+        method: 'GET',
+        body: null
+    });
 
     it('Response should contain application/json content type header', () => {
         expect(response.responseHeaders.find((m) => m.name.toLowerCase() === 'content-type')?.value).toStrictEqual(
@@ -37,13 +41,16 @@ describe(`Custom '${sdkIdHeader.name}' header`, async () => {
 
     const customSdkId = 'x';
 
-    global.fetch = getFetchMock({
+    global.fetch = getFetchJsonMock({
         json: {},
         status: 200
     });
 
-    const response = await defaultHttpService.getAsync(`https://domain.com`, {
-        requestHeaders: [{ name: 'X-KC-SDKID', value: customSdkId }]
+    const response = await defaultHttpService.executeAsync({
+        url: `https://domain.com`,
+        method: 'GET',
+        body: null,
+        options: { requestHeaders: [{ name: 'X-KC-SDKID', value: customSdkId }] }
     });
 
     it(`Request should contain only single '${sdkIdHeader.name}' header`, () => {
