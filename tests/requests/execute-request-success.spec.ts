@@ -1,5 +1,6 @@
 import { afterAll, describe, expect, it, vi } from 'vitest';
 import { defaultHttpService } from '../../lib/http/http.service.js';
+import type { HttpMethod, HttpServiceStatus } from '../../lib/public_api.js';
 import { getFetchJsonMock } from '../_utils/test.utils.js';
 
 type ResponseData = {
@@ -68,7 +69,7 @@ describe('Execute request - Success (POST)', async () => {
     });
 
     it('Status should be 200', () => {
-        expect(response.status).toStrictEqual(200);
+        expect(response.status).toStrictEqual<HttpServiceStatus>(200);
     });
 
     it(`Response data should be set`, () => {
@@ -80,6 +81,6 @@ describe('Execute request - Success (POST)', async () => {
     });
 
     it(`Response method should be POST`, () => {
-        expect(response.method).toStrictEqual('POST');
+        expect(response.method).toStrictEqual<HttpMethod>('POST');
     });
 });
