@@ -1,7 +1,6 @@
-import type { HttpResponse } from '../http/http.models.js';
 import { CoreSdkError } from '../http/http.models.js';
-import { getDefaultErrorMessage } from '../http/http.service.js';
 import type { Header, RetryStrategyOptions } from '../models/core.models.js';
+import { getDefaultErrorMessage } from './error.utils.js';
 import { getRetryAfterHeaderValue } from './header.utils.js';
 
 type RetryResult =
@@ -23,13 +22,13 @@ const defaultCanRetryError: NonNullable<RetryStrategyOptions['canRetryError']> =
     return true;
 };
 
-export async function runWithRetryAsync<TResponseData>(data: {
-    readonly funcAsync: () => Promise<HttpResponse<TResponseData>>;
+export async function runWithRetryAsync<TResult>(data: {
+    readonly funcAsync: () => Promise<TResult>;
     readonly retryStrategyOptions: Required<RetryStrategyOptions>;
     readonly retryAttempt: number;
     readonly url: string;
     readonly requestHeaders: readonly Header[];
-}): Promise<HttpResponse<TResponseData>> {
+}): Promise<TResult> {
     try {
         return await data.funcAsync();
     } catch (error) {

@@ -1,31 +1,19 @@
 import type { Header, RetryStrategyOptions } from '../models/core.models.js';
 import { sdkInfo } from '../sdk.generated.js';
+import { getDefaultErrorMessage } from '../utils/error.utils.js';
 import { getSdkIdHeader, toFetchHeaders, toSdkHeaders } from '../utils/header.utils.js';
-import { runWithRetryAsync, toRequiredRetryStrategyOptions } from '../utils/retry-helper.js';
+import { runWithRetryAsync, toRequiredRetryStrategyOptions } from '../utils/retry.utils.js';
+import type { HttpResponseWithBody } from './http.models.js';
 import { type HttpQueryOptions, type HttpResponse, type HttpService, CoreSdkError } from './http.models.js';
-
-export function getDefaultErrorMessage({
-    url,
-    retryAttempts,
-    status
-}: {
-    readonly url: string;
-    readonly retryAttempts: number;
-    readonly status: number | undefined;
-}): string {
-    return `Failed to execute request '${url}' after '${retryAttempts}' attempts${
-        status ? ` with status '${status}'` : ''
-    }`;
-}
 
 export const defaultHttpService: HttpService = {
     getAsync: async <TResponseData>(url: string, options?: HttpQueryOptions): Promise<HttpResponse<TResponseData>> => {
         const retryStrategyOptions: Required<RetryStrategyOptions> = toRequiredRetryStrategyOptions(
             options?.retryStrategy
         );
-        const requestHeaders = getRequestHeaders(options?.requestHeaders);
+        const requestHeaders: readonly Header[] = getRequestHeaders(options?.requestHeaders);
 
-        return await runWithRetryAsync<TResponseData>({
+        return await runWithRetryAsync<HttpResponse<TResponseData>>({
             funcAsync: async () => {
                 const response = await fetch(url, {
                     headers: toFetchHeaders(requestHeaders)
@@ -47,6 +35,52 @@ export const defaultHttpService: HttpService = {
 
                 return {
                     data: (await response.json()) as TResponseData,
+                    responseHeaders: headers,
+                    status: response.status,
+                    requestHeaders
+                };
+            },
+            retryAttempt: 0,
+            url,
+            retryStrategyOptions,
+            requestHeaders
+        });
+    },
+    postAsync: async <TResponseData, TBodyData>(
+        url: string,
+        body: TBodyData,
+        options?: HttpQueryOptions
+    ): Promise<HttpResponseWithBody<TResponseData, TBodyData>> => {
+        const retryStrategyOptions: Required<RetryStrategyOptions> = toRequiredRetryStrategyOptions(
+            options?.retryStrategy
+        );
+        const requestHeaders: readonly Header[] = getRequestHeaders(options?.requestHeaders);
+
+        return await runWithRetryAsync<HttpResponseWithBody<TResponseData, TBodyData>>({
+            funcAsync: async () => {
+                const response = await fetch(url, {
+                    headers: toFetchHeaders(requestHeaders),
+                    method: 'POST',
+                    body: JSON.stringify(body)
+                });
+                const headers = toSdkHeaders(response.headers);
+
+                if (!response.ok) {
+                    throw new CoreSdkError(
+                        getDefaultErrorMessage({ url, retryAttempts: 0, status: response.status }),
+                        undefined,
+                        url,
+                        0,
+                        retryStrategyOptions,
+                        headers,
+                        response.status,
+                        requestHeaders
+                    );
+                }
+
+                return {
+                    data: (await response.json()) as TResponseData,
+                    body: body,
                     responseHeaders: headers,
                     status: response.status,
                     requestHeaders
