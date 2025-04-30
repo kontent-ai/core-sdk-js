@@ -69,10 +69,44 @@ export const defaultHttpService: HttpService = {
             retryStrategyOptions,
             requestHeaders
         });
+    },
+
+    uploadFileAsync: async <TResponseData extends JsonValue>({
+        url,
+        method,
+        file,
+        options
+    }: {
+        readonly url: string;
+        readonly method: Extract<HttpMethod, 'POST' | 'PUT' | 'PATCH'>;
+        readonly file: Blob;
+        readonly options?: HttpQueryOptions;
+    }): Promise<HttpResponse<TResponseData, Blob>> => {
+        const retryStrategyOptions: Required<RetryStrategyOptions> = toRequiredRetryStrategyOptions(
+            options?.retryStrategy
+        );
+        const requestHeaders: readonly Header[] = getRequestHeaders(options?.requestHeaders);
+
+        return await runWithRetryAsync<HttpResponse<TResponseData, Blob>>({
+            funcAsync: async () => {
+                return await executeFetchRequestAsync({
+                    url,
+                    method,
+                    body: file,
+                    requestHeaders,
+                    retryStrategyOptions,
+                    resolveDataAsync: async (response) => (await response.json()) as TResponseData
+                });
+            },
+            retryAttempt: 0,
+            url,
+            retryStrategyOptions,
+            requestHeaders
+        });
     }
 };
 
-async function executeFetchRequestAsync<TResponseData extends JsonValue | Blob, TBodyData extends JsonValue>({
+async function executeFetchRequestAsync<TResponseData extends JsonValue | Blob, TBodyData extends JsonValue | Blob>({
     url,
     method,
     body,

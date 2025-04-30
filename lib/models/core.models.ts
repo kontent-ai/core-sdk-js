@@ -24,7 +24,7 @@ export type Header = {
     /**
      * The header name.
      */
-    readonly name: LiteralUnion<'Retry-After' | 'X-KC-SDKID'>;
+    readonly name: LiteralUnion<'Retry-After' | 'X-KC-SDKID' | 'Authorization'>;
 
     /**
      * The header value.

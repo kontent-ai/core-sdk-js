@@ -25,7 +25,7 @@ export type HttpQueryOptions = {
     readonly retryStrategy?: RetryStrategyOptions;
 };
 
-export type HttpResponse<TResponseData extends JsonValue | Blob, TBodyData extends JsonValue> = {
+export type HttpResponse<TResponseData extends JsonValue | Blob, TBodyData extends JsonValue | Blob> = {
     /**
      * The data of the response.
      */
@@ -83,6 +83,21 @@ export type HttpService = {
         readonly url: string;
         readonly options?: HttpQueryOptions;
     }): Promise<HttpResponse<Blob, null>>;
+
+    /**
+     * Uploads a file to the given url
+     */
+    uploadFileAsync<TResponseData extends JsonValue>({
+        url,
+        method,
+        file,
+        options
+    }: {
+        readonly url: string;
+        readonly file: Blob;
+        readonly method: Extract<HttpMethod, 'POST' | 'PUT' | 'PATCH'>;
+        readonly options?: HttpQueryOptions;
+    }): Promise<HttpResponse<TResponseData, Blob>>;
 };
 
 export class CoreSdkError extends Error {
