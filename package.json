@@ -44,16 +44,16 @@
     },
     "dependencies": {},
     "devDependencies": {
-        "@eslint/js": "9.24.0",
-        "@types/node": "22.14.0",
+        "@eslint/js": "9.26.0",
+        "@types/node": "22.15.14",
         "@types/yargs": "17.0.33",
         "dotenv-cli": "8.0.0",
-        "eslint": "9.24.0",
+        "eslint": "9.26.0",
         "standard-version": "9.5.0",
-        "tsx": "4.19.3",
+        "tsx": "4.19.4",
         "typescript": "5.8.3",
-        "typescript-eslint": "8.29.1",
+        "typescript-eslint": "8.32.0",
         "vite-tsconfig-paths": "5.1.4",
-        "vitest": "3.1.1"
+        "vitest": "3.1.3"
     }
 }
