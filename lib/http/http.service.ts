@@ -4,7 +4,8 @@ import { sdkInfo } from '../sdk.generated.js';
 import { getDefaultErrorMessage } from '../utils/error.utils.js';
 import { getSdkIdHeader, toFetchHeaders, toSdkHeaders } from '../utils/header.utils.js';
 import { runWithRetryAsync, toRequiredRetryStrategyOptions } from '../utils/retry.utils.js';
-import { type HttpQueryOptions, type HttpResponse, type HttpService, CoreSdkError } from './http.models.js';
+import type { DownloadFileRequestOptions, ExecuteRequestOptions, UploadFileRequestOptions } from './http.models.js';
+import { type HttpResponse, type HttpService, CoreSdkError } from './http.models.js';
 
 export const defaultHttpService: HttpService = {
     executeAsync: async <TResponseData extends JsonValue, TBodyData extends JsonValue>({
@@ -12,12 +13,7 @@ export const defaultHttpService: HttpService = {
         method,
         body,
         options
-    }: {
-        readonly url: string;
-        readonly method: HttpMethod;
-        readonly body: TBodyData;
-        readonly options?: HttpQueryOptions;
-    }): Promise<HttpResponse<TResponseData, TBodyData>> => {
+    }: ExecuteRequestOptions<TBodyData>): Promise<HttpResponse<TResponseData, TBodyData>> => {
         const retryStrategyOptions: Required<RetryStrategyOptions> = toRequiredRetryStrategyOptions(
             options?.retryStrategy
         );
@@ -41,13 +37,7 @@ export const defaultHttpService: HttpService = {
         });
     },
 
-    downloadFileAsync: async ({
-        url,
-        options
-    }: {
-        readonly url: string;
-        readonly options?: HttpQueryOptions;
-    }): Promise<HttpResponse<Blob, null>> => {
+    downloadFileAsync: async ({ url, options }: DownloadFileRequestOptions): Promise<HttpResponse<Blob, null>> => {
         const retryStrategyOptions: Required<RetryStrategyOptions> = toRequiredRetryStrategyOptions(
             options?.retryStrategy
         );
@@ -76,12 +66,7 @@ export const defaultHttpService: HttpService = {
         method,
         file,
         options
-    }: {
-        readonly url: string;
-        readonly method: Extract<HttpMethod, 'POST' | 'PUT' | 'PATCH'>;
-        readonly file: Blob;
-        readonly options?: HttpQueryOptions;
-    }): Promise<HttpResponse<TResponseData, Blob>> => {
+    }: UploadFileRequestOptions): Promise<HttpResponse<TResponseData, Blob>> => {
         const retryStrategyOptions: Required<RetryStrategyOptions> = toRequiredRetryStrategyOptions(
             options?.retryStrategy
         );

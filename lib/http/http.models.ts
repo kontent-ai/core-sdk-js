@@ -57,47 +57,44 @@ export type HttpResponse<TResponseData extends JsonValue | Blob, TBodyData exten
     readonly status: HttpServiceStatus;
 };
 
+export type ExecuteRequestOptions<TBodyData extends JsonValue> = {
+    readonly url: string;
+    readonly method: HttpMethod;
+    readonly body: TBodyData;
+    readonly options?: HttpQueryOptions;
+};
+
+export type UploadFileRequestOptions = {
+    readonly url: string;
+    readonly method: Extract<HttpMethod, 'POST' | 'PUT' | 'PATCH'>;
+    readonly file: Blob;
+    readonly options?: HttpQueryOptions;
+};
+
+export type DownloadFileRequestOptions = {
+    readonly url: string;
+    readonly options?: HttpQueryOptions;
+};
+
 export type HttpService = {
     /**
      * Executes request with the given method
      */
-    executeAsync<TResponseData extends JsonValue, TBodyData extends JsonValue>({
-        url,
-        method,
-        body,
-        options
-    }: {
-        readonly url: string;
-        readonly method: HttpMethod;
-        readonly body: TBodyData;
-        readonly options?: HttpQueryOptions;
-    }): Promise<HttpResponse<TResponseData, TBodyData>>;
+    executeAsync<TResponseData extends JsonValue, TBodyData extends JsonValue>(
+        opt: ExecuteRequestOptions<TBodyData>
+    ): Promise<HttpResponse<TResponseData, TBodyData>>;
 
     /**
      * Downloads a file from the given url and gets binary data
      */
-    downloadFileAsync({
-        url,
-        options
-    }: {
-        readonly url: string;
-        readonly options?: HttpQueryOptions;
-    }): Promise<HttpResponse<Blob, null>>;
+    downloadFileAsync(opt: DownloadFileRequestOptions): Promise<HttpResponse<Blob, null>>;
 
     /**
      * Uploads a file to the given url
      */
-    uploadFileAsync<TResponseData extends JsonValue>({
-        url,
-        method,
-        file,
-        options
-    }: {
-        readonly url: string;
-        readonly file: Blob;
-        readonly method: Extract<HttpMethod, 'POST' | 'PUT' | 'PATCH'>;
-        readonly options?: HttpQueryOptions;
-    }): Promise<HttpResponse<TResponseData, Blob>>;
+    uploadFileAsync<TResponseData extends JsonValue>(
+        opt: UploadFileRequestOptions
+    ): Promise<HttpResponse<TResponseData, Blob>>;
 };
 
 export class CoreSdkError extends Error {

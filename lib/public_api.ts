@@ -3,10 +3,13 @@
  */
 export {
     CoreSdkError,
+    type DownloadFileRequestOptions,
+    type ExecuteRequestOptions,
     type HttpQueryOptions,
     type HttpResponse,
     type HttpService,
-    type HttpServiceStatus
+    type HttpServiceStatus,
+    type UploadFileRequestOptions
 } from './http/http.models.js';
 export { defaultHttpService } from './http/http.service.js';
 export type { Header, HttpMethod, RetryStrategyOptions, SdkErrorData, SDKInfo } from './models/core.models.js';
