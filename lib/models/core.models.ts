@@ -38,6 +38,7 @@ export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
  * Contextual data in SDK errors
  */
 export type SdkErrorData = {
+	readonly responseData: unknown | undefined;
 	readonly originalError: unknown;
 	readonly url: string;
 	readonly retryAttempt: number;

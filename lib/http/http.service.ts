@@ -15,7 +15,7 @@ export const defaultHttpService: HttpService = {
 		options,
 	}: ExecuteRequestOptions<TBodyData>): Promise<HttpResponse<TResponseData, TBodyData>> => {
 		const retryStrategyOptions: Required<RetryStrategyOptions> = toRequiredRetryStrategyOptions(options?.retryStrategy);
-		const requestHeaders: readonly Header[] = getRequestHeaders(options?.requestHeaders);
+		const requestHeaders: readonly Header[] = getRequestHeaders(options?.requestHeaders, { addJsonContentType: true });
 
 		return await runWithRetryAsync<HttpResponse<TResponseData, TBodyData>>({
 			funcAsync: async () => {
@@ -100,10 +100,35 @@ async function executeFetchRequestAsync<TResponseData extends JsonValue | Blob, 
 	readonly retryStrategyOptions: Required<RetryStrategyOptions>;
 	readonly resolveDataAsync: (response: Response) => Promise<TResponseData>;
 }): Promise<HttpResponse<TResponseData, TBodyData>> {
+	const getRequestBody = (): string | Blob | null => {
+		if (body === null) {
+			return null;
+		}
+
+		if (body instanceof Blob) {
+			return body;
+		}
+
+		try {
+			return JSON.stringify(body);
+		} catch (error) {
+			throw new CoreSdkError('Failed to stringify request body.', {
+				originalError: error,
+				url,
+				retryAttempt: 0,
+				retryStrategyOptions,
+				responseHeaders: [],
+				status: 0,
+				requestHeaders,
+				responseData: undefined,
+			});
+		}
+	};
+
 	const response = await fetch(url, {
 		headers: toFetchHeaders(requestHeaders),
 		method: method,
-		body: body ? JSON.stringify(body) : undefined,
+		body: getRequestBody(),
 	});
 	const headers = toSdkHeaders(response.headers);
 
@@ -123,6 +148,7 @@ async function executeFetchRequestAsync<TResponseData extends JsonValue | Blob, 
 				responseHeaders: headers,
 				status: response.status,
 				requestHeaders,
+				responseData: (await response.json()) ?? undefined,
 			},
 		);
 	}
@@ -137,11 +163,16 @@ async function executeFetchRequestAsync<TResponseData extends JsonValue | Blob, 
 	};
 }
 
-function getRequestHeaders(headers: readonly Header[] | undefined): readonly Header[] {
+function getRequestHeaders(headers: readonly Header[] | undefined, options?: { readonly addJsonContentType?: boolean }): readonly Header[] {
+	const contentTypeHeaderAdded = headers?.some((header) => header.name.toLowerCase() === 'Content-Type'?.toLowerCase());
+
 	const allHeaders: readonly Header[] = [
 		...(headers ?? []),
+		// add content type header if not already present
+		...(!contentTypeHeaderAdded && options?.addJsonContentType ? [{ name: 'Content-Type', value: 'application/json' }] : []),
 		// add tracking header if not already present
 		...(headers?.find((header) => header.name === 'X-KC-SDKID') ? [] : [getSdkIdHeader(sdkInfo)]),
 	];
+
 	return allHeaders;
 }

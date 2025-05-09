@@ -40,7 +40,7 @@ export function getFetchBlobMock({
 }
 
 export function getFakeBlob(): Blob {
-	return new Blob([''], { type: 'image/jpeg' });
+	return new Blob(['x'], { type: 'text/plain' });
 }
 
 function getFetchMock<TResponseData extends JsonValue | Blob>({
@@ -61,16 +61,8 @@ function getFetchMock<TResponseData extends JsonValue | Blob>({
 			ok: status === 200,
 			headers: toFetchHeaders(headers ?? []),
 			status,
-			...(json
-				? {
-						json: async () => await Promise.resolve(json),
-					}
-				: {}),
-			...(blob
-				? {
-						blob: async () => await Promise.resolve(blob),
-					}
-				: {}),
+			json: async () => await Promise.resolve(json),
+			...(blob ? { blob: async () => await Promise.resolve(blob) } : {}),
 		});
 	});
 }

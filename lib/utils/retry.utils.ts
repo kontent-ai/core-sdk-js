@@ -32,10 +32,10 @@ export async function runWithRetryAsync<TResult>(data: {
 	try {
 		return await data.funcAsync();
 	} catch (error) {
-		const headers = error instanceof CoreSdkError ? error.sdk.responseHeaders : [];
+		const responseHeaders = error instanceof CoreSdkError ? error.sdk.responseHeaders : [];
 		const retryResult = getRetryResult({
 			error,
-			headers,
+			responseHeaders: responseHeaders,
 			retryAttempt: data.retryAttempt,
 			options: data.retryStrategyOptions,
 		});
@@ -49,12 +49,13 @@ export async function runWithRetryAsync<TResult>(data: {
 					error,
 				}),
 				{
-					originalError: error,
+					originalError: error instanceof CoreSdkError ? error.sdk.originalError : error,
+					responseData: error instanceof CoreSdkError ? error.sdk.responseData : undefined,
+					status: error instanceof CoreSdkError ? error.sdk.status : undefined,
 					url: data.url,
 					retryAttempt: data.retryAttempt,
 					retryStrategyOptions: data.retryStrategyOptions,
-					responseHeaders: headers,
-					status: undefined,
+					responseHeaders: responseHeaders,
 					requestHeaders: data.requestHeaders,
 				},
 			);
@@ -62,7 +63,6 @@ export async function runWithRetryAsync<TResult>(data: {
 
 		const newRetryAttempt = data.retryAttempt + 1;
 
-		// log retry attempt
 		if (data.retryStrategyOptions.logRetryAttempt) {
 			data.retryStrategyOptions.logRetryAttempt(newRetryAttempt, data.url);
 		}
@@ -70,7 +70,6 @@ export async function runWithRetryAsync<TResult>(data: {
 		// wait before retrying
 		await new Promise((resolve) => setTimeout(resolve, retryResult.retryInMs));
 
-		// retry request
 		return await runWithRetryAsync({
 			funcAsync: data.funcAsync,
 			retryStrategyOptions: data.retryStrategyOptions,
@@ -109,12 +108,12 @@ function getRetryResult({
 	retryAttempt,
 	error,
 	options,
-	headers,
+	responseHeaders,
 }: {
 	readonly retryAttempt: number;
 	readonly error: unknown;
 	readonly options: Required<RetryStrategyOptions>;
-	readonly headers: readonly Header[];
+	readonly responseHeaders: readonly Header[];
 }): RetryResult {
 	if (retryAttempt >= options.maxAttempts) {
 		return {
@@ -128,7 +127,7 @@ function getRetryResult({
 		};
 	}
 
-	const retryAfterHeaderValue = getRetryAfterHeaderValue(headers);
+	const retryAfterHeaderValue = getRetryAfterHeaderValue(responseHeaders);
 
 	if (retryAfterHeaderValue) {
 		return {
