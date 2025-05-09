@@ -91,7 +91,14 @@ export type HttpService = {
 
 export class CoreSdkError extends Error {
 	constructor(
+		/**
+		 * The message of the error
+		 */
 		readonly message: string,
+
+		/**
+		 * Contains contextual data about the error provided by the SDK
+		 */
 		readonly sdk: SdkErrorData,
 	) {
 		super(message);

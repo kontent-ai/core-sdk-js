@@ -38,13 +38,45 @@ export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
  * Contextual data in SDK errors
  */
 export type SdkErrorData = {
+	/**
+	 * The data returned by the fetch response. This may include error data (e.g. detailed error message provided by MAPI)
+	 */
 	readonly responseData: unknown | undefined;
+
+	/**
+	 * The original error that occurred. This could be any error that occurred during the processing of the request.
+	 * Not limited to Fetch errors. Think parsing errors, etc.
+	 */
 	readonly originalError: unknown;
+
+	/**
+	 * The URL of the request.
+	 */
 	readonly url: string;
+
+	/**
+	 * The number of times the request has been retried.
+	 */
 	readonly retryAttempt: number;
+
+	/**
+	 * The retry strategy options used for the request.
+	 */
 	readonly retryStrategyOptions: Required<RetryStrategyOptions>;
+
+	/**
+	 * The headers of the response.
+	 */
 	readonly responseHeaders: readonly Header[];
+
+	/**
+	 * The status of the response.
+	 */
 	readonly status: HttpServiceStatus | undefined;
+
+	/**
+	 * The headers of the request.
+	 */
 	readonly requestHeaders: readonly Header[];
 };
 
