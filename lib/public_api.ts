@@ -2,10 +2,6 @@
  * Public API
  */
 export {
-	createVersionFile,
-	deleteFolderRecursive,
-} from '../scripts/script.utils.js';
-export {
 	CoreSdkError,
 	type DownloadFileRequestOptions,
 	type ExecuteRequestOptions,
