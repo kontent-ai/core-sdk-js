@@ -1,59 +1,54 @@
 {
-    "name": "@kontent-ai/core-sdk",
-    "version": "10.10.0",
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/kontent-ai/kontent-core-js"
-    },
-    "private": false,
-    "author": "richard sustek",
-    "license": "MIT",
-    "description": "Core package with shared / common functionality for Kontent.ai SDKs",
-    "keywords": [
-        "Kontent.ai",
-        "Kontent AI",
-        "Kontent SDK Core"
-    ],
-    "engines": {
-        "node": ">= 20"
-    },
-    "exports": "./dist/public_api.js",
-    "types": "./dist/public_api.d.ts",
-    "type": "module",
-    "standard-version": {
-        "scripts": {
-            "postchangelog": "npm run set-sdk-version"
-        }
-    },
-    "scripts": {
-        "release": "standard-version && npm run update:version",
-        "release:major": "standard-version --release-as major && npm run update:version",
-        "release:major:beta": "standard-version --prerelease --release-as major && npm run update:version",
-        "release:beta": "standard-version --prerelease && npm run update:version",
-        "prerelease:standard": "standard-version --prerelease && npm run update:version",
-        "prerelease:major": "standard-version --prerelease --release-as major && npm run update:version",
-        "prepublishOnly": "npm run build && npm run push:tags",
-        "publish:beta": "npm publish --tag=next",
-        "build": "npm run clean && npm run lint:fix && tsc --p tsconfig.build.json",
-        "test": "vitest run --config=vitest.config.ts",
-        "lint": "eslint lib",
-        "lint:fix": "eslint lib --fix",
-        "clean": "tsx scripts/clean.ts",
-        "push:tags": "git push --tags",
-        "update:version": "tsx ./scripts/update-version.ts"
-    },
-    "dependencies": {},
-    "devDependencies": {
-        "@eslint/js": "9.26.0",
-        "@types/node": "22.15.14",
-        "@types/yargs": "17.0.33",
-        "dotenv-cli": "8.0.0",
-        "eslint": "9.26.0",
-        "standard-version": "9.5.0",
-        "tsx": "4.19.4",
-        "typescript": "5.8.3",
-        "typescript-eslint": "8.32.0",
-        "vite-tsconfig-paths": "5.1.4",
-        "vitest": "3.1.3"
-    }
+	"name": "@kontent-ai/core-sdk",
+	"version": "10.10.0",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/kontent-ai/kontent-core-js"
+	},
+	"private": false,
+	"author": "richard sustek",
+	"license": "MIT",
+	"description": "Core package with shared / common functionality for Kontent.ai SDKs",
+	"keywords": ["Kontent.ai", "Kontent AI", "Kontent SDK Core"],
+	"engines": {
+		"node": ">= 22"
+	},
+	"exports": "./dist/public_api.js",
+	"types": "./dist/public_api.d.ts",
+	"type": "module",
+	"standard-version": {
+		"scripts": {
+			"postchangelog": "npm run set-sdk-version"
+		}
+	},
+	"scripts": {
+		"release": "standard-version && npm run update:version",
+		"release:major": "standard-version --release-as major && npm run update:version",
+		"release:major:beta": "standard-version --prerelease --release-as major && npm run update:version",
+		"release:beta": "standard-version --prerelease && npm run update:version",
+		"prerelease:standard": "standard-version --prerelease && npm run update:version",
+		"prerelease:major": "standard-version --prerelease --release-as major && npm run update:version",
+		"prepublishOnly": "npm run build && npm run push:tags",
+		"publish:beta": "npm publish --tag=next",
+		"build": "npm run clean && npm run lint:fix && tsc --p tsconfig.build.json",
+		"test": "vitest run --config=vitest.config.ts",
+		"format": "biome format --write",
+		"lint": "biome lint",
+		"lint:fix": "biome lint --fix --unsafe",
+		"clean": "tsx scripts/clean.ts",
+		"push:tags": "git push --tags",
+		"update:version": "tsx ./scripts/update-version.ts"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "1.9.4",
+		"@types/node": "22.15.17",
+		"@types/yargs": "17.0.33",
+		"dotenv-cli": "8.0.0",
+		"chalk": "5.4.1",
+		"standard-version": "9.5.0",
+		"tsx": "4.19.4",
+		"typescript": "5.8.3",
+		"vite-tsconfig-paths": "5.1.4",
+		"vitest": "3.1.3"
+	}
 }

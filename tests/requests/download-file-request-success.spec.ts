@@ -6,30 +6,30 @@ import { getFakeBlob, getFetchBlobMock } from '../_utils/test.utils.js';
 const fakeBlob = getFakeBlob();
 
 describe('Download file - Success', async () => {
-    afterAll(() => {
-        vi.resetAllMocks();
-    });
+	afterAll(() => {
+		vi.resetAllMocks();
+	});
 
-    global.fetch = getFetchBlobMock({
-        blob: fakeBlob,
-        status: 200
-    });
+	global.fetch = getFetchBlobMock({
+		blob: fakeBlob,
+		status: 200,
+	});
 
-    const response = await defaultHttpService.downloadFileAsync({
-        url: `https://domain.com/image.jpg`,
-        options: {}
-    });
+	const response = await defaultHttpService.downloadFileAsync({
+		url: 'https://domain.com/image.jpg',
+		options: {},
+	});
 
-    it('Status should be 200', () => {
-        expect(response.status).toStrictEqual<HttpServiceStatus>(200);
-    });
+	it('Status should be 200', () => {
+		expect(response.status).toStrictEqual<HttpServiceStatus>(200);
+	});
 
-    it('Method should be GET', () => {
-        expect(response.method).toStrictEqual<HttpMethod>('GET');
-    });
+	it('Method should be GET', () => {
+		expect(response.method).toStrictEqual<HttpMethod>('GET');
+	});
 
-    it('Blob should be the same as the fake blob', () => {
-        expect(response.data).toBeInstanceOf(Blob);
-        expect(response.data).toStrictEqual(fakeBlob);
-    });
+	it('Blob should be the same as the fake blob', () => {
+		expect(response.data).toBeInstanceOf(Blob);
+		expect(response.data).toStrictEqual(fakeBlob);
+	});
 });

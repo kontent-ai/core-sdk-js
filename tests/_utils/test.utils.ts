@@ -6,63 +6,71 @@ import type { Header } from '../../lib/public_api.js';
 import { toFetchHeaders } from '../../lib/utils/header.utils.js';
 
 export function getFetchJsonMock<TResponseData extends JsonValue>({
-    json,
-    status,
-    headers
+	json,
+	status,
+	headers,
 }: {
-    readonly json: TResponseData;
-    readonly status: HttpServiceStatus;
-    readonly headers?: readonly Header[];
+	readonly json: TResponseData;
+	readonly status: HttpServiceStatus;
+	readonly headers?: readonly Header[];
 }): Mock<() => Promise<Response>> {
-    return getFetchMock<JsonValue>({
-        status,
-        headers,
-        blob: undefined,
-        json
-    });
+	return getFetchMock<JsonValue>({
+		status,
+		headers,
+		blob: undefined,
+		json,
+	});
 }
 
 export function getFetchBlobMock({
-    blob,
-    status,
-    headers
+	blob,
+	status,
+	headers,
 }: {
-    readonly blob: Blob;
-    readonly status: HttpServiceStatus;
-    readonly headers?: readonly Header[];
+	readonly blob: Blob;
+	readonly status: HttpServiceStatus;
+	readonly headers?: readonly Header[];
 }): Mock<() => Promise<Response>> {
-    return getFetchMock<Blob>({
-        blob,
-        status,
-        headers,
-        json: undefined
-    });
+	return getFetchMock<Blob>({
+		blob,
+		status,
+		headers,
+		json: undefined,
+	});
 }
 
 export function getFakeBlob(): Blob {
-    return new Blob([''], { type: 'image/jpeg' });
+	return new Blob([''], { type: 'image/jpeg' });
 }
 
 function getFetchMock<TResponseData extends JsonValue | Blob>({
-    json,
-    blob,
-    status,
-    headers
+	json,
+	blob,
+	status,
+	headers,
 }: {
-    readonly json: TResponseData extends JsonValue ? JsonValue : undefined;
-    readonly blob: TResponseData extends Blob ? Blob : undefined;
-    readonly status: HttpServiceStatus;
-    readonly headers?: readonly Header[];
+	readonly json: TResponseData extends JsonValue ? JsonValue : undefined;
+	readonly blob: TResponseData extends Blob ? Blob : undefined;
+	readonly status: HttpServiceStatus;
+	readonly headers?: readonly Header[];
 }): Mock<() => Promise<Response>> {
-    return vi.fn(() => {
-        return Promise.resolve<Response>({
-            // only implement the methods we need, ignore the rest
-            ...({} as Response),
-            ok: status === 200,
-            headers: toFetchHeaders(headers ?? []),
-            status,
-            ...(json ? { json: async () => await Promise.resolve(json) } : {}),
-            ...(blob ? { blob: async () => await Promise.resolve(blob) } : {})
-        });
-    });
+	return vi.fn(() => {
+		return Promise.resolve<Response>({
+			// only implement the methods we need, ignore the rest
+			...({} as Response),
+			ok: status === 200,
+			headers: toFetchHeaders(headers ?? []),
+			status,
+			...(json
+				? {
+						json: async () => await Promise.resolve(json),
+					}
+				: {}),
+			...(blob
+				? {
+						blob: async () => await Promise.resolve(blob),
+					}
+				: {}),
+		});
+	});
 }
