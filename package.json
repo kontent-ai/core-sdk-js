@@ -24,7 +24,6 @@
 	"scripts": {
 		"release": "standard-version && npm run update:version",
 		"release:major": "standard-version --release-as major && npm run update:version",
-		"release:beta": "standard-version --prerelease && npm run update:version",
 		"prerelease": "standard-version --prerelease && npm run update:version",
 		"prerelease:major": "standard-version --prerelease --release-as major && npm run update:version",
 		"prepublishOnly": "npm run build && npm run push:tags",
