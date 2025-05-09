@@ -75,18 +75,18 @@ export type HttpService = {
 	 * Executes request with the given method
 	 */
 	executeAsync<TResponseData extends JsonValue, TBodyData extends JsonValue>(
-		opt: ExecuteRequestOptions<TBodyData>,
+		opts: ExecuteRequestOptions<TBodyData>,
 	): Promise<HttpResponse<TResponseData, TBodyData>>;
 
 	/**
 	 * Downloads a file from the given url and gets binary data
 	 */
-	downloadFileAsync(opt: DownloadFileRequestOptions): Promise<HttpResponse<Blob, null>>;
+	downloadFileAsync(opts: DownloadFileRequestOptions): Promise<HttpResponse<Blob, null>>;
 
 	/**
 	 * Uploads a file to the given url
 	 */
-	uploadFileAsync<TResponseData extends JsonValue>(opt: UploadFileRequestOptions): Promise<HttpResponse<TResponseData, Blob>>;
+	uploadFileAsync<TResponseData extends JsonValue>(opts: UploadFileRequestOptions): Promise<HttpResponse<TResponseData, Blob>>;
 };
 
 export class CoreSdkError extends Error {
