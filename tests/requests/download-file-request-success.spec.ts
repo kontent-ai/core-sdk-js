@@ -1,7 +1,7 @@
 import { afterAll, describe, expect, it, vi } from 'vitest';
+import { getFakeBlob, getFetchBlobMock } from '../../lib/devkit/test.utils.js';
 import { defaultHttpService } from '../../lib/http/http.service.js';
 import type { HttpMethod, HttpServiceStatus } from '../../lib/public_api.js';
-import { getFakeBlob, getFetchBlobMock } from '../_utils/test.utils.js';
 
 const fakeBlob = getFakeBlob();
 

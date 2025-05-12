@@ -1,9 +1,9 @@
 import type { Mock } from 'vitest';
 import { vi } from 'vitest';
-import type { HttpServiceStatus } from '../../lib/http/http.models.js';
-import type { JsonValue } from '../../lib/models/json.models.js';
-import type { Header } from '../../lib/public_api.js';
-import { toFetchHeaders } from '../../lib/utils/header.utils.js';
+import type { HttpServiceStatus } from '../http/http.models.js';
+import type { JsonValue } from '../models/json.models.js';
+import type { Header } from '../public_api.js';
+import { toFetchHeaders } from '../utils/header.utils.js';
 
 export function getFetchJsonMock<TResponseData extends JsonValue>({
 	json,

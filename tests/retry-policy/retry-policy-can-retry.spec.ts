@@ -1,10 +1,10 @@
 import { afterAll, describe, expect, it, vi } from 'vitest';
+import type { FetchResponse } from '../../lib/devkit/devkit.models.js';
+import { getFetchJsonMock } from '../../lib/devkit/test.utils.js';
 import { CoreSdkError } from '../../lib/http/http.models.js';
 import type { RetryStrategyOptions } from '../../lib/models/core.models.js';
 import { defaultHttpService } from '../../lib/public_api.js';
 import { toRequiredRetryStrategyOptions } from '../../lib/utils/retry.utils.js';
-import type { FetchResponse } from '../_models/test.models.js';
-import { getFetchJsonMock } from '../_utils/test.utils.js';
 
 const testCases: readonly {
 	readonly canRetryError: NonNullable<RetryStrategyOptions['canRetryError']>;

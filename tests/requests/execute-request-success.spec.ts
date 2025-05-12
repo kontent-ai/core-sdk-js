@@ -1,7 +1,7 @@
 import { afterAll, describe, expect, it, vi } from 'vitest';
+import { getFetchJsonMock } from '../../lib/devkit/test.utils.js';
 import { defaultHttpService } from '../../lib/http/http.service.js';
 import type { HttpMethod, HttpServiceStatus } from '../../lib/public_api.js';
-import { getFetchJsonMock } from '../_utils/test.utils.js';
 
 type ResponseData = {
 	readonly codename: string;

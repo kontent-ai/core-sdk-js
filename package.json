@@ -13,22 +13,25 @@
 	"engines": {
 		"node": ">= 22"
 	},
-	"exports": "./dist/public_api.js",
-	"types": "./dist/public_api.d.ts",
-	"type": "module",
-	"standard-version": {
-		"scripts": {
-			"postchangelog": "npm run set-sdk-version"
-		}
+	"exports": {
+		".": {
+      		"types": "./dist/public_api.d.ts",
+      		"default": "./dist/public_api.js"
+    	},
+    	"./devkit": {
+      		"types": "./dist/devkit_api.d.ts",
+      		"default": "./dist/devkit_api.js"
+    	}
 	},
+	"type": "module",
 	"scripts": {
-		"release": "standard-version && npm run update:version",
-		"release:major": "standard-version --release-as major && npm run update:version",
-		"prerelease": "standard-version --prerelease && npm run update:version",
-		"prerelease:major": "standard-version --prerelease --release-as major && npm run update:version",
+		"release": "standard-version",
+		"release:major": "standard-version --release-as major",
+		"prerelease": "standard-version --prerelease",
+		"prerelease:major": "standard-version --prerelease --release-as major",
 		"prepublishOnly": "npm run build && npm run push:tags",
 		"publish:beta": "npm publish --tag=next",
-		"build": "npm run clean && npm run lint:fix && tsc --p tsconfig.build.json",
+		"build": "npm run clean && npm run lint:fix && tsc --p tsconfig.build.json && npm run update:version",
 		"test": "vitest run --config=vitest.config.ts",
 		"format": "biome format --write",
 		"lint": "biome lint",

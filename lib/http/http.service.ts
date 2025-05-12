@@ -1,6 +1,6 @@
 import type { Header, HttpMethod, RetryStrategyOptions } from '../models/core.models.js';
 import type { JsonValue } from '../models/json.models.js';
-import { sdkInfo } from '../sdk.generated.js';
+import { sdkInfo } from '../sdk-info.js';
 import { getDefaultErrorMessage } from '../utils/error.utils.js';
 import { getSdkIdHeader, toFetchHeaders, toSdkHeaders } from '../utils/header.utils.js';
 import { runWithRetryAsync, toRequiredRetryStrategyOptions } from '../utils/retry.utils.js';
@@ -171,7 +171,15 @@ function getRequestHeaders(headers: readonly Header[] | undefined, options?: { r
 		// add content type header if not already present
 		...(!contentTypeHeaderAdded && options?.addJsonContentType ? [{ name: 'Content-Type', value: 'application/json' }] : []),
 		// add tracking header if not already present
-		...(headers?.find((header) => header.name === 'X-KC-SDKID') ? [] : [getSdkIdHeader(sdkInfo)]),
+		...(headers?.find((header) => header.name === 'X-KC-SDKID')
+			? []
+			: [
+					getSdkIdHeader({
+						host: sdkInfo.host,
+						name: sdkInfo.name,
+						version: sdkInfo.version,
+					}),
+				]),
 	];
 
 	return allHeaders;
