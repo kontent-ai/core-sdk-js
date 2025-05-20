@@ -1,8 +1,7 @@
 import { afterAll, describe, expect, it, vi } from 'vitest';
 import { getFetchJsonMock } from '../../lib/devkit/test.utils.js';
-import { CoreSdkError } from '../../lib/http/http.models.js';
 import { defaultHttpService } from '../../lib/http/http.service.js';
-import type { RetryStrategyOptions } from '../../lib/models/core.models.js';
+import { CoreSdkError, type RetryStrategyOptions } from '../../lib/models/core.models.js';
 import { toRequiredRetryStrategyOptions } from '../../lib/utils/retry.utils.js';
 
 const testCases: readonly Required<RetryStrategyOptions>[] = [
@@ -10,21 +9,25 @@ const testCases: readonly Required<RetryStrategyOptions>[] = [
 		maxAttempts: 0,
 		defaultDelayBetweenRequestsMs: 0,
 		logRetryAttempt: false,
+		canRetryError: () => true,
 	}),
 	toRequiredRetryStrategyOptions({
 		maxAttempts: 1,
 		defaultDelayBetweenRequestsMs: 0,
 		logRetryAttempt: false,
+		canRetryError: () => true,
 	}),
 	toRequiredRetryStrategyOptions({
 		maxAttempts: 2,
 		defaultDelayBetweenRequestsMs: 0,
 		logRetryAttempt: false,
+		canRetryError: () => true,
 	}),
 	toRequiredRetryStrategyOptions({
 		maxAttempts: 5,
 		defaultDelayBetweenRequestsMs: 0,
 		logRetryAttempt: false,
+		canRetryError: () => true,
 	}),
 ];
 

@@ -1,5 +1,11 @@
-import { CoreSdkError } from '../http/http.models.js';
-import type { Header, RetryStrategyOptions } from '../models/core.models.js';
+import {
+	CoreSdkError,
+	type Header,
+	type HttpMethod,
+	HttpServiceInvalidResponseError,
+	HttpServiceParsingError,
+	type RetryStrategyOptions,
+} from '../models/core.models.js';
 import { getDefaultErrorMessage } from './error.utils.js';
 import { getRetryAfterHeaderValue } from './header.utils.js';
 
@@ -15,8 +21,17 @@ type RetryResult =
 const defaultMaxAttempts: NonNullable<RetryStrategyOptions['maxAttempts']> = 3;
 const defaultDelayBetweenAttemptsMs: NonNullable<RetryStrategyOptions['defaultDelayBetweenRequestsMs']> = 1000;
 const defaultCanRetryError: NonNullable<RetryStrategyOptions['canRetryError']> = (error) => {
-	if (error instanceof CoreSdkError && error.sdk.status) {
-		return error.sdk.status >= 500 || error.sdk.status === 429;
+	if (error instanceof HttpServiceInvalidResponseError) {
+		if (error.kontentErrorResponse) {
+			// The request is clearly invalid as we got an error response from the API
+			return false;
+		}
+
+		return error.statusCode >= 500 || error.statusCode === 429;
+	}
+
+	if (error instanceof HttpServiceParsingError) {
+		return false;
 	}
 
 	return true;
@@ -28,47 +43,43 @@ export async function runWithRetryAsync<TResult>(data: {
 	readonly retryAttempt: number;
 	readonly url: string;
 	readonly requestHeaders: readonly Header[];
+	readonly method: HttpMethod;
 }): Promise<TResult> {
 	try {
 		return await data.funcAsync();
 	} catch (error) {
-		const responseHeaders = error instanceof CoreSdkError ? error.sdk.responseHeaders : [];
+		const newRetryAttempt = data.retryAttempt + 1;
+
 		const retryResult = getRetryResult({
-			error,
-			responseHeaders: responseHeaders,
+			error: error instanceof CoreSdkError ? error.originalError : error,
+			responseHeaders: error instanceof HttpServiceInvalidResponseError ? error.responseHeaders : [],
 			retryAttempt: data.retryAttempt,
 			options: data.retryStrategyOptions,
 		});
 
 		if (!retryResult.canRetry) {
+			const errorMessage = getDefaultErrorMessage({
+				url: data.url,
+				retryAttempts: data.retryAttempt,
+				error: error,
+				method: data.method,
+			});
+
 			throw new CoreSdkError(
-				getDefaultErrorMessage({
-					url: data.url,
-					retryAttempts: data.retryAttempt,
-					status: undefined,
-					error,
-				}),
+				errorMessage,
 				{
-					originalError: error instanceof CoreSdkError ? error.sdk.originalError : error,
-					responseData: error instanceof CoreSdkError ? error.sdk.responseData : undefined,
-					status: error instanceof CoreSdkError ? error.sdk.status : undefined,
 					url: data.url,
 					retryAttempt: data.retryAttempt,
 					retryStrategyOptions: data.retryStrategyOptions,
-					responseHeaders: responseHeaders,
 					requestHeaders: data.requestHeaders,
 				},
+				error instanceof CoreSdkError ? error.originalError : error,
 			);
 		}
 
-		const newRetryAttempt = data.retryAttempt + 1;
+		logRetryAttempt(data.retryStrategyOptions, newRetryAttempt, data.url);
 
-		if (data.retryStrategyOptions.logRetryAttempt) {
-			data.retryStrategyOptions.logRetryAttempt(newRetryAttempt, data.url);
-		}
-
-		// wait before retrying
-		await new Promise((resolve) => setTimeout(resolve, retryResult.retryInMs));
+		await waitAsync(retryResult.retryInMs);
 
 		return await runWithRetryAsync({
 			funcAsync: data.funcAsync,
@@ -76,6 +87,7 @@ export async function runWithRetryAsync<TResult>(data: {
 			retryAttempt: newRetryAttempt,
 			url: data.url,
 			requestHeaders: data.requestHeaders,
+			method: data.method,
 		});
 	}
 }
@@ -104,6 +116,16 @@ export function getDefaultRetryAttemptLogMessage(retryAttempt: number, maxAttemp
 	return `Retry attempt '${retryAttempt}' from a maximum of '${maxAttempts}' retries. Requested url: '${url}'`;
 }
 
+function logRetryAttempt(opts: Pick<RetryStrategyOptions, 'logRetryAttempt'>, retryAttempt: number, url: string): void {
+	if (opts.logRetryAttempt) {
+		opts.logRetryAttempt(retryAttempt, url);
+	}
+}
+
+function waitAsync(ms: number): Promise<void> {
+	return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 function getRetryResult({
 	retryAttempt,
 	error,
@@ -127,6 +149,13 @@ function getRetryResult({
 		};
 	}
 
+	return getRetryFromHeader({ options, responseHeaders });
+}
+
+function getRetryFromHeader({
+	options,
+	responseHeaders,
+}: { readonly options: Required<RetryStrategyOptions>; readonly responseHeaders: readonly Header[] }): RetryResult {
 	const retryAfterHeaderValue = getRetryAfterHeaderValue(responseHeaders);
 
 	if (retryAfterHeaderValue) {

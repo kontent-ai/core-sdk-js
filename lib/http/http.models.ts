@@ -1,11 +1,11 @@
-import type { Header, HttpMethod, LiteralUnionNumber, RetryStrategyOptions, SdkErrorData } from '../models/core.models.js';
+import type { Header, HttpMethod, LiteralUnionNumber, RetryStrategyOptions } from '../models/core.models.js';
 import type { JsonValue } from '../models/json.models.js';
 
 /**
  * Helper status codes for the HTTP service.
  * It can be any valid number status code as this type only serves as a helper.
  */
-export type HttpServiceStatus = LiteralUnionNumber<200 | 500 | 429 | 404 | 403 | 401 | 400>;
+export type HttpServiceStatus = LiteralUnionNumber<200 | 201 | 204 | 500 | 429 | 404 | 403 | 401 | 400>;
 
 export type HttpQueryOptions = {
 	/**
@@ -88,19 +88,3 @@ export type HttpService = {
 	 */
 	uploadFileAsync<TResponseData extends JsonValue>(opts: UploadFileRequestOptions): Promise<HttpResponse<TResponseData, Blob>>;
 };
-
-export class CoreSdkError extends Error {
-	constructor(
-		/**
-		 * The message of the error
-		 */
-		readonly message: string,
-
-		/**
-		 * Contains contextual data about the error provided by the SDK
-		 */
-		readonly sdk: SdkErrorData,
-	) {
-		super(message);
-	}
-}

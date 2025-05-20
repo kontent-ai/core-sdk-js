@@ -1,22 +1,24 @@
 /*
  * Public API
  */
-export {
-	CoreSdkError,
-	type DownloadFileRequestOptions,
-	type ExecuteRequestOptions,
-	type HttpQueryOptions,
-	type HttpResponse,
-	type HttpService,
-	type HttpServiceStatus,
-	type UploadFileRequestOptions,
+export type {
+	DownloadFileRequestOptions,
+	ExecuteRequestOptions,
+	HttpQueryOptions,
+	HttpResponse,
+	HttpService,
+	HttpServiceStatus,
+	UploadFileRequestOptions,
 } from './http/http.models.js';
 export { defaultHttpService } from './http/http.service.js';
 export type {
+	CoreSdkError,
+	CoreSdkErrorData,
 	Header,
 	HttpMethod,
+	HttpServiceInvalidResponseError,
+	HttpServiceParsingError,
 	RetryStrategyOptions,
-	SdkErrorData,
 	SDKInfo,
 } from './models/core.models.js';
 export type { JsonArray, JsonObject, JsonValue } from './models/json.models.js';

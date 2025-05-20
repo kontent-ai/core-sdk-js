@@ -1,5 +1,3 @@
-import type { HttpServiceStatus } from '../http/http.models.js';
-
 /**
  * SDK info for identification of the SDK
  */
@@ -20,11 +18,13 @@ export type SDKInfo = {
 	readonly host: LiteralUnion<'npmjs.com'>;
 };
 
+export type CommonHeaderNames = 'Retry-After' | 'X-KC-SDKID' | 'Authorization' | 'Content-Type' | 'Content-Length';
+
 export type Header = {
 	/**
 	 * The header name.
 	 */
-	readonly name: LiteralUnion<'Retry-After' | 'X-KC-SDKID' | 'Authorization'>;
+	readonly name: string;
 
 	/**
 	 * The header value.
@@ -34,21 +34,25 @@ export type Header = {
 
 export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
 
+export type KontentValidationError = {
+	readonly message: string;
+	readonly path?: string;
+	readonly line?: number;
+	readonly position?: number;
+};
+
+export type KontentErrorResponseData = {
+	readonly message: string;
+
+	readonly requestId?: string;
+	readonly error_code?: number;
+	readonly validation_errors?: readonly KontentValidationError[];
+};
+
 /**
  * Contextual data in SDK errors
  */
-export type SdkErrorData = {
-	/**
-	 * The data returned by the fetch response. This may include error data (e.g. detailed error message provided by MAPI)
-	 */
-	readonly responseData: unknown | undefined;
-
-	/**
-	 * The original error that occurred. This could be any error that occurred during the processing of the request.
-	 * Not limited to Fetch errors. Think parsing errors, etc.
-	 */
-	readonly originalError: unknown;
-
+export type CoreSdkErrorData = {
 	/**
 	 * The URL of the request.
 	 */
@@ -63,16 +67,6 @@ export type SdkErrorData = {
 	 * The retry strategy options used for the request.
 	 */
 	readonly retryStrategyOptions: Required<RetryStrategyOptions>;
-
-	/**
-	 * The headers of the response.
-	 */
-	readonly responseHeaders: readonly Header[];
-
-	/**
-	 * The status of the response.
-	 */
-	readonly status: HttpServiceStatus | undefined;
 
 	/**
 	 * The headers of the request.
@@ -119,3 +113,51 @@ export type LiteralUnion<T extends string | undefined> = T | (string & NonNullab
  * Adds intellisense for number union type, but also allows any number
  */
 export type LiteralUnionNumber<T extends number | undefined> = T | (number & NonNullable<unknown>);
+
+export class CoreSdkError extends Error {
+	constructor(
+		/**
+		 * The message of the error
+		 */
+		readonly message: string,
+
+		/**
+		 * Contains contextual data about the error provided by the SDK
+		 */
+		readonly sdk: CoreSdkErrorData,
+
+		/**
+		 * The original error that caused the request to fail
+		 */
+		readonly originalError: HttpServiceInvalidResponseError | HttpServiceParsingError | unknown,
+	) {
+		super(message);
+	}
+}
+
+export class HttpServiceParsingError extends Error {
+	constructor(readonly message: string) {
+		super(message);
+	}
+}
+
+export class HttpServiceInvalidResponseError extends Error {
+	readonly statusCode: number;
+	readonly statusText: string;
+	readonly kontentErrorResponse: KontentErrorResponseData | undefined;
+	readonly responseHeaders: readonly Header[];
+
+	constructor(data: {
+		readonly statusCode: number;
+		readonly statusText: string;
+		readonly kontentErrorData: KontentErrorResponseData | undefined;
+		readonly responseHeaders: readonly Header[];
+	}) {
+		super(`Invalid response from HTTP service with status ${data.statusCode}: ${data.statusText}`);
+
+		this.statusCode = data.statusCode;
+		this.statusText = data.statusText;
+		this.kontentErrorResponse = data.kontentErrorData;
+		this.responseHeaders = data.responseHeaders;
+	}
+}
