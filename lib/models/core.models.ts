@@ -49,31 +49,6 @@ export type KontentErrorResponseData = {
 	readonly validation_errors?: readonly KontentValidationError[];
 };
 
-/**
- * Contextual data in SDK errors
- */
-export type CoreSdkErrorData = {
-	/**
-	 * The URL of the request.
-	 */
-	readonly url: string;
-
-	/**
-	 * The number of times the request has been retried.
-	 */
-	readonly retryAttempt: number;
-
-	/**
-	 * The retry strategy options used for the request.
-	 */
-	readonly retryStrategyOptions: Required<RetryStrategyOptions>;
-
-	/**
-	 * The headers of the request.
-	 */
-	readonly requestHeaders: readonly Header[];
-};
-
 export type RetryStrategyOptions = {
 	/**
 	 * Maximum number of attempts to retry the request.
@@ -114,6 +89,9 @@ export type LiteralUnion<T extends string | undefined> = T | (string & NonNullab
  */
 export type LiteralUnionNumber<T extends number | undefined> = T | (number & NonNullable<unknown>);
 
+/**
+ * Represent an error that is thrown by the SDK
+ */
 export class CoreSdkError extends Error {
 	constructor(
 		/**
@@ -122,9 +100,24 @@ export class CoreSdkError extends Error {
 		readonly message: string,
 
 		/**
-		 * Contains contextual data about the error provided by the SDK
+		 * The URL of the request.
 		 */
-		readonly sdk: CoreSdkErrorData,
+		readonly url: string,
+
+		/**
+		 * The number of times the request has been retried.
+		 */
+		readonly retryAttempt: number,
+
+		/**
+		 * The retry strategy options used for the request.
+		 */
+		readonly retryStrategyOptions: Required<RetryStrategyOptions>,
+
+		/**
+		 * The headers of the request.
+		 */
+		readonly requestHeaders: readonly Header[],
 
 		/**
 		 * The original error that caused the request to fail
@@ -135,12 +128,18 @@ export class CoreSdkError extends Error {
 	}
 }
 
+/**
+ * Represent an error that is thrown by the HTTP service when parsing the URL or body data failed
+ */
 export class HttpServiceParsingError extends Error {
 	constructor(readonly message: string) {
 		super(message);
 	}
 }
 
+/**
+ * Represent an error that is thrown by the HTTP service when the response is not valid
+ */
 export class HttpServiceInvalidResponseError extends Error {
 	readonly statusCode: number;
 	readonly statusText: string;

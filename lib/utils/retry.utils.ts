@@ -67,12 +67,10 @@ export async function runWithRetryAsync<TResult>(data: {
 
 			throw new CoreSdkError(
 				errorMessage,
-				{
-					url: data.url,
-					retryAttempt: data.retryAttempt,
-					retryStrategyOptions: data.retryStrategyOptions,
-					requestHeaders: data.requestHeaders,
-				},
+				data.url,
+				data.retryAttempt,
+				data.retryStrategyOptions,
+				data.requestHeaders,
 				error instanceof CoreSdkError ? error.originalError : error,
 			);
 		}

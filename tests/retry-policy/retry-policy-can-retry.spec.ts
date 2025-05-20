@@ -74,7 +74,7 @@ for (const testCase of testCases) {
 
 		if (error instanceof CoreSdkError) {
 			it(`Should retry '${testCase.expectedRetryAttempts}' times`, () => {
-				expect(error.sdk.retryAttempt).toBe(testCase.expectedRetryAttempts);
+				expect(error.retryAttempt).toBe(testCase.expectedRetryAttempts);
 			});
 		}
 	});

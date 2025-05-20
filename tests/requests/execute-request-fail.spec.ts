@@ -19,9 +19,9 @@ describe('Execute request - Fail', async () => {
 
 	if (error instanceof CoreSdkError) {
 		it('Error properties should be correctly mapped', () => {
-			expect(error.sdk.url).toStrictEqual(url);
+			expect(error.url).toStrictEqual(url);
 			expect(error.originalError).toBeInstanceOf(HttpServiceParsingError);
-			expect(error.sdk.retryAttempt).toStrictEqual(retryStrategyOptions.maxAttempts);
+			expect(error.retryAttempt).toStrictEqual(retryStrategyOptions.maxAttempts);
 
 			if (error.originalError instanceof HttpServiceParsingError) {
 				expect(error.message).toContain(`Failed to parse url '${url}'.`);

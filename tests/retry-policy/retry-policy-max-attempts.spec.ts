@@ -50,7 +50,7 @@ describe('Retry policy - Max attempts', async () => {
 
 		if (error instanceof CoreSdkError) {
 			it(`Should retry '${maxAttempts}' times`, () => {
-				expect(error.sdk.retryAttempt).toStrictEqual(retryStrategy.maxAttempts);
+				expect(error.retryAttempt).toStrictEqual(retryStrategy.maxAttempts);
 			});
 		}
 	}
