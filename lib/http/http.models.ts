@@ -7,16 +7,23 @@ import type { JsonValue } from '../models/json.models.js';
  */
 export type HttpServiceStatus = LiteralUnionNumber<200 | 201 | 204 | 500 | 429 | 404 | 403 | 401 | 400>;
 
+export type DefaultHttpServiceConfig = {
+	/**
+	 * The retry strategy to be used. If not provided, the default retry strategy will be used.
+	 */
+	readonly retryStrategy?: RetryStrategyOptions;
+
+	/**
+	 * The headers appended to all requests.
+	 */
+	readonly requestHeaders?: readonly Header[];
+};
+
 export type HttpQueryOptions = {
 	/**
 	 * The headers to be sent with the request.
 	 */
 	readonly requestHeaders?: readonly Header[];
-
-	/**
-	 * The retry strategy to be used. If not provided, the default retry strategy will be used.
-	 */
-	readonly retryStrategy?: RetryStrategyOptions;
 };
 
 export type HttpResponse<TResponseData extends JsonValue | Blob, TBodyData extends JsonValue | Blob> = {
@@ -70,6 +77,27 @@ export type DownloadFileRequestOptions = {
 	readonly options?: HttpQueryOptions;
 };
 
+export type ResolveResponseAsync<TResponseData extends JsonValue | Blob> = {
+	readonly toJsonAsync: () => Promise<TResponseData>;
+	readonly toBlobAsync: () => Promise<TResponseData>;
+};
+
+type ResolveResponse<TResponseData extends JsonValue | Blob> = TResponseData extends Blob
+	? {
+			toBlobAsync: () => Promise<TResponseData>;
+		}
+	: {
+			toJsonAsync: () => Promise<TResponseData>;
+		};
+
+export type SendRequestOptions<TResponseData extends JsonValue | Blob, TBodyData extends JsonValue | Blob> = {
+	readonly url: string;
+	readonly method: HttpMethod;
+	readonly body: TBodyData;
+	readonly options?: HttpQueryOptions;
+	readonly resolveAsync: () => Promise<ResolveResponse<TResponseData>>;
+};
+
 export type HttpService = {
 	/**
 	 * Executes request with the given method
@@ -87,4 +115,8 @@ export type HttpService = {
 	 * Uploads a file to the given url
 	 */
 	uploadFileAsync<TResponseData extends JsonValue>(opts: UploadFileRequestOptions): Promise<HttpResponse<TResponseData, Blob>>;
+
+	sendAsync<TResponseData extends JsonValue | Blob, TBodyData extends JsonValue | Blob>(
+		opts: SendRequestOptions<TResponseData, TBodyData>,
+	): Promise<HttpResponse<TResponseData, TBodyData>>;
 };

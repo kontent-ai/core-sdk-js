@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { defaultHttpService } from '../../lib/http/http.service.js';
+import { getDefaultHttpService } from '../../lib/http/http.service.js';
 import type { HttpServiceStatus } from '../../lib/public_api.js';
 import { getIntegrationTestConfig } from '../integration-tests.config.js';
 
@@ -7,9 +7,10 @@ const fileToUpload = new Blob(['core-sdk-integration-test'], { type: 'text/plain
 
 describe('Integration tests - Binary file / asset management', async () => {
 	const config = getIntegrationTestConfig();
+	const httpService = getDefaultHttpService();
 
 	const uploadBinaryFileAsync = async () => {
-		return await defaultHttpService.uploadFileAsync<{
+		return await httpService.uploadFileAsync<{
 			readonly id: string;
 		}>({
 			url: config.urls.getUploadAssetBinaryFileUrl('core-sdk.txt'),
@@ -22,7 +23,7 @@ describe('Integration tests - Binary file / asset management', async () => {
 	};
 
 	const addAssetAsync = async (binaryFileId: string) => {
-		return await defaultHttpService.executeAsync<
+		return await httpService.executeAsync<
 			{
 				readonly id: string;
 				readonly url: string;
@@ -51,7 +52,7 @@ describe('Integration tests - Binary file / asset management', async () => {
 	};
 
 	const deleteAssetAsync = async (assetId: string) => {
-		return await defaultHttpService.executeAsync<null, null>({
+		return await httpService.executeAsync<null, null>({
 			url: config.urls.getDeleteAssetUrl(assetId),
 			body: null,
 			method: 'DELETE',
@@ -62,7 +63,7 @@ describe('Integration tests - Binary file / asset management', async () => {
 	};
 
 	const downloadAssetFileAsync = async (fileUrl: string) => {
-		return await defaultHttpService.downloadFileAsync({
+		return await httpService.downloadFileAsync({
 			url: fileUrl,
 			options: {
 				requestHeaders: config.getMapiAuthorizationHeaders(),

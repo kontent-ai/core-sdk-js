@@ -10,10 +10,9 @@ export type {
 	HttpServiceStatus,
 	UploadFileRequestOptions,
 } from './http/http.models.js';
-export { defaultHttpService } from './http/http.service.js';
+export { getDefaultHttpService } from './http/http.service.js';
 export type {
 	CoreSdkError,
-	CoreSdkErrorData,
 	Header,
 	HttpMethod,
 	HttpServiceInvalidResponseError,

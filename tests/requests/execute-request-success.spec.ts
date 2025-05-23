@@ -1,6 +1,6 @@
 import { afterAll, describe, expect, it, vi } from 'vitest';
 import { getFetchJsonMock } from '../../lib/devkit/test.utils.js';
-import { defaultHttpService } from '../../lib/http/http.service.js';
+import { getDefaultHttpService } from '../../lib/http/http.service.js';
 import type { HttpMethod, HttpServiceStatus } from '../../lib/public_api.js';
 
 type ResponseData = {
@@ -21,7 +21,7 @@ describe('Execute request - Success (GET)', async () => {
 		status: 200,
 	});
 
-	const response = await defaultHttpService.executeAsync<ResponseData, null>({
+	const response = await getDefaultHttpService().executeAsync<ResponseData, null>({
 		url: 'https://domain.com',
 		method: 'GET',
 		body: null,
@@ -62,7 +62,7 @@ describe('Execute request - Success (POST)', async () => {
 		status: 200,
 	});
 
-	const response = await defaultHttpService.executeAsync<ResponseData, { readonly id: number; readonly codename: string }>({
+	const response = await getDefaultHttpService().executeAsync<ResponseData, { readonly id: number; readonly codename: string }>({
 		url: 'https://domain.com',
 		method: 'POST',
 		body: requestBody,

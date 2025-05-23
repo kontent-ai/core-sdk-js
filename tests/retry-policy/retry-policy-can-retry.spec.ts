@@ -2,7 +2,7 @@ import { afterAll, describe, expect, it, vi } from 'vitest';
 import type { FetchResponse } from '../../lib/devkit/devkit.models.js';
 import { getFetchJsonMock } from '../../lib/devkit/test.utils.js';
 import { CoreSdkError, type RetryStrategyOptions } from '../../lib/models/core.models.js';
-import { defaultHttpService } from '../../lib/public_api.js';
+import { getDefaultHttpService } from '../../lib/public_api.js';
 import { toRequiredRetryStrategyOptions } from '../../lib/utils/retry.utils.js';
 import { getIntegrationTestConfig } from '../integration-tests.config.js';
 
@@ -82,19 +82,19 @@ for (const testCase of testCases) {
 
 async function resolveResponseAsync(testCase: (typeof testCases)[number]): Promise<unknown> {
 	try {
-		return await defaultHttpService.executeAsync({
+		return await getDefaultHttpService({
+			retryStrategy: toRequiredRetryStrategyOptions({
+				canRetryError: testCase.canRetryError,
+				defaultDelayBetweenRequestsMs: 0,
+				maxAttempts: testCase.maxRetryAttempts,
+				logRetryAttempt: false,
+			}),
+		}).executeAsync({
 			// we need the request to be valid but fail to be able to retry
 			url: getIntegrationTestConfig().urls.baseMapiUrl,
 			method: 'GET',
 			body: null,
-			options: {
-				retryStrategy: toRequiredRetryStrategyOptions({
-					canRetryError: testCase.canRetryError,
-					defaultDelayBetweenRequestsMs: 0,
-					maxAttempts: testCase.maxRetryAttempts,
-					logRetryAttempt: false,
-				}),
-			},
+			options: {},
 		});
 	} catch (error) {
 		return error;

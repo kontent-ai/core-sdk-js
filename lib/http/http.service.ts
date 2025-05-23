@@ -12,159 +12,166 @@ import { sdkInfo } from '../sdk-info.js';
 import { isNotUndefined } from '../utils/core.utils.js';
 import { getSdkIdHeader, toFetchHeaders, toSdkHeaders } from '../utils/header.utils.js';
 import { runWithRetryAsync, toRequiredRetryStrategyOptions } from '../utils/retry.utils.js';
-import type { DownloadFileRequestOptions, ExecuteRequestOptions, HttpResponse, HttpService, UploadFileRequestOptions } from './http.models.js';
+import type {
+	DefaultHttpServiceConfig,
+	DownloadFileRequestOptions,
+	ExecuteRequestOptions,
+	HttpQueryOptions,
+	HttpResponse,
+	HttpService,
+	SendRequestOptions,
+	UploadFileRequestOptions,
+} from './http.models.js';
 
-export const defaultHttpService: HttpService = {
-	executeAsync: async <TResponseData extends JsonValue, TBodyData extends JsonValue>({
+export function getDefaultHttpService(config?: DefaultHttpServiceConfig): HttpService {
+	const fetchAsync = async <TResponseData extends JsonValue | Blob, TBodyData extends JsonValue | Blob>({
 		url,
 		method,
 		body,
 		options,
-	}: ExecuteRequestOptions<TBodyData>): Promise<HttpResponse<TResponseData, TBodyData>> => {
-		const retryStrategyOptions: Required<RetryStrategyOptions> = toRequiredRetryStrategyOptions(options?.retryStrategy);
-		const requestHeaders: readonly Header[] = getRequestHeaders(options?.requestHeaders, body);
+		resolveDataAsync,
+	}: {
+		readonly url: string;
+		readonly method: HttpMethod;
+		readonly body: TBodyData;
+		readonly options?: HttpQueryOptions;
+		readonly resolveDataAsync: (response: Response) => Promise<TResponseData>;
+	}): Promise<HttpResponse<TResponseData, TBodyData>> => {
+		const getCombinedRequestHeaders = (): readonly Header[] => {
+			return getRequestHeaders([...(config?.requestHeaders ?? []), ...(options?.requestHeaders ?? [])], body);
+		};
 
-		return await runWithRetryAsync<HttpResponse<TResponseData, TBodyData>>({
-			funcAsync: async () => {
-				return await fetchAsync({
-					url,
-					method: method,
-					body,
-					requestHeaders,
-					resolveDataAsync: async (response) => {
-						const contentTypeResponseHeader = toSdkHeaders(response.headers)
-							.find((m) => m.name.toLowerCase() === ('Content-Type' satisfies CommonHeaderNames).toLowerCase())
-							?.value?.toLowerCase();
+		const getRequestBody = (): string | Blob | null => {
+			if (body === null) {
+				return null;
+			}
 
-						// Includes instead of equap due to the fact that the header value can be 'application/json; charset=utf-8' or similar
-						if (contentTypeResponseHeader?.includes('application/json')) {
-							return (await response.json()) as TResponseData;
-						}
+			if (body instanceof Blob) {
+				return body;
+			}
 
-						return null as TResponseData;
-					},
+			try {
+				return JSON.stringify(body);
+			} catch (error) {
+				throw new HttpServiceParsingError('Failed to stringify body of request.');
+			}
+		};
+
+		const getUrl = (): URL => {
+			try {
+				return new URL(url);
+			} catch (error) {
+				throw new HttpServiceParsingError(`Failed to parse url '${url}'.`);
+			}
+		};
+
+		const requestHeaders = getCombinedRequestHeaders();
+		const retryStrategyOptions: Required<RetryStrategyOptions> = toRequiredRetryStrategyOptions(config?.retryStrategy);
+
+		const withRetryAsync = async (funcAsync: () => Promise<HttpResponse<TResponseData, TBodyData>>): Promise<HttpResponse<TResponseData, TBodyData>> => {
+			return await runWithRetryAsync({
+				url,
+				retryStrategyOptions,
+				retryAttempt: 0,
+				requestHeaders,
+				method,
+				funcAsync,
+			});
+		};
+
+		const getResponseAsync = async (): Promise<Response> => {
+			return await fetch(getUrl().toString(), {
+				method,
+				headers: toFetchHeaders(requestHeaders),
+				body: getRequestBody(),
+			});
+		};
+
+		const resolveResponseAsync = async (response: Response): Promise<HttpResponse<TResponseData, TBodyData>> => {
+			const responseHeaders = toSdkHeaders(response.headers);
+
+			if (!response.ok) {
+				throw new HttpServiceInvalidResponseError({
+					kontentErrorData: await getKontentErrorDataAsync(response),
+					statusCode: response.status,
+					statusText: response.statusText,
+					responseHeaders: responseHeaders,
 				});
-			},
-			retryAttempt: 0,
-			url,
-			retryStrategyOptions,
-			requestHeaders,
-			method,
-		});
-	},
+			}
 
-	downloadFileAsync: async ({ url, options }: DownloadFileRequestOptions): Promise<HttpResponse<Blob, null>> => {
-		const retryStrategyOptions: Required<RetryStrategyOptions> = toRequiredRetryStrategyOptions(options?.retryStrategy);
-		const requestHeaders: readonly Header[] = getRequestHeaders(options?.requestHeaders, null);
-		const method: HttpMethod = 'GET';
+			return {
+				data: await resolveDataAsync(response),
+				body: body,
+				method: method,
+				responseHeaders: responseHeaders,
+				status: response.status,
+				requestHeaders: requestHeaders,
+			};
+		};
 
-		return await runWithRetryAsync<HttpResponse<Blob, null>>({
-			funcAsync: async () => {
-				return await fetchAsync({
-					url,
-					method: method,
-					body: null,
-					requestHeaders,
-					resolveDataAsync: async (response) => await response.blob(),
-				});
-			},
-			retryAttempt: 0,
-			url,
-			retryStrategyOptions,
-			requestHeaders,
-			method: method,
-		});
-	},
-
-	uploadFileAsync: async <TResponseData extends JsonValue>({
-		url,
-		method,
-		file,
-		options,
-	}: UploadFileRequestOptions): Promise<HttpResponse<TResponseData, Blob>> => {
-		const retryStrategyOptions: Required<RetryStrategyOptions> = toRequiredRetryStrategyOptions(options?.retryStrategy);
-		const requestHeaders: readonly Header[] = getRequestHeaders(options?.requestHeaders, file);
-
-		return await runWithRetryAsync<HttpResponse<TResponseData, Blob>>({
-			funcAsync: async () => {
-				return await fetchAsync({
-					url,
-					method,
-					body: file,
-					requestHeaders,
-					resolveDataAsync: async (response) => (await response.json()) as TResponseData,
-				});
-			},
-			retryAttempt: 0,
-			url,
-			retryStrategyOptions,
-			requestHeaders,
-			method,
-		});
-	},
-};
-
-async function fetchAsync<TResponseData extends JsonValue | Blob, TBodyData extends JsonValue | Blob>({
-	url,
-	method,
-	body,
-	requestHeaders,
-	resolveDataAsync,
-}: {
-	readonly url: string;
-	readonly method: HttpMethod;
-	readonly body: TBodyData;
-	readonly requestHeaders: readonly Header[];
-	readonly resolveDataAsync: (response: Response) => Promise<TResponseData>;
-}): Promise<HttpResponse<TResponseData, TBodyData>> {
-	const getRequestBody = (): string | Blob | null => {
-		if (body === null) {
-			return null;
-		}
-
-		if (body instanceof Blob) {
-			return body;
-		}
-
-		try {
-			return JSON.stringify(body);
-		} catch (error) {
-			throw new HttpServiceParsingError('Failed to stringify body of request.');
-		}
+		return await withRetryAsync(async () => await resolveResponseAsync(await getResponseAsync()));
 	};
-
-	const getUrl = (): URL => {
-		try {
-			return new URL(url);
-		} catch (error) {
-			throw new HttpServiceParsingError(`Failed to parse url '${url}'.`);
-		}
-	};
-
-	const response = await fetch(getUrl().toString(), {
-		headers: toFetchHeaders(requestHeaders),
-		method: method,
-		body: getRequestBody(),
-	});
-
-	const responseHeaders = toSdkHeaders(response.headers);
-
-	if (!response.ok) {
-		throw new HttpServiceInvalidResponseError({
-			kontentErrorData: await getKontentErrorDataAsync(response),
-			statusCode: response.status,
-			statusText: response.statusText,
-			responseHeaders: responseHeaders,
-		});
-	}
 
 	return {
-		data: await resolveDataAsync(response),
-		body: body,
-		method: method,
-		responseHeaders: responseHeaders,
-		status: response.status,
-		requestHeaders: requestHeaders,
+		sendAsync: async <TResponseData extends JsonValue | Blob, TBodyData extends JsonValue | Blob>(
+			options: SendRequestOptions<TResponseData, TBodyData>,
+		) => {
+			throw new Error('Not implemented');
+			// return await fetchAsync<TResponseData, TBodyData>({
+			// 	...options,
+			// 	resolveDataAsync: async (response) => {
+			// 		return await response.json();
+			// 	},
+			// });
+		},
+		executeAsync: async <TResponseData extends JsonValue, TBodyData extends JsonValue>(options: ExecuteRequestOptions<TBodyData>) => {
+			return await fetchAsync<TResponseData, TBodyData>({
+				...options,
+				resolveDataAsync: async (response) => {
+					const contentTypeResponseHeader = toSdkHeaders(response.headers)
+						.find((m) => m.name.toLowerCase() === ('Content-Type' satisfies CommonHeaderNames).toLowerCase())
+						?.value?.toLowerCase();
+
+					if (contentTypeResponseHeader?.includes('application/json')) {
+						// Includes instead of equap due to the fact that the header value can be 'application/json; charset=utf-8' or similar
+						return (await response.json()) as TResponseData;
+					}
+
+					return null as TResponseData;
+				},
+			});
+		},
+
+		downloadFileAsync: async ({ url, options }: DownloadFileRequestOptions): Promise<HttpResponse<Blob, null>> => {
+			return await fetchAsync<Blob, null>({
+				url: url,
+				method: 'GET',
+				body: null,
+				options: options,
+				resolveDataAsync: async (response) => {
+					console.log('response', response);
+					return await response.blob();
+				},
+			});
+		},
+
+		uploadFileAsync: async <TResponseData extends JsonValue>({
+			url,
+			method,
+			file,
+			options,
+		}: UploadFileRequestOptions): Promise<HttpResponse<TResponseData, Blob>> => {
+			return await fetchAsync<TResponseData, Blob>({
+				url: url,
+				method: method,
+				body: file,
+				options: options,
+				resolveDataAsync: async (response) => {
+					console.log('response', response);
+					return (await response.json()) as TResponseData;
+				},
+			});
+		},
 	};
 }
 

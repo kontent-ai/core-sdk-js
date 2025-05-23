@@ -1,7 +1,7 @@
 import { afterAll, describe, expect, it, vi } from 'vitest';
 import { getFetchJsonMock } from '../../lib/devkit/test.utils.js';
-import type { CommonHeaderNames } from '../../lib/models/core.models.js';
-import { defaultHttpService } from '../../lib/public_api.js';
+import type { CommonHeaderNames, Header } from '../../lib/models/core.models.js';
+import { getDefaultHttpService } from '../../lib/public_api.js';
 import { sdkInfo } from '../../lib/sdk-info.js';
 import { getSdkIdHeader } from '../../lib/utils/header.utils.js';
 
@@ -17,7 +17,7 @@ describe('Default headers', async () => {
 		status: 200,
 		responseHeaders: [],
 	});
-	const response = await defaultHttpService.executeAsync({
+	const response = await getDefaultHttpService().executeAsync({
 		url: 'https://domain.com',
 		method: 'GET',
 		body: null,
@@ -32,7 +32,7 @@ describe('Default headers', async () => {
 	});
 });
 
-describe(`Custom '${sdkIdHeader.name}' header`, async () => {
+describe(`SDK tracking header '${sdkIdHeader.name}'`, async () => {
 	afterAll(() => {
 		vi.resetAllMocks();
 	});
@@ -44,7 +44,7 @@ describe(`Custom '${sdkIdHeader.name}' header`, async () => {
 		status: 200,
 	});
 
-	const response = await defaultHttpService.executeAsync({
+	const response = await getDefaultHttpService().executeAsync({
 		url: 'https://domain.com',
 		method: 'GET',
 		body: null,
@@ -68,5 +68,45 @@ describe(`Custom '${sdkIdHeader.name}' header`, async () => {
 		expect(response.requestHeaders.find((m) => m.name.toLowerCase() === ('X-KC-SDKID' satisfies CommonHeaderNames).toLowerCase())?.value).toStrictEqual(
 			customSdkId,
 		);
+	});
+});
+
+describe('Custom Http Service & Request headers', async () => {
+	afterAll(() => {
+		vi.resetAllMocks();
+	});
+
+	global.fetch = getFetchJsonMock({
+		json: {},
+		status: 200,
+	});
+
+	const headerA: Header = {
+		name: 'A',
+		value: 'a',
+	};
+
+	const headerB: Header = {
+		name: 'B',
+		value: 'b',
+	};
+
+	const response = await getDefaultHttpService({
+		requestHeaders: [headerA],
+	}).executeAsync({
+		url: 'https://domain.com',
+		method: 'GET',
+		body: null,
+		options: {
+			requestHeaders: [headerB],
+		},
+	});
+
+	it(`Request should contain header ${headerA.name}`, () => {
+		expect(response.requestHeaders.find((m) => m.name === headerA.name)).toStrictEqual(headerA);
+	});
+
+	it(`Request should contain header ${headerB.name} `, () => {
+		expect(response.requestHeaders.find((m) => m.name === headerB.name)).toStrictEqual(headerB);
 	});
 });

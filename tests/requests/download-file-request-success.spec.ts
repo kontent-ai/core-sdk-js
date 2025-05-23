@@ -1,6 +1,6 @@
 import { afterAll, describe, expect, it, vi } from 'vitest';
 import { getFakeBlob, getFetchBlobMock } from '../../lib/devkit/test.utils.js';
-import { defaultHttpService } from '../../lib/http/http.service.js';
+import { getDefaultHttpService } from '../../lib/http/http.service.js';
 import type { HttpMethod, HttpServiceStatus } from '../../lib/public_api.js';
 
 const fakeBlob = getFakeBlob();
@@ -15,7 +15,7 @@ describe('Download file - Success', async () => {
 		status: 200,
 	});
 
-	const response = await defaultHttpService.downloadFileAsync({
+	const response = await getDefaultHttpService().downloadFileAsync({
 		url: 'https://domain.com/image.jpg',
 		options: {},
 	});

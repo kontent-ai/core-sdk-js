@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { CoreSdkError, HttpServiceParsingError } from '../../lib/models/core.models.js';
 import type { RetryStrategyOptions } from '../../lib/public_api.js';
-import { defaultHttpService, toRequiredRetryStrategyOptions } from '../../lib/public_api.js';
+import { getDefaultHttpService, toRequiredRetryStrategyOptions } from '../../lib/public_api.js';
 
 const url = 'invalid-url';
 const retryStrategyOptions: Required<RetryStrategyOptions> = toRequiredRetryStrategyOptions({
@@ -32,7 +32,7 @@ describe('Execute request - Fail', async () => {
 
 async function resolveResponseAsync(): Promise<unknown> {
 	try {
-		return await defaultHttpService.executeAsync({
+		return await getDefaultHttpService().executeAsync({
 			url,
 			method: 'GET',
 			body: null,

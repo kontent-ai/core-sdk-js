@@ -1,6 +1,6 @@
 import { afterAll, describe, expect, it, vi } from 'vitest';
 import { getFetchJsonMock } from '../../lib/devkit/test.utils.js';
-import { defaultHttpService } from '../../lib/http/http.service.js';
+import { getDefaultHttpService } from '../../lib/http/http.service.js';
 import { CoreSdkError, type RetryStrategyOptions } from '../../lib/models/core.models.js';
 import { toRequiredRetryStrategyOptions } from '../../lib/utils/retry.utils.js';
 
@@ -58,11 +58,10 @@ describe('Retry policy - Max attempts', async () => {
 
 async function resolveResponseAsync(retryStrategy: Required<RetryStrategyOptions>): Promise<unknown> {
 	try {
-		return await defaultHttpService.executeAsync({
+		return await getDefaultHttpService({ retryStrategy }).executeAsync({
 			url: '',
 			method: 'GET',
 			body: null,
-			options: { retryStrategy },
 		});
 	} catch (error) {
 		return error;
