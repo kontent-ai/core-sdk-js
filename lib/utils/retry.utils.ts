@@ -1,11 +1,5 @@
-import {
-	CoreSdkError,
-	type Header,
-	type HttpMethod,
-	HttpServiceInvalidResponseError,
-	HttpServiceParsingError,
-	type RetryStrategyOptions,
-} from '../models/core.models.js';
+import type { Header, HttpMethod, RetryStrategyOptions } from '../models/core.models.js';
+import { CoreSdkError, HttpServiceInvalidResponseError, HttpServiceParsingError } from '../models/error.models.js';
 import { getDefaultErrorMessage } from './error.utils.js';
 import { getRetryAfterHeaderValue } from './header.utils.js';
 
@@ -27,7 +21,7 @@ const defaultCanRetryError: NonNullable<RetryStrategyOptions['canRetryError']> =
 			return false;
 		}
 
-		return error.statusCode >= 500 || error.statusCode === 429;
+		return error.adapterResponse.status >= 500 || error.adapterResponse.status === 429;
 	}
 
 	if (error instanceof HttpServiceParsingError) {
@@ -52,7 +46,7 @@ export async function runWithRetryAsync<TResult>(data: {
 
 		const retryResult = getRetryResult({
 			error: error instanceof CoreSdkError ? error.originalError : error,
-			responseHeaders: error instanceof HttpServiceInvalidResponseError ? error.responseHeaders : [],
+			responseHeaders: error instanceof HttpServiceInvalidResponseError ? error.adapterResponse.responseHeaders : [],
 			retryAttempt: data.retryAttempt,
 			options: data.retryStrategyOptions,
 		});

@@ -1,24 +1,35 @@
 import { describe, expect, it } from 'vitest';
+import type { HttpServiceStatus } from '../../lib/http/http.models.js';
 import { getDefaultHttpService } from '../../lib/http/http.service.js';
-import type { HttpServiceStatus } from '../../lib/public_api.js';
+import { HttpServiceInvalidResponseError } from '../../lib/models/error.models.js';
 import { getIntegrationTestConfig } from '../integration-tests.config.js';
 
 const fileToUpload = new Blob(['core-sdk-integration-test'], { type: 'text/plain' });
 
 describe('Integration tests - Binary file / asset management', async () => {
 	const config = getIntegrationTestConfig();
-	const httpService = getDefaultHttpService();
+	const httpService = getDefaultHttpService({
+		retryStrategy: {
+			canRetryError: (error) => {
+				if (error instanceof HttpServiceInvalidResponseError) {
+					// we intetionally retry 404 because when we upload a file and get the URL back, the file might not yet be accessible
+					// and the request will fail with 404.
+					return error.adapterResponse.status === 404;
+				}
+
+				return false;
+			},
+		},
+	});
 
 	const uploadBinaryFileAsync = async () => {
 		return await httpService.uploadFileAsync<{
 			readonly id: string;
 		}>({
 			url: config.urls.getUploadAssetBinaryFileUrl('core-sdk.txt'),
-			file: fileToUpload,
+			body: fileToUpload,
 			method: 'POST',
-			options: {
-				requestHeaders: config.getMapiAuthorizationHeaders(),
-			},
+			requestHeaders: config.getMapiAuthorizationHeaders(),
 		});
 	};
 
@@ -45,9 +56,7 @@ describe('Integration tests - Binary file / asset management', async () => {
 				title: 'Test file',
 			},
 			method: 'POST',
-			options: {
-				requestHeaders: config.getMapiAuthorizationHeaders(),
-			},
+			requestHeaders: config.getMapiAuthorizationHeaders(),
 		});
 	};
 
@@ -56,25 +65,20 @@ describe('Integration tests - Binary file / asset management', async () => {
 			url: config.urls.getDeleteAssetUrl(assetId),
 			body: null,
 			method: 'DELETE',
-			options: {
-				requestHeaders: config.getMapiAuthorizationHeaders(),
-			},
+			requestHeaders: config.getMapiAuthorizationHeaders(),
 		});
 	};
 
 	const downloadAssetFileAsync = async (fileUrl: string) => {
 		return await httpService.downloadFileAsync({
 			url: fileUrl,
-			options: {
-				requestHeaders: config.getMapiAuthorizationHeaders(),
-			},
 		});
 	};
 
 	const uploadedBinaryFileResponse = await uploadBinaryFileAsync();
 
 	it('Upload response status should be 200', () => {
-		expect(uploadedBinaryFileResponse.status).toStrictEqual<HttpServiceStatus>(200);
+		expect(uploadedBinaryFileResponse.adapterResponse.status).toStrictEqual<HttpServiceStatus>(200);
 	});
 
 	it('Id property should be available', () => {
@@ -84,7 +88,7 @@ describe('Integration tests - Binary file / asset management', async () => {
 	const addAssetResponse = await addAssetAsync(uploadedBinaryFileResponse.data.id);
 
 	it('Add asset response status should be 201', () => {
-		expect(addAssetResponse.status).toStrictEqual<HttpServiceStatus>(201);
+		expect(addAssetResponse.adapterResponse.status).toStrictEqual<HttpServiceStatus>(201);
 	});
 
 	it('Url & id property should be available when adding asset', () => {
@@ -95,7 +99,7 @@ describe('Integration tests - Binary file / asset management', async () => {
 	const downloadedFileResponse = await downloadAssetFileAsync(addAssetResponse.data.url);
 
 	it('Download file response status should be 200', () => {
-		expect(downloadedFileResponse.status).toStrictEqual<HttpServiceStatus>(200);
+		expect(downloadedFileResponse.adapterResponse.status).toStrictEqual<HttpServiceStatus>(200);
 	});
 
 	it('Content of downloaded file should be identical to original file', async () => {
@@ -105,7 +109,7 @@ describe('Integration tests - Binary file / asset management', async () => {
 	const deletedFileResponse = await deleteAssetAsync(addAssetResponse.data.id);
 
 	it('Delete file response status should be 204', () => {
-		expect(deletedFileResponse.status).toStrictEqual<HttpServiceStatus>(204);
+		expect(deletedFileResponse.adapterResponse.status).toStrictEqual<HttpServiceStatus>(204);
 	});
 
 	it('Delete file response data should be empty', () => {

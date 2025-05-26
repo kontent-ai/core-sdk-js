@@ -1,7 +1,8 @@
 import { afterAll, describe, expect, it, vi } from 'vitest';
 import { getFetchJsonMock } from '../../lib/devkit/test.utils.js';
 import { getDefaultHttpService } from '../../lib/http/http.service.js';
-import { CoreSdkError, type RetryStrategyOptions } from '../../lib/models/core.models.js';
+import type { RetryStrategyOptions } from '../../lib/models/core.models.js';
+import { CoreSdkError } from '../../lib/models/error.models.js';
 import { toRequiredRetryStrategyOptions } from '../../lib/utils/retry.utils.js';
 
 const testCases: readonly Required<RetryStrategyOptions>[] = [

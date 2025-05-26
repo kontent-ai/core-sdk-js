@@ -1,8 +1,9 @@
 import { afterAll, describe, expect, it, vi } from 'vitest';
 import type { FetchResponse } from '../../lib/devkit/devkit.models.js';
 import { getFetchJsonMock } from '../../lib/devkit/test.utils.js';
-import { CoreSdkError, type RetryStrategyOptions } from '../../lib/models/core.models.js';
-import { getDefaultHttpService } from '../../lib/public_api.js';
+import { getDefaultHttpService } from '../../lib/http/http.service.js';
+import type { RetryStrategyOptions } from '../../lib/models/core.models.js';
+import { CoreSdkError } from '../../lib/models/error.models.js';
 import { toRequiredRetryStrategyOptions } from '../../lib/utils/retry.utils.js';
 import { getIntegrationTestConfig } from '../integration-tests.config.js';
 
@@ -94,7 +95,6 @@ async function resolveResponseAsync(testCase: (typeof testCases)[number]): Promi
 			url: getIntegrationTestConfig().urls.baseMapiUrl,
 			method: 'GET',
 			body: null,
-			options: {},
 		});
 	} catch (error) {
 		return error;

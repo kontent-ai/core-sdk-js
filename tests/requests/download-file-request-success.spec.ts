@@ -1,7 +1,8 @@
 import { afterAll, describe, expect, it, vi } from 'vitest';
 import { getFakeBlob, getFetchBlobMock } from '../../lib/devkit/test.utils.js';
+import type { HttpServiceStatus } from '../../lib/http/http.models.js';
 import { getDefaultHttpService } from '../../lib/http/http.service.js';
-import type { HttpMethod, HttpServiceStatus } from '../../lib/public_api.js';
+import type { HttpMethod } from '../../lib/models/core.models.js';
 
 const fakeBlob = getFakeBlob();
 
@@ -17,11 +18,10 @@ describe('Download file - Success', async () => {
 
 	const response = await getDefaultHttpService().downloadFileAsync({
 		url: 'https://domain.com/image.jpg',
-		options: {},
 	});
 
 	it('Status should be 200', () => {
-		expect(response.status).toStrictEqual<HttpServiceStatus>(200);
+		expect(response.adapterResponse.status).toStrictEqual<HttpServiceStatus>(200);
 	});
 
 	it('Method should be GET', () => {

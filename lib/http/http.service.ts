@@ -1,56 +1,46 @@
-import {
-	type CommonHeaderNames,
-	type Header,
-	type HttpMethod,
-	HttpServiceInvalidResponseError,
-	HttpServiceParsingError,
-	type KontentErrorResponseData,
-	type RetryStrategyOptions,
-} from '../models/core.models.js';
+import type { CommonHeaderNames, Header, KontentErrorResponseData, RetryStrategyOptions } from '../models/core.models.js';
+import { HttpServiceInvalidResponseError, HttpServiceParsingError } from '../models/error.models.js';
 import type { JsonValue } from '../models/json.models.js';
 import { sdkInfo } from '../sdk-info.js';
 import { isNotUndefined } from '../utils/core.utils.js';
-import { getSdkIdHeader, toFetchHeaders, toSdkHeaders } from '../utils/header.utils.js';
+import { getSdkIdHeader } from '../utils/header.utils.js';
 import { runWithRetryAsync, toRequiredRetryStrategyOptions } from '../utils/retry.utils.js';
+import { getDefaultHttpAdapter } from './http.adapter.js';
 import type {
+	AdapterResponse,
 	DefaultHttpServiceConfig,
 	DownloadFileRequestOptions,
 	ExecuteRequestOptions,
-	HttpQueryOptions,
 	HttpResponse,
 	HttpService,
 	UploadFileRequestOptions,
 } from './http.models.js';
 
 export function getDefaultHttpService(config?: DefaultHttpServiceConfig): HttpService {
-	const fetchAsync = async <TResponseData extends JsonValue | Blob, TBodyData extends JsonValue | Blob>({
-		url,
-		method,
-		body,
+	const resolveRequestAsync = async <TResponseData extends JsonValue | Blob, TBodyData extends JsonValue | Blob>({
 		options,
 		resolveDataAsync,
 	}: {
-		readonly url: string;
-		readonly method: HttpMethod;
-		readonly body: TBodyData;
-		readonly options?: HttpQueryOptions;
-		readonly resolveDataAsync: (response: Response) => Promise<TResponseData>;
+		readonly options: ExecuteRequestOptions<TBodyData>;
+		readonly resolveDataAsync: (response: AdapterResponse) => Promise<TResponseData>;
 	}): Promise<HttpResponse<TResponseData, TBodyData>> => {
+		const adapter = config?.adapter ?? getDefaultHttpAdapter();
+
 		const getCombinedRequestHeaders = (): readonly Header[] => {
-			return getRequestHeaders([...(config?.requestHeaders ?? []), ...(options?.requestHeaders ?? [])], body);
+			return getRequestHeaders([...(config?.requestHeaders ?? []), ...(options?.requestHeaders ?? [])], options.body);
 		};
 
 		const getRequestBody = (): string | Blob | null => {
-			if (body === null) {
+			if (options.body === null) {
 				return null;
 			}
 
-			if (body instanceof Blob) {
-				return body;
+			if (options.body instanceof Blob) {
+				return options.body;
 			}
 
 			try {
-				return JSON.stringify(body);
+				return JSON.stringify(options.body);
 			} catch (error) {
 				throw new HttpServiceParsingError('Failed to stringify body of request.');
 			}
@@ -58,9 +48,9 @@ export function getDefaultHttpService(config?: DefaultHttpServiceConfig): HttpSe
 
 		const getUrl = (): URL => {
 			try {
-				return new URL(url);
+				return new URL(options.url);
 			} catch (error) {
-				throw new HttpServiceParsingError(`Failed to parse url '${url}'.`);
+				throw new HttpServiceParsingError(`Failed to parse url '${options.url}'.`);
 			}
 		};
 
@@ -69,41 +59,44 @@ export function getDefaultHttpService(config?: DefaultHttpServiceConfig): HttpSe
 
 		const withRetryAsync = async (funcAsync: () => Promise<HttpResponse<TResponseData, TBodyData>>): Promise<HttpResponse<TResponseData, TBodyData>> => {
 			return await runWithRetryAsync({
-				url,
+				url: options.url,
 				retryStrategyOptions,
 				retryAttempt: 0,
 				requestHeaders,
-				method,
+				method: options.method,
 				funcAsync,
 			});
 		};
 
-		const getResponseAsync = async (): Promise<Response> => {
-			return await fetch(getUrl().toString(), {
-				method,
-				headers: toFetchHeaders(requestHeaders),
+		const getResponseAsync = async (): Promise<AdapterResponse> => {
+			return await adapter.sendAsync({
+				url: getUrl().toString(),
+				method: options.method,
+				options: {
+					requestHeaders,
+				},
 				body: getRequestBody(),
 			});
 		};
 
-		const resolveResponseAsync = async (response: Response): Promise<HttpResponse<TResponseData, TBodyData>> => {
-			const responseHeaders = toSdkHeaders(response.headers);
-
-			if (!response.ok) {
+		const resolveResponseAsync = async (response: AdapterResponse): Promise<HttpResponse<TResponseData, TBodyData>> => {
+			if (!response.isValidResponse) {
 				throw new HttpServiceInvalidResponseError({
 					kontentErrorData: await getKontentErrorDataAsync(response),
-					statusCode: response.status,
-					statusText: response.statusText,
-					responseHeaders: responseHeaders,
+					adapterResponse: response,
 				});
 			}
 
 			return {
 				data: await resolveDataAsync(response),
-				body: body,
-				method: method,
-				responseHeaders: responseHeaders,
-				status: response.status,
+				body: options.body,
+				method: options.method,
+				adapterResponse: {
+					isValidResponse: response.isValidResponse,
+					responseHeaders: response.responseHeaders,
+					status: response.status,
+					statusText: response.statusText,
+				},
 				requestHeaders: requestHeaders,
 			};
 		};
@@ -113,16 +106,16 @@ export function getDefaultHttpService(config?: DefaultHttpServiceConfig): HttpSe
 
 	return {
 		executeAsync: async <TResponseData extends JsonValue, TBodyData extends JsonValue>(options: ExecuteRequestOptions<TBodyData>) => {
-			return await fetchAsync<TResponseData, TBodyData>({
-				...options,
+			return await resolveRequestAsync<TResponseData, TBodyData>({
+				options,
 				resolveDataAsync: async (response) => {
-					const contentTypeResponseHeader = toSdkHeaders(response.headers)
+					const contentTypeResponseHeader = response.responseHeaders
 						.find((m) => m.name.toLowerCase() === ('Content-Type' satisfies CommonHeaderNames).toLowerCase())
 						?.value?.toLowerCase();
 
 					if (contentTypeResponseHeader?.includes('application/json')) {
 						// Includes instead of equap due to the fact that the header value can be 'application/json; charset=utf-8' or similar
-						return (await response.json()) as TResponseData;
+						return (await response.toJsonAsync()) as TResponseData;
 					}
 
 					return null as TResponseData;
@@ -130,49 +123,50 @@ export function getDefaultHttpService(config?: DefaultHttpServiceConfig): HttpSe
 			});
 		},
 
-		downloadFileAsync: async ({ url, options }: DownloadFileRequestOptions): Promise<HttpResponse<Blob, null>> => {
-			return await fetchAsync<Blob, null>({
-				url: url,
-				method: 'GET',
-				body: null,
-				options: options,
+		downloadFileAsync: async (options: DownloadFileRequestOptions): Promise<HttpResponse<Blob, null>> => {
+			return await resolveRequestAsync<Blob, null>({
+				options: {
+					...options,
+					method: 'GET',
+					body: null,
+				},
 				resolveDataAsync: async (response) => {
-					return await response.blob();
+					return await response.toBlobAsync();
 				},
 			});
 		},
 
-		uploadFileAsync: async <TResponseData extends JsonValue>({
-			url,
-			method,
-			file,
-			options,
-		}: UploadFileRequestOptions): Promise<HttpResponse<TResponseData, Blob>> => {
-			return await fetchAsync<TResponseData, Blob>({
-				url: url,
-				method: method,
-				body: file,
-				options: options,
+		uploadFileAsync: async <TResponseData extends JsonValue>(options: UploadFileRequestOptions): Promise<HttpResponse<TResponseData, Blob>> => {
+			return await resolveRequestAsync<TResponseData, Blob>({
+				options,
 				resolveDataAsync: async (response) => {
-					return (await response.json()) as TResponseData;
+					return (await response.toJsonAsync()) as TResponseData;
 				},
 			});
 		},
 	};
 }
 
-async function getKontentErrorDataAsync(response: Response): Promise<KontentErrorResponseData | undefined> {
-	const json = (await response.json()) as Partial<KontentErrorResponseData>;
+async function getKontentErrorDataAsync(response: AdapterResponse): Promise<KontentErrorResponseData | undefined> {
+	if (
+		response.responseHeaders
+			.find((header) => header.name.toLowerCase() === ('Content-Type' satisfies CommonHeaderNames).toLowerCase())
+			?.value?.toLowerCase()
+			?.includes('application/json')
+	) {
+		const json = (await response.toJsonAsync()) as Partial<KontentErrorResponseData>;
 
-	// We check the existence of 'message' property which should always be set when the error is a Kontent API error
-	if (!json || !json.message) {
-		return undefined;
+		// We check the existence of 'message' property which should always be set when the error is a Kontent API error
+		if (!json || !json.message) {
+			return undefined;
+		}
+
+		return {
+			...json,
+			message: json.message,
+		};
 	}
-
-	return {
-		...json,
-		message: json.message,
-	};
+	return undefined;
 }
 
 function getRequestHeaders(headers: readonly Header[] | undefined, body: Blob | JsonValue): readonly Header[] {

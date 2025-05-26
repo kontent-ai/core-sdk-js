@@ -1,7 +1,7 @@
 import { afterAll, describe, expect, it, vi } from 'vitest';
 import { getFetchJsonMock } from '../../lib/devkit/test.utils.js';
+import { getDefaultHttpService } from '../../lib/http/http.service.js';
 import type { CommonHeaderNames, Header } from '../../lib/models/core.models.js';
-import { getDefaultHttpService } from '../../lib/public_api.js';
 import { sdkInfo } from '../../lib/sdk-info.js';
 import { getSdkIdHeader } from '../../lib/utils/header.utils.js';
 
@@ -48,14 +48,12 @@ describe(`SDK tracking header '${sdkIdHeader.name}'`, async () => {
 		url: 'https://domain.com',
 		method: 'GET',
 		body: null,
-		options: {
-			requestHeaders: [
-				{
-					name: 'X-KC-SDKID' satisfies CommonHeaderNames,
-					value: customSdkId,
-				},
-			],
-		},
+		requestHeaders: [
+			{
+				name: 'X-KC-SDKID' satisfies CommonHeaderNames,
+				value: customSdkId,
+			},
+		],
 	});
 
 	it(`Request should contain only single '${sdkIdHeader.name}' header`, () => {
@@ -97,9 +95,7 @@ describe('Custom Http Service & Request headers', async () => {
 		url: 'https://domain.com',
 		method: 'GET',
 		body: null,
-		options: {
-			requestHeaders: [headerB],
-		},
+		requestHeaders: [headerB],
 	});
 
 	it(`Request should contain header ${headerA.name}`, () => {

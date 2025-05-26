@@ -1,4 +1,5 @@
-import { type HttpMethod, HttpServiceInvalidResponseError, HttpServiceParsingError, type KontentValidationError } from '../models/core.models.js';
+import type { HttpMethod, KontentValidationError } from '../models/core.models.js';
+import { HttpServiceInvalidResponseError, HttpServiceParsingError } from '../models/error.models.js';
 import { isNotUndefined } from './core.utils.js';
 
 export function getDefaultErrorMessage({
@@ -39,7 +40,7 @@ function extractMessageFromError(error: unknown): string | undefined {
 
 	if (error instanceof HttpServiceInvalidResponseError) {
 		const validationErrorMessage = getValidationErrorMessage(error.kontentErrorResponse?.validation_errors);
-		return `Response failed with status '${error.statusCode}' and status text '${error.statusText}'.${error.kontentErrorResponse ? ` ${error.kontentErrorResponse.message}` : ''}${validationErrorMessage ? ` ${validationErrorMessage}` : ''}`;
+		return `Response failed with status '${error.adapterResponse.status}' and status text '${error.adapterResponse.statusText}'.${error.kontentErrorResponse ? ` ${error.kontentErrorResponse.message}` : ''}${validationErrorMessage ? ` ${validationErrorMessage}` : ''}`;
 	}
 
 	if (error instanceof Error) {

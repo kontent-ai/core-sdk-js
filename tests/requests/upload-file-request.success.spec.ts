@@ -1,7 +1,8 @@
 import { afterAll, describe, expect, it, vi } from 'vitest';
 import { getFakeBlob, getFetchBlobMock } from '../../lib/devkit/test.utils.js';
+import type { HttpServiceStatus } from '../../lib/http/http.models.js';
 import { getDefaultHttpService } from '../../lib/http/http.service.js';
-import type { HttpMethod, HttpServiceStatus } from '../../lib/public_api.js';
+import type { HttpMethod } from '../../lib/models/core.models.js';
 
 const fakeBlob = getFakeBlob();
 
@@ -15,27 +16,26 @@ describe('Upload file - Success', async () => {
 		status: 200,
 	});
 
-	const response = await getDefaultHttpService().uploadFileAsync<{
+	const response = await getDefaultHttpService({
+		retryStrategy: {
+			maxAttempts: 0,
+		},
+	}).uploadFileAsync<{
 		readonly id: string;
 	}>({
 		url: 'https://domain.com',
-		file: fakeBlob,
+		body: fakeBlob,
 		method: 'POST',
-		options: {
-			retryStrategy: {
-				maxAttempts: 0,
+		requestHeaders: [
+			{
+				name: 'Content-type',
+				value: fakeBlob.type,
 			},
-			requestHeaders: [
-				{
-					name: 'Content-type',
-					value: fakeBlob.type,
-				},
-			],
-		},
+		],
 	});
 
 	it('Status should be 200', () => {
-		expect(response.status).toStrictEqual<HttpServiceStatus>(200);
+		expect(response.adapterResponse.status).toStrictEqual<HttpServiceStatus>(200);
 	});
 
 	it('Method should be POST', () => {

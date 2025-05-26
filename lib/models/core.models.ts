@@ -1,3 +1,5 @@
+import type { HttpServiceInvalidResponseError, HttpServiceParsingError } from './error.models.js';
+
 /**
  * SDK info for identification of the SDK
  */
@@ -21,14 +23,7 @@ export type SDKInfo = {
 export type CommonHeaderNames = 'Retry-After' | 'X-KC-SDKID' | 'Authorization' | 'Content-Type' | 'Content-Length';
 
 export type Header = {
-	/**
-	 * The header name.
-	 */
 	readonly name: string;
-
-	/**
-	 * The header value.
-	 */
 	readonly value: string;
 };
 
@@ -43,7 +38,6 @@ export type KontentValidationError = {
 
 export type KontentErrorResponseData = {
 	readonly message: string;
-
 	readonly requestId?: string;
 	readonly error_code?: number;
 	readonly validation_errors?: readonly KontentValidationError[];
@@ -60,7 +54,7 @@ export type RetryStrategyOptions = {
 	 * Function to determine if the error should be retried.
 	 * If not provided, the default implementation will be used.
 	 */
-	readonly canRetryError?: (error: unknown) => boolean;
+	readonly canRetryError?: (error: unknown | HttpServiceInvalidResponseError | HttpServiceParsingError) => boolean;
 
 	/**
 	 * Default delay between requests in milliseconds.
@@ -88,75 +82,3 @@ export type LiteralUnion<T extends string | undefined> = T | (string & NonNullab
  * Adds intellisense for number union type, but also allows any number
  */
 export type LiteralUnionNumber<T extends number | undefined> = T | (number & NonNullable<unknown>);
-
-/**
- * Represent an error that is thrown by the SDK
- */
-export class CoreSdkError extends Error {
-	constructor(
-		/**
-		 * The message of the error
-		 */
-		readonly message: string,
-
-		/**
-		 * The URL of the request.
-		 */
-		readonly url: string,
-
-		/**
-		 * The number of times the request has been retried.
-		 */
-		readonly retryAttempt: number,
-
-		/**
-		 * The retry strategy options used for the request.
-		 */
-		readonly retryStrategyOptions: Required<RetryStrategyOptions>,
-
-		/**
-		 * The headers of the request.
-		 */
-		readonly requestHeaders: readonly Header[],
-
-		/**
-		 * The original error that caused the request to fail
-		 */
-		readonly originalError: HttpServiceInvalidResponseError | HttpServiceParsingError | unknown,
-	) {
-		super(message);
-	}
-}
-
-/**
- * Represent an error that is thrown by the HTTP service when parsing the URL or body data failed
- */
-export class HttpServiceParsingError extends Error {
-	constructor(readonly message: string) {
-		super(message);
-	}
-}
-
-/**
- * Represent an error that is thrown by the HTTP service when the response is not valid
- */
-export class HttpServiceInvalidResponseError extends Error {
-	readonly statusCode: number;
-	readonly statusText: string;
-	readonly kontentErrorResponse: KontentErrorResponseData | undefined;
-	readonly responseHeaders: readonly Header[];
-
-	constructor(data: {
-		readonly statusCode: number;
-		readonly statusText: string;
-		readonly kontentErrorData: KontentErrorResponseData | undefined;
-		readonly responseHeaders: readonly Header[];
-	}) {
-		super(`Invalid response from HTTP service with status ${data.statusCode}: ${data.statusText}`);
-
-		this.statusCode = data.statusCode;
-		this.statusText = data.statusText;
-		this.kontentErrorResponse = data.kontentErrorData;
-		this.responseHeaders = data.responseHeaders;
-	}
-}
