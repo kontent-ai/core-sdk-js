@@ -71,7 +71,7 @@ export type HttpService = {
 	/**
 	 * Executes request with the given method
 	 */
-	executeAsync<TResponseData extends JsonValue, TBodyData extends JsonValue>(
+	jsonRequestAsync<TResponseData extends JsonValue, TBodyData extends JsonValue>(
 		opts: ExecuteRequestOptions<TBodyData>,
 	): Promise<HttpResponse<TResponseData, TBodyData>>;
 

@@ -90,7 +90,7 @@ async function resolveResponseAsync(testCase: (typeof testCases)[number]): Promi
 				maxAttempts: testCase.maxRetryAttempts,
 				logRetryAttempt: false,
 			}),
-		}).executeAsync({
+		}).jsonRequestAsync({
 			// we need the request to be valid but fail to be able to retry
 			url: getIntegrationTestConfig().urls.baseMapiUrl,
 			method: 'GET',

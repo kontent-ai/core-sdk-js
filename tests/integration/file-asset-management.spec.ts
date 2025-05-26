@@ -34,7 +34,7 @@ describe('Integration tests - Binary file / asset management', async () => {
 	};
 
 	const addAssetAsync = async (binaryFileId: string) => {
-		return await httpService.executeAsync<
+		return await httpService.jsonRequestAsync<
 			{
 				readonly id: string;
 				readonly url: string;
@@ -61,7 +61,7 @@ describe('Integration tests - Binary file / asset management', async () => {
 	};
 
 	const deleteAssetAsync = async (assetId: string) => {
-		return await httpService.executeAsync<null, null>({
+		return await httpService.jsonRequestAsync<null, null>({
 			url: config.urls.getDeleteAssetUrl(assetId),
 			body: null,
 			method: 'DELETE',

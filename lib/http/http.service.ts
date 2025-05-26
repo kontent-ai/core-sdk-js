@@ -103,7 +103,7 @@ export function getDefaultHttpService(config?: DefaultHttpServiceConfig): HttpSe
 	};
 
 	return {
-		executeAsync: async <TResponseData extends JsonValue, TBodyData extends JsonValue>(options: ExecuteRequestOptions<TBodyData>) => {
+		jsonRequestAsync: async <TResponseData extends JsonValue, TBodyData extends JsonValue>(options: ExecuteRequestOptions<TBodyData>) => {
 			return await resolveRequestAsync<TResponseData, TBodyData>({
 				options,
 				resolveDataAsync: async (response) => {
