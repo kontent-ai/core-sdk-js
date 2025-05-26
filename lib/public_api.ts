@@ -11,14 +11,14 @@ export type {
 	UploadFileRequestOptions,
 } from './http/http.models.js';
 export { getDefaultHttpService } from './http/http.service.js';
-export type {
+export {
 	CoreSdkError,
-	Header,
-	HttpMethod,
 	HttpServiceInvalidResponseError,
 	HttpServiceParsingError,
-	RetryStrategyOptions,
-	SDKInfo,
+	type Header,
+	type HttpMethod,
+	type RetryStrategyOptions,
+	type SDKInfo,
 } from './models/core.models.js';
 export type { JsonArray, JsonObject, JsonValue } from './models/json.models.js';
 export { getSdkIdHeader } from './utils/header.utils.js';

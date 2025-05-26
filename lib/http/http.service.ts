@@ -19,7 +19,6 @@ import type {
 	HttpQueryOptions,
 	HttpResponse,
 	HttpService,
-	SendRequestOptions,
 	UploadFileRequestOptions,
 } from './http.models.js';
 
@@ -113,17 +112,6 @@ export function getDefaultHttpService(config?: DefaultHttpServiceConfig): HttpSe
 	};
 
 	return {
-		sendAsync: async <TResponseData extends JsonValue | Blob, TBodyData extends JsonValue | Blob>(
-			options: SendRequestOptions<TResponseData, TBodyData>,
-		) => {
-			throw new Error('Not implemented');
-			// return await fetchAsync<TResponseData, TBodyData>({
-			// 	...options,
-			// 	resolveDataAsync: async (response) => {
-			// 		return await response.json();
-			// 	},
-			// });
-		},
 		executeAsync: async <TResponseData extends JsonValue, TBodyData extends JsonValue>(options: ExecuteRequestOptions<TBodyData>) => {
 			return await fetchAsync<TResponseData, TBodyData>({
 				...options,
@@ -149,7 +137,6 @@ export function getDefaultHttpService(config?: DefaultHttpServiceConfig): HttpSe
 				body: null,
 				options: options,
 				resolveDataAsync: async (response) => {
-					console.log('response', response);
 					return await response.blob();
 				},
 			});
@@ -167,7 +154,6 @@ export function getDefaultHttpService(config?: DefaultHttpServiceConfig): HttpSe
 				body: file,
 				options: options,
 				resolveDataAsync: async (response) => {
-					console.log('response', response);
 					return (await response.json()) as TResponseData;
 				},
 			});

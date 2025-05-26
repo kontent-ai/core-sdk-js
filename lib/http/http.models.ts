@@ -115,8 +115,4 @@ export type HttpService = {
 	 * Uploads a file to the given url
 	 */
 	uploadFileAsync<TResponseData extends JsonValue>(opts: UploadFileRequestOptions): Promise<HttpResponse<TResponseData, Blob>>;
-
-	sendAsync<TResponseData extends JsonValue | Blob, TBodyData extends JsonValue | Blob>(
-		opts: SendRequestOptions<TResponseData, TBodyData>,
-	): Promise<HttpResponse<TResponseData, TBodyData>>;
 };
