@@ -72,9 +72,7 @@ export function getDefaultHttpService(config?: DefaultHttpServiceConfig): HttpSe
 			return await adapter.sendAsync({
 				url: getUrl().toString(),
 				method: options.method,
-				options: {
-					requestHeaders,
-				},
+				requestHeaders,
 				body: getRequestBody(),
 			});
 		};

@@ -5,7 +5,6 @@ export { getDefaultHttpAdapter } from './http/http.adapter.js';
 export type {
 	AdapterResponse,
 	AdapterSendRequestOptions,
-	BaseHttpQueryOptions,
 	DefaultHttpServiceConfig,
 	DownloadFileRequestOptions,
 	ExecuteRequestOptions,

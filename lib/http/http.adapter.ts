@@ -7,7 +7,7 @@ export function getDefaultHttpAdapter(): HttpAdapter {
 		sendAsync: async (options) => {
 			const response = await fetch(options.url, {
 				method: options.method,
-				headers: toFetchHeaders(options.options?.requestHeaders ?? []),
+				headers: toFetchHeaders(options?.requestHeaders ?? []),
 				body: options.body,
 			});
 

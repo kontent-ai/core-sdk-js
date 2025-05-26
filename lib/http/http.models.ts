@@ -24,13 +24,6 @@ export type DefaultHttpServiceConfig = {
 	readonly adapter?: HttpAdapter;
 };
 
-export type BaseHttpQueryOptions = {
-	/**
-	 * The headers to be sent with the request.
-	 */
-	readonly requestHeaders?: readonly Header[];
-};
-
 export type HttpResponse<TResponseData extends JsonValue | Blob, TBodyData extends JsonValue | Blob> = {
 	/**
 	 * The data of the response.
@@ -58,10 +51,14 @@ export type HttpResponse<TResponseData extends JsonValue | Blob, TBodyData exten
 	readonly adapterResponse: Omit<AdapterResponse, 'toJsonAsync' | 'toBlobAsync'>;
 };
 
-export type ExecuteRequestOptions<TBodyData extends JsonValue | Blob> = BaseHttpQueryOptions & {
+export type ExecuteRequestOptions<TBodyData extends JsonValue | Blob> = {
 	readonly url: string;
 	readonly method: HttpMethod;
 	readonly body: TBodyData;
+	/**
+	 * The headers to be sent with the request.
+	 */
+	readonly requestHeaders?: readonly Header[];
 };
 
 export type UploadFileRequestOptions = Omit<ExecuteRequestOptions<Blob>, 'method'> & {
@@ -103,7 +100,7 @@ export type AdapterSendRequestOptions = {
 	readonly url: string;
 	readonly method: HttpMethod;
 	readonly body: string | Blob | undefined | null;
-	readonly options?: BaseHttpQueryOptions;
+	readonly requestHeaders?: readonly Header[];
 };
 
 /**
