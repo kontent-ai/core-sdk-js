@@ -42,7 +42,7 @@
 	},
 	"devDependencies": {
 		"@biomejs/biome": "1.9.4",
-		"@types/node": "22.15.23",
+		"@types/node": "22.15.24",
 		"chalk": "5.4.1",
 		"standard-version": "9.5.0",
 		"typescript": "5.8.3",
