@@ -1,6 +1,6 @@
 {
 	"name": "@kontent-ai/core-sdk",
-	"version": "10.10.0",
+	"version": "11.0.0-0",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/kontent-ai/kontent-core-js"
@@ -9,19 +9,23 @@
 	"author": "richard sustek",
 	"license": "MIT",
 	"description": "Core package with shared / common functionality for Kontent.ai SDKs",
-	"keywords": ["Kontent.ai", "Kontent AI", "Kontent SDK Core"],
+	"keywords": [
+		"Kontent.ai",
+		"Kontent AI",
+		"Kontent SDK Core"
+	],
 	"engines": {
 		"node": ">= 22"
 	},
 	"exports": {
 		".": {
-      		"types": "./dist/public_api.d.ts",
-      		"default": "./dist/public_api.js"
-    	},
-    	"./devkit": {
-      		"types": "./dist/devkit_api.d.ts",
-      		"default": "./dist/devkit_api.js"
-    	}
+			"types": "./dist/public_api.d.ts",
+			"default": "./dist/public_api.js"
+		},
+		"./devkit": {
+			"types": "./dist/devkit_api.d.ts",
+			"default": "./dist/devkit_api.js"
+		}
 	},
 	"type": "module",
 	"scripts": {
