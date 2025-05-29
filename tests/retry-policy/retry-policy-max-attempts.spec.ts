@@ -59,7 +59,7 @@ describe('Retry policy - Max attempts', async () => {
 
 async function resolveResponseAsync(retryStrategy: Required<RetryStrategyOptions>): Promise<unknown> {
 	try {
-		return await getDefaultHttpService({ retryStrategy }).jsonRequestAsync({
+		return await getDefaultHttpService({ retryStrategy }).requestAsync({
 			url: '',
 			method: 'GET',
 			body: null,

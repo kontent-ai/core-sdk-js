@@ -25,29 +25,10 @@ export type DefaultHttpServiceConfig = {
 };
 
 export type HttpResponse<TResponseData extends JsonValue | Blob, TBodyData extends JsonValue | Blob> = {
-	/**
-	 * The data of the response.
-	 */
 	readonly data: TResponseData;
-
-	/**
-	 * The request body data.
-	 */
 	readonly body: TBodyData;
-
-	/**
-	 * The request method.
-	 */
 	readonly method: HttpMethod;
-
-	/**
-	 * The request headers.
-	 */
 	readonly requestHeaders: readonly Header[];
-
-	/**
-	 * The adapter response.
-	 */
 	readonly adapterResponse: Omit<AdapterResponse, 'toJsonAsync' | 'toBlobAsync'>;
 };
 
@@ -55,9 +36,6 @@ export type ExecuteRequestOptions<TBodyData extends JsonValue | Blob> = {
 	readonly url: string;
 	readonly method: HttpMethod;
 	readonly body: TBodyData;
-	/**
-	 * The headers to be sent with the request.
-	 */
 	readonly requestHeaders?: readonly Header[];
 };
 
@@ -67,21 +45,31 @@ export type UploadFileRequestOptions = Omit<ExecuteRequestOptions<Blob>, 'method
 
 export type DownloadFileRequestOptions = Pick<ExecuteRequestOptions<Blob>, 'url' | 'requestHeaders'>;
 
+/**
+ * Represents the HTTP service used for making requests to the Kontent.ai API.
+ *
+ * This service includes built-in retry logic, request validation, and automatic header processing.
+ *
+ * By default, it uses the `fetch` API for executing requests. However, you can supply a custom `HttpAdapter`
+ * to integrate your preferred HTTP client.
+ *
+ * For full customization—including retry behavior and other request-handling logic—you may implement the `HttpService` directly.
+ */
 export type HttpService = {
 	/**
-	 * Executes request with the given method
+	 * Executes request with the given method and body.
 	 */
-	jsonRequestAsync<TResponseData extends JsonValue, TBodyData extends JsonValue>(
+	requestAsync<TResponseData extends JsonValue, TBodyData extends JsonValue>(
 		opts: ExecuteRequestOptions<TBodyData>,
 	): Promise<HttpResponse<TResponseData, TBodyData>>;
 
 	/**
-	 * Downloads a file from the given URL as a blob
+	 * Downloads a file from the given URL as a blob.
 	 */
 	downloadFileAsync(opts: DownloadFileRequestOptions): Promise<HttpResponse<Blob, null>>;
 
 	/**
-	 * This method is used to upload a kontent.ai binary files.
+	 * This method is used to upload a kontent.ai binary file.
 	 */
 	uploadFileAsync<TResponseData extends JsonValue>(opts: UploadFileRequestOptions): Promise<HttpResponse<TResponseData, Blob>>;
 };
@@ -96,7 +84,7 @@ export type AdapterResponse = {
 	readonly statusText: string;
 };
 
-export type AdapterSendRequestOptions = {
+export type AdapterRequestOptions = {
 	readonly url: string;
 	readonly method: HttpMethod;
 	readonly body: string | Blob | undefined | null;
@@ -115,5 +103,5 @@ export type AdapterSendRequestOptions = {
  * Alternatively, you may implement the entire `HttpService` interface to create a fully customized HTTP service.
  */
 export type HttpAdapter = {
-	readonly sendAsync: (options: AdapterSendRequestOptions) => Promise<AdapterResponse>;
+	readonly requestAsync: (options: AdapterRequestOptions) => Promise<AdapterResponse>;
 };

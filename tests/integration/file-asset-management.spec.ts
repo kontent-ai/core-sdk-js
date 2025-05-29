@@ -10,6 +10,8 @@ describe('Integration tests - Binary file / asset management', async () => {
 	const config = getIntegrationTestConfig();
 	const httpService = getDefaultHttpService({
 		retryStrategy: {
+			maxAttempts: 5,
+			defaultDelayBetweenRequestsMs: 1000,
 			canRetryError: (error) => {
 				if (error instanceof HttpServiceInvalidResponseError) {
 					// we intetionally retry 404 because when we upload a file and get the URL back, the file might not yet be accessible
@@ -34,7 +36,7 @@ describe('Integration tests - Binary file / asset management', async () => {
 	};
 
 	const addAssetAsync = async (binaryFileId: string) => {
-		return await httpService.jsonRequestAsync<
+		return await httpService.requestAsync<
 			{
 				readonly id: string;
 				readonly url: string;
@@ -61,7 +63,7 @@ describe('Integration tests - Binary file / asset management', async () => {
 	};
 
 	const deleteAssetAsync = async (assetId: string) => {
-		return await httpService.jsonRequestAsync<null, null>({
+		return await httpService.requestAsync<null, null>({
 			url: config.urls.getDeleteAssetUrl(assetId),
 			body: null,
 			method: 'DELETE',

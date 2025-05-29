@@ -35,7 +35,7 @@ async function resolveResponseAsync(): Promise<unknown> {
 	try {
 		return await getDefaultHttpService({
 			retryStrategy: retryStrategyOptions,
-		}).jsonRequestAsync({
+		}).requestAsync({
 			url,
 			method: 'GET',
 			body: null,

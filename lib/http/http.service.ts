@@ -69,7 +69,7 @@ export function getDefaultHttpService(config?: DefaultHttpServiceConfig): HttpSe
 		};
 
 		const getResponseAsync = async (): Promise<AdapterResponse> => {
-			return await adapter.sendAsync({
+			return await adapter.requestAsync({
 				url: getUrl().toString(),
 				method: options.method,
 				requestHeaders,
@@ -103,20 +103,11 @@ export function getDefaultHttpService(config?: DefaultHttpServiceConfig): HttpSe
 	};
 
 	return {
-		jsonRequestAsync: async <TResponseData extends JsonValue, TBodyData extends JsonValue>(options: ExecuteRequestOptions<TBodyData>) => {
+		requestAsync: async <TResponseData extends JsonValue, TBodyData extends JsonValue>(options: ExecuteRequestOptions<TBodyData>) => {
 			return await resolveRequestAsync<TResponseData, TBodyData>({
 				options,
 				resolveDataAsync: async (response) => {
-					const contentTypeResponseHeader = response.responseHeaders
-						.find((m) => m.name.toLowerCase() === ('Content-Type' satisfies CommonHeaderNames).toLowerCase())
-						?.value?.toLowerCase();
-
-					if (contentTypeResponseHeader?.includes('application/json')) {
-						// Includes instead of equap due to the fact that the header value can be 'application/json; charset=utf-8' or similar
-						return (await response.toJsonAsync()) as TResponseData;
-					}
-
-					return null as TResponseData;
+					return (await response.toJsonAsync()) as TResponseData;
 				},
 			});
 		},

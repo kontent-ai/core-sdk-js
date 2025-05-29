@@ -22,7 +22,7 @@ describe('Execute request - Success (GET)', async () => {
 		status: 200,
 	});
 
-	const response = await getDefaultHttpService().jsonRequestAsync<ResponseData, null>({
+	const response = await getDefaultHttpService().requestAsync<ResponseData, null>({
 		url: 'https://domain.com',
 		method: 'GET',
 		body: null,
@@ -63,7 +63,7 @@ describe('Execute request - Success (POST)', async () => {
 		status: 200,
 	});
 
-	const response = await getDefaultHttpService().jsonRequestAsync<ResponseData, { readonly id: number; readonly codename: string }>({
+	const response = await getDefaultHttpService().requestAsync<ResponseData, { readonly id: number; readonly codename: string }>({
 		url: 'https://domain.com',
 		method: 'POST',
 		body: requestBody,

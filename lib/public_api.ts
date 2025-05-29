@@ -3,8 +3,8 @@
  */
 export { getDefaultHttpAdapter } from './http/http.adapter.js';
 export type {
+	AdapterRequestOptions,
 	AdapterResponse,
-	AdapterSendRequestOptions,
 	DefaultHttpServiceConfig,
 	DownloadFileRequestOptions,
 	ExecuteRequestOptions,
