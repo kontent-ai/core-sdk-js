@@ -1,5 +1,5 @@
 /**
- * Devkit API - used for development purposes in
+ * Devkit API - common functions used by dependent packages, not intended for public use
  */
 export type { FetchResponse } from './devkit/devkit.models.js';
 export { deleteFolderRecursive } from './devkit/script.utils.js';
