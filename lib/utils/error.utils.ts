@@ -1,5 +1,5 @@
 import type { HttpMethod, KontentValidationError } from '../models/core.models.js';
-import { HttpServiceInvalidResponseError, HttpServiceParsingError } from '../models/error.models.js';
+import { CoreSdkError, HttpServiceInvalidResponseError, HttpServiceParsingError } from '../models/error.models.js';
 import { isNotUndefined } from './core.utils.js';
 
 export function getDefaultErrorMessage({
@@ -15,6 +15,30 @@ export function getDefaultErrorMessage({
 }): string {
 	const errorMessage = extractMessageFromError(error);
 	return `Failed to execute '${method}' request '${url}' after '${retryAttempts}' attempts.${errorMessage ? ` ${errorMessage}` : ''}`;
+}
+
+export function isCoreSdkError(error: unknown): error is CoreSdkError {
+	return error instanceof CoreSdkError;
+}
+
+export function isCoreSdkInvalidResponseError(error: unknown): error is CoreSdkError<HttpServiceInvalidResponseError> {
+	return isCoreSdkError(error) && isInvalidResponseError(error.originalError);
+}
+
+export function isCoreSdkParsingError(error: unknown): error is CoreSdkError<HttpServiceParsingError> {
+	return isCoreSdkError(error) && isParsingError(error.originalError);
+}
+
+export function isKontent404Error(error: unknown): error is CoreSdkError<HttpServiceInvalidResponseError<404>> {
+	return isCoreSdkInvalidResponseError(error) && error.originalError.adapterResponse.status === 404;
+}
+
+export function isInvalidResponseError(error: unknown): error is HttpServiceInvalidResponseError {
+	return error instanceof HttpServiceInvalidResponseError;
+}
+
+export function isParsingError(error: unknown): error is HttpServiceParsingError {
+	return error instanceof HttpServiceParsingError;
 }
 
 function getValidationErrorMessage(validationErrors?: readonly KontentValidationError[]): string | undefined {
@@ -34,11 +58,11 @@ function getValidationErrorMessage(validationErrors?: readonly KontentValidation
 }
 
 function extractMessageFromError(error: unknown): string | undefined {
-	if (error instanceof HttpServiceParsingError) {
+	if (isParsingError(error)) {
 		return error.message;
 	}
 
-	if (error instanceof HttpServiceInvalidResponseError) {
+	if (isInvalidResponseError(error)) {
 		const validationErrorMessage = getValidationErrorMessage(error.kontentErrorResponse?.validation_errors);
 		return `Response failed with status '${error.adapterResponse.status}' and status text '${error.adapterResponse.statusText}'.${error.kontentErrorResponse ? ` ${error.kontentErrorResponse.message}` : ''}${validationErrorMessage ? ` ${validationErrorMessage}` : ''}`;
 	}

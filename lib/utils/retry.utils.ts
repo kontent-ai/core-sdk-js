@@ -1,6 +1,6 @@
 import type { Header, HttpMethod, RetryStrategyOptions } from '../models/core.models.js';
-import { CoreSdkError, HttpServiceInvalidResponseError, HttpServiceParsingError } from '../models/error.models.js';
-import { getDefaultErrorMessage } from './error.utils.js';
+import { CoreSdkError } from '../models/error.models.js';
+import { getDefaultErrorMessage, isCoreSdkError, isInvalidResponseError, isParsingError } from './error.utils.js';
 import { getRetryAfterHeaderValue } from './header.utils.js';
 
 type RetryResult =
@@ -15,7 +15,7 @@ type RetryResult =
 const defaultMaxAttempts: NonNullable<RetryStrategyOptions['maxAttempts']> = 3;
 const defaultDelayBetweenAttemptsMs: NonNullable<RetryStrategyOptions['defaultDelayBetweenRequestsMs']> = 1000;
 const defaultCanRetryError: NonNullable<RetryStrategyOptions['canRetryError']> = (error) => {
-	if (error instanceof HttpServiceInvalidResponseError) {
+	if (isInvalidResponseError(error)) {
 		if (error.kontentErrorResponse) {
 			// The request is clearly invalid as we got an error response from the API
 			return false;
@@ -24,7 +24,7 @@ const defaultCanRetryError: NonNullable<RetryStrategyOptions['canRetryError']> =
 		return error.adapterResponse.status >= 500 || error.adapterResponse.status === 429;
 	}
 
-	if (error instanceof HttpServiceParsingError) {
+	if (isParsingError(error)) {
 		return false;
 	}
 
@@ -45,8 +45,8 @@ export async function runWithRetryAsync<TResult>(data: {
 		const newRetryAttempt = data.retryAttempt + 1;
 
 		const retryResult = getRetryResult({
-			error: error instanceof CoreSdkError ? error.originalError : error,
-			responseHeaders: error instanceof HttpServiceInvalidResponseError ? error.adapterResponse.responseHeaders : [],
+			error: isCoreSdkError(error) ? error.originalError : error,
+			responseHeaders: isInvalidResponseError(error) ? error.adapterResponse.responseHeaders : [],
 			retryAttempt: data.retryAttempt,
 			options: data.retryStrategyOptions,
 		});
@@ -65,7 +65,7 @@ export async function runWithRetryAsync<TResult>(data: {
 				data.retryAttempt,
 				data.retryStrategyOptions,
 				data.requestHeaders,
-				error instanceof CoreSdkError ? error.originalError : error,
+				isCoreSdkError(error) ? error.originalError : error,
 			);
 		}
 

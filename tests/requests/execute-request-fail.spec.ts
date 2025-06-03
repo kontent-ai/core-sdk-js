@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { getDefaultHttpService } from '../../lib/http/http.service.js';
 import type { RetryStrategyOptions } from '../../lib/models/core.models.js';
 import { CoreSdkError, HttpServiceParsingError } from '../../lib/models/error.models.js';
+import { isParsingError } from '../../lib/utils/error.utils.js';
 import { toRequiredRetryStrategyOptions } from '../../lib/utils/retry.utils.js';
 
 const url = 'invalid-url';
@@ -24,7 +25,7 @@ describe('Execute request - Fail', async () => {
 			expect(error.originalError).toBeInstanceOf(HttpServiceParsingError);
 			expect(error.retryAttempt).toStrictEqual(retryStrategyOptions.maxAttempts);
 
-			if (error.originalError instanceof HttpServiceParsingError) {
+			if (isParsingError(error.originalError)) {
 				expect(error.message).toContain(`Failed to parse url '${url}'.`);
 			}
 		});

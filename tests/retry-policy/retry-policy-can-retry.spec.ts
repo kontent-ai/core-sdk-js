@@ -4,6 +4,7 @@ import { getFetchJsonMock } from '../../lib/devkit/test.utils.js';
 import { getDefaultHttpService } from '../../lib/http/http.service.js';
 import type { RetryStrategyOptions } from '../../lib/models/core.models.js';
 import { CoreSdkError } from '../../lib/models/error.models.js';
+import { isCoreSdkError } from '../../lib/utils/error.utils.js';
 import { toRequiredRetryStrategyOptions } from '../../lib/utils/retry.utils.js';
 import { getIntegrationTestConfig } from '../integration-tests.config.js';
 
@@ -73,7 +74,7 @@ for (const testCase of testCases) {
 			expect(error).toBeInstanceOf(CoreSdkError);
 		});
 
-		if (error instanceof CoreSdkError) {
+		if (isCoreSdkError(error)) {
 			it(`Should retry '${testCase.expectedRetryAttempts}' times`, () => {
 				expect(error.retryAttempt).toBe(testCase.expectedRetryAttempts);
 			});

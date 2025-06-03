@@ -74,13 +74,13 @@ export type HttpService = {
 	uploadFileAsync<TResponseData extends JsonValue>(opts: UploadFileRequestOptions): Promise<HttpResponse<TResponseData, Blob>>;
 };
 
-export type AdapterResponse = {
+export type AdapterResponse<TStatusCode extends HttpServiceStatus = HttpServiceStatus> = {
 	readonly toJsonAsync: () => Promise<JsonValue>;
 	readonly toBlobAsync: () => Promise<Blob>;
 
 	readonly isValidResponse: boolean;
 	readonly responseHeaders: readonly Header[];
-	readonly status: HttpServiceStatus;
+	readonly status: TStatusCode;
 	readonly statusText: string;
 };
 

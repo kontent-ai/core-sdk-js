@@ -27,5 +27,6 @@ export {
 	HttpServiceParsingError,
 } from './models/error.models.js';
 export type { JsonArray, JsonObject, JsonValue } from './models/json.models.js';
+export { isCoreSdkError, isCoreSdkInvalidResponseError, isCoreSdkParsingError, isKontent404Error } from './utils/error.utils.js';
 export { getSdkIdHeader } from './utils/header.utils.js';
 export { toRequiredRetryStrategyOptions } from './utils/retry.utils.js';

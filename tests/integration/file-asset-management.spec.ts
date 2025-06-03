@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { HttpServiceStatus } from '../../lib/http/http.models.js';
 import { getDefaultHttpService } from '../../lib/http/http.service.js';
-import { HttpServiceInvalidResponseError } from '../../lib/models/error.models.js';
+import { isInvalidResponseError } from '../../lib/utils/error.utils.js';
 import { getIntegrationTestConfig } from '../integration-tests.config.js';
 
 const fileToUpload = new Blob(['core-sdk-integration-test'], { type: 'text/plain' });
@@ -13,7 +13,7 @@ describe('Integration tests - Binary file / asset management', async () => {
 			maxAttempts: 5,
 			defaultDelayBetweenRequestsMs: 1000,
 			canRetryError: (error) => {
-				if (error instanceof HttpServiceInvalidResponseError) {
+				if (isInvalidResponseError(error)) {
 					// we intetionally retry 404 because when we upload a file and get the URL back, the file might not yet be accessible
 					// and the request will fail with 404.
 					return error.adapterResponse.status === 404;

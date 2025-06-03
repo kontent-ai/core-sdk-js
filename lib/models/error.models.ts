@@ -1,10 +1,10 @@
-import type { AdapterResponse } from '../http/http.models.js';
+import type { AdapterResponse, HttpServiceStatus } from '../http/http.models.js';
 import type { Header, KontentErrorResponseData, RetryStrategyOptions } from './core.models.js';
 
 /**
  * Represent an error that is thrown by the SDK
  */
-export class CoreSdkError extends Error {
+export class CoreSdkError<TOriginalError extends HttpServiceInvalidResponseError | HttpServiceParsingError | unknown = unknown> extends Error {
 	constructor(
 		/**
 		 * The message of the error
@@ -34,7 +34,7 @@ export class CoreSdkError extends Error {
 		/**
 		 * The original error that caused the request to fail
 		 */
-		readonly originalError: HttpServiceInvalidResponseError | HttpServiceParsingError | unknown,
+		readonly originalError: TOriginalError,
 	) {
 		super(message);
 	}
@@ -52,12 +52,12 @@ export class HttpServiceParsingError extends Error {
 /**
  * Represent an error that is thrown by the HTTP service when the response is not valid
  */
-export class HttpServiceInvalidResponseError extends Error {
+export class HttpServiceInvalidResponseError<TStatusCode extends HttpServiceStatus = HttpServiceStatus> extends Error {
 	readonly kontentErrorResponse: KontentErrorResponseData | undefined;
-	readonly adapterResponse: AdapterResponse;
+	readonly adapterResponse: AdapterResponse<TStatusCode>;
 
 	constructor(data: {
-		readonly adapterResponse: AdapterResponse;
+		readonly adapterResponse: AdapterResponse<TStatusCode>;
 		readonly kontentErrorData: KontentErrorResponseData | undefined;
 	}) {
 		super(`Invalid response from HTTP service with status ${data.adapterResponse.status}: ${data.adapterResponse.statusText}`);
