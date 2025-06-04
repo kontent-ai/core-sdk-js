@@ -50,7 +50,7 @@
 		"chalk": "5.4.1",
 		"standard-version": "9.5.0",
 		"typescript": "5.8.3",
-		"vitest": "3.2.0",
+		"vitest": "3.2.1",
 		"dotenv-cli": "8.0.0",
 		"tsx": "4.19.4"
 	}
