@@ -2,6 +2,7 @@ import type { Header, HttpMethod, RetryStrategyOptions } from '../models/core.mo
 import { CoreSdkError } from '../models/error.models.js';
 import { getDefaultErrorMessage, isCoreSdkError, isInvalidResponseError, isParsingError } from './error.utils.js';
 import { getRetryAfterHeaderValue } from './header.utils.js';
+import { tryCatchAsync } from './try.utils.js';
 
 type RetryResult =
 	| {
@@ -39,49 +40,51 @@ export async function runWithRetryAsync<TResult>(data: {
 	readonly requestHeaders: readonly Header[];
 	readonly method: HttpMethod;
 }): Promise<TResult> {
-	try {
-		return await data.funcAsync();
-	} catch (error) {
-		const newRetryAttempt = data.retryAttempt + 1;
+	const { success, data: result, error } = await tryCatchAsync(data.funcAsync);
 
-		const retryResult = getRetryResult({
-			error: isCoreSdkError(error) ? error.originalError : error,
-			responseHeaders: isInvalidResponseError(error) ? error.adapterResponse.responseHeaders : [],
-			retryAttempt: data.retryAttempt,
-			options: data.retryStrategyOptions,
-		});
+	if (success) {
+		return result;
+	}
 
-		if (!retryResult.canRetry) {
-			const errorMessage = getDefaultErrorMessage({
-				url: data.url,
-				retryAttempts: data.retryAttempt,
-				error: error,
-				method: data.method,
-			});
+	const newRetryAttempt = data.retryAttempt + 1;
 
-			throw new CoreSdkError(
-				errorMessage,
-				data.url,
-				data.retryAttempt,
-				data.retryStrategyOptions,
-				data.requestHeaders,
-				isCoreSdkError(error) ? error.originalError : error,
-			);
-		}
+	const retryResult = getRetryResult({
+		error: isCoreSdkError(error) ? error.originalError : error,
+		responseHeaders: isInvalidResponseError(error) ? error.adapterResponse.responseHeaders : [],
+		retryAttempt: data.retryAttempt,
+		options: data.retryStrategyOptions,
+	});
 
-		logRetryAttempt(data.retryStrategyOptions, newRetryAttempt, data.url);
-
-		await waitAsync(retryResult.retryInMs);
-
-		return await runWithRetryAsync({
-			funcAsync: data.funcAsync,
-			retryStrategyOptions: data.retryStrategyOptions,
-			retryAttempt: newRetryAttempt,
+	if (!retryResult.canRetry) {
+		const errorMessage = getDefaultErrorMessage({
 			url: data.url,
-			requestHeaders: data.requestHeaders,
+			retryAttempts: data.retryAttempt,
+			error: error,
 			method: data.method,
 		});
+
+		throw new CoreSdkError(
+			errorMessage,
+			data.url,
+			data.retryAttempt,
+			data.retryStrategyOptions,
+			data.requestHeaders,
+			isCoreSdkError(error) ? error.originalError : error,
+		);
 	}
+
+	logRetryAttempt(data.retryStrategyOptions, newRetryAttempt, data.url);
+
+	await waitAsync(retryResult.retryInMs);
+
+	return await runWithRetryAsync({
+		funcAsync: data.funcAsync,
+		retryStrategyOptions: data.retryStrategyOptions,
+		retryAttempt: newRetryAttempt,
+		url: data.url,
+		requestHeaders: data.requestHeaders,
+		method: data.method,
+	});
 }
 
 export function toRequiredRetryStrategyOptions(options?: RetryStrategyOptions): Required<RetryStrategyOptions> {

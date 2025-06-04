@@ -4,6 +4,7 @@ import type { RetryStrategyOptions } from '../../lib/models/core.models.js';
 import { CoreSdkError, HttpServiceParsingError } from '../../lib/models/error.models.js';
 import { isParsingError } from '../../lib/utils/error.utils.js';
 import { toRequiredRetryStrategyOptions } from '../../lib/utils/retry.utils.js';
+import { tryCatchAsync } from '../../lib/utils/try.utils.js';
 
 const url = 'invalid-url';
 const retryStrategyOptions: Required<RetryStrategyOptions> = toRequiredRetryStrategyOptions({
@@ -33,7 +34,7 @@ describe('Execute request - Fail', async () => {
 });
 
 async function resolveResponseAsync(): Promise<unknown> {
-	try {
+	const { error } = await tryCatchAsync(async () => {
 		return await getDefaultHttpService({
 			retryStrategy: retryStrategyOptions,
 		}).requestAsync({
@@ -41,7 +42,7 @@ async function resolveResponseAsync(): Promise<unknown> {
 			method: 'GET',
 			body: null,
 		});
-	} catch (error) {
-		return error;
-	}
+	});
+
+	return error;
 }

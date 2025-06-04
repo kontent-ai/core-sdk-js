@@ -5,6 +5,7 @@ import { sdkInfo } from '../sdk-info.js';
 import { isNotUndefined } from '../utils/core.utils.js';
 import { getSdkIdHeader } from '../utils/header.utils.js';
 import { runWithRetryAsync, toRequiredRetryStrategyOptions } from '../utils/retry.utils.js';
+import { tryCatch } from '../utils/try.utils.js';
 import { getDefaultHttpAdapter } from './http.adapter.js';
 import type {
 	AdapterResponse,
@@ -39,19 +40,23 @@ export function getDefaultHttpService(config?: DefaultHttpServiceConfig): HttpSe
 				return options.body;
 			}
 
-			try {
-				return JSON.stringify(options.body);
-			} catch (error) {
+			const { success, data: parsedBody } = tryCatch(() => JSON.stringify(options.body));
+
+			if (!success) {
 				throw new HttpServiceParsingError('Failed to stringify body of request.');
 			}
+
+			return parsedBody;
 		};
 
 		const getUrl = (): URL => {
-			try {
-				return new URL(options.url);
-			} catch (error) {
+			const { success, data: parsedUrl } = tryCatch(() => new URL(options.url));
+
+			if (!success) {
 				throw new HttpServiceParsingError(`Failed to parse url '${options.url}'.`);
 			}
+
+			return parsedUrl;
 		};
 
 		const requestHeaders = getCombinedRequestHeaders();

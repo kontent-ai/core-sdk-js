@@ -6,6 +6,7 @@ import type { RetryStrategyOptions } from '../../lib/models/core.models.js';
 import { CoreSdkError } from '../../lib/models/error.models.js';
 import { isCoreSdkError } from '../../lib/utils/error.utils.js';
 import { toRequiredRetryStrategyOptions } from '../../lib/utils/retry.utils.js';
+import { tryCatchAsync } from '../../lib/utils/try.utils.js';
 import { getIntegrationTestConfig } from '../integration-tests.config.js';
 
 const testCases: readonly {
@@ -83,7 +84,7 @@ for (const testCase of testCases) {
 }
 
 async function resolveResponseAsync(testCase: (typeof testCases)[number]): Promise<unknown> {
-	try {
+	const { error } = await tryCatchAsync(async () => {
 		return await getDefaultHttpService({
 			retryStrategy: toRequiredRetryStrategyOptions({
 				canRetryError: testCase.canRetryError,
@@ -97,7 +98,7 @@ async function resolveResponseAsync(testCase: (typeof testCases)[number]): Promi
 			method: 'GET',
 			body: null,
 		});
-	} catch (error) {
-		return error;
-	}
+	});
+
+	return error;
 }

@@ -5,6 +5,7 @@ import type { RetryStrategyOptions } from '../../lib/models/core.models.js';
 import { CoreSdkError } from '../../lib/models/error.models.js';
 import { isCoreSdkError } from '../../lib/utils/error.utils.js';
 import { toRequiredRetryStrategyOptions } from '../../lib/utils/retry.utils.js';
+import { tryCatchAsync } from '../../lib/utils/try.utils.js';
 
 const testCases: readonly Required<RetryStrategyOptions>[] = [
 	toRequiredRetryStrategyOptions({
@@ -59,13 +60,13 @@ describe('Retry policy - Max attempts', async () => {
 });
 
 async function resolveResponseAsync(retryStrategy: Required<RetryStrategyOptions>): Promise<unknown> {
-	try {
+	const { error } = await tryCatchAsync(async () => {
 		return await getDefaultHttpService({ retryStrategy }).requestAsync({
 			url: '',
 			method: 'GET',
 			body: null,
 		});
-	} catch (error) {
-		return error;
-	}
+	});
+
+	return error;
 }
