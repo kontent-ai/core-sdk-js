@@ -1,4 +1,4 @@
-import type { HttpServiceInvalidResponseError, HttpServiceParsingError } from './error.models.js';
+import type { CoreSdkError } from './error.models.js';
 
 /**
  * SDK info for identification of the SDK
@@ -54,7 +54,7 @@ export type RetryStrategyOptions = {
 	 * Function to determine if the error should be retried.
 	 * If not provided, the default implementation will be used.
 	 */
-	readonly canRetryError?: (error: unknown | HttpServiceInvalidResponseError | HttpServiceParsingError) => boolean;
+	readonly canRetryError?: (error: CoreSdkError) => boolean;
 
 	/**
 	 * Default delay between requests in milliseconds.

@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { HttpServiceStatus } from '../../lib/http/http.models.js';
 import { getDefaultHttpService } from '../../lib/http/http.service.js';
-import { isInvalidResponseError } from '../../lib/utils/error.utils.js';
 import { getIntegrationTestConfig } from '../integration-tests.config.js';
 
 const fileToUpload = new Blob(['core-sdk-integration-test'], { type: 'text/plain' });
@@ -13,10 +12,10 @@ describe('Integration tests - Binary file / asset management', async () => {
 			maxAttempts: 5,
 			defaultDelayBetweenRequestsMs: 1000,
 			canRetryError: (error) => {
-				if (isInvalidResponseError(error)) {
+				if (error.details.type === 'invalidResponse') {
 					// we intetionally retry 404 because when we upload a file and get the URL back, the file might not yet be accessible
 					// and the request will fail with 404.
-					return error.adapterResponse.status === 404;
+					return error.details.status === 404;
 				}
 
 				return false;
@@ -77,7 +76,11 @@ describe('Integration tests - Binary file / asset management', async () => {
 		});
 	};
 
-	const uploadedBinaryFileResponse = await uploadBinaryFileAsync();
+	const { success: uploadedBinaryFileSuccess, data: uploadedBinaryFileResponse, error: uploadedBinaryFileError } = await uploadBinaryFileAsync();
+
+	if (!uploadedBinaryFileSuccess) {
+		throw uploadedBinaryFileError;
+	}
 
 	it('Upload response status should be 200', () => {
 		expect(uploadedBinaryFileResponse.adapterResponse.status).toStrictEqual<HttpServiceStatus>(200);
@@ -87,7 +90,11 @@ describe('Integration tests - Binary file / asset management', async () => {
 		expect(uploadedBinaryFileResponse.data.id).toBeDefined();
 	});
 
-	const addAssetResponse = await addAssetAsync(uploadedBinaryFileResponse.data.id);
+	const { success: addAssetSuccess, data: addAssetResponse, error: addAssetError } = await addAssetAsync(uploadedBinaryFileResponse.data.id);
+
+	if (!addAssetSuccess) {
+		throw addAssetError;
+	}
 
 	it('Add asset response status should be 201', () => {
 		expect(addAssetResponse.adapterResponse.status).toStrictEqual<HttpServiceStatus>(201);
@@ -98,7 +105,15 @@ describe('Integration tests - Binary file / asset management', async () => {
 		expect(addAssetResponse.data.url).toBeDefined();
 	});
 
-	const downloadedFileResponse = await downloadAssetFileAsync(addAssetResponse.data.url);
+	const {
+		success: downloadedFileSuccess,
+		data: downloadedFileResponse,
+		error: downloadedFileError,
+	} = await downloadAssetFileAsync(addAssetResponse.data.url);
+
+	if (!downloadedFileSuccess) {
+		throw downloadedFileError;
+	}
 
 	it('Download file response status should be 200', () => {
 		expect(downloadedFileResponse.adapterResponse.status).toStrictEqual<HttpServiceStatus>(200);
@@ -108,7 +123,11 @@ describe('Integration tests - Binary file / asset management', async () => {
 		expect(await downloadedFileResponse.data.text()).toStrictEqual(await fileToUpload.text());
 	});
 
-	const deletedFileResponse = await deleteAssetAsync(addAssetResponse.data.id);
+	const { success: deletedFileSuccess, data: deletedFileResponse, error: deletedFileError } = await deleteAssetAsync(addAssetResponse.data.id);
+
+	if (!deletedFileSuccess) {
+		throw deletedFileError;
+	}
 
 	it('Delete file response status should be 204', () => {
 		expect(deletedFileResponse.adapterResponse.status).toStrictEqual<HttpServiceStatus>(204);

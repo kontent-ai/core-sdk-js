@@ -1,11 +1,12 @@
 import type { CommonHeaderNames, Header, KontentErrorResponseData, RetryStrategyOptions } from '../models/core.models.js';
-import { HttpServiceInvalidResponseError, HttpServiceParsingError } from '../models/error.models.js';
+import type { CoreSdkError } from '../models/error.models.js';
 import type { JsonValue } from '../models/json.models.js';
 import { sdkInfo } from '../sdk-info.js';
 import { isNotUndefined } from '../utils/core.utils.js';
+import { getDefaultErrorMessage } from '../utils/error.utils.js';
 import { getSdkIdHeader } from '../utils/header.utils.js';
 import { runWithRetryAsync, toRequiredRetryStrategyOptions } from '../utils/retry.utils.js';
-import { tryCatch } from '../utils/try.utils.js';
+import { type Result, tryCatch } from '../utils/try.utils.js';
 import { getDefaultHttpAdapter } from './http.adapter.js';
 import type {
 	AdapterResponse,
@@ -31,32 +32,64 @@ export function getDefaultHttpService(config?: DefaultHttpServiceConfig): HttpSe
 			return getRequestHeaders([...(config?.requestHeaders ?? []), ...(options?.requestHeaders ?? [])], options.body);
 		};
 
-		const getRequestBody = (): string | Blob | null => {
+		const getRequestBody = (): Result<string | Blob | null, CoreSdkError> => {
 			if (options.body === null) {
-				return null;
+				return {
+					success: true,
+					data: null,
+				};
 			}
 
 			if (options.body instanceof Blob) {
-				return options.body;
+				return {
+					success: true,
+					data: options.body,
+				};
 			}
 
-			const { success, data: parsedBody } = tryCatch(() => JSON.stringify(options.body));
+			const { success, data: parsedBody, error } = tryCatch(() => JSON.stringify(options.body));
 
 			if (!success) {
-				throw new HttpServiceParsingError('Failed to stringify body of request.');
+				return {
+					success: false,
+					error: {
+						message: 'Failed to stringify body of request.',
+						url: options.url,
+						details: {
+							type: 'invalidBody',
+							error: error,
+						},
+					},
+				};
 			}
 
-			return parsedBody;
+			return {
+				success: true,
+				data: parsedBody,
+			};
 		};
 
-		const getUrl = (): URL => {
-			const { success, data: parsedUrl } = tryCatch(() => new URL(options.url));
+		const getUrl = (): Result<URL, CoreSdkError> => {
+			const { success, data: parsedUrl, error } = tryCatch(() => new URL(options.url));
 
 			if (!success) {
-				throw new HttpServiceParsingError(`Failed to parse url '${options.url}'.`);
+				return {
+					success: false,
+					error: {
+						message: `Failed to parse url '${options.url}'.`,
+						url: options.url,
+						details: {
+							type: 'invalidUrl',
+							error,
+						},
+					},
+				};
 			}
 
-			return parsedUrl;
+			return {
+				success: true,
+				data: parsedUrl,
+			};
 		};
 
 		const requestHeaders = getCombinedRequestHeaders();
@@ -69,38 +102,79 @@ export function getDefaultHttpService(config?: DefaultHttpServiceConfig): HttpSe
 				retryAttempt: 0,
 				requestHeaders,
 				method: options.method,
-				funcAsync,
+				funcAsync: async () => {
+					return await funcAsync();
+				},
 			});
 		};
 
+		const { success: urlParsedSuccess, data: parsedUrl, error: urlError } = getUrl();
+
+		if (!urlParsedSuccess) {
+			return {
+				success: false,
+				error: urlError,
+			};
+		}
+
+		const { success: requestBodyParsedSuccess, data: requestBody, error: requestBodyError } = getRequestBody();
+
+		if (!requestBodyParsedSuccess) {
+			return {
+				success: false,
+				error: requestBodyError,
+			};
+		}
+
 		const getResponseAsync = async (): Promise<AdapterResponse> => {
 			return await adapter.requestAsync({
-				url: getUrl().toString(),
+				url: parsedUrl.toString(),
 				method: options.method,
 				requestHeaders,
-				body: getRequestBody(),
+				body: requestBody,
 			});
 		};
 
 		const resolveResponseAsync = async (response: AdapterResponse): Promise<HttpResponse<TResponseData, TBodyData>> => {
 			if (!response.isValidResponse) {
-				throw new HttpServiceInvalidResponseError({
-					kontentErrorData: await getKontentErrorDataAsync(response),
-					adapterResponse: response,
-				});
+				const kontentErrorResponse = await getKontentErrorDataAsync(response);
+
+				return {
+					success: false,
+					error: {
+						details: {
+							type: 'invalidResponse',
+							isValidResponse: response.isValidResponse,
+							responseHeaders: response.responseHeaders,
+							status: response.status,
+							statusText: response.statusText,
+							kontentErrorResponse,
+						},
+						message: getDefaultErrorMessage({
+							url: options.url,
+							adapterResponse: response,
+							kontentErrorResponse,
+							method: options.method,
+						}),
+						url: options.url,
+					},
+				};
 			}
 
 			return {
-				data: await resolveDataAsync(response),
-				body: options.body,
-				method: options.method,
-				adapterResponse: {
-					isValidResponse: response.isValidResponse,
-					responseHeaders: response.responseHeaders,
-					status: response.status,
-					statusText: response.statusText,
+				success: true,
+				data: {
+					data: await resolveDataAsync(response),
+					body: options.body,
+					method: options.method,
+					adapterResponse: {
+						isValidResponse: response.isValidResponse,
+						responseHeaders: response.responseHeaders,
+						status: response.status,
+						statusText: response.statusText,
+					},
+					requestHeaders: requestHeaders,
 				},
-				requestHeaders: requestHeaders,
 			};
 		};
 

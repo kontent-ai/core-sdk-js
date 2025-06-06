@@ -8,7 +8,7 @@ type ResponseData = {
 	readonly codename: string;
 };
 
-const data: ResponseData = {
+const responseData: ResponseData = {
 	codename: 'x',
 };
 
@@ -18,30 +18,38 @@ describe('Execute request - Success (GET)', async () => {
 	});
 
 	global.fetch = getFetchJsonMock<ResponseData>({
-		json: data,
+		json: responseData,
 		status: 200,
 	});
 
-	const response = await getDefaultHttpService().requestAsync<ResponseData, null>({
+	const { success, data, error } = await getDefaultHttpService().requestAsync<ResponseData, null>({
 		url: 'https://domain.com',
 		method: 'GET',
 		body: null,
 	});
 
+	it('Success should be true', () => {
+		expect(success).toBe(true);
+	});
+
+	it('Error should be undefined', () => {
+		expect(error).toBeUndefined();
+	});
+
 	it('Status should be 200', () => {
-		expect(response.adapterResponse.status).toStrictEqual(200);
+		expect(data?.adapterResponse.status).toStrictEqual(200);
 	});
 
 	it('Response data should be set', () => {
-		expect(response.data).toStrictEqual(data);
+		expect(data?.data).toStrictEqual(responseData);
 	});
 
 	it('Response body should be null', () => {
-		expect(response.body).toBeNull();
+		expect(data?.body).toBeNull();
 	});
 
 	it('Response method should be GET', () => {
-		expect(response.method).toStrictEqual('GET');
+		expect(data?.method).toStrictEqual('GET');
 	});
 });
 
@@ -59,29 +67,37 @@ describe('Execute request - Success (POST)', async () => {
 	};
 
 	global.fetch = getFetchJsonMock<ResponseData>({
-		json: data,
+		json: responseData,
 		status: 200,
 	});
 
-	const response = await getDefaultHttpService().requestAsync<ResponseData, { readonly id: number; readonly codename: string }>({
+	const { success, data, error } = await getDefaultHttpService().requestAsync<ResponseData, { readonly id: number; readonly codename: string }>({
 		url: 'https://domain.com',
 		method: 'POST',
 		body: requestBody,
 	});
 
+	it('Success should be true', () => {
+		expect(success).toBe(true);
+	});
+
+	it('Error should be undefined', () => {
+		expect(error).toBeUndefined();
+	});
+
 	it('Status should be 200', () => {
-		expect(response.adapterResponse.status).toStrictEqual<HttpServiceStatus>(200);
+		expect(data?.adapterResponse.status).toStrictEqual<HttpServiceStatus>(200);
 	});
 
 	it('Response data should be set', () => {
-		expect(response.data).toStrictEqual(data);
+		expect(data?.data).toStrictEqual(responseData);
 	});
 
 	it('Response body should be set', () => {
-		expect(response.body).toStrictEqual(requestBody);
+		expect(data?.body).toStrictEqual(requestBody);
 	});
 
 	it('Response method should be POST', () => {
-		expect(response.method).toStrictEqual<HttpMethod>('POST');
+		expect(data?.method).toStrictEqual<HttpMethod>('POST');
 	});
 });

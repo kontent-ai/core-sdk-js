@@ -1,12 +1,10 @@
 import { afterAll, describe, expect, it, vi } from 'vitest';
 import type { FetchResponse } from '../../lib/devkit/devkit.models.js';
 import { getFetchJsonMock } from '../../lib/devkit/test.utils.js';
+import type { HttpResponse } from '../../lib/http/http.models.js';
 import { getDefaultHttpService } from '../../lib/http/http.service.js';
 import type { RetryStrategyOptions } from '../../lib/models/core.models.js';
-import { CoreSdkError } from '../../lib/models/error.models.js';
-import { isCoreSdkError } from '../../lib/utils/error.utils.js';
 import { toRequiredRetryStrategyOptions } from '../../lib/utils/retry.utils.js';
-import { tryCatchAsync } from '../../lib/utils/try.utils.js';
 import { getIntegrationTestConfig } from '../integration-tests.config.js';
 
 const testCases: readonly {
@@ -69,36 +67,34 @@ for (const testCase of testCases) {
 			status: testCase.fetchResponse.statusCode,
 		});
 
-		const error = await resolveResponseAsync(testCase);
+		const { success, error } = await resolveResponseAsync(testCase);
 
-		it('Should be an instance of CoreSdkError', () => {
-			expect(error).toBeInstanceOf(CoreSdkError);
+		it('Success should be false', () => {
+			expect(success).toBe(false);
 		});
 
-		if (isCoreSdkError(error)) {
-			it(`Should retry '${testCase.expectedRetryAttempts}' times`, () => {
-				expect(error.retryAttempt).toBe(testCase.expectedRetryAttempts);
-			});
-		}
+		it('Error should be defined', () => {
+			expect(error).toBeDefined();
+		});
+
+		it(`Should retry '${testCase.expectedRetryAttempts}' times`, () => {
+			expect(error?.retryAttempt).toBe(testCase.expectedRetryAttempts);
+		});
 	});
 }
 
-async function resolveResponseAsync(testCase: (typeof testCases)[number]): Promise<unknown> {
-	const { error } = await tryCatchAsync(async () => {
-		return await getDefaultHttpService({
-			retryStrategy: toRequiredRetryStrategyOptions({
-				canRetryError: testCase.canRetryError,
-				defaultDelayBetweenRequestsMs: 0,
-				maxAttempts: testCase.maxRetryAttempts,
-				logRetryAttempt: false,
-			}),
-		}).requestAsync({
-			// we need the request to be valid but fail to be able to retry
-			url: getIntegrationTestConfig().urls.baseMapiUrl,
-			method: 'GET',
-			body: null,
-		});
+async function resolveResponseAsync(testCase: (typeof testCases)[number]): Promise<HttpResponse<null, null>> {
+	return await getDefaultHttpService({
+		retryStrategy: toRequiredRetryStrategyOptions({
+			canRetryError: testCase.canRetryError,
+			defaultDelayBetweenRequestsMs: 0,
+			maxAttempts: testCase.maxRetryAttempts,
+			logRetryAttempt: false,
+		}),
+	}).requestAsync({
+		// we need valid url
+		url: getIntegrationTestConfig().urls.baseMapiUrl,
+		method: 'GET',
+		body: null,
 	});
-
-	return error;
 }

@@ -1,16 +1,16 @@
-type Success<T> = {
+type Success<TData> = {
 	readonly success: true;
-	readonly data: T;
+	readonly data: TData;
 	readonly error?: never;
 };
 
-type Failure = {
+type Failure<TError = unknown> = {
 	readonly success: false;
 	readonly data?: never;
-	readonly error: unknown;
+	readonly error: TError;
 };
 
-type Result<T> = Success<T> | Failure;
+export type Result<TData, TError = unknown> = Success<TData> | Failure<TError>;
 
 export async function tryCatchAsync<T>(fn: () => Promise<T>): Promise<Result<T>> {
 	try {

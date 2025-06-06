@@ -1,5 +1,7 @@
 import type { Header, HttpMethod, LiteralUnionNumber, RetryStrategyOptions } from '../models/core.models.js';
+import type { CoreSdkError } from '../models/error.models.js';
 import type { JsonValue } from '../models/json.models.js';
+import type { Result } from '../utils/try.utils.js';
 
 /**
  * Helper status codes for the HTTP service.
@@ -24,13 +26,16 @@ export type DefaultHttpServiceConfig = {
 	readonly adapter?: HttpAdapter;
 };
 
-export type HttpResponse<TResponseData extends JsonValue | Blob, TBodyData extends JsonValue | Blob> = {
-	readonly data: TResponseData;
-	readonly body: TBodyData;
-	readonly method: HttpMethod;
-	readonly requestHeaders: readonly Header[];
-	readonly adapterResponse: Omit<AdapterResponse, 'toJsonAsync' | 'toBlobAsync'>;
-};
+export type HttpResponse<TResponseData extends JsonValue | Blob, TBodyData extends JsonValue | Blob> = Result<
+	{
+		readonly data: TResponseData;
+		readonly body: TBodyData;
+		readonly method: HttpMethod;
+		readonly requestHeaders: readonly Header[];
+		readonly adapterResponse: Omit<AdapterResponse, 'toJsonAsync' | 'toBlobAsync'>;
+	},
+	CoreSdkError
+>;
 
 export type ExecuteRequestOptions<TBodyData extends JsonValue | Blob> = {
 	readonly url: string;

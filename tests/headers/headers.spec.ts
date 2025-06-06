@@ -17,18 +17,26 @@ describe('Default headers', async () => {
 		status: 200,
 		responseHeaders: [],
 	});
-	const response = await getDefaultHttpService().requestAsync({
+	const { success, data, error } = await getDefaultHttpService().requestAsync({
 		url: 'https://domain.com',
 		method: 'GET',
 		body: null,
 	});
 
+	it('Success should be true', () => {
+		expect(success).toBe(true);
+	});
+
+	it('Error should be undefined', () => {
+		expect(error).toBeUndefined();
+	});
+
 	it('Response should contain application/json content type header', () => {
-		expect(response.requestHeaders.find((m) => m.name.toLowerCase() === 'content-type')?.value).toStrictEqual('application/json');
+		expect(data?.requestHeaders.find((m) => m.name.toLowerCase() === 'content-type')?.value).toStrictEqual('application/json');
 	});
 
 	it(`Request should contain '${sdkIdHeader.name}' header`, () => {
-		expect(response.requestHeaders.find((m) => m.name === 'X-KC-SDKID')?.value).toStrictEqual(sdkIdHeader.value);
+		expect(data?.requestHeaders.find((m) => m.name === 'X-KC-SDKID')?.value).toStrictEqual(sdkIdHeader.value);
 	});
 });
 
@@ -44,7 +52,7 @@ describe(`SDK tracking header '${sdkIdHeader.name}'`, async () => {
 		status: 200,
 	});
 
-	const response = await getDefaultHttpService().requestAsync({
+	const { success, data, error } = await getDefaultHttpService().requestAsync({
 		url: 'https://domain.com',
 		method: 'GET',
 		body: null,
@@ -56,14 +64,20 @@ describe(`SDK tracking header '${sdkIdHeader.name}'`, async () => {
 		],
 	});
 
+	it('Success should be true', () => {
+		expect(success).toBe(true);
+	});
+
+	it('Error should be undefined', () => {
+		expect(error).toBeUndefined();
+	});
+
 	it(`Request should contain only single '${sdkIdHeader.name}' header`, () => {
-		expect(response.requestHeaders.filter((m) => m.name.toLowerCase() === ('X-KC-SDKID' satisfies CommonHeaderNames).toLowerCase()).length).toStrictEqual(
-			1,
-		);
+		expect(data?.requestHeaders.filter((m) => m.name.toLowerCase() === ('X-KC-SDKID' satisfies CommonHeaderNames).toLowerCase()).length).toStrictEqual(1);
 	});
 
 	it(`Request should contain '${sdkIdHeader.name}' header`, () => {
-		expect(response.requestHeaders.find((m) => m.name.toLowerCase() === ('X-KC-SDKID' satisfies CommonHeaderNames).toLowerCase())?.value).toStrictEqual(
+		expect(data?.requestHeaders.find((m) => m.name.toLowerCase() === ('X-KC-SDKID' satisfies CommonHeaderNames).toLowerCase())?.value).toStrictEqual(
 			customSdkId,
 		);
 	});
@@ -89,7 +103,7 @@ describe('Custom Http Service & Request headers', async () => {
 		value: 'b',
 	};
 
-	const response = await getDefaultHttpService({
+	const { success, data, error } = await getDefaultHttpService({
 		requestHeaders: [headerA],
 	}).requestAsync({
 		url: 'https://domain.com',
@@ -98,11 +112,15 @@ describe('Custom Http Service & Request headers', async () => {
 		requestHeaders: [headerB],
 	});
 
+	if (!success) {
+		throw error;
+	}
+
 	it(`Request should contain header ${headerA.name}`, () => {
-		expect(response.requestHeaders.find((m) => m.name === headerA.name)).toStrictEqual(headerA);
+		expect(data.requestHeaders.find((m) => m.name === headerA.name)).toStrictEqual(headerA);
 	});
 
 	it(`Request should contain header ${headerB.name} `, () => {
-		expect(response.requestHeaders.find((m) => m.name === headerB.name)).toStrictEqual(headerB);
+		expect(data.requestHeaders.find((m) => m.name === headerB.name)).toStrictEqual(headerB);
 	});
 });

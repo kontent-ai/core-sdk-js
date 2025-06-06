@@ -1,11 +1,10 @@
 import { afterAll, describe, expect, it, vi } from 'vitest';
 import { getFetchJsonMock } from '../../lib/devkit/test.utils.js';
+import type { HttpResponse } from '../../lib/http/http.models.js';
 import { getDefaultHttpService } from '../../lib/http/http.service.js';
 import type { RetryStrategyOptions } from '../../lib/models/core.models.js';
-import { CoreSdkError } from '../../lib/models/error.models.js';
-import { isCoreSdkError } from '../../lib/utils/error.utils.js';
 import { toRequiredRetryStrategyOptions } from '../../lib/utils/retry.utils.js';
-import { tryCatchAsync } from '../../lib/utils/try.utils.js';
+import { getIntegrationTestConfig } from '../integration-tests.config.js';
 
 const testCases: readonly Required<RetryStrategyOptions>[] = [
 	toRequiredRetryStrategyOptions({
@@ -34,7 +33,7 @@ const testCases: readonly Required<RetryStrategyOptions>[] = [
 	}),
 ];
 
-describe('Retry policy - Max attempts', async () => {
+describe('Retry policy - max attempts', async () => {
 	afterAll(() => {
 		vi.resetAllMocks();
 	});
@@ -45,28 +44,29 @@ describe('Retry policy - Max attempts', async () => {
 			status: 500,
 		});
 
-		const error = await resolveResponseAsync(retryStrategy);
+		const { success, error } = await resolveResponseAsync(retryStrategy);
 
-		it('Error should be instance of CoreSdkError', () => {
-			expect(error).toBeInstanceOf(CoreSdkError);
+		it('Success should be false', () => {
+			expect(success).toBe(false);
 		});
 
-		if (isCoreSdkError(error)) {
-			it(`Should retry '${maxAttempts}' times`, () => {
-				expect(error.retryAttempt).toStrictEqual(retryStrategy.maxAttempts);
-			});
-		}
+		it('Error should be defined', () => {
+			expect(error).toBeDefined();
+		});
+
+		it(`Should retry '${maxAttempts}' times`, () => {
+			expect(error?.retryAttempt).toStrictEqual(retryStrategy.maxAttempts);
+		});
 	}
 });
 
-async function resolveResponseAsync(retryStrategy: Required<RetryStrategyOptions>): Promise<unknown> {
-	const { error } = await tryCatchAsync(async () => {
-		return await getDefaultHttpService({ retryStrategy }).requestAsync({
-			url: '',
-			method: 'GET',
-			body: null,
-		});
+async function resolveResponseAsync(retryStrategy: Required<RetryStrategyOptions>): Promise<HttpResponse<null, null>> {
+	return await getDefaultHttpService({
+		retryStrategy,
+	}).requestAsync({
+		// we need valid url
+		url: getIntegrationTestConfig().urls.baseMapiUrl,
+		method: 'GET',
+		body: null,
 	});
-
-	return error;
 }

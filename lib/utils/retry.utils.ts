@@ -1,8 +1,8 @@
+import type { HttpResponse } from '../http/http.models.js';
 import type { Header, HttpMethod, RetryStrategyOptions } from '../models/core.models.js';
-import { CoreSdkError } from '../models/error.models.js';
-import { getDefaultErrorMessage, isCoreSdkError, isInvalidResponseError, isParsingError } from './error.utils.js';
+import type { CoreSdkError } from '../models/error.models.js';
+import type { JsonValue } from '../models/json.models.js';
 import { getRetryAfterHeaderValue } from './header.utils.js';
-import { tryCatchAsync } from './try.utils.js';
 
 type RetryResult =
 	| {
@@ -16,61 +16,52 @@ type RetryResult =
 const defaultMaxAttempts: NonNullable<RetryStrategyOptions['maxAttempts']> = 3;
 const defaultDelayBetweenAttemptsMs: NonNullable<RetryStrategyOptions['defaultDelayBetweenRequestsMs']> = 1000;
 const defaultCanRetryError: NonNullable<RetryStrategyOptions['canRetryError']> = (error) => {
-	if (isInvalidResponseError(error)) {
-		if (error.kontentErrorResponse) {
+	if (error.details.type === 'invalidResponse') {
+		if (error.details.kontentErrorResponse) {
 			// The request is clearly invalid as we got an error response from the API
 			return false;
 		}
 
-		return error.adapterResponse.status >= 500 || error.adapterResponse.status === 429;
-	}
-
-	if (isParsingError(error)) {
-		return false;
+		return error.details.status >= 500 || error.details.status === 429;
 	}
 
 	return true;
 };
 
-export async function runWithRetryAsync<TResult>(data: {
-	readonly funcAsync: () => Promise<TResult>;
+export async function runWithRetryAsync<TResponse extends JsonValue | Blob, TBodyData extends JsonValue | Blob>(data: {
+	readonly funcAsync: () => Promise<HttpResponse<TResponse, TBodyData>>;
 	readonly retryStrategyOptions: Required<RetryStrategyOptions>;
 	readonly retryAttempt: number;
 	readonly url: string;
 	readonly requestHeaders: readonly Header[];
 	readonly method: HttpMethod;
-}): Promise<TResult> {
-	const { success, data: result, error } = await tryCatchAsync(data.funcAsync);
+}): Promise<HttpResponse<TResponse, TBodyData>> {
+	const { success, data: result, error } = await data.funcAsync();
 
 	if (success) {
-		return result;
+		return {
+			success: true,
+			data: result,
+		};
 	}
 
 	const newRetryAttempt = data.retryAttempt + 1;
 
 	const retryResult = getRetryResult({
-		error: isCoreSdkError(error) ? error.originalError : error,
-		responseHeaders: isInvalidResponseError(error) ? error.adapterResponse.responseHeaders : [],
+		error,
 		retryAttempt: data.retryAttempt,
 		options: data.retryStrategyOptions,
 	});
 
 	if (!retryResult.canRetry) {
-		const errorMessage = getDefaultErrorMessage({
-			url: data.url,
-			retryAttempts: data.retryAttempt,
-			error: error,
-			method: data.method,
-		});
-
-		throw new CoreSdkError(
-			errorMessage,
-			data.url,
-			data.retryAttempt,
-			data.retryStrategyOptions,
-			data.requestHeaders,
-			isCoreSdkError(error) ? error.originalError : error,
-		);
+		return {
+			success: false,
+			error: {
+				...error,
+				retryAttempt: data.retryAttempt,
+				retryStrategyOptions: data.retryStrategyOptions,
+			},
+		};
 	}
 
 	logRetryAttempt(data.retryStrategyOptions, newRetryAttempt, data.url);
@@ -125,12 +116,10 @@ function getRetryResult({
 	retryAttempt,
 	error,
 	options,
-	responseHeaders,
 }: {
 	readonly retryAttempt: number;
-	readonly error: unknown;
+	readonly error: CoreSdkError;
 	readonly options: Required<RetryStrategyOptions>;
-	readonly responseHeaders: readonly Header[];
 }): RetryResult {
 	if (retryAttempt >= options.maxAttempts) {
 		return {
@@ -144,14 +133,17 @@ function getRetryResult({
 		};
 	}
 
-	return getRetryFromHeader({ options, responseHeaders });
+	return getRetryFromHeader({ options, error });
 }
 
-function getRetryFromHeader({
-	options,
-	responseHeaders,
-}: { readonly options: Required<RetryStrategyOptions>; readonly responseHeaders: readonly Header[] }): RetryResult {
-	const retryAfterHeaderValue = getRetryAfterHeaderValue(responseHeaders);
+function getRetryFromHeader({ options, error }: { readonly options: Required<RetryStrategyOptions>; readonly error: CoreSdkError }): RetryResult {
+	if (error.details.type !== 'invalidResponse') {
+		return {
+			canRetry: false,
+		};
+	}
+
+	const retryAfterHeaderValue = getRetryAfterHeaderValue(error.details.responseHeaders);
 
 	if (retryAfterHeaderValue) {
 		return {

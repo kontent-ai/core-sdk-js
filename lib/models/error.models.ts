@@ -1,68 +1,59 @@
 import type { AdapterResponse, HttpServiceStatus } from '../http/http.models.js';
-import type { Header, KontentErrorResponseData, RetryStrategyOptions } from './core.models.js';
+import type { KontentErrorResponseData, RetryStrategyOptions } from './core.models.js';
 
-/**
- * Represent an error that is thrown by the SDK
- */
-export class CoreSdkError<TOriginalError extends HttpServiceInvalidResponseError | HttpServiceParsingError | unknown = unknown> extends Error {
-	constructor(
-		/**
-		 * The message of the error
-		 */
-		readonly message: string,
+export type ErrorType = 'invalidResponse' | 'invalidUrl' | 'unknown' | 'invalidBody';
 
-		/**
-		 * The URL of the request.
-		 */
-		readonly url: string,
+export type CoreSdkError = {
+	/**
+	 * The message of the error
+	 */
+	readonly message: string;
 
-		/**
-		 * The number of times the request has been retried.
-		 */
-		readonly retryAttempt: number,
+	/**
+	 * The URL of the request.
+	 */
+	readonly url: string;
 
-		/**
-		 * The retry strategy options used for the request.
-		 */
-		readonly retryStrategyOptions: Required<RetryStrategyOptions>,
+	/**
+	 * Applied retry strategy.
+	 */
+	readonly retryStrategyOptions?: Required<RetryStrategyOptions>;
 
-		/**
-		 * The headers of the request.
-		 */
-		readonly requestHeaders: readonly Header[],
+	/**
+	 * The number of times the request has been retried.
+	 */
+	readonly retryAttempt?: number;
 
-		/**
-		 * The original error that caused the request to fail
-		 */
-		readonly originalError: TOriginalError,
-	) {
-		super(message);
-	}
-}
+	/**
+	 * The original error that caused the request to fail
+	 */
+	readonly details:
+		| SdkErrorDetails<
+				'invalidResponse',
+				{
+					readonly kontentErrorResponse: KontentErrorResponseData | undefined;
+				} & Pick<AdapterResponse<HttpServiceStatus>, 'isValidResponse' | 'responseHeaders' | 'status' | 'statusText'>
+		  >
+		| SdkErrorDetails<
+				'invalidBody',
+				{
+					readonly error: unknown;
+				}
+		  >
+		| SdkErrorDetails<
+				'invalidUrl',
+				{
+					readonly error: unknown;
+				}
+		  >
+		| SdkErrorDetails<
+				'unknown',
+				{
+					readonly error: unknown;
+				}
+		  >;
+};
 
-/**
- * Represent an error that is thrown by the HTTP service when parsing the URL or body data failed
- */
-export class HttpServiceParsingError extends Error {
-	constructor(readonly message: string) {
-		super(message);
-	}
-}
-
-/**
- * Represent an error that is thrown by the HTTP service when the response is not valid
- */
-export class HttpServiceInvalidResponseError<TStatusCode extends HttpServiceStatus = HttpServiceStatus> extends Error {
-	readonly kontentErrorResponse: KontentErrorResponseData | undefined;
-	readonly adapterResponse: AdapterResponse<TStatusCode>;
-
-	constructor(data: {
-		readonly adapterResponse: AdapterResponse<TStatusCode>;
-		readonly kontentErrorData: KontentErrorResponseData | undefined;
-	}) {
-		super(`Invalid response from HTTP service with status ${data.adapterResponse.status}: ${data.adapterResponse.statusText}`);
-
-		this.kontentErrorResponse = data.kontentErrorData;
-		this.adapterResponse = data.adapterResponse;
-	}
-}
+type SdkErrorDetails<TType extends ErrorType, TDetails> = {
+	readonly type: TType;
+} & TDetails;

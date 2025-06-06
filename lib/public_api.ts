@@ -23,11 +23,9 @@ export type {
 } from './models/core.models.js';
 export {
 	CoreSdkError,
-	HttpServiceInvalidResponseError,
-	HttpServiceParsingError,
+	ErrorType,
 } from './models/error.models.js';
 export type { JsonArray, JsonObject, JsonValue } from './models/json.models.js';
-export { isCoreSdkError, isCoreSdkInvalidResponseError, isCoreSdkParsingError, isKontent404Error } from './utils/error.utils.js';
 export { getSdkIdHeader } from './utils/header.utils.js';
 export { toRequiredRetryStrategyOptions } from './utils/retry.utils.js';
 export { tryCatch, tryCatchAsync } from './utils/try.utils.js';
