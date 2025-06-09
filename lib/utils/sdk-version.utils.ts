@@ -1,13 +1,13 @@
-import chalk from 'chalk';
-import { readFileSync, writeFileSync } from 'node:fs';
+import { readFileSync, writeFileSync } from "node:fs";
+import chalk from "chalk";
 
-const sdkVersionPlaceholderMacro = '{{version}}';
+const sdkVersionPlaceholderMacro = "{{version}}";
 
 export function replaceSdkVersionPlaceholder(filePath: string, version: string): void {
-	const fileContent = readFileSync(filePath, 'utf8');
+	const fileContent = readFileSync(filePath, "utf8");
 
 	if (!fileContent.includes(sdkVersionPlaceholderMacro)) {
-		throw Error(`File '${filePath}' does not contain macro '${sdkVersionPlaceholderMacro}'`);
+		throw new Error(`File '${filePath}' does not contain macro '${sdkVersionPlaceholderMacro}'`);
 	}
 
 	writeFileSync(filePath, fileContent.replace(sdkVersionPlaceholderMacro, version));

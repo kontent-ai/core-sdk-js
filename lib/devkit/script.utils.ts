@@ -1,5 +1,5 @@
-import chalk from 'chalk';
-import { rmSync } from 'node:fs';
+import { rmSync } from "node:fs";
+import chalk from "chalk";
 
 export function deleteFolderRecursive(path: string): void {
 	console.log(`Deleting existing folder '${chalk.yellow(path)}'`);

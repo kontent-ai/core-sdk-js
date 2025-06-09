@@ -1,16 +1,16 @@
-import { loadEnv } from 'vite';
-import { defineConfig } from 'vitest/config';
+import { loadEnv } from "vite";
+import { defineConfig } from "vitest/config";
 
 export default defineConfig({
-	root: '.',
+	root: ".",
 	test: {
-		dir: 'tests',
+		dir: "tests",
 		globals: true,
-		environment: 'node',
-		setupFiles: ['dotenv/config'],
-		env: loadEnv('', process.cwd(), ''), // loads .env variables
+		environment: "node",
+		setupFiles: ["dotenv/config"],
+		env: loadEnv("", process.cwd(), ""), // loads .env variables
 	},
 	build: {
-		target: 'esnext',
+		target: "esnext",
 	},
 });

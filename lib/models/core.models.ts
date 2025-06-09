@@ -1,4 +1,4 @@
-import type { CoreSdkError } from './error.models.js';
+import type { CoreSdkError } from "./error.models.js";
 
 /**
  * SDK info for identification of the SDK
@@ -17,17 +17,17 @@ export type SDKInfo = {
 	/**
 	 * The host of the SDK.
 	 */
-	readonly host: LiteralUnion<'npmjs.com'>;
+	readonly host: LiteralUnion<"npmjs.com">;
 };
 
-export type CommonHeaderNames = 'Retry-After' | 'X-KC-SDKID' | 'Authorization' | 'Content-Type' | 'Content-Length';
+export type CommonHeaderNames = "Retry-After" | "X-KC-SDKID" | "Authorization" | "Content-Type" | "Content-Length";
 
 export type Header = {
 	readonly name: string;
 	readonly value: string;
 };
 
-export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
+export type HttpMethod = "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
 
 export type KontentValidationError = {
 	readonly message: string;

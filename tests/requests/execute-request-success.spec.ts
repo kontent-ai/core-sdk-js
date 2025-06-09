@@ -1,18 +1,18 @@
-import { afterAll, describe, expect, it, vi } from 'vitest';
-import { getFetchJsonMock } from '../../lib/devkit/test.utils.js';
-import type { HttpServiceStatus } from '../../lib/http/http.models.js';
-import { getDefaultHttpService } from '../../lib/http/http.service.js';
-import type { HttpMethod } from '../../lib/models/core.models.js';
+import { afterAll, describe, expect, it, vi } from "vitest";
+import { getFetchJsonMock } from "../../lib/devkit/test.utils.js";
+import type { HttpServiceStatus } from "../../lib/http/http.models.js";
+import { getDefaultHttpService } from "../../lib/http/http.service.js";
+import type { HttpMethod } from "../../lib/models/core.models.js";
 
 type ResponseData = {
 	readonly codename: string;
 };
 
 const responseData: ResponseData = {
-	codename: 'x',
+	codename: "x",
 };
 
-describe('Execute request - Success (GET)', async () => {
+describe("Execute request - Success (GET)", async () => {
 	afterAll(() => {
 		vi.resetAllMocks();
 	});
@@ -23,37 +23,37 @@ describe('Execute request - Success (GET)', async () => {
 	});
 
 	const { success, data, error } = await getDefaultHttpService().requestAsync<ResponseData, null>({
-		url: 'https://domain.com',
-		method: 'GET',
+		url: "https://domain.com",
+		method: "GET",
 		body: null,
 	});
 
-	it('Success should be true', () => {
+	it("Success should be true", () => {
 		expect(success).toBe(true);
 	});
 
-	it('Error should be undefined', () => {
+	it("Error should be undefined", () => {
 		expect(error).toBeUndefined();
 	});
 
-	it('Status should be 200', () => {
+	it("Status should be 200", () => {
 		expect(data?.adapterResponse.status).toStrictEqual(200);
 	});
 
-	it('Response data should be set', () => {
+	it("Response data should be set", () => {
 		expect(data?.responseData).toStrictEqual(responseData);
 	});
 
-	it('Response body should be null', () => {
+	it("Response body should be null", () => {
 		expect(data?.body).toBeNull();
 	});
 
-	it('Response method should be GET', () => {
-		expect(data?.method).toStrictEqual('GET');
+	it("Response method should be GET", () => {
+		expect(data?.method).toStrictEqual("GET");
 	});
 });
 
-describe('Execute request - Success (POST)', async () => {
+describe("Execute request - Success (POST)", async () => {
 	afterAll(() => {
 		vi.resetAllMocks();
 	});
@@ -63,7 +63,7 @@ describe('Execute request - Success (POST)', async () => {
 		readonly codename: string;
 	} = {
 		id: 1,
-		codename: 'x',
+		codename: "x",
 	};
 
 	global.fetch = getFetchJsonMock<ResponseData>({
@@ -72,32 +72,32 @@ describe('Execute request - Success (POST)', async () => {
 	});
 
 	const { success, data, error } = await getDefaultHttpService().requestAsync<ResponseData, { readonly id: number; readonly codename: string }>({
-		url: 'https://domain.com',
-		method: 'POST',
+		url: "https://domain.com",
+		method: "POST",
 		body: requestBody,
 	});
 
-	it('Success should be true', () => {
+	it("Success should be true", () => {
 		expect(success).toBe(true);
 	});
 
-	it('Error should be undefined', () => {
+	it("Error should be undefined", () => {
 		expect(error).toBeUndefined();
 	});
 
-	it('Status should be 200', () => {
+	it("Status should be 200", () => {
 		expect(data?.adapterResponse.status).toStrictEqual<HttpServiceStatus>(200);
 	});
 
-	it('Response data should be set', () => {
+	it("Response data should be set", () => {
 		expect(data?.responseData).toStrictEqual(responseData);
 	});
 
-	it('Response body should be set', () => {
+	it("Response body should be set", () => {
 		expect(data?.body).toStrictEqual(requestBody);
 	});
 
-	it('Response method should be POST', () => {
-		expect(data?.method).toStrictEqual<HttpMethod>('POST');
+	it("Response method should be POST", () => {
+		expect(data?.method).toStrictEqual<HttpMethod>("POST");
 	});
 });

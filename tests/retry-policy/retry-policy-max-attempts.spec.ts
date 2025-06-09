@@ -1,10 +1,10 @@
-import { afterAll, describe, expect, it, vi } from 'vitest';
-import { getFetchJsonMock } from '../../lib/devkit/test.utils.js';
-import type { HttpResponse } from '../../lib/http/http.models.js';
-import { getDefaultHttpService } from '../../lib/http/http.service.js';
-import type { RetryStrategyOptions } from '../../lib/models/core.models.js';
-import { toRequiredRetryStrategyOptions } from '../../lib/utils/retry.utils.js';
-import { getIntegrationTestConfig } from '../integration-tests.config.js';
+import { afterAll, describe, expect, it, vi } from "vitest";
+import { getFetchJsonMock } from "../../lib/devkit/test.utils.js";
+import type { HttpResponse } from "../../lib/http/http.models.js";
+import { getDefaultHttpService } from "../../lib/http/http.service.js";
+import type { RetryStrategyOptions } from "../../lib/models/core.models.js";
+import { toRequiredRetryStrategyOptions } from "../../lib/utils/retry.utils.js";
+import { getIntegrationTestConfig } from "../integration-tests.config.js";
 
 const testCases: readonly Required<RetryStrategyOptions>[] = [
 	toRequiredRetryStrategyOptions({
@@ -33,7 +33,7 @@ const testCases: readonly Required<RetryStrategyOptions>[] = [
 	}),
 ];
 
-describe('Retry policy - max attempts', async () => {
+describe("Retry policy - max attempts", async () => {
 	afterAll(() => {
 		vi.resetAllMocks();
 	});
@@ -46,11 +46,11 @@ describe('Retry policy - max attempts', async () => {
 
 		const { success, error } = await resolveResponseAsync(retryStrategy);
 
-		it('Success should be false', () => {
+		it("Success should be false", () => {
 			expect(success).toBe(false);
 		});
 
-		it('Error should be defined', () => {
+		it("Error should be defined", () => {
 			expect(error).toBeDefined();
 		});
 
@@ -66,7 +66,7 @@ async function resolveResponseAsync(retryStrategy: Required<RetryStrategyOptions
 	}).requestAsync({
 		// we need valid url
 		url: getIntegrationTestConfig().urls.baseMapiUrl,
-		method: 'GET',
+		method: "GET",
 		body: null,
 	});
 }

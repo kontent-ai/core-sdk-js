@@ -1,13 +1,13 @@
-import { afterAll, describe, expect, it, vi } from 'vitest';
-import { getFetchJsonMock } from '../../lib/devkit/test.utils.js';
-import { getDefaultHttpService } from '../../lib/http/http.service.js';
-import type { CommonHeaderNames, Header } from '../../lib/models/core.models.js';
-import { sdkInfo } from '../../lib/sdk-info.js';
-import { getSdkIdHeader } from '../../lib/utils/header.utils.js';
+import { afterAll, describe, expect, it, vi } from "vitest";
+import { getFetchJsonMock } from "../../lib/devkit/test.utils.js";
+import { getDefaultHttpService } from "../../lib/http/http.service.js";
+import type { CommonHeaderNames, Header } from "../../lib/models/core.models.js";
+import { sdkInfo } from "../../lib/sdk-info.js";
+import { getSdkIdHeader } from "../../lib/utils/header.utils.js";
 
 const sdkIdHeader = getSdkIdHeader(sdkInfo);
 
-describe('Default headers', async () => {
+describe("Default headers", async () => {
 	afterAll(() => {
 		vi.resetAllMocks();
 	});
@@ -18,25 +18,25 @@ describe('Default headers', async () => {
 		responseHeaders: [],
 	});
 	const { success, data, error } = await getDefaultHttpService().requestAsync({
-		url: 'https://domain.com',
-		method: 'GET',
+		url: "https://domain.com",
+		method: "GET",
 		body: null,
 	});
 
-	it('Success should be true', () => {
+	it("Success should be true", () => {
 		expect(success).toBe(true);
 	});
 
-	it('Error should be undefined', () => {
+	it("Error should be undefined", () => {
 		expect(error).toBeUndefined();
 	});
 
-	it('Response should contain application/json content type header', () => {
-		expect(data?.requestHeaders.find((m) => m.name.toLowerCase() === 'content-type')?.value).toStrictEqual('application/json');
+	it("Response should contain application/json content type header", () => {
+		expect(data?.requestHeaders.find((m) => m.name.toLowerCase() === "content-type")?.value).toStrictEqual("application/json");
 	});
 
 	it(`Request should contain '${sdkIdHeader.name}' header`, () => {
-		expect(data?.requestHeaders.find((m) => m.name === 'X-KC-SDKID')?.value).toStrictEqual(sdkIdHeader.value);
+		expect(data?.requestHeaders.find((m) => m.name === "X-KC-SDKID")?.value).toStrictEqual(sdkIdHeader.value);
 	});
 });
 
@@ -45,7 +45,7 @@ describe(`SDK tracking header '${sdkIdHeader.name}'`, async () => {
 		vi.resetAllMocks();
 	});
 
-	const customSdkId = 'x';
+	const customSdkId = "x";
 
 	global.fetch = getFetchJsonMock({
 		json: {},
@@ -53,37 +53,37 @@ describe(`SDK tracking header '${sdkIdHeader.name}'`, async () => {
 	});
 
 	const { success, data, error } = await getDefaultHttpService().requestAsync({
-		url: 'https://domain.com',
-		method: 'GET',
+		url: "https://domain.com",
+		method: "GET",
 		body: null,
 		requestHeaders: [
 			{
-				name: 'X-KC-SDKID' satisfies CommonHeaderNames,
+				name: "X-KC-SDKID" satisfies CommonHeaderNames,
 				value: customSdkId,
 			},
 		],
 	});
 
-	it('Success should be true', () => {
+	it("Success should be true", () => {
 		expect(success).toBe(true);
 	});
 
-	it('Error should be undefined', () => {
+	it("Error should be undefined", () => {
 		expect(error).toBeUndefined();
 	});
 
 	it(`Request should contain only single '${sdkIdHeader.name}' header`, () => {
-		expect(data?.requestHeaders.filter((m) => m.name.toLowerCase() === ('X-KC-SDKID' satisfies CommonHeaderNames).toLowerCase()).length).toStrictEqual(1);
+		expect(data?.requestHeaders.filter((m) => m.name.toLowerCase() === ("X-KC-SDKID" satisfies CommonHeaderNames).toLowerCase()).length).toStrictEqual(1);
 	});
 
 	it(`Request should contain '${sdkIdHeader.name}' header`, () => {
-		expect(data?.requestHeaders.find((m) => m.name.toLowerCase() === ('X-KC-SDKID' satisfies CommonHeaderNames).toLowerCase())?.value).toStrictEqual(
+		expect(data?.requestHeaders.find((m) => m.name.toLowerCase() === ("X-KC-SDKID" satisfies CommonHeaderNames).toLowerCase())?.value).toStrictEqual(
 			customSdkId,
 		);
 	});
 });
 
-describe('Custom Http Service & Request headers', async () => {
+describe("Custom Http Service & Request headers", async () => {
 	afterAll(() => {
 		vi.resetAllMocks();
 	});
@@ -94,33 +94,29 @@ describe('Custom Http Service & Request headers', async () => {
 	});
 
 	const headerA: Header = {
-		name: 'A',
-		value: 'a',
+		name: "A",
+		value: "a",
 	};
 
 	const headerB: Header = {
-		name: 'B',
-		value: 'b',
+		name: "B",
+		value: "b",
 	};
 
-	const { success, data, error } = await getDefaultHttpService({
+	const { data } = await getDefaultHttpService({
 		requestHeaders: [headerA],
 	}).requestAsync({
-		url: 'https://domain.com',
-		method: 'GET',
+		url: "https://domain.com",
+		method: "GET",
 		body: null,
 		requestHeaders: [headerB],
 	});
 
-	if (!success) {
-		throw error;
-	}
-
 	it(`Request should contain header ${headerA.name}`, () => {
-		expect(data.requestHeaders.find((m) => m.name === headerA.name)).toStrictEqual(headerA);
+		expect(data?.requestHeaders.find((m) => m.name === headerA.name)).toStrictEqual(headerA);
 	});
 
 	it(`Request should contain header ${headerB.name} `, () => {
-		expect(data.requestHeaders.find((m) => m.name === headerB.name)).toStrictEqual(headerB);
+		expect(data?.requestHeaders.find((m) => m.name === headerB.name)).toStrictEqual(headerB);
 	});
 });

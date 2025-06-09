@@ -1,11 +1,11 @@
-import type { Mock } from 'vitest';
-import { vi } from 'vitest';
-import type { HttpServiceStatus } from '../http/http.models.js';
-import type { CommonHeaderNames } from '../models/core.models.js';
-import type { JsonValue } from '../models/json.models.js';
-import type { Header } from '../public_api.js';
-import { isNotUndefined } from '../utils/core.utils.js';
-import { toFetchHeaders } from '../utils/header.utils.js';
+import type { Mock } from "vitest";
+import { vi } from "vitest";
+import type { HttpServiceStatus } from "../http/http.models.js";
+import type { CommonHeaderNames } from "../models/core.models.js";
+import type { JsonValue } from "../models/json.models.js";
+import type { Header } from "../public_api.js";
+import { isNotUndefined } from "../utils/core.utils.js";
+import { toFetchHeaders } from "../utils/header.utils.js";
 
 export function getFetchJsonMock<TResponseData extends JsonValue>({
 	json,
@@ -42,7 +42,7 @@ export function getFetchBlobMock({
 }
 
 export function getFakeBlob(): Blob {
-	return new Blob(['x'], { type: 'text/plain' });
+	return new Blob(["x"], { type: "text/plain" });
 }
 
 function getFetchMock<TResponseData extends JsonValue | Blob>({
@@ -58,12 +58,12 @@ function getFetchMock<TResponseData extends JsonValue | Blob>({
 }): Mock<() => Promise<Response>> {
 	return vi.fn(() => {
 		const contentTypeHeader: Header | undefined = responseHeaders.find(
-			(m) => m.name.toLowerCase() === ('Content-Type' satisfies CommonHeaderNames).toLowerCase(),
+			(m) => m.name.toLowerCase() === ("Content-Type" satisfies CommonHeaderNames).toLowerCase(),
 		)
 			? undefined
 			: {
-					name: 'Content-Type' satisfies CommonHeaderNames,
-					value: 'application/json',
+					name: "Content-Type" satisfies CommonHeaderNames,
+					value: "application/json",
 				};
 
 		return Promise.resolve<Response>({

@@ -1,12 +1,12 @@
-import { afterAll, describe, expect, it, vi } from 'vitest';
-import { getFakeBlob, getFetchBlobMock } from '../../lib/devkit/test.utils.js';
-import type { HttpServiceStatus } from '../../lib/http/http.models.js';
-import { getDefaultHttpService } from '../../lib/http/http.service.js';
-import type { HttpMethod } from '../../lib/models/core.models.js';
+import { afterAll, describe, expect, it, vi } from "vitest";
+import { getFakeBlob, getFetchBlobMock } from "../../lib/devkit/test.utils.js";
+import type { HttpServiceStatus } from "../../lib/http/http.models.js";
+import { getDefaultHttpService } from "../../lib/http/http.service.js";
+import type { HttpMethod } from "../../lib/models/core.models.js";
 
 const fakeBlob = getFakeBlob();
 
-describe('Upload file - Success', async () => {
+describe("Upload file - Success", async () => {
 	afterAll(() => {
 		vi.resetAllMocks();
 	});
@@ -23,30 +23,30 @@ describe('Upload file - Success', async () => {
 	}).uploadFileAsync<{
 		readonly id: string;
 	}>({
-		url: 'https://domain.com',
+		url: "https://domain.com",
 		body: fakeBlob,
-		method: 'POST',
+		method: "POST",
 		requestHeaders: [
 			{
-				name: 'Content-type',
+				name: "Content-type",
 				value: fakeBlob.type,
 			},
 		],
 	});
 
-	it('Success should be true', () => {
+	it("Success should be true", () => {
 		expect(success).toBe(true);
 	});
 
-	it('Error should be undefined', () => {
+	it("Error should be undefined", () => {
 		expect(error).toBeUndefined();
 	});
 
-	it('Status should be 200', () => {
+	it("Status should be 200", () => {
 		expect(data?.adapterResponse.status).toStrictEqual<HttpServiceStatus>(200);
 	});
 
-	it('Method should be POST', () => {
-		expect(data?.method).toStrictEqual<HttpMethod>('POST');
+	it("Method should be POST", () => {
+		expect(data?.method).toStrictEqual<HttpMethod>("POST");
 	});
 });

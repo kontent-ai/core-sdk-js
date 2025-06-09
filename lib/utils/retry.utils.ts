@@ -1,8 +1,8 @@
-import type { HttpResponse } from '../http/http.models.js';
-import type { Header, HttpMethod, RetryStrategyOptions } from '../models/core.models.js';
-import type { CoreSdkError } from '../models/error.models.js';
-import type { JsonValue } from '../models/json.models.js';
-import { getRetryAfterHeaderValue } from './header.utils.js';
+import type { HttpResponse } from "../http/http.models.js";
+import type { Header, HttpMethod, RetryStrategyOptions } from "../models/core.models.js";
+import type { CoreSdkError } from "../models/error.models.js";
+import type { JsonValue } from "../models/json.models.js";
+import { getRetryAfterHeaderValue } from "./header.utils.js";
 
 type RetryResult =
 	| {
@@ -13,10 +13,10 @@ type RetryResult =
 			readonly retryInMs: number;
 	  };
 
-const defaultMaxAttempts: NonNullable<RetryStrategyOptions['maxAttempts']> = 3;
-const defaultDelayBetweenAttemptsMs: NonNullable<RetryStrategyOptions['defaultDelayBetweenRequestsMs']> = 1000;
-const defaultCanRetryError: NonNullable<RetryStrategyOptions['canRetryError']> = (error) => {
-	if (error.details.type === 'invalidResponse') {
+const defaultMaxAttempts: NonNullable<RetryStrategyOptions["maxAttempts"]> = 3;
+const defaultDelayBetweenAttemptsMs: NonNullable<RetryStrategyOptions["defaultDelayBetweenRequestsMs"]> = 1000;
+const defaultCanRetryError: NonNullable<RetryStrategyOptions["canRetryError"]> = (error) => {
+	if (error.details.type === "invalidResponse") {
 		if (error.details.kontentErrorResponse) {
 			// The request is clearly invalid as we got an error response from the API
 			return false;
@@ -102,7 +102,7 @@ export function getDefaultRetryAttemptLogMessage(retryAttempt: number, maxAttemp
 	return `Retry attempt '${retryAttempt}' from a maximum of '${maxAttempts}' retries. Requested url: '${url}'`;
 }
 
-function logRetryAttempt(opts: Pick<RetryStrategyOptions, 'logRetryAttempt'>, retryAttempt: number, url: string): void {
+function logRetryAttempt(opts: Pick<RetryStrategyOptions, "logRetryAttempt">, retryAttempt: number, url: string): void {
 	if (opts.logRetryAttempt) {
 		opts.logRetryAttempt(retryAttempt, url);
 	}
@@ -137,7 +137,7 @@ function getRetryResult({
 }
 
 function getRetryFromHeader({ options, error }: { readonly options: Required<RetryStrategyOptions>; readonly error: CoreSdkError }): RetryResult {
-	if (error.details.type !== 'invalidResponse') {
+	if (error.details.type !== "invalidResponse") {
 		return {
 			canRetry: false,
 		};

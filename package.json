@@ -9,11 +9,7 @@
 	"author": "richard sustek",
 	"license": "MIT",
 	"description": "Core package with shared / common functionality for Kontent.ai SDKs",
-	"keywords": [
-		"Kontent.ai",
-		"Kontent AI",
-		"Kontent SDK Core"
-	],
+	"keywords": ["Kontent.ai", "Kontent AI", "Kontent SDK Core"],
 	"engines": {
 		"node": ">= 22"
 	},
@@ -35,16 +31,22 @@
 		"release:beta:major": "standard-version --prerelease --release-as major",
 		"prepublishOnly": "npm run build && npm run push:tags",
 		"publish:beta": "npm publish --tag=next",
-		"build": "npm run clean && npm run lint:fix && tsc --p tsconfig.build.json && npm run update:version",
+		"build": "npm run biome:check && npm run eslint && npm run clean &&  tsc --p tsconfig.build.json && npm run update:version",
 		"test": "vitest run --config=vitest.config.ts",
+		"eslint": "eslint",
 		"format": "biome format --write",
-		"lint": "biome lint",
-		"lint:fix": "biome lint --fix --unsafe",
+		"biome:check": "biome check",
+		"biome:fix": "biome check --write",
+		"biome:fix:unsafe": "biome check --write --unsafe",
 		"clean": "tsx scripts/clean.ts",
 		"push:tags": "git push --tags",
 		"update:version": "tsx ./scripts/update-version.ts"
 	},
 	"devDependencies": {
+		"@kontent-ai/biome-config": "0.4.0",
+		"@kontent-ai/eslint-config": "2.0.1",
+		"@typescript-eslint/eslint-plugin": "8.33.1",
+		"eslint": "9.28.0",
 		"@biomejs/biome": "1.9.4",
 		"@types/node": "22.15.29",
 		"chalk": "5.4.1",

@@ -1,13 +1,13 @@
-import type { CommonHeaderNames, Header, KontentErrorResponseData, RetryStrategyOptions } from '../models/core.models.js';
-import type { CoreSdkError } from '../models/error.models.js';
-import type { JsonValue } from '../models/json.models.js';
-import { sdkInfo } from '../sdk-info.js';
-import { isNotUndefined } from '../utils/core.utils.js';
-import { getDefaultErrorMessage } from '../utils/error.utils.js';
-import { getSdkIdHeader } from '../utils/header.utils.js';
-import { runWithRetryAsync, toRequiredRetryStrategyOptions } from '../utils/retry.utils.js';
-import { type Result, tryCatch } from '../utils/try.utils.js';
-import { getDefaultHttpAdapter } from './http.adapter.js';
+import type { CommonHeaderNames, Header, KontentErrorResponseData, RetryStrategyOptions } from "../models/core.models.js";
+import type { CoreSdkError } from "../models/error.models.js";
+import type { JsonValue } from "../models/json.models.js";
+import { sdkInfo } from "../sdk-info.js";
+import { isNotUndefined } from "../utils/core.utils.js";
+import { getDefaultErrorMessage } from "../utils/error.utils.js";
+import { getSdkIdHeader } from "../utils/header.utils.js";
+import { runWithRetryAsync, toRequiredRetryStrategyOptions } from "../utils/retry.utils.js";
+import { type Result, tryCatch } from "../utils/try.utils.js";
+import { getDefaultHttpAdapter } from "./http.adapter.js";
 import type {
 	AdapterResponse,
 	DefaultHttpServiceConfig,
@@ -16,7 +16,7 @@ import type {
 	HttpResponse,
 	HttpService,
 	UploadFileRequestOptions,
-} from './http.models.js';
+} from "./http.models.js";
 
 export function getDefaultHttpService(config?: DefaultHttpServiceConfig): HttpService {
 	const resolveRequestAsync = async <TResponseData extends JsonValue | Blob, TBodyData extends JsonValue | Blob>({
@@ -29,7 +29,7 @@ export function getDefaultHttpService(config?: DefaultHttpServiceConfig): HttpSe
 		const adapter = config?.adapter ?? getDefaultHttpAdapter();
 
 		const getCombinedRequestHeaders = (): readonly Header[] => {
-			return getRequestHeaders([...(config?.requestHeaders ?? []), ...(options?.requestHeaders ?? [])], options.body);
+			return getRequestHeaders([...(config?.requestHeaders ?? []), ...(options.requestHeaders ?? [])], options.body);
 		};
 
 		const getRequestBody = (): Result<string | Blob | null, CoreSdkError> => {
@@ -53,10 +53,10 @@ export function getDefaultHttpService(config?: DefaultHttpServiceConfig): HttpSe
 				return {
 					success: false,
 					error: {
-						message: 'Failed to stringify body of request.',
+						message: "Failed to stringify body of request.",
 						url: options.url,
 						details: {
-							type: 'invalidBody',
+							type: "invalidBody",
 							error: error,
 						},
 					},
@@ -79,7 +79,7 @@ export function getDefaultHttpService(config?: DefaultHttpServiceConfig): HttpSe
 						message: `Failed to parse url '${options.url}'.`,
 						url: options.url,
 						details: {
-							type: 'invalidUrl',
+							type: "invalidUrl",
 							error,
 						},
 					},
@@ -143,7 +143,7 @@ export function getDefaultHttpService(config?: DefaultHttpServiceConfig): HttpSe
 					success: false,
 					error: {
 						details: {
-							type: 'invalidResponse',
+							type: "invalidResponse",
 							isValidResponse: response.isValidResponse,
 							responseHeaders: response.responseHeaders,
 							status: response.status,
@@ -195,7 +195,7 @@ export function getDefaultHttpService(config?: DefaultHttpServiceConfig): HttpSe
 			return await resolveRequestAsync<Blob, null>({
 				options: {
 					...options,
-					method: 'GET',
+					method: "GET",
 					body: null,
 				},
 				resolveDataAsync: async (response) => {
@@ -218,14 +218,14 @@ export function getDefaultHttpService(config?: DefaultHttpServiceConfig): HttpSe
 async function getKontentErrorDataAsync(response: AdapterResponse): Promise<KontentErrorResponseData | undefined> {
 	if (
 		response.responseHeaders
-			.find((header) => header.name.toLowerCase() === ('Content-Type' satisfies CommonHeaderNames).toLowerCase())
-			?.value?.toLowerCase()
-			?.includes('application/json')
+			.find((header) => header.name.toLowerCase() === ("Content-Type" satisfies CommonHeaderNames).toLowerCase())
+			?.value.toLowerCase()
+			.includes("application/json")
 	) {
 		const json = (await response.toJsonAsync()) as Partial<KontentErrorResponseData>;
 
 		// We check the existence of 'message' property which should always be set when the error is a Kontent API error
-		if (!json || !json.message) {
+		if (!json.message) {
 			return undefined;
 		}
 
@@ -238,14 +238,14 @@ async function getKontentErrorDataAsync(response: AdapterResponse): Promise<Kont
 }
 
 function getRequestHeaders(headers: readonly Header[] | undefined, body: Blob | JsonValue): readonly Header[] {
-	const existingContentTypeHeader = headers?.find((header) => header.name.toLowerCase() === ('Content-Type' satisfies CommonHeaderNames).toLowerCase());
-	const existingSdkVersionHeader = headers?.find((header) => header.name.toLowerCase() === ('X-KC-SDKID' satisfies CommonHeaderNames).toLowerCase());
+	const existingContentTypeHeader = headers?.find((header) => header.name.toLowerCase() === ("Content-Type" satisfies CommonHeaderNames).toLowerCase());
+	const existingSdkVersionHeader = headers?.find((header) => header.name.toLowerCase() === ("X-KC-SDKID" satisfies CommonHeaderNames).toLowerCase());
 
 	const contentTypeHeader: Header | undefined = existingContentTypeHeader
 		? undefined
 		: {
-				name: 'Content-Type' satisfies CommonHeaderNames,
-				value: body instanceof Blob ? body.type : 'application/json',
+				name: "Content-Type" satisfies CommonHeaderNames,
+				value: body instanceof Blob ? body.type : "application/json",
 			};
 
 	const sdkVersionHeader: Header | undefined = existingSdkVersionHeader
@@ -259,7 +259,7 @@ function getRequestHeaders(headers: readonly Header[] | undefined, body: Blob | 
 	const contentLengthHeader: Header | undefined =
 		body instanceof Blob
 			? {
-					name: 'Content-Length' satisfies CommonHeaderNames,
+					name: "Content-Length" satisfies CommonHeaderNames,
 					value: body.size.toString(),
 				}
 			: undefined;

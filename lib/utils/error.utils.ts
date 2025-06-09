@@ -1,6 +1,6 @@
-import type { AdapterResponse } from '../http/http.models.js';
-import type { HttpMethod, KontentErrorResponseData, KontentValidationError } from '../models/core.models.js';
-import { isNotUndefined } from './core.utils.js';
+import type { AdapterResponse } from "../http/http.models.js";
+import type { HttpMethod, KontentErrorResponseData, KontentValidationError } from "../models/core.models.js";
+import { isNotUndefined } from "./core.utils.js";
 
 export function getDefaultErrorMessage({
 	method,
@@ -14,11 +14,11 @@ export function getDefaultErrorMessage({
 	readonly kontentErrorResponse?: KontentErrorResponseData;
 }): string {
 	const errorMessage = extractMessageFromError(adapterResponse, kontentErrorResponse);
-	return `Failed to execute '${method}' request '${url}'.${errorMessage ? ` ${errorMessage}` : ''}`;
+	return `Failed to execute '${method}' request '${url}'.${errorMessage ? ` ${errorMessage}` : ""}`;
 }
 
 function getValidationErrorMessage(validationErrors?: readonly KontentValidationError[]): string | undefined {
-	if (!validationErrors || !validationErrors.length) {
+	if (!validationErrors?.length) {
 		return undefined;
 	}
 	return validationErrors
@@ -28,15 +28,15 @@ function getValidationErrorMessage(validationErrors?: readonly KontentValidation
 				m.line ? `line: ${m.line}` : undefined,
 				m.position ? `position: ${m.position}` : undefined,
 			].filter(isNotUndefined);
-			return `${m.message}${details.length ? ` (${details.join(', ')})` : ''}`;
+			return `${m.message}${details.length ? ` (${details.join(", ")})` : ""}`;
 		})
-		.join(', ');
+		.join(", ");
 }
 
 function extractMessageFromError(adapterResponse: AdapterResponse, kontentErrorResponse?: KontentErrorResponseData): string | undefined {
 	if (kontentErrorResponse) {
 		const validationErrorMessage = getValidationErrorMessage(kontentErrorResponse.validation_errors);
-		return `Response failed with status '${adapterResponse.status}' and status text '${adapterResponse.statusText}'.${kontentErrorResponse ? ` ${kontentErrorResponse.message}` : ''}${validationErrorMessage ? ` ${validationErrorMessage}` : ''}`;
+		return `Response failed with status '${adapterResponse.status}' and status text '${adapterResponse.statusText}'.${kontentErrorResponse.message}${validationErrorMessage ? ` ${validationErrorMessage}` : ""}`;
 	}
 
 	return undefined;

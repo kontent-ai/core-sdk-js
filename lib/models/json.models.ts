@@ -1,4 +1,6 @@
-export type JsonValue = string | number | null | boolean | JsonObject | JsonArray | NonNullable<never>;
+import type { EmptyObject } from "./utility.models.js";
+
+export type JsonValue = string | number | null | boolean | JsonObject | JsonArray | EmptyObject;
 
 export interface JsonObject {
 	readonly [property: string]: JsonValue;

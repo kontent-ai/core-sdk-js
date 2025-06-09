@@ -1,9 +1,9 @@
-import type { Header } from '../lib/models/core.models.js';
-import { getEnvironmentRequiredValue } from './test.utils.js';
+import type { Header } from "../lib/models/core.models.js";
+import { getEnvironmentRequiredValue } from "./test.utils.js";
 
 const integrationEnv = {
-	id: getEnvironmentRequiredValue('INTEGRATION_ENVIRONMENT_ID'),
-	apiKey: getEnvironmentRequiredValue('INTEGRATION_MANAGEMENT_API_KEY'),
+	id: getEnvironmentRequiredValue("INTEGRATION_ENVIRONMENT_ID"),
+	apiKey: getEnvironmentRequiredValue("INTEGRATION_MANAGEMENT_API_KEY"),
 } as const;
 
 export function getIntegrationTestConfig() {
@@ -14,7 +14,7 @@ export function getIntegrationTestConfig() {
 		getMapiAuthorizationHeaders: (): readonly Header[] => {
 			return [
 				{
-					name: 'Authorization',
+					name: "Authorization",
 					value: `Bearer ${integrationEnv.apiKey}`,
 				},
 			];

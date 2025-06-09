@@ -1,7 +1,7 @@
-import type { Header, HttpMethod, LiteralUnionNumber, RetryStrategyOptions } from '../models/core.models.js';
-import type { CoreSdkError } from '../models/error.models.js';
-import type { JsonValue } from '../models/json.models.js';
-import type { Result } from '../utils/try.utils.js';
+import type { Header, HttpMethod, LiteralUnionNumber, RetryStrategyOptions } from "../models/core.models.js";
+import type { CoreSdkError } from "../models/error.models.js";
+import type { JsonValue } from "../models/json.models.js";
+import type { Result } from "../utils/try.utils.js";
 
 /**
  * Helper status codes for the HTTP service.
@@ -32,7 +32,7 @@ export type HttpResponse<TResponseData extends JsonValue | Blob, TBodyData exten
 		readonly body: TBodyData;
 		readonly method: HttpMethod;
 		readonly requestHeaders: readonly Header[];
-		readonly adapterResponse: Omit<AdapterResponse, 'toJsonAsync' | 'toBlobAsync'>;
+		readonly adapterResponse: Omit<AdapterResponse, "toJsonAsync" | "toBlobAsync">;
 	},
 	CoreSdkError
 >;
@@ -44,11 +44,11 @@ export type ExecuteRequestOptions<TBodyData extends JsonValue | Blob> = {
 	readonly requestHeaders?: readonly Header[];
 };
 
-export type UploadFileRequestOptions = Omit<ExecuteRequestOptions<Blob>, 'method'> & {
-	readonly method: Extract<HttpMethod, 'POST' | 'PUT' | 'PATCH'>;
+export type UploadFileRequestOptions = Omit<ExecuteRequestOptions<Blob>, "method"> & {
+	readonly method: Extract<HttpMethod, "POST" | "PUT" | "PATCH">;
 };
 
-export type DownloadFileRequestOptions = Pick<ExecuteRequestOptions<Blob>, 'url' | 'requestHeaders'>;
+export type DownloadFileRequestOptions = Pick<ExecuteRequestOptions<Blob>, "url" | "requestHeaders">;
 
 /**
  * Represents the HTTP service used for making requests to the Kontent.ai API.

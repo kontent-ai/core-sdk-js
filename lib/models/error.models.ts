@@ -1,7 +1,7 @@
-import type { AdapterResponse, HttpServiceStatus } from '../http/http.models.js';
-import type { KontentErrorResponseData, RetryStrategyOptions } from './core.models.js';
+import type { AdapterResponse, HttpServiceStatus } from "../http/http.models.js";
+import type { KontentErrorResponseData, RetryStrategyOptions } from "./core.models.js";
 
-export type ErrorType = 'invalidResponse' | 'invalidUrl' | 'unknown' | 'invalidBody';
+export type ErrorType = "invalidResponse" | "invalidUrl" | "unknown" | "invalidBody";
 
 export type CoreSdkError = {
 	/**
@@ -29,25 +29,25 @@ export type CoreSdkError = {
 	 */
 	readonly details:
 		| SdkErrorDetails<
-				'invalidResponse',
+				"invalidResponse",
 				{
 					readonly kontentErrorResponse: KontentErrorResponseData | undefined;
-				} & Pick<AdapterResponse<HttpServiceStatus>, 'isValidResponse' | 'responseHeaders' | 'status' | 'statusText'>
+				} & Pick<AdapterResponse<HttpServiceStatus>, "isValidResponse" | "responseHeaders" | "status" | "statusText">
 		  >
 		| SdkErrorDetails<
-				'invalidBody',
+				"invalidBody",
 				{
 					readonly error: unknown;
 				}
 		  >
 		| SdkErrorDetails<
-				'invalidUrl',
+				"invalidUrl",
 				{
 					readonly error: unknown;
 				}
 		  >
 		| SdkErrorDetails<
-				'unknown',
+				"unknown",
 				{
 					readonly error: unknown;
 				}

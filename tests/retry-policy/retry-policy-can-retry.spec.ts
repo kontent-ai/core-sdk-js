@@ -1,21 +1,21 @@
-import { afterAll, describe, expect, it, vi } from 'vitest';
-import type { FetchResponse } from '../../lib/devkit/devkit.models.js';
-import { getFetchJsonMock } from '../../lib/devkit/test.utils.js';
-import type { HttpResponse } from '../../lib/http/http.models.js';
-import { getDefaultHttpService } from '../../lib/http/http.service.js';
-import type { RetryStrategyOptions } from '../../lib/models/core.models.js';
-import { toRequiredRetryStrategyOptions } from '../../lib/utils/retry.utils.js';
-import { getIntegrationTestConfig } from '../integration-tests.config.js';
+import { afterAll, describe, expect, it, vi } from "vitest";
+import type { FetchResponse } from "../../lib/devkit/devkit.models.js";
+import { getFetchJsonMock } from "../../lib/devkit/test.utils.js";
+import type { HttpResponse } from "../../lib/http/http.models.js";
+import { getDefaultHttpService } from "../../lib/http/http.service.js";
+import type { RetryStrategyOptions } from "../../lib/models/core.models.js";
+import { toRequiredRetryStrategyOptions } from "../../lib/utils/retry.utils.js";
+import { getIntegrationTestConfig } from "../integration-tests.config.js";
 
 const testCases: readonly {
 	readonly title: string;
-	readonly canRetryError: NonNullable<RetryStrategyOptions['canRetryError']>;
+	readonly canRetryError: NonNullable<RetryStrategyOptions["canRetryError"]>;
 	readonly maxRetryAttempts: number;
 	readonly expectedRetryAttempts: number;
 	readonly fetchResponse: FetchResponse;
 }[] = [
 	{
-		title: 'Default retry - Can retry',
+		title: "Default retry - Can retry",
 		canRetryError: toRequiredRetryStrategyOptions({}).canRetryError,
 		maxRetryAttempts: 1,
 		expectedRetryAttempts: 1,
@@ -45,7 +45,7 @@ const testCases: readonly {
 		},
 	},
 	{
-		title: 'Custom retry - Can retry',
+		title: "Custom retry - Can retry",
 		canRetryError: () => true,
 		maxRetryAttempts: 1,
 		expectedRetryAttempts: 1,
@@ -69,11 +69,11 @@ for (const testCase of testCases) {
 
 		const { success, error } = await resolveResponseAsync(testCase);
 
-		it('Success should be false', () => {
+		it("Success should be false", () => {
 			expect(success).toBe(false);
 		});
 
-		it('Error should be defined', () => {
+		it("Error should be defined", () => {
 			expect(error).toBeDefined();
 		});
 
@@ -94,7 +94,7 @@ async function resolveResponseAsync(testCase: (typeof testCases)[number]): Promi
 	}).requestAsync({
 		// we need valid url
 		url: getIntegrationTestConfig().urls.baseMapiUrl,
-		method: 'GET',
+		method: "GET",
 		body: null,
 	});
 }
