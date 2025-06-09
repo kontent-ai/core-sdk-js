@@ -1,6 +1,5 @@
 import { afterAll, describe, expect, it, vi } from "vitest";
 import { getFetchJsonMock } from "../../../lib/devkit/test.utils.js";
-import type { HttpResponse } from "../../../lib/http/http.models.js";
 import { getDefaultHttpService } from "../../../lib/http/http.service.js";
 import type { RetryStrategyOptions } from "../../../lib/models/core.models.js";
 import { toRequiredRetryStrategyOptions } from "../../../lib/utils/retry.utils.js";
@@ -43,7 +42,14 @@ describe("Retry policy - max attempts", async () => {
 			status: 500,
 		});
 
-		const { success, error } = await resolveResponseAsync(retryStrategy);
+		const { success, error } = await getDefaultHttpService({
+			retryStrategy,
+		}).requestAsync({
+			// we need valid url
+			url: "https://domain.com",
+			method: "GET",
+			body: null,
+		});
 
 		it("Success should be false", () => {
 			expect(success).toBe(false);
@@ -58,14 +64,3 @@ describe("Retry policy - max attempts", async () => {
 		});
 	}
 });
-
-async function resolveResponseAsync(retryStrategy: Required<RetryStrategyOptions>): Promise<HttpResponse<null, null>> {
-	return await getDefaultHttpService({
-		retryStrategy,
-	}).requestAsync({
-		// we need valid url
-		url: "https://domain.com",
-		method: "GET",
-		body: null,
-	});
-}

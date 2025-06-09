@@ -1,7 +1,6 @@
 import { afterAll, describe, expect, it, vi } from "vitest";
 import type { FetchResponse } from "../../../lib/devkit/devkit.models.js";
 import { getFetchJsonMock } from "../../../lib/devkit/test.utils.js";
-import type { HttpResponse } from "../../../lib/http/http.models.js";
 import { getDefaultHttpService } from "../../../lib/http/http.service.js";
 import type { RetryStrategyOptions } from "../../../lib/models/core.models.js";
 import { toRequiredRetryStrategyOptions } from "../../../lib/utils/retry.utils.js";
@@ -66,7 +65,19 @@ for (const testCase of testCases) {
 			status: testCase.fetchResponse.statusCode,
 		});
 
-		const { success, error } = await resolveResponseAsync(testCase);
+		const { success, error } = await getDefaultHttpService({
+			retryStrategy: toRequiredRetryStrategyOptions({
+				canRetryError: testCase.canRetryError,
+				defaultDelayBetweenRequestsMs: 0,
+				maxAttempts: testCase.maxRetryAttempts,
+				logRetryAttempt: false,
+			}),
+		}).requestAsync({
+			// we need valid url
+			url: "https://domain.com",
+			method: "GET",
+			body: null,
+		});
 
 		it("Success should be false", () => {
 			expect(success).toBe(false);
@@ -79,21 +90,5 @@ for (const testCase of testCases) {
 		it(`Should retry '${testCase.expectedRetryAttempts}' times`, () => {
 			expect(error?.retryAttempt).toBe(testCase.expectedRetryAttempts);
 		});
-	});
-}
-
-async function resolveResponseAsync(testCase: (typeof testCases)[number]): Promise<HttpResponse<null, null>> {
-	return await getDefaultHttpService({
-		retryStrategy: toRequiredRetryStrategyOptions({
-			canRetryError: testCase.canRetryError,
-			defaultDelayBetweenRequestsMs: 0,
-			maxAttempts: testCase.maxRetryAttempts,
-			logRetryAttempt: false,
-		}),
-	}).requestAsync({
-		// we need valid url
-		url: "https://domain.com",
-		method: "GET",
-		body: null,
 	});
 }
