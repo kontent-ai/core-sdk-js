@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { getFakeBlob } from "../../lib/devkit/test.utils.js";
-import type { AdapterResponse } from "../../lib/http/http.models.js";
-import { getDefaultHttpService } from "../../lib/http/http.service.js";
-import type { Header } from "../../lib/models/core.models.js";
-import type { JsonValue } from "../../lib/models/json.models.js";
+import { getFakeBlob } from "../../../lib/devkit/test.utils.js";
+import type { AdapterResponse } from "../../../lib/http/http.models.js";
+import { getDefaultHttpService } from "../../../lib/http/http.service.js";
+import type { Header } from "../../../lib/models/core.models.js";
+import type { JsonValue } from "../../../lib/models/json.models.js";
 
 describe("Custom adapter", async () => {
 	const headerA: Header = {

@@ -1,6 +1,7 @@
 {
 	"typescript.tsdk": "node_modules\\typescript\\lib",
 	"typescript.updateImportsOnFileMove.enabled": "always",
+	"editor.defaultFormatter": "biomejs.biome",
 	"editor.codeActionsOnSave": {
 		"source.organizeImports.biome": "explicit"
 	},
@@ -14,6 +15,9 @@
 		"editor.defaultFormatter": "biomejs.biome"
 	},
 	"[json]": {
+		"editor.defaultFormatter": "biomejs.biome"
+	},
+	"[jsonc]": {
 		"editor.defaultFormatter": "biomejs.biome"
 	}
 }

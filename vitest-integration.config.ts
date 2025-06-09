@@ -4,7 +4,7 @@ import { defineConfig } from "vitest/config";
 export default defineConfig({
 	root: ".",
 	test: {
-		dir: "tests",
+		dir: "tests/integration",
 		globals: true,
 		environment: "node",
 		setupFiles: ["dotenv/config"],

@@ -1,9 +1,9 @@
 import { afterAll, describe, expect, it, vi } from "vitest";
-import { getFetchJsonMock } from "../../lib/devkit/test.utils.js";
-import { getDefaultHttpService } from "../../lib/http/http.service.js";
-import type { CommonHeaderNames, Header } from "../../lib/models/core.models.js";
-import { sdkInfo } from "../../lib/sdk-info.js";
-import { getSdkIdHeader } from "../../lib/utils/header.utils.js";
+import { getFetchJsonMock } from "../../../lib/devkit/test.utils.js";
+import { getDefaultHttpService } from "../../../lib/http/http.service.js";
+import type { CommonHeaderNames, Header } from "../../../lib/models/core.models.js";
+import { sdkInfo } from "../../../lib/sdk-info.js";
+import { getSdkIdHeader } from "../../../lib/utils/header.utils.js";
 
 const sdkIdHeader = getSdkIdHeader(sdkInfo);
 

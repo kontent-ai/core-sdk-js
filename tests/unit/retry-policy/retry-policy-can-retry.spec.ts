@@ -1,11 +1,10 @@
 import { afterAll, describe, expect, it, vi } from "vitest";
-import type { FetchResponse } from "../../lib/devkit/devkit.models.js";
-import { getFetchJsonMock } from "../../lib/devkit/test.utils.js";
-import type { HttpResponse } from "../../lib/http/http.models.js";
-import { getDefaultHttpService } from "../../lib/http/http.service.js";
-import type { RetryStrategyOptions } from "../../lib/models/core.models.js";
-import { toRequiredRetryStrategyOptions } from "../../lib/utils/retry.utils.js";
-import { getIntegrationTestConfig } from "../integration-tests.config.js";
+import type { FetchResponse } from "../../../lib/devkit/devkit.models.js";
+import { getFetchJsonMock } from "../../../lib/devkit/test.utils.js";
+import type { HttpResponse } from "../../../lib/http/http.models.js";
+import { getDefaultHttpService } from "../../../lib/http/http.service.js";
+import type { RetryStrategyOptions } from "../../../lib/models/core.models.js";
+import { toRequiredRetryStrategyOptions } from "../../../lib/utils/retry.utils.js";
 
 const testCases: readonly {
 	readonly title: string;
@@ -93,7 +92,7 @@ async function resolveResponseAsync(testCase: (typeof testCases)[number]): Promi
 		}),
 	}).requestAsync({
 		// we need valid url
-		url: getIntegrationTestConfig().urls.baseMapiUrl,
+		url: "https://domain.com",
 		method: "GET",
 		body: null,
 	});

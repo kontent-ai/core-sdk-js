@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { getDefaultHttpService } from "../../lib/http/http.service.js";
-import type { ErrorType } from "../../lib/public_api.js";
+import { getDefaultHttpService } from "../../../lib/http/http.service.js";
+import type { ErrorType } from "../../../lib/public_api.js";
 
 const url = "invalid-url";
 
