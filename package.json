@@ -34,7 +34,6 @@
 		"build": "npm run biome:check && npm run eslint && npm run clean &&  tsc --p tsconfig.build.json && npm run update:version",
 		"test": "vitest run --config=vitest.config.ts",
 		"eslint": "eslint",
-		"format": "biome format --write",
 		"biome:check": "biome check",
 		"biome:fix": "biome check --write",
 		"biome:fix:unsafe": "biome check --write --unsafe",
