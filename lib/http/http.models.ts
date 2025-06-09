@@ -28,7 +28,7 @@ export type DefaultHttpServiceConfig = {
 
 export type HttpResponse<TResponseData extends JsonValue | Blob, TBodyData extends JsonValue | Blob> = Result<
 	{
-		readonly data: TResponseData;
+		readonly responseData: TResponseData;
 		readonly body: TBodyData;
 		readonly method: HttpMethod;
 		readonly requestHeaders: readonly Header[];

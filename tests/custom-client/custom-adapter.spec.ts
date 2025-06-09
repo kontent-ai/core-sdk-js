@@ -65,7 +65,7 @@ describe('Custom adapter', async () => {
 		});
 
 		it('Json response should be equal to provided json', () => {
-			expect(JSON.stringify(data?.data)).toStrictEqual(JSON.stringify(jsonResponse));
+			expect(JSON.stringify(data?.responseData)).toStrictEqual(JSON.stringify(jsonResponse));
 		});
 	});
 
@@ -93,7 +93,7 @@ describe('Custom adapter', async () => {
 		});
 
 		it('Blob response should be equal to provided blob', () => {
-			expect(data?.data).toStrictEqual(blobResponse);
+			expect(data?.responseData).toStrictEqual(blobResponse);
 		});
 	});
 
@@ -132,7 +132,7 @@ describe('Custom adapter', async () => {
 		});
 
 		it('Json response should be equal to provided json', () => {
-			expect(JSON.stringify(data?.data)).toStrictEqual(JSON.stringify(jsonResponse));
+			expect(JSON.stringify(data?.responseData)).toStrictEqual(JSON.stringify(jsonResponse));
 		});
 	});
 });

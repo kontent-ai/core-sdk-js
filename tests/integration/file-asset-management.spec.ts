@@ -87,10 +87,10 @@ describe('Integration tests - Binary file / asset management', async () => {
 	});
 
 	it('Id property should be available', () => {
-		expect(uploadedBinaryFileResponse.data.id).toBeDefined();
+		expect(uploadedBinaryFileResponse.responseData.id).toBeDefined();
 	});
 
-	const { success: addAssetSuccess, data: addAssetResponse, error: addAssetError } = await addAssetAsync(uploadedBinaryFileResponse.data.id);
+	const { success: addAssetSuccess, data: addAssetResponse, error: addAssetError } = await addAssetAsync(uploadedBinaryFileResponse.responseData.id);
 
 	if (!addAssetSuccess) {
 		throw addAssetError;
@@ -101,15 +101,15 @@ describe('Integration tests - Binary file / asset management', async () => {
 	});
 
 	it('Url & id property should be available when adding asset', () => {
-		expect(addAssetResponse.data.id).toBeDefined();
-		expect(addAssetResponse.data.url).toBeDefined();
+		expect(addAssetResponse.responseData.id).toBeDefined();
+		expect(addAssetResponse.responseData.url).toBeDefined();
 	});
 
 	const {
 		success: downloadedFileSuccess,
 		data: downloadedFileResponse,
 		error: downloadedFileError,
-	} = await downloadAssetFileAsync(addAssetResponse.data.url);
+	} = await downloadAssetFileAsync(addAssetResponse.responseData.url);
 
 	if (!downloadedFileSuccess) {
 		throw downloadedFileError;
@@ -120,10 +120,10 @@ describe('Integration tests - Binary file / asset management', async () => {
 	});
 
 	it('Content of downloaded file should be identical to original file', async () => {
-		expect(await downloadedFileResponse.data.text()).toStrictEqual(await fileToUpload.text());
+		expect(await downloadedFileResponse.responseData.text()).toStrictEqual(await fileToUpload.text());
 	});
 
-	const { success: deletedFileSuccess, data: deletedFileResponse, error: deletedFileError } = await deleteAssetAsync(addAssetResponse.data.id);
+	const { success: deletedFileSuccess, data: deletedFileResponse, error: deletedFileError } = await deleteAssetAsync(addAssetResponse.responseData.id);
 
 	if (!deletedFileSuccess) {
 		throw deletedFileError;
@@ -134,6 +134,6 @@ describe('Integration tests - Binary file / asset management', async () => {
 	});
 
 	it('Delete file response data should be empty', () => {
-		expect(deletedFileResponse.data).toStrictEqual(null);
+		expect(deletedFileResponse.responseData).toStrictEqual(null);
 	});
 });

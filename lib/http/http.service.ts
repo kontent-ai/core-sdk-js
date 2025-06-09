@@ -164,7 +164,7 @@ export function getDefaultHttpService(config?: DefaultHttpServiceConfig): HttpSe
 			return {
 				success: true,
 				data: {
-					data: await resolveDataAsync(response),
+					responseData: await resolveDataAsync(response),
 					body: options.body,
 					method: options.method,
 					adapterResponse: {
