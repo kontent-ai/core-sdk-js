@@ -9,11 +9,7 @@
 	"author": "richard sustek",
 	"license": "MIT",
 	"description": "Core package with shared / common functionality for Kontent.ai SDKs",
-	"keywords": [
-		"Kontent.ai",
-		"Kontent AI",
-		"Kontent SDK Core"
-	],
+	"keywords": ["Kontent.ai", "Kontent AI", "Kontent SDK Core"],
 	"engines": {
 		"node": ">= 22"
 	},
