@@ -16,7 +16,7 @@ describe("Download file - Success", async () => {
 		status: 200,
 	});
 
-	const { success, data, error } = await getDefaultHttpService().downloadFileAsync({
+	const { success, response, error } = await getDefaultHttpService().downloadFileAsync({
 		url: "https://domain.com/image.jpg",
 	});
 
@@ -29,15 +29,15 @@ describe("Download file - Success", async () => {
 	});
 
 	it("Status should be 200", () => {
-		expect(data?.adapterResponse.status).toStrictEqual<HttpServiceStatus>(200);
+		expect(response?.adapterResponse.status).toStrictEqual<HttpServiceStatus>(200);
 	});
 
 	it("Method should be GET", () => {
-		expect(data?.method).toStrictEqual<HttpMethod>("GET");
+		expect(response?.method).toStrictEqual<HttpMethod>("GET");
 	});
 
 	it("Blob should be the same as the fake blob", () => {
-		expect(data?.responseData).toBeInstanceOf(Blob);
-		expect(data?.responseData).toStrictEqual(fakeBlob);
+		expect(response?.data).toBeInstanceOf(Blob);
+		expect(response?.data).toStrictEqual(fakeBlob);
 	});
 });

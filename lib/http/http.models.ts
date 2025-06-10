@@ -1,7 +1,20 @@
 import type { Header, HttpMethod, LiteralUnionNumber, RetryStrategyOptions } from "../models/core.models.js";
 import type { CoreSdkError } from "../models/error.models.js";
 import type { JsonValue } from "../models/json.models.js";
-import type { Result } from "../utils/try.utils.js";
+
+type Success<TData> = {
+	readonly success: true;
+	readonly response: TData;
+	readonly error?: never;
+};
+
+type Failure = {
+	readonly success: false;
+	readonly response?: never;
+	readonly error: CoreSdkError;
+};
+
+export type HttpResult<TData> = Success<TData> | Failure;
 
 /**
  * Helper status codes for the HTTP service.
@@ -26,16 +39,13 @@ export type DefaultHttpServiceConfig = {
 	readonly adapter?: HttpAdapter;
 };
 
-export type HttpResponse<TResponseData extends JsonValue | Blob, TBodyData extends JsonValue | Blob> = Result<
-	{
-		readonly responseData: TResponseData;
-		readonly body: TBodyData;
-		readonly method: HttpMethod;
-		readonly requestHeaders: readonly Header[];
-		readonly adapterResponse: Omit<AdapterResponse, "toJsonAsync" | "toBlobAsync">;
-	},
-	CoreSdkError
->;
+export type HttpResponse<TResponseData extends JsonValue | Blob, TBodyData extends JsonValue | Blob> = HttpResult<{
+	readonly data: TResponseData;
+	readonly body: TBodyData;
+	readonly method: HttpMethod;
+	readonly requestHeaders: readonly Header[];
+	readonly adapterResponse: Omit<AdapterResponse, "toJsonAsync" | "toBlobAsync">;
+}>;
 
 export type ExecuteRequestOptions<TBodyData extends JsonValue | Blob> = {
 	readonly url: string;

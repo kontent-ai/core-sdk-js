@@ -7,25 +7,25 @@ import { toRequiredRetryStrategyOptions } from "../../../lib/utils/retry.utils.j
 const testCases: readonly Required<RetryStrategyOptions>[] = [
 	toRequiredRetryStrategyOptions({
 		maxAttempts: 0,
-		defaultDelayBetweenRequestsMs: 0,
+		getDelayBetweenRequestsMs: () => 0,
 		logRetryAttempt: false,
 		canRetryError: () => true,
 	}),
 	toRequiredRetryStrategyOptions({
 		maxAttempts: 1,
-		defaultDelayBetweenRequestsMs: 0,
+		getDelayBetweenRequestsMs: () => 0,
 		logRetryAttempt: false,
 		canRetryError: () => true,
 	}),
 	toRequiredRetryStrategyOptions({
 		maxAttempts: 2,
-		defaultDelayBetweenRequestsMs: 0,
+		getDelayBetweenRequestsMs: () => 0,
 		logRetryAttempt: false,
 		canRetryError: () => true,
 	}),
 	toRequiredRetryStrategyOptions({
 		maxAttempts: 5,
-		defaultDelayBetweenRequestsMs: 0,
+		getDelayBetweenRequestsMs: () => 0,
 		logRetryAttempt: false,
 		canRetryError: () => true,
 	}),

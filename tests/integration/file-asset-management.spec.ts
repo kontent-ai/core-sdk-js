@@ -83,7 +83,7 @@ describe("Integration tests - Binary file / asset management", async () => {
 		});
 	};
 
-	const { success: uploadedBinaryFileSuccess, data: uploadedBinaryFileResponse, error: uploadedBinaryFileError } = await uploadBinaryFileAsync();
+	const { success: uploadedBinaryFileSuccess, response: uploadedBinaryFileResponse, error: uploadedBinaryFileError } = await uploadBinaryFileAsync();
 
 	if (!uploadedBinaryFileSuccess) {
 		throw new Error("Failed to upload binary file", { cause: uploadedBinaryFileError });
@@ -94,10 +94,10 @@ describe("Integration tests - Binary file / asset management", async () => {
 	});
 
 	it("Id property should be available", () => {
-		expect(uploadedBinaryFileResponse.responseData.id).toBeDefined();
+		expect(uploadedBinaryFileResponse.data.id).toBeDefined();
 	});
 
-	const { success: addAssetSuccess, data: addAssetResponse, error: addAssetError } = await addAssetAsync(uploadedBinaryFileResponse.responseData.id);
+	const { success: addAssetSuccess, response: addAssetResponse, error: addAssetError } = await addAssetAsync(uploadedBinaryFileResponse.data.id);
 
 	if (!addAssetSuccess) {
 		throw new Error("Failed to add asset", { cause: addAssetError });
@@ -108,15 +108,15 @@ describe("Integration tests - Binary file / asset management", async () => {
 	});
 
 	it("Url & id property should be available when adding asset", () => {
-		expect(addAssetResponse.responseData.id).toBeDefined();
-		expect(addAssetResponse.responseData.url).toBeDefined();
+		expect(addAssetResponse.data.id).toBeDefined();
+		expect(addAssetResponse.data.url).toBeDefined();
 	});
 
 	const {
 		success: downloadedFileSuccess,
-		data: downloadedFileResponse,
+		response: downloadedFileResponse,
 		error: downloadedFileError,
-	} = await downloadAssetFileAsync(addAssetResponse.responseData.url);
+	} = await downloadAssetFileAsync(addAssetResponse.data.url);
 
 	if (!downloadedFileSuccess) {
 		throw new Error("Failed to download file", { cause: downloadedFileError });
@@ -127,10 +127,10 @@ describe("Integration tests - Binary file / asset management", async () => {
 	});
 
 	it("Content of downloaded file should be identical to original file", async () => {
-		expect(await downloadedFileResponse.responseData.text()).toStrictEqual(await fileToUpload.text());
+		expect(await downloadedFileResponse.data.text()).toStrictEqual(await fileToUpload.text());
 	});
 
-	const { success: deletedFileSuccess, data: deletedFileResponse, error: deletedFileError } = await deleteAssetAsync(addAssetResponse.responseData.id);
+	const { success: deletedFileSuccess, response: deletedFileResponse, error: deletedFileError } = await deleteAssetAsync(addAssetResponse.data.id);
 
 	if (!deletedFileSuccess) {
 		throw new Error("Failed to delete file", { cause: deletedFileError });
@@ -141,6 +141,6 @@ describe("Integration tests - Binary file / asset management", async () => {
 	});
 
 	it("Delete file response data should be empty", () => {
-		expect(deletedFileResponse.responseData).toStrictEqual(null);
+		expect(deletedFileResponse.data).toStrictEqual(null);
 	});
 });

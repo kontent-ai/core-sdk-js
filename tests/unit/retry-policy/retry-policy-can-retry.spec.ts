@@ -68,7 +68,7 @@ for (const testCase of testCases) {
 		const { success, error } = await getDefaultHttpService({
 			retryStrategy: toRequiredRetryStrategyOptions({
 				canRetryError: testCase.canRetryError,
-				defaultDelayBetweenRequestsMs: 0,
+				getDelayBetweenRequestsMs: () => 0,
 				maxAttempts: testCase.maxRetryAttempts,
 				logRetryAttempt: false,
 			}),

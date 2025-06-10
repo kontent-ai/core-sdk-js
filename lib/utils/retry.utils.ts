@@ -42,12 +42,12 @@ export async function runWithRetryAsync<TResponse extends JsonValue | Blob, TBod
 	readonly requestHeaders: readonly Header[];
 	readonly method: HttpMethod;
 }): Promise<HttpResponse<TResponse, TBodyData>> {
-	const { success, data: result, error } = await data.funcAsync();
+	const { success, response, error } = await data.funcAsync();
 
 	if (success) {
 		return {
 			success: true,
-			data: result,
+			response,
 		};
 	}
 

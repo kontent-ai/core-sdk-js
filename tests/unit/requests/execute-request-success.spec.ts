@@ -22,7 +22,7 @@ describe("Execute request - Success (GET)", async () => {
 		status: 200,
 	});
 
-	const { success, data, error } = await getDefaultHttpService().requestAsync<ResponseData, null>({
+	const { success, response, error } = await getDefaultHttpService().requestAsync<ResponseData, null>({
 		url: "https://domain.com",
 		method: "GET",
 		body: null,
@@ -37,19 +37,19 @@ describe("Execute request - Success (GET)", async () => {
 	});
 
 	it("Status should be 200", () => {
-		expect(data?.adapterResponse.status).toStrictEqual(200);
+		expect(response?.adapterResponse.status).toStrictEqual(200);
 	});
 
 	it("Response data should be set", () => {
-		expect(data?.responseData).toStrictEqual(responseData);
+		expect(response?.data).toStrictEqual(responseData);
 	});
 
 	it("Response body should be null", () => {
-		expect(data?.body).toBeNull();
+		expect(response?.body).toBeNull();
 	});
 
 	it("Response method should be GET", () => {
-		expect(data?.method).toStrictEqual("GET");
+		expect(response?.method).toStrictEqual("GET");
 	});
 });
 
@@ -71,7 +71,7 @@ describe("Execute request - Success (POST)", async () => {
 		status: 200,
 	});
 
-	const { success, data, error } = await getDefaultHttpService().requestAsync<ResponseData, { readonly id: number; readonly codename: string }>({
+	const { success, response, error } = await getDefaultHttpService().requestAsync<ResponseData, { readonly id: number; readonly codename: string }>({
 		url: "https://domain.com",
 		method: "POST",
 		body: requestBody,
@@ -86,18 +86,18 @@ describe("Execute request - Success (POST)", async () => {
 	});
 
 	it("Status should be 200", () => {
-		expect(data?.adapterResponse.status).toStrictEqual<HttpServiceStatus>(200);
+		expect(response?.adapterResponse.status).toStrictEqual<HttpServiceStatus>(200);
 	});
 
 	it("Response data should be set", () => {
-		expect(data?.responseData).toStrictEqual(responseData);
+		expect(response?.data).toStrictEqual(responseData);
 	});
 
 	it("Response body should be set", () => {
-		expect(data?.body).toStrictEqual(requestBody);
+		expect(response?.body).toStrictEqual(requestBody);
 	});
 
 	it("Response method should be POST", () => {
-		expect(data?.method).toStrictEqual<HttpMethod>("POST");
+		expect(response?.method).toStrictEqual<HttpMethod>("POST");
 	});
 });

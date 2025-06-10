@@ -16,7 +16,7 @@ describe("Upload file - Success", async () => {
 		status: 200,
 	});
 
-	const { success, data, error } = await getDefaultHttpService({
+	const { success, response, error } = await getDefaultHttpService({
 		retryStrategy: {
 			maxAttempts: 0,
 		},
@@ -43,10 +43,10 @@ describe("Upload file - Success", async () => {
 	});
 
 	it("Status should be 200", () => {
-		expect(data?.adapterResponse.status).toStrictEqual<HttpServiceStatus>(200);
+		expect(response?.adapterResponse.status).toStrictEqual<HttpServiceStatus>(200);
 	});
 
 	it("Method should be POST", () => {
-		expect(data?.method).toStrictEqual<HttpMethod>("POST");
+		expect(response?.method).toStrictEqual<HttpMethod>("POST");
 	});
 });

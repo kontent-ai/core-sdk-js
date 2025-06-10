@@ -40,7 +40,7 @@ describe("Custom adapter", async () => {
 	});
 
 	describe("Json request", async () => {
-		const { success, data, error } = await httpService.requestAsync({
+		const { success, response, error } = await httpService.requestAsync({
 			url: "https://domain.com",
 			method: "GET",
 			body: null,
@@ -55,22 +55,22 @@ describe("Custom adapter", async () => {
 		});
 
 		it("Base response values should be equal to test values", () => {
-			expect(data?.adapterResponse.isValidResponse).toBe(responseData.isValidResponse);
-			expect(data?.adapterResponse.status).toBe(responseData.status);
-			expect(data?.adapterResponse.statusText).toBe(responseData.statusText);
+			expect(response?.adapterResponse.isValidResponse).toBe(responseData.isValidResponse);
+			expect(response?.adapterResponse.status).toBe(responseData.status);
+			expect(response?.adapterResponse.statusText).toBe(responseData.statusText);
 		});
 
 		it(`Response should contain header '${headerA.name}'`, () => {
-			expect(data?.adapterResponse.responseHeaders.find((m) => m.name === headerA.name)?.value).toStrictEqual(headerA.value);
+			expect(response?.adapterResponse.responseHeaders.find((m) => m.name === headerA.name)?.value).toStrictEqual(headerA.value);
 		});
 
 		it("Json response should be equal to provided json", () => {
-			expect(JSON.stringify(data?.responseData)).toStrictEqual(JSON.stringify(jsonResponse));
+			expect(JSON.stringify(response?.data)).toStrictEqual(JSON.stringify(jsonResponse));
 		});
 	});
 
 	describe("Download file request", async () => {
-		const { success, data, error } = await httpService.downloadFileAsync({
+		const { success, response, error } = await httpService.downloadFileAsync({
 			url: "https://domain.com",
 		});
 
@@ -83,24 +83,24 @@ describe("Custom adapter", async () => {
 		});
 
 		it("Base response values should be equal to test values", () => {
-			expect(data?.adapterResponse.isValidResponse).toBe(responseData.isValidResponse);
-			expect(data?.adapterResponse.status).toBe(responseData.status);
-			expect(data?.adapterResponse.statusText).toBe(responseData.statusText);
+			expect(response?.adapterResponse.isValidResponse).toBe(responseData.isValidResponse);
+			expect(response?.adapterResponse.status).toBe(responseData.status);
+			expect(response?.adapterResponse.statusText).toBe(responseData.statusText);
 		});
 
 		it(`Response should contain header '${headerA.name}'`, () => {
-			expect(data?.adapterResponse.responseHeaders.find((m) => m.name === headerA.name)?.value).toStrictEqual(headerA.value);
+			expect(response?.adapterResponse.responseHeaders.find((m) => m.name === headerA.name)?.value).toStrictEqual(headerA.value);
 		});
 
 		it("Blob response should be equal to provided blob", () => {
-			expect(data?.responseData).toStrictEqual(blobResponse);
+			expect(response?.data).toStrictEqual(blobResponse);
 		});
 	});
 
 	describe("Upload file request", async () => {
 		const inputBlob = new Blob(["x"], { type: "text/plain" });
 
-		const { success, data, error } = await httpService.uploadFileAsync({
+		const { success, response, error } = await httpService.uploadFileAsync({
 			url: "https://domain.com",
 			method: "POST",
 			body: inputBlob,
@@ -115,24 +115,24 @@ describe("Custom adapter", async () => {
 		});
 
 		it("Base response values should be equal to test values", () => {
-			expect(data?.adapterResponse.isValidResponse).toBe(responseData.isValidResponse);
-			expect(data?.adapterResponse.status).toBe(responseData.status);
-			expect(data?.adapterResponse.statusText).toBe(responseData.statusText);
+			expect(response?.adapterResponse.isValidResponse).toBe(responseData.isValidResponse);
+			expect(response?.adapterResponse.status).toBe(responseData.status);
+			expect(response?.adapterResponse.statusText).toBe(responseData.statusText);
 		});
 
 		it(`Response should contain header '${headerA.name}'`, () => {
-			expect(data?.adapterResponse.responseHeaders.find((m) => m.name === headerA.name)?.value).toStrictEqual(headerA.value);
+			expect(response?.adapterResponse.responseHeaders.find((m) => m.name === headerA.name)?.value).toStrictEqual(headerA.value);
 		});
 
 		it("Request header should contain content-type header", () => {
-			expect(data?.requestHeaders.find((m) => m.name === "Content-Type")?.value).toStrictEqual(inputBlob.type);
+			expect(response?.requestHeaders.find((m) => m.name === "Content-Type")?.value).toStrictEqual(inputBlob.type);
 		});
 		it("Request header should contain content-length header", () => {
-			expect(data?.requestHeaders.find((m) => m.name === "Content-Length")?.value).toStrictEqual(inputBlob.size.toString());
+			expect(response?.requestHeaders.find((m) => m.name === "Content-Length")?.value).toStrictEqual(inputBlob.size.toString());
 		});
 
 		it("Json response should be equal to provided json", () => {
-			expect(JSON.stringify(data?.responseData)).toStrictEqual(JSON.stringify(jsonResponse));
+			expect(JSON.stringify(response?.data)).toStrictEqual(JSON.stringify(jsonResponse));
 		});
 	});
 });
