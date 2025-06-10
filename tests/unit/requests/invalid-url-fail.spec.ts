@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { getDefaultHttpService } from "../../../lib/http/http.service.js";
-import type { ErrorType } from "../../../lib/public_api.js";
+import type { ErrorReason } from "../../../lib/public_api.js";
 
 const url = "invalid-url";
 
@@ -27,11 +27,11 @@ describe("Invalid url fail", async () => {
 		expect(error?.message).toContain(`Failed to parse url '${url}'.`);
 	});
 
-	it(`Error details should be of type '${"invalidUrl" satisfies ErrorType}'`, () => {
-		expect(error?.details.type).toBe("invalidUrl" satisfies ErrorType);
+	it(`Error details should be of type '${"invalidUrl" satisfies ErrorReason}'`, () => {
+		expect(error?.reason).toBe("invalidUrl" satisfies ErrorReason);
 
-		if (error?.details.type === "invalidUrl") {
-			expect(error.details.error).toBeDefined();
+		if (error?.reason === "invalidUrl") {
+			expect(error.error).toBeDefined();
 		}
 	});
 });

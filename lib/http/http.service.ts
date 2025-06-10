@@ -3,7 +3,7 @@ import type { CoreSdkError } from "../models/error.models.js";
 import type { JsonValue } from "../models/json.models.js";
 import { sdkInfo } from "../sdk-info.js";
 import { isNotUndefined } from "../utils/core.utils.js";
-import { getDefaultErrorMessage } from "../utils/error.utils.js";
+import { getErrorMessage } from "../utils/error.utils.js";
 import { getSdkIdHeader } from "../utils/header.utils.js";
 import { runWithRetryAsync, toRequiredRetryStrategyOptions } from "../utils/retry.utils.js";
 import { type Result, tryCatch } from "../utils/try.utils.js";
@@ -55,10 +55,8 @@ export function getDefaultHttpService(config?: DefaultHttpServiceConfig): HttpSe
 					error: {
 						message: "Failed to stringify body of request.",
 						url: options.url,
-						details: {
-							type: "invalidBody",
-							error: error,
-						},
+						reason: "invalidBody",
+						error: error,
 					},
 				};
 			}
@@ -78,10 +76,8 @@ export function getDefaultHttpService(config?: DefaultHttpServiceConfig): HttpSe
 					error: {
 						message: `Failed to parse url '${options.url}'.`,
 						url: options.url,
-						details: {
-							type: "invalidUrl",
-							error,
-						},
+						reason: "invalidUrl",
+						error,
 					},
 				};
 			}
@@ -135,29 +131,48 @@ export function getDefaultHttpService(config?: DefaultHttpServiceConfig): HttpSe
 			});
 		};
 
+		const getErrorForInvalidResponseAsync = async (response: AdapterResponse): Promise<CoreSdkError> => {
+			const sharedErrorData: Pick<CoreSdkError, "message" | "url"> = {
+				message: getErrorMessage({
+					url: options.url,
+					adapterResponse: response,
+					method: options.method,
+				}),
+				url: options.url,
+			};
+
+			if (response.status === 404) {
+				const error: CoreSdkError<"notFound"> = {
+					...sharedErrorData,
+					reason: "notFound",
+					isValidResponse: response.isValidResponse,
+					responseHeaders: response.responseHeaders,
+					status: 404,
+					statusText: response.statusText,
+					kontentErrorResponse: await getKontentErrorDataAsync(response),
+				};
+
+				return error;
+			}
+
+			const error: CoreSdkError<"invalidResponse"> = {
+				...sharedErrorData,
+				reason: "invalidResponse",
+				isValidResponse: response.isValidResponse,
+				responseHeaders: response.responseHeaders,
+				status: response.status,
+				statusText: response.statusText,
+				kontentErrorResponse: await getKontentErrorDataAsync(response),
+			};
+
+			return error;
+		};
+
 		const resolveResponseAsync = async (response: AdapterResponse): Promise<HttpResponse<TResponseData, TBodyData>> => {
 			if (!response.isValidResponse) {
-				const kontentErrorResponse = await getKontentErrorDataAsync(response);
-
 				return {
 					success: false,
-					error: {
-						details: {
-							type: "invalidResponse",
-							isValidResponse: response.isValidResponse,
-							responseHeaders: response.responseHeaders,
-							status: response.status,
-							statusText: response.statusText,
-							kontentErrorResponse,
-						},
-						message: getDefaultErrorMessage({
-							url: options.url,
-							adapterResponse: response,
-							kontentErrorResponse,
-							method: options.method,
-						}),
-						url: options.url,
-					},
+					error: await getErrorForInvalidResponseAsync(response),
 				};
 			}
 

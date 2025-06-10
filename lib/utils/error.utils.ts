@@ -1,8 +1,13 @@
 import type { AdapterResponse } from "../http/http.models.js";
 import type { HttpMethod, KontentErrorResponseData, KontentValidationError } from "../models/core.models.js";
+import type { CoreSdkError, ErrorReason } from "../models/error.models.js";
 import { isNotUndefined } from "./core.utils.js";
 
-export function getDefaultErrorMessage({
+export function isKontent404Error(error: CoreSdkError): error is CoreSdkError<"invalidResponse"> {
+	return isErrorOfType("invalidResponse", error) && error.status === 404;
+}
+
+export function getErrorMessage({
 	method,
 	url,
 	adapterResponse,
@@ -15,6 +20,10 @@ export function getDefaultErrorMessage({
 }): string {
 	const errorMessage = extractMessageFromError(adapterResponse, kontentErrorResponse);
 	return `Failed to execute '${method}' request '${url}'.${errorMessage ? ` ${errorMessage}` : ""}`;
+}
+
+function isErrorOfType<TReason extends ErrorReason>(reason: TReason, error: CoreSdkError): error is CoreSdkError<TReason> {
+	return error.reason === reason;
 }
 
 function getValidationErrorMessage(validationErrors?: readonly KontentValidationError[]): string | undefined {

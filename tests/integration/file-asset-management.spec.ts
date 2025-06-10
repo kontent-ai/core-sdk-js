@@ -10,12 +10,19 @@ describe("Integration tests - Binary file / asset management", async () => {
 	const httpService = getDefaultHttpService({
 		retryStrategy: {
 			maxAttempts: 5,
-			defaultDelayBetweenRequestsMs: 1000,
+			getDelayBetweenRequestsMs: (error) => {
+				if (error.reason === "notFound") {
+					return 1000;
+				}
+
+				return 0;
+			},
+			logRetryAttempt: false,
 			canRetryError: (error) => {
-				if (error.details.type === "invalidResponse") {
+				if (error.reason === "notFound") {
 					// we intetionally retry 404 because when we upload a file and get the URL back, the file might not yet be accessible
 					// and the request will fail with 404.
-					return error.details.status === 404;
+					return true;
 				}
 
 				return false;

@@ -4,6 +4,7 @@ export { getDefaultHttpService } from "./http/http.service.js";
 export { getSdkIdHeader } from "./utils/header.utils.js";
 export { toRequiredRetryStrategyOptions } from "./utils/retry.utils.js";
 export { tryCatch, tryCatchAsync } from "./utils/try.utils.js";
+export { isKontent404Error } from "./utils/error.utils.js";
 
 // Types
 export type {
@@ -26,7 +27,8 @@ export type {
 } from "./models/core.models.js";
 export type {
 	CoreSdkError,
-	ErrorType,
+	ErrorReason,
+	CoreSdkErrorDetails,
 } from "./models/error.models.js";
 export type { JsonArray, JsonObject, JsonValue } from "./models/json.models.js";
 export type { EmptyObject, Override, Prettify } from "./models/utility.models.js";

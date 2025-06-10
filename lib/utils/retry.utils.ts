@@ -14,15 +14,21 @@ type RetryResult =
 	  };
 
 const defaultMaxAttempts: NonNullable<RetryStrategyOptions["maxAttempts"]> = 3;
-const defaultDelayBetweenAttemptsMs: NonNullable<RetryStrategyOptions["defaultDelayBetweenRequestsMs"]> = 1000;
+const getDefaultDelayBetweenAttemptsMs: NonNullable<RetryStrategyOptions["getDelayBetweenRequestsMs"]> = (error) => {
+	if (error.reason === "notFound" || error.reason === "invalidResponse") {
+		return getRetryFromHeaderMs({ error });
+	}
+
+	return 0;
+};
 const defaultCanRetryError: NonNullable<RetryStrategyOptions["canRetryError"]> = (error) => {
-	if (error.details.type === "invalidResponse") {
-		if (error.details.kontentErrorResponse) {
+	if (error.reason === "invalidResponse") {
+		if (error.kontentErrorResponse) {
 			// The request is clearly invalid as we got an error response from the API
 			return false;
 		}
 
-		return error.details.status >= 500 || error.details.status === 429;
+		return error.status >= 500 || error.status === 429;
 	}
 
 	return true;
@@ -84,7 +90,7 @@ export function toRequiredRetryStrategyOptions(options?: RetryStrategyOptions): 
 	return {
 		maxAttempts: maxAttempts,
 		canRetryError: options?.canRetryError ?? defaultCanRetryError,
-		defaultDelayBetweenRequestsMs: options?.defaultDelayBetweenRequestsMs ?? defaultDelayBetweenAttemptsMs,
+		getDelayBetweenRequestsMs: options?.getDelayBetweenRequestsMs ?? getDefaultDelayBetweenAttemptsMs,
 		logRetryAttempt:
 			options?.logRetryAttempt === false
 				? false
@@ -133,27 +139,18 @@ function getRetryResult({
 		};
 	}
 
-	return getRetryFromHeader({ options, error });
-}
-
-function getRetryFromHeader({ options, error }: { readonly options: Required<RetryStrategyOptions>; readonly error: CoreSdkError }): RetryResult {
-	if (error.details.type !== "invalidResponse") {
-		return {
-			canRetry: false,
-		};
-	}
-
-	const retryAfterHeaderValue = getRetryAfterHeaderValue(error.details.responseHeaders);
-
-	if (retryAfterHeaderValue) {
-		return {
-			canRetry: true,
-			retryInMs: retryAfterHeaderValue * 1000,
-		};
-	}
-
 	return {
 		canRetry: true,
-		retryInMs: options.defaultDelayBetweenRequestsMs,
+		retryInMs: options.getDelayBetweenRequestsMs(error),
 	};
+}
+
+function getRetryFromHeaderMs({ error }: { readonly error: CoreSdkError<"invalidResponse" | "notFound"> }): number {
+	const retryAfterHeaderValue = getRetryAfterHeaderValue(error.responseHeaders);
+
+	if (retryAfterHeaderValue) {
+		return retryAfterHeaderValue * 1000;
+	}
+
+	return 0;
 }

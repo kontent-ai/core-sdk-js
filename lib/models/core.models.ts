@@ -46,26 +46,28 @@ export type KontentErrorResponseData = {
 export type RetryStrategyOptions = {
 	/**
 	 * Maximum number of attempts to retry the request.
+	 *
 	 * If not provided, the default implementation will be used.
 	 */
 	readonly maxAttempts?: number;
 
 	/**
 	 * Function to determine if the error should be retried.
+	 *
 	 * If not provided, the default implementation will be used.
 	 */
 	readonly canRetryError?: (error: CoreSdkError) => boolean;
 
 	/**
-	 * Default delay between requests in milliseconds.
-	 * Only used if the `Retry-after` header is not present.
-	 * The `Retry-after` header is sent by the Kontent.ai API to
-	 * indicate the time to wait before retrying the request.
+	 * Function to determine the delay between requests in milliseconds.
+	 *
+	 * If not provided, the default implementation will be used.
 	 */
-	readonly defaultDelayBetweenRequestsMs?: number;
+	readonly getDelayBetweenRequestsMs?: (error: CoreSdkError) => number;
 
 	/**
 	 * Whether to log the retry attempt.
+	 *
 	 * If false, the retry attempt will not be logged.
 	 * If undefined, the default implementation will be used.
 	 * Otherwise, the function will be called with the retry attempt and url.
