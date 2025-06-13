@@ -42,6 +42,8 @@ export default defineConfig([
 		rules: {
 			"no-loop-func": "off",
 			"no-unused-vars": "off",
+			"@typescript-eslint/no-misused-promises": "error",
+			"@typescript-eslint/no-floating-promises": ["error"],
 			"@typescript-eslint/no-unused-vars": "error",
 			"@typescript-eslint/no-loop-func": "error",
 			"@typescript-eslint/no-redundant-type-constituents": "error",
