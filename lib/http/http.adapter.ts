@@ -26,7 +26,7 @@ export function getDefaultHttpAdapter(): HttpAdapter {
 						?.value.toLowerCase();
 
 					if (contentTypeResponseHeader?.includes("application/json")) {
-						// Includes instead of equap due to the fact that the header value can be 'application/json; charset=utf-8' or similar
+						// Includes instead of equal due to the fact that the header value can be 'application/json; charset=utf-8' or similar
 						return (await response.json()) as JsonValue;
 					}
 
