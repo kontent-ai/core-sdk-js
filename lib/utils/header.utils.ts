@@ -14,7 +14,13 @@ export function getRetryAfterHeaderValue(headers: readonly Header[]): number | u
 		return undefined;
 	}
 
-	return +retryAfterHeader.value;
+	const numberValue = +retryAfterHeader.value;
+
+	if (!Number.isSafeInteger(numberValue)) {
+		return undefined;
+	}
+
+	return numberValue;
 }
 
 export function toSdkHeaders(headers: Headers): readonly Header[] {
