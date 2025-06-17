@@ -18,7 +18,7 @@ describe("Upload file - Success", async () => {
 
 	const { success, response, error } = await getDefaultHttpService({
 		retryStrategy: {
-			maxAttempts: 0,
+			maxRetries: 0,
 		},
 	}).uploadFileAsync<{
 		readonly id: string;

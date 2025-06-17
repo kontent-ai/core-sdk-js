@@ -8,15 +8,15 @@ import { toRequiredRetryStrategyOptions } from "../../../lib/utils/retry.utils.j
 const testCases: readonly {
 	readonly title: string;
 	readonly canRetryError: NonNullable<RetryStrategyOptions["canRetryError"]>;
-	readonly maxRetryAttempts: number;
-	readonly expectedRetryAttempts: number;
+	readonly maxRetries: number;
+	readonly expectedRetries: number;
 	readonly fetchResponse: FetchResponse;
 }[] = [
 	{
 		title: "Default retry - Can retry",
 		canRetryError: toRequiredRetryStrategyOptions({}).canRetryError,
-		maxRetryAttempts: 1,
-		expectedRetryAttempts: 1,
+		maxRetries: 1,
+		expectedRetries: 1,
 		fetchResponse: {
 			statusCode: 500,
 			json: {},
@@ -25,8 +25,8 @@ const testCases: readonly {
 	{
 		title: `Default retry - Can't retry`,
 		canRetryError: toRequiredRetryStrategyOptions({}).canRetryError,
-		maxRetryAttempts: 0,
-		expectedRetryAttempts: 0,
+		maxRetries: 0,
+		expectedRetries: 0,
 		fetchResponse: {
 			statusCode: 400,
 			json: {},
@@ -35,8 +35,8 @@ const testCases: readonly {
 	{
 		title: `Custom retry - Can't retry`,
 		canRetryError: () => false,
-		maxRetryAttempts: 1,
-		expectedRetryAttempts: 0,
+		maxRetries: 1,
+		expectedRetries: 0,
 		fetchResponse: {
 			statusCode: 500,
 			json: {},
@@ -45,8 +45,8 @@ const testCases: readonly {
 	{
 		title: "Custom retry - Can retry",
 		canRetryError: () => true,
-		maxRetryAttempts: 1,
-		expectedRetryAttempts: 1,
+		maxRetries: 1,
+		expectedRetries: 1,
 		fetchResponse: {
 			statusCode: 500,
 			json: {},
@@ -68,8 +68,8 @@ for (const testCase of testCases) {
 		const { success, error } = await getDefaultHttpService({
 			retryStrategy: toRequiredRetryStrategyOptions({
 				canRetryError: testCase.canRetryError,
-				getDelayBetweenRequestsMs: () => 0,
-				maxAttempts: testCase.maxRetryAttempts,
+				getDelayBetweenRetriesMs: () => 0,
+				maxRetries: testCase.maxRetries,
 				logRetryAttempt: false,
 			}),
 		}).requestAsync({
@@ -87,8 +87,8 @@ for (const testCase of testCases) {
 			expect(error).toBeDefined();
 		});
 
-		it(`Should retry '${testCase.expectedRetryAttempts}' times`, () => {
-			expect(error?.retryAttempt).toBe(testCase.expectedRetryAttempts);
+		it(`Should retry '${testCase.expectedRetries}' times`, () => {
+			expect(error?.retryAttempt).toBe(testCase.expectedRetries);
 		});
 	});
 }

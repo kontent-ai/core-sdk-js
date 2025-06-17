@@ -13,8 +13,8 @@ type RetryResult =
 			readonly retryInMs: number;
 	  };
 
-const defaultMaxAttempts: NonNullable<RetryStrategyOptions["maxAttempts"]> = 3;
-const getDefaultDelayBetweenAttemptsMs: NonNullable<RetryStrategyOptions["getDelayBetweenRequestsMs"]> = (error) => {
+const defaultMaxRetries: NonNullable<RetryStrategyOptions["maxRetries"]> = 3;
+const getDefaultDelayBetweenRetriesMs: NonNullable<RetryStrategyOptions["getDelayBetweenRetriesMs"]> = (error) => {
 	if (error.reason === "notFound" || error.reason === "invalidResponse") {
 		return getRetryFromHeaderMs({ error });
 	}
@@ -85,12 +85,12 @@ export async function runWithRetryAsync<TResponse extends JsonValue | Blob, TBod
 }
 
 export function toRequiredRetryStrategyOptions(options?: RetryStrategyOptions): Required<RetryStrategyOptions> {
-	const maxAttempts: number = options?.maxAttempts ?? defaultMaxAttempts;
+	const maxRetries: number = options?.maxRetries ?? defaultMaxRetries;
 
 	return {
-		maxAttempts: maxAttempts,
+		maxRetries: maxRetries,
 		canRetryError: options?.canRetryError ?? defaultCanRetryError,
-		getDelayBetweenRequestsMs: options?.getDelayBetweenRequestsMs ?? getDefaultDelayBetweenAttemptsMs,
+		getDelayBetweenRetriesMs: options?.getDelayBetweenRetriesMs ?? getDefaultDelayBetweenRetriesMs,
 		logRetryAttempt:
 			options?.logRetryAttempt === false
 				? false
@@ -98,14 +98,14 @@ export function toRequiredRetryStrategyOptions(options?: RetryStrategyOptions): 
 						if (options?.logRetryAttempt) {
 							options.logRetryAttempt(attempt, url);
 						} else {
-							console.warn(getDefaultRetryAttemptLogMessage(attempt, maxAttempts, url));
+							console.warn(getDefaultRetryAttemptLogMessage(attempt, maxRetries, url));
 						}
 					},
 	};
 }
 
-export function getDefaultRetryAttemptLogMessage(retryAttempt: number, maxAttempts: number, url: string): string {
-	return `Retry attempt '${retryAttempt}' from a maximum of '${maxAttempts}' retries. Requested url: '${url}'`;
+export function getDefaultRetryAttemptLogMessage(retryAttempt: number, maxRetries: number, url: string): string {
+	return `Retry attempt '${retryAttempt}' from a maximum of '${maxRetries}' retries. Requested url: '${url}'`;
 }
 
 function logRetryAttempt(opts: Pick<RetryStrategyOptions, "logRetryAttempt">, retryAttempt: number, url: string): void {
@@ -127,7 +127,7 @@ function getRetryResult({
 	readonly error: CoreSdkError;
 	readonly options: Required<RetryStrategyOptions>;
 }): RetryResult {
-	if (retryAttempt >= options.maxAttempts) {
+	if (retryAttempt >= options.maxRetries) {
 		return {
 			canRetry: false,
 		};
@@ -141,7 +141,7 @@ function getRetryResult({
 
 	return {
 		canRetry: true,
-		retryInMs: options.getDelayBetweenRequestsMs(error),
+		retryInMs: options.getDelayBetweenRetriesMs(error),
 	};
 }
 

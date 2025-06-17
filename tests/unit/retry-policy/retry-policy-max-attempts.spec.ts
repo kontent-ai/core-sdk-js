@@ -6,37 +6,37 @@ import { toRequiredRetryStrategyOptions } from "../../../lib/utils/retry.utils.j
 
 const testCases: readonly Required<RetryStrategyOptions>[] = [
 	toRequiredRetryStrategyOptions({
-		maxAttempts: 0,
-		getDelayBetweenRequestsMs: () => 0,
+		maxRetries: 0,
+		getDelayBetweenRetriesMs: () => 0,
 		logRetryAttempt: false,
 		canRetryError: () => true,
 	}),
 	toRequiredRetryStrategyOptions({
-		maxAttempts: 1,
-		getDelayBetweenRequestsMs: () => 0,
+		maxRetries: 1,
+		getDelayBetweenRetriesMs: () => 0,
 		logRetryAttempt: false,
 		canRetryError: () => true,
 	}),
 	toRequiredRetryStrategyOptions({
-		maxAttempts: 2,
-		getDelayBetweenRequestsMs: () => 0,
+		maxRetries: 2,
+		getDelayBetweenRetriesMs: () => 0,
 		logRetryAttempt: false,
 		canRetryError: () => true,
 	}),
 	toRequiredRetryStrategyOptions({
-		maxAttempts: 5,
-		getDelayBetweenRequestsMs: () => 0,
+		maxRetries: 5,
+		getDelayBetweenRetriesMs: () => 0,
 		logRetryAttempt: false,
 		canRetryError: () => true,
 	}),
 ];
 
-describe("Retry policy - max attempts", async () => {
+describe("Retry policy - max retries", async () => {
 	afterAll(() => {
 		vi.resetAllMocks();
 	});
 
-	for (const [maxAttempts, retryStrategy] of Object.entries(testCases)) {
+	for (const [maxRetries, retryStrategy] of Object.entries(testCases)) {
 		global.fetch = getFetchJsonMock({
 			json: {},
 			status: 500,
@@ -59,8 +59,8 @@ describe("Retry policy - max attempts", async () => {
 			expect(error).toBeDefined();
 		});
 
-		it(`Should retry '${maxAttempts}' times`, () => {
-			expect(error?.retryAttempt).toStrictEqual(retryStrategy.maxAttempts);
+		it(`Should retry '${maxRetries}' times`, () => {
+			expect(error?.retryAttempt).toStrictEqual(retryStrategy.maxRetries);
 		});
 	}
 });

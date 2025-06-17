@@ -9,8 +9,8 @@ describe("Integration tests - Binary file / asset management", async () => {
 	const config = getIntegrationTestConfig();
 	const httpService = getDefaultHttpService({
 		retryStrategy: {
-			maxAttempts: 5,
-			getDelayBetweenRequestsMs: (error) => {
+			maxRetries: 5,
+			getDelayBetweenRetriesMs: (error) => {
 				if (error.reason === "notFound") {
 					return 1000;
 				}

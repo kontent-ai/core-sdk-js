@@ -45,11 +45,11 @@ export type KontentErrorResponseData = {
 
 export type RetryStrategyOptions = {
 	/**
-	 * Maximum number of attempts to retry the request.
+	 * Maximum number of retry attempts.
 	 *
 	 * If not provided, the default implementation will be used.
 	 */
-	readonly maxAttempts?: number;
+	readonly maxRetries?: number;
 
 	/**
 	 * Function to determine if the error should be retried.
@@ -63,7 +63,7 @@ export type RetryStrategyOptions = {
 	 *
 	 * If not provided, the default implementation will be used.
 	 */
-	readonly getDelayBetweenRequestsMs?: (error: CoreSdkError) => number;
+	readonly getDelayBetweenRetriesMs?: (error: CoreSdkError) => number;
 
 	/**
 	 * Whether to log the retry attempt.
