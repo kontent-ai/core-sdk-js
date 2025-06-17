@@ -21,6 +21,10 @@
 		"./devkit": {
 			"types": "./dist/devkit_api.d.ts",
 			"default": "./dist/devkit_api.js"
+		},
+		"./testkit": {
+			"types": "./dist/testkit_api.d.ts",
+			"default": "./dist/testkit_api.js"
 		}
 	},
 	"type": "module",
