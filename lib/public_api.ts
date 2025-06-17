@@ -24,6 +24,7 @@ export type {
 	HttpMethod,
 	RetryStrategyOptions,
 	SDKInfo,
+	CommonHeaderNames,
 } from "./models/core.models.js";
 export type {
 	CoreSdkError,
