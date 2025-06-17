@@ -2,4 +2,4 @@
 export { deleteFolderRecursive } from "./devkit/script.utils.js";
 export { replaceSdkVersionPlaceholder } from "./utils/sdk-version.utils.js";
 export type { FetchResponse } from "./devkit/devkit.models.js";
-export type { getFakeBlob, getFetchBlobMock, getFetchJsonMock } from "./devkit/test.utils.js";
+export { getFakeBlob, getFetchBlobMock, getFetchJsonMock } from "./devkit/test.utils.js";
