@@ -31,7 +31,7 @@ describe("Invalid url fail", async () => {
 		expect(error?.reason).toBe("invalidUrl" satisfies ErrorReason);
 
 		if (error?.reason === "invalidUrl") {
-			expect(error.error).toBeDefined();
+			expect(error.originalError).toBeDefined();
 		}
 	});
 });

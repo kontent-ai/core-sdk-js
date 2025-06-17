@@ -36,7 +36,7 @@ describe("Default headers", async () => {
 	});
 
 	it(`Request should contain '${sdkIdHeader.name}' header`, () => {
-		expect(response?.requestHeaders.find((m) => m.name === "X-KC-SDKID")?.value).toStrictEqual(sdkIdHeader.value);
+		expect(response?.requestHeaders.find((m) => m.name === ("X-KC-SDKID" satisfies CommonHeaderNames))?.value).toStrictEqual(sdkIdHeader.value);
 	});
 });
 

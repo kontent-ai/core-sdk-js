@@ -6,7 +6,7 @@ import { isNotUndefined } from "../utils/core.utils.js";
 import { getErrorMessage } from "../utils/error.utils.js";
 import { getSdkIdHeader } from "../utils/header.utils.js";
 import { runWithRetryAsync, toRequiredRetryStrategyOptions } from "../utils/retry.utils.js";
-import { type Result, tryCatch } from "../utils/try.utils.js";
+import { type Result, tryCatch, tryCatchAsync } from "../utils/try.utils.js";
 import { getDefaultHttpAdapter } from "./http.adapter.js";
 import type {
 	AdapterResponse,
@@ -19,6 +19,29 @@ import type {
 } from "./http.models.js";
 
 export function getDefaultHttpService(config?: DefaultHttpServiceConfig): HttpService {
+	const withUnknownErrorHandlingAsync = async <TResponseData extends JsonValue | Blob, TBodyData extends JsonValue | Blob>({
+		url,
+		funcAsync,
+	}: { readonly url: string; readonly funcAsync: () => Promise<HttpResponse<TResponseData, TBodyData>> }): Promise<
+		HttpResponse<TResponseData, TBodyData>
+	> => {
+		const { success, data, error } = await tryCatchAsync(funcAsync);
+
+		if (success) {
+			return data;
+		}
+
+		return {
+			success: false,
+			error: {
+				reason: "unknown",
+				message: "Unknown error. See the error object for more details.",
+				url: url,
+				originalError: error,
+			},
+		};
+	};
+
 	const resolveRequestAsync = async <TResponseData extends JsonValue | Blob, TBodyData extends JsonValue | Blob>({
 		options,
 		resolveDataAsync,
@@ -26,174 +49,181 @@ export function getDefaultHttpService(config?: DefaultHttpServiceConfig): HttpSe
 		readonly options: ExecuteRequestOptions<TBodyData>;
 		readonly resolveDataAsync: (response: AdapterResponse) => Promise<TResponseData>;
 	}): Promise<HttpResponse<TResponseData, TBodyData>> => {
-		const adapter = config?.adapter ?? getDefaultHttpAdapter();
+		return await withUnknownErrorHandlingAsync({
+			url: options.url,
+			funcAsync: async () => {
+				const adapter = config?.adapter ?? getDefaultHttpAdapter();
 
-		const getCombinedRequestHeaders = (): readonly Header[] => {
-			return getRequestHeaders([...(config?.requestHeaders ?? []), ...(options.requestHeaders ?? [])], options.body);
-		};
-
-		const getRequestBody = (): Result<string | Blob | null, CoreSdkError> => {
-			if (options.body === null) {
-				return {
-					success: true,
-					data: null,
+				const getCombinedRequestHeaders = (): readonly Header[] => {
+					return getRequestHeaders([...(config?.requestHeaders ?? []), ...(options.requestHeaders ?? [])], options.body);
 				};
-			}
 
-			if (options.body instanceof Blob) {
-				return {
-					success: true,
-					data: options.body,
+				const getRequestBody = (): Result<string | Blob | null, CoreSdkError> => {
+					if (options.body === null) {
+						return {
+							success: true,
+							data: null,
+						};
+					}
+
+					if (options.body instanceof Blob) {
+						return {
+							success: true,
+							data: options.body,
+						};
+					}
+
+					const { success, data: parsedBody, error } = tryCatch(() => JSON.stringify(options.body));
+
+					if (!success) {
+						return {
+							success: false,
+							error: {
+								message: "Failed to stringify body of request.",
+								url: options.url,
+								reason: "invalidBody",
+								originalError: error,
+							},
+						};
+					}
+
+					return {
+						success: true,
+						data: parsedBody,
+					};
 				};
-			}
 
-			const { success, data: parsedBody, error } = tryCatch(() => JSON.stringify(options.body));
+				const getUrl = (): Result<URL, CoreSdkError> => {
+					const { success, data: parsedUrl, error } = tryCatch(() => new URL(options.url));
 
-			if (!success) {
-				return {
-					success: false,
-					error: {
-						message: "Failed to stringify body of request.",
+					if (!success) {
+						return {
+							success: false,
+							error: {
+								message: `Failed to parse url '${options.url}'.`,
+								url: options.url,
+								reason: "invalidUrl",
+								originalError: error,
+							},
+						};
+					}
+
+					return {
+						success: true,
+						data: parsedUrl,
+					};
+				};
+
+				const requestHeaders = getCombinedRequestHeaders();
+				const retryStrategyOptions: Required<RetryStrategyOptions> = toRequiredRetryStrategyOptions(config?.retryStrategy);
+
+				const withRetryAsync = async (
+					funcAsync: () => Promise<HttpResponse<TResponseData, TBodyData>>,
+				): Promise<HttpResponse<TResponseData, TBodyData>> => {
+					return await runWithRetryAsync({
 						url: options.url,
-						reason: "invalidBody",
-						error: error,
-					},
+						retryStrategyOptions,
+						retryAttempt: 0,
+						requestHeaders,
+						method: options.method,
+						funcAsync: async () => {
+							return await funcAsync();
+						},
+					});
 				};
-			}
 
-			return {
-				success: true,
-				data: parsedBody,
-			};
-		};
+				const { success: urlParsedSuccess, data: parsedUrl, error: urlError } = getUrl();
 
-		const getUrl = (): Result<URL, CoreSdkError> => {
-			const { success, data: parsedUrl, error } = tryCatch(() => new URL(options.url));
+				if (!urlParsedSuccess) {
+					return {
+						success: false,
+						error: urlError,
+					};
+				}
 
-			if (!success) {
-				return {
-					success: false,
-					error: {
-						message: `Failed to parse url '${options.url}'.`,
+				const { success: requestBodyParsedSuccess, data: requestBody, error: requestBodyError } = getRequestBody();
+
+				if (!requestBodyParsedSuccess) {
+					return {
+						success: false,
+						error: requestBodyError,
+					};
+				}
+
+				const getResponseAsync = async (): Promise<AdapterResponse> => {
+					return await adapter.requestAsync({
+						url: parsedUrl.toString(),
+						method: options.method,
+						requestHeaders,
+						body: requestBody,
+					});
+				};
+
+				const getErrorForInvalidResponseAsync = async (response: AdapterResponse): Promise<CoreSdkError> => {
+					const sharedErrorData: Pick<CoreSdkError, "message" | "url"> = {
+						message: getErrorMessage({
+							url: options.url,
+							adapterResponse: response,
+							method: options.method,
+						}),
 						url: options.url,
-						reason: "invalidUrl",
-						error,
-					},
-				};
-			}
+					};
 
-			return {
-				success: true,
-				data: parsedUrl,
-			};
-		};
+					if (response.status === 404) {
+						const error: CoreSdkError<"notFound"> = {
+							...sharedErrorData,
+							reason: "notFound",
+							isValidResponse: response.isValidResponse,
+							responseHeaders: response.responseHeaders,
+							status: 404,
+							statusText: response.statusText,
+							kontentErrorResponse: await getKontentErrorDataAsync(response),
+						};
 
-		const requestHeaders = getCombinedRequestHeaders();
-		const retryStrategyOptions: Required<RetryStrategyOptions> = toRequiredRetryStrategyOptions(config?.retryStrategy);
+						return error;
+					}
 
-		const withRetryAsync = async (funcAsync: () => Promise<HttpResponse<TResponseData, TBodyData>>): Promise<HttpResponse<TResponseData, TBodyData>> => {
-			return await runWithRetryAsync({
-				url: options.url,
-				retryStrategyOptions,
-				retryAttempt: 0,
-				requestHeaders,
-				method: options.method,
-				funcAsync: async () => {
-					return await funcAsync();
-				},
-			});
-		};
-
-		const { success: urlParsedSuccess, data: parsedUrl, error: urlError } = getUrl();
-
-		if (!urlParsedSuccess) {
-			return {
-				success: false,
-				error: urlError,
-			};
-		}
-
-		const { success: requestBodyParsedSuccess, data: requestBody, error: requestBodyError } = getRequestBody();
-
-		if (!requestBodyParsedSuccess) {
-			return {
-				success: false,
-				error: requestBodyError,
-			};
-		}
-
-		const getResponseAsync = async (): Promise<AdapterResponse> => {
-			return await adapter.requestAsync({
-				url: parsedUrl.toString(),
-				method: options.method,
-				requestHeaders,
-				body: requestBody,
-			});
-		};
-
-		const getErrorForInvalidResponseAsync = async (response: AdapterResponse): Promise<CoreSdkError> => {
-			const sharedErrorData: Pick<CoreSdkError, "message" | "url"> = {
-				message: getErrorMessage({
-					url: options.url,
-					adapterResponse: response,
-					method: options.method,
-				}),
-				url: options.url,
-			};
-
-			if (response.status === 404) {
-				const error: CoreSdkError<"notFound"> = {
-					...sharedErrorData,
-					reason: "notFound",
-					isValidResponse: response.isValidResponse,
-					responseHeaders: response.responseHeaders,
-					status: 404,
-					statusText: response.statusText,
-					kontentErrorResponse: await getKontentErrorDataAsync(response),
-				};
-
-				return error;
-			}
-
-			const error: CoreSdkError<"invalidResponse"> = {
-				...sharedErrorData,
-				reason: "invalidResponse",
-				isValidResponse: response.isValidResponse,
-				responseHeaders: response.responseHeaders,
-				status: response.status,
-				statusText: response.statusText,
-				kontentErrorResponse: await getKontentErrorDataAsync(response),
-			};
-
-			return error;
-		};
-
-		const resolveResponseAsync = async (response: AdapterResponse): Promise<HttpResponse<TResponseData, TBodyData>> => {
-			if (!response.isValidResponse) {
-				return {
-					success: false,
-					error: await getErrorForInvalidResponseAsync(response),
-				};
-			}
-
-			return {
-				success: true,
-				response: {
-					data: await resolveDataAsync(response),
-					body: options.body,
-					method: options.method,
-					adapterResponse: {
+					const error: CoreSdkError<"invalidResponse"> = {
+						...sharedErrorData,
+						reason: "invalidResponse",
 						isValidResponse: response.isValidResponse,
 						responseHeaders: response.responseHeaders,
 						status: response.status,
 						statusText: response.statusText,
-					},
-					requestHeaders: requestHeaders,
-				},
-			};
-		};
+						kontentErrorResponse: await getKontentErrorDataAsync(response),
+					};
 
-		return await withRetryAsync(async () => await resolveResponseAsync(await getResponseAsync()));
+					return error;
+				};
+
+				const resolveResponseAsync = async (response: AdapterResponse): Promise<HttpResponse<TResponseData, TBodyData>> => {
+					if (!response.isValidResponse) {
+						return {
+							success: false,
+							error: await getErrorForInvalidResponseAsync(response),
+						};
+					}
+
+					return {
+						success: true,
+						response: {
+							data: await resolveDataAsync(response),
+							body: options.body,
+							method: options.method,
+							adapterResponse: {
+								isValidResponse: response.isValidResponse,
+								responseHeaders: response.responseHeaders,
+								status: response.status,
+								statusText: response.statusText,
+							},
+							requestHeaders: requestHeaders,
+						},
+					};
+				};
+
+				return await withRetryAsync(async () => await resolveResponseAsync(await getResponseAsync()));
+			},
+		});
 	};
 
 	return {

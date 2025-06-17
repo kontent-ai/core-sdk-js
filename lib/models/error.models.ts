@@ -19,19 +19,19 @@ export type CoreSdkErrorDetails<TReason extends ErrorReason = ErrorReason> = (
 	| Details<
 			"invalidBody",
 			{
-				readonly error: unknown;
+				readonly originalError: unknown;
 			}
 	  >
 	| Details<
 			"invalidUrl",
 			{
-				readonly error: unknown;
+				readonly originalError: unknown;
 			}
 	  >
 	| Details<
 			"unknown",
 			{
-				readonly error: unknown;
+				readonly originalError: unknown;
 			}
 	  >
 ) & {
