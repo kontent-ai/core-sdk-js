@@ -18,8 +18,8 @@ export function getErrorMessage({
 	readonly adapterResponse: AdapterResponse;
 	readonly kontentErrorResponse?: KontentErrorResponseData;
 }): string {
-	const errorMessage = extractMessageFromError(adapterResponse, kontentErrorResponse);
-	return `Failed to execute '${method}' request '${url}'.${errorMessage ? ` ${errorMessage}` : ""}`;
+	const details = kontentErrorResponse ? getKontentErrorResponseMessage(adapterResponse, kontentErrorResponse) : undefined;
+	return `Failed to execute '${method}' request '${url}'.${details ? ` ${details}` : ""}`;
 }
 
 function isErrorOfType<TReason extends ErrorReason>(reason: TReason, error: CoreSdkError): error is CoreSdkError<TReason> {
@@ -42,11 +42,7 @@ function getValidationErrorMessage(validationErrors?: readonly KontentValidation
 		.join(", ");
 }
 
-function extractMessageFromError(adapterResponse: AdapterResponse, kontentErrorResponse?: KontentErrorResponseData): string | undefined {
-	if (kontentErrorResponse) {
-		const validationErrorMessage = getValidationErrorMessage(kontentErrorResponse.validation_errors);
-		return `Response failed with status '${adapterResponse.status}' and status text '${adapterResponse.statusText}'.${kontentErrorResponse.message}${validationErrorMessage ? ` ${validationErrorMessage}` : ""}`;
-	}
-
-	return undefined;
+function getKontentErrorResponseMessage(adapterResponse: AdapterResponse, kontentErrorResponse: KontentErrorResponseData): string {
+	const validationErrorMessage = getValidationErrorMessage(kontentErrorResponse.validation_errors);
+	return `Response failed with status '${adapterResponse.status}' and status text '${adapterResponse.statusText}'.${kontentErrorResponse.message}${validationErrorMessage ? ` ${validationErrorMessage}` : ""}`;
 }
