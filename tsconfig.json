@@ -2,8 +2,8 @@
 	"compileOnSave": true,
 	"compilerOptions": {
 		"noEmit": true,
-		"target": "es2022",
-		"moduleResolution": "nodenext",
+		"target": "esnext",
+		"moduleResolution": "NodeNext",
 		"module": "NodeNext",
 		"importHelpers": true,
 		"sourceMap": true,
@@ -24,6 +24,7 @@
 		"noUnusedLocals": true,
 		"strictFunctionTypes": true,
 		"noImplicitAny": true,
+		"esModuleInterop": true,
 		"typeRoots": ["./node_modules/@types"],
 		"lib": ["esnext"]
 	},

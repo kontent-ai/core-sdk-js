@@ -16,29 +16,24 @@ const compat = new FlatCompat({
 
 export default defineConfig([
 	{
+		ignores: ["dist/**", "coverage/**", "scripts/update-version.ts"],
+	},
+	{
 		files: ["lib/**/*.ts", "tests/**/*.ts", "scripts/**/*.ts"],
 		extends: compat.extends("eslint:recommended", "plugin:@typescript-eslint/eslint-recommended"),
-
 		plugins: {
 			"@typescript-eslint": typescriptEslint,
 		},
 
 		languageOptions: {
 			parser: tsParser,
-			ecmaVersion: 5,
+			ecmaVersion: "latest",
 			sourceType: "module",
 
 			parserOptions: {
 				project: ["./tsconfig.json"],
 			},
 		},
-
-		settings: {
-			react: {
-				version: "detect",
-			},
-		},
-
 		rules: {
 			"no-loop-func": "off",
 			"no-unused-vars": "off",

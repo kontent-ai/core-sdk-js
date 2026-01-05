@@ -5,5 +5,20 @@
 		"indentWidth": 4,
 		"indentStyle": "tab",
 		"lineWidth": 160
+	},
+	"linter": {
+		"rules": {
+			"correctness": {
+				"useImportExtensions": {
+					"level": "error",
+					"options": {
+						"forceJsExtensions": true
+					}
+				}
+			}
+		}
+	},
+	"files": {
+		"includes": ["!dist", "!coverage"]
 	}
 }

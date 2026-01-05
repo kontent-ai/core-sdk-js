@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { HttpServiceStatus } from "../../lib/http/http.models.js";
 import { getDefaultHttpService } from "../../lib/http/http.service.js";
 import { getIntegrationTestConfig } from "../integration-tests.config.js";
+import { sleepSecondsAsync } from "../test.utils.js";
 
 const fileToUpload = new Blob(["core-sdk-integration-test"], { type: "text/plain" });
 
@@ -86,6 +87,7 @@ describe("Integration tests - Binary file / asset management", async () => {
 	const { success: uploadedBinaryFileSuccess, response: uploadedBinaryFileResponse, error: uploadedBinaryFileError } = await uploadBinaryFileAsync();
 
 	if (!uploadedBinaryFileSuccess) {
+		console.error(uploadedBinaryFileError);
 		throw new Error("Failed to upload binary file", { cause: uploadedBinaryFileError });
 	}
 
@@ -111,6 +113,9 @@ describe("Integration tests - Binary file / asset management", async () => {
 		expect(addAssetResponse.data.id).toBeDefined();
 		expect(addAssetResponse.data.url).toBeDefined();
 	});
+
+	// It may take a bit of time for the file to be available for download
+	await sleepSecondsAsync(5);
 
 	const {
 		success: downloadedFileSuccess,

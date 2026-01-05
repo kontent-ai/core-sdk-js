@@ -22,9 +22,10 @@ export function getDefaultHttpService(config?: DefaultHttpServiceConfig): HttpSe
 	const withUnknownErrorHandlingAsync = async <TResponseData extends JsonValue | Blob, TBodyData extends JsonValue | Blob>({
 		url,
 		funcAsync,
-	}: { readonly url: string; readonly funcAsync: () => Promise<HttpResponse<TResponseData, TBodyData>> }): Promise<
-		HttpResponse<TResponseData, TBodyData>
-	> => {
+	}: {
+		readonly url: string;
+		readonly funcAsync: () => Promise<HttpResponse<TResponseData, TBodyData>>;
+	}): Promise<HttpResponse<TResponseData, TBodyData>> => {
 		const { success, data, error } = await tryCatchAsync(funcAsync);
 
 		if (success) {
