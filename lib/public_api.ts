@@ -1,6 +1,5 @@
 // biome-ignore lint/performance/noBarrelFile: One barrel for the public API is fine
 export { getDefaultHttpAdapter } from "./http/http.adapter.js";
-// Types
 export type {
 	AdapterRequestOptions,
 	AdapterResponse,
@@ -28,6 +27,18 @@ export type {
 } from "./models/error.models.js";
 export type { JsonArray, JsonObject, JsonValue } from "./models/json.models.js";
 export type { EmptyObject, Override, Prettify } from "./models/utility.models.js";
+export type {
+	CoreResponse,
+	CoreResponseMeta,
+	CoreSdkConfig,
+	PagingQuery,
+	PagingQueryResult,
+	Query,
+	QueryResult,
+	ResultOfSuccessfulQuery,
+	SuccessfulHttpResponse,
+} from "./sdk/sdk-models.js";
+export { extractContinuationToken, getPagingQuery, getQuery } from "./sdk/sdk-queries.js";
 export { isKontent404Error } from "./utils/error.utils.js";
 export { getSdkIdHeader } from "./utils/header.utils.js";
 export { toRequiredRetryStrategyOptions } from "./utils/retry.utils.js";
