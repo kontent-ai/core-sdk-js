@@ -71,7 +71,10 @@ describe("Execute request - Success (POST)", async () => {
 		status: 200,
 	});
 
-	const { success, response, error } = await getDefaultHttpService().requestAsync<ResponseData, { readonly id: number; readonly codename: string }>({
+	const { success, response, error } = await getDefaultHttpService().requestAsync<
+		ResponseData,
+		{ readonly id: number; readonly codename: string }
+	>({
 		url: "https://domain.com",
 		method: "POST",
 		body: requestBody,

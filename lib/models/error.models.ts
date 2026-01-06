@@ -1,7 +1,10 @@
+import type { ZodError } from "zod";
 import type { AdapterResponse, HttpServiceStatus } from "../http/http.models.js";
+import type { SuccessfulHttpResponse } from "../sdk/sdk-models.js";
 import type { KontentErrorResponseData, RetryStrategyOptions } from "./core.models.js";
+import type { JsonValue } from "./json.models.js";
 
-export type ErrorReason = "invalidResponse" | "invalidUrl" | "unknown" | "invalidBody" | "notFound";
+export type ErrorReason = "invalidResponse" | "invalidUrl" | "unknown" | "invalidBody" | "notFound" | "validationFailed" | "noResponses";
 
 export type CoreSdkErrorDetails<TReason extends ErrorReason = ErrorReason> = (
 	| Details<
@@ -32,6 +35,21 @@ export type CoreSdkErrorDetails<TReason extends ErrorReason = ErrorReason> = (
 			"unknown",
 			{
 				readonly originalError: unknown;
+			}
+	  >
+	| Details<
+			"validationFailed",
+			{
+				readonly reason: "validationFailed";
+				readonly zodError: ZodError;
+				readonly response: SuccessfulHttpResponse<JsonValue, JsonValue>;
+				readonly url: string;
+			}
+	  >
+	| Details<
+			"noResponses",
+			{
+				readonly url: string;
 			}
 	  >
 ) & {

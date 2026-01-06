@@ -4,7 +4,7 @@
 	"formatter": {
 		"indentWidth": 4,
 		"indentStyle": "tab",
-		"lineWidth": 160
+		"lineWidth": 140
 	},
 	"linter": {
 		"rules": {

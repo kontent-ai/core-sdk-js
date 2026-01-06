@@ -46,6 +46,9 @@
 		"clean": "tsx scripts/clean.ts",
 		"update:version": "tsx ./scripts/update-version.ts"
 	},
+	"dependencies": {
+		"zod": "4.3.5"
+	},
 	"devDependencies": {
 		"@kontent-ai/biome-config": "0.5.1",
 		"@kontent-ai/eslint-config": "2.2.1",

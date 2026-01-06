@@ -36,7 +36,9 @@ describe("Default headers", async () => {
 	});
 
 	it(`Request should contain '${sdkIdHeader.name}' header`, () => {
-		expect(response?.requestHeaders.find((m) => m.name === ("X-KC-SDKID" satisfies CommonHeaderNames))?.value).toStrictEqual(sdkIdHeader.value);
+		expect(response?.requestHeaders.find((m) => m.name === ("X-KC-SDKID" satisfies CommonHeaderNames))?.value).toStrictEqual(
+			sdkIdHeader.value,
+		);
 	});
 });
 
@@ -73,15 +75,16 @@ describe(`SDK tracking header '${sdkIdHeader.name}'`, async () => {
 	});
 
 	it(`Request should contain only single '${sdkIdHeader.name}' header`, () => {
-		expect(response?.requestHeaders.filter((m) => m.name.toLowerCase() === ("X-KC-SDKID" satisfies CommonHeaderNames).toLowerCase()).length).toStrictEqual(
-			1,
-		);
+		expect(
+			response?.requestHeaders.filter((m) => m.name.toLowerCase() === ("X-KC-SDKID" satisfies CommonHeaderNames).toLowerCase())
+				.length,
+		).toStrictEqual(1);
 	});
 
 	it(`Request should contain '${sdkIdHeader.name}' header`, () => {
-		expect(response?.requestHeaders.find((m) => m.name.toLowerCase() === ("X-KC-SDKID" satisfies CommonHeaderNames).toLowerCase())?.value).toStrictEqual(
-			customSdkId,
-		);
+		expect(
+			response?.requestHeaders.find((m) => m.name.toLowerCase() === ("X-KC-SDKID" satisfies CommonHeaderNames).toLowerCase())?.value,
+		).toStrictEqual(customSdkId);
 	});
 });
 

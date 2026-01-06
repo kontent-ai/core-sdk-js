@@ -1,4 +1,5 @@
 import type { CoreSdkError } from "./error.models.js";
+import type { PickStringLiteral } from "./utility.models.js";
 
 /**
  * SDK info for identification of the SDK
@@ -20,7 +21,9 @@ export type SDKInfo = {
 	readonly host: LiteralUnion<"npmjs.com">;
 };
 
-export type CommonHeaderNames = "Retry-After" | "X-KC-SDKID" | "Authorization" | "Content-Type" | "Content-Length";
+export type CommonHeaderNames = "Retry-After" | "X-KC-SDKID" | "Authorization" | "Content-Type" | "Content-Length" | "X-Continuation";
+
+export type ContinuationHeaderName = PickStringLiteral<CommonHeaderNames, "X-Continuation">;
 
 export type Header = {
 	readonly name: string;

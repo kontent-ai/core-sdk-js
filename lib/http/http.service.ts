@@ -250,7 +250,9 @@ export function getDefaultHttpService(config?: DefaultHttpServiceConfig): HttpSe
 			});
 		},
 
-		uploadFileAsync: async <TResponseData extends JsonValue>(options: UploadFileRequestOptions): Promise<HttpResponse<TResponseData, Blob>> => {
+		uploadFileAsync: async <TResponseData extends JsonValue>(
+			options: UploadFileRequestOptions,
+		): Promise<HttpResponse<TResponseData, Blob>> => {
 			return await resolveRequestAsync<TResponseData, Blob>({
 				options,
 				resolveDataAsync: async (response) => {
@@ -284,8 +286,12 @@ async function getKontentErrorDataAsync(response: AdapterResponse): Promise<Kont
 }
 
 function getRequestHeaders(headers: readonly Header[] | undefined, body: Blob | JsonValue): readonly Header[] {
-	const existingContentTypeHeader = headers?.find((header) => header.name.toLowerCase() === ("Content-Type" satisfies CommonHeaderNames).toLowerCase());
-	const existingSdkVersionHeader = headers?.find((header) => header.name.toLowerCase() === ("X-KC-SDKID" satisfies CommonHeaderNames).toLowerCase());
+	const existingContentTypeHeader = headers?.find(
+		(header) => header.name.toLowerCase() === ("Content-Type" satisfies CommonHeaderNames).toLowerCase(),
+	);
+	const existingSdkVersionHeader = headers?.find(
+		(header) => header.name.toLowerCase() === ("X-KC-SDKID" satisfies CommonHeaderNames).toLowerCase(),
+	);
 
 	const contentTypeHeader: Header | undefined = existingContentTypeHeader
 		? undefined
