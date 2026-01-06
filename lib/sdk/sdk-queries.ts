@@ -10,7 +10,7 @@ import type { CommonHeaderNames, ContinuationHeaderName, Header, SDKInfo } from 
 import type { JsonValue } from "../models/json.models.js";
 import type { EmptyObject } from "../models/utility.models.js";
 import { getSdkIdHeader } from "../utils/header.utils.js";
-import type { CoreResponse, CoreSdkConfig, PagingQuery, Query, SuccessfulHttpResponse } from "./sdk-models.js";
+import type { PagingQuery, Query, SdkConfig, SdkResponse, SuccessfulHttpResponse } from "./sdk-models.js";
 
 type ResolveToPromiseQuery<TPayload extends JsonValue, TExtraMetadata = EmptyObject> = ReturnType<
 	Pick<Query<TPayload, TExtraMetadata>, "toPromise">["toPromise"]
@@ -32,7 +32,7 @@ export function getQuery<TPayload extends JsonValue, TBodyData extends JsonValue
 
 export function getPagingQuery<TPayload extends JsonValue, TBodyData extends JsonValue, TExtraMetadata = EmptyObject>(
 	data: Parameters<typeof resolveQueryAsync<TPayload, TBodyData, TExtraMetadata>>[0] & {
-		readonly canFetchNextResponse: (response: CoreResponse<TPayload, TExtraMetadata>) => boolean;
+		readonly canFetchNextResponse: (response: SdkResponse<TPayload, TExtraMetadata>) => boolean;
 		readonly continuationToken: string;
 	},
 ): Pick<PagingQuery<TPayload, TExtraMetadata>, "toPromise" | "toAllPromise"> {
@@ -49,7 +49,7 @@ export function extractContinuationToken(responseHeaders: readonly Header[]): st
 		?.value;
 }
 
-function getHttpService(config: CoreSdkConfig) {
+function getHttpService(config: SdkConfig) {
 	return config.httpService ?? getDefaultHttpService();
 }
 
@@ -93,7 +93,7 @@ function getCombinedRequestHeaders({
 async function resolvePagingQueryAsync<TPayload extends JsonValue, TBodyData extends JsonValue, TExtraMetadata = EmptyObject>(
 	data: Parameters<typeof getPagingQuery<TPayload, TBodyData, TExtraMetadata>>[0],
 ): Promise<ResolveToAllPromiseQuery<TPayload, TExtraMetadata>> {
-	const responses: CoreResponse<TPayload, TExtraMetadata>[] = [];
+	const responses: SdkResponse<TPayload, TExtraMetadata>[] = [];
 	let nextContinuationToken: string | undefined = data.continuationToken;
 
 	while (nextContinuationToken) {
@@ -149,7 +149,7 @@ async function resolveQueryAsync<TPayload extends JsonValue, TBodyData extends J
 	readonly continuationToken: string | undefined;
 	readonly request: Parameters<HttpService["requestAsync"]>[number] & { readonly body: TBodyData };
 	readonly extraMetadata: (response: SuccessfulHttpResponse<TPayload, TBodyData>) => TExtraMetadata;
-	readonly config: CoreSdkConfig;
+	readonly config: SdkConfig;
 	readonly url: string;
 	readonly zodSchema: ZodType<TPayload>;
 	readonly sdkInfo: SDKInfo;

@@ -8,15 +8,16 @@ import type { CoreSdkError } from "../models/error.models.js";
 import type { JsonValue } from "../models/json.models.js";
 import type { Prettify } from "../models/utility.models.js";
 
-export type CoreResponseMeta<TExtraMetadata = unknown> = Pick<AdapterResponse, "status" | "responseHeaders"> & {
+export type SdkResponseMeta<TExtraMetadata = unknown> = Pick<AdapterResponse, "status" | "responseHeaders"> & {
 	readonly continuationToken?: string;
 } & TExtraMetadata;
 
-export type CoreResponse<TPayload, TExtraMetadata = unknown> = {
+export type SdkResponse<TPayload, TExtraMetadata = unknown> = {
 	readonly payload: TPayload;
-	readonly meta: CoreResponseMeta<TExtraMetadata>;
+	readonly meta: SdkResponseMeta<TExtraMetadata>;
 };
-export type CoreSdkConfig = {
+
+export type SdkConfig = {
 	/**
 	 * The HTTP service to use for the request. If not provided, the default HTTP service will be used.
 	 *
@@ -49,11 +50,11 @@ export type CoreSdkConfig = {
 
 export type Query<TPayload, TExtraData = unknown> = {
 	toUrl(): string;
-	toPromise(): Promise<QueryResult<CoreResponse<TPayload, TExtraData>>>;
+	toPromise(): Promise<QueryResult<SdkResponse<TPayload, TExtraData>>>;
 };
 
 export type PagingQuery<TPayload, TExtraData = unknown> = Query<TPayload, TExtraData> & {
-	toAllPromise(): Promise<PagingQueryResult<CoreResponse<TPayload, TExtraData>>>;
+	toAllPromise(): Promise<PagingQueryResult<SdkResponse<TPayload, TExtraData>>>;
 };
 
 export type SuccessfulHttpResponse<TPayload extends JsonValue, TBodyData extends JsonValue> = Prettify<

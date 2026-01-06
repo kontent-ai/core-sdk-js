@@ -29,14 +29,14 @@ export type {
 export type { JsonArray, JsonObject, JsonValue } from "./models/json.models.js";
 export type { EmptyObject, Override, Prettify } from "./models/utility.models.js";
 export type {
-	CoreResponse,
-	CoreResponseMeta,
-	CoreSdkConfig,
 	PagingQuery,
 	PagingQueryResult,
 	Query,
 	QueryResult,
 	ResultOfSuccessfulQuery,
+	SdkConfig,
+	SdkResponse,
+	SdkResponseMeta,
 	SuccessfulHttpResponse,
 } from "./sdk/sdk-models.js";
 export { extractContinuationToken, getPagingQuery, getQuery } from "./sdk/sdk-queries.js";
