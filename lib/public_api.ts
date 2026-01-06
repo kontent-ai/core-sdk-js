@@ -15,6 +15,7 @@ export type {
 export { getDefaultHttpService } from "./http/http.service.js";
 export type {
 	CommonHeaderNames,
+	ContinuationHeaderName,
 	Header,
 	HttpMethod,
 	RetryStrategyOptions,
