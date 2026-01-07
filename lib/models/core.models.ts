@@ -1,4 +1,4 @@
-import type { CoreSdkError } from "./error.models.js";
+import type { SdkError } from "./error.models.js";
 import type { PickStringLiteral } from "./utility.models.js";
 
 /**
@@ -59,14 +59,14 @@ export type RetryStrategyOptions = {
 	 *
 	 * If not provided, the default implementation will be used.
 	 */
-	readonly canRetryError?: (error: CoreSdkError) => boolean;
+	readonly canRetryError?: (error: SdkError) => boolean;
 
 	/**
 	 * Function to determine the delay between requests in milliseconds.
 	 *
 	 * If not provided, the default implementation will be used.
 	 */
-	readonly getDelayBetweenRetriesMs?: (error: CoreSdkError) => number;
+	readonly getDelayBetweenRetriesMs?: (error: SdkError) => number;
 
 	/**
 	 * Whether to log the retry attempt.

@@ -6,38 +6,38 @@ import type { JsonValue } from "./json.models.js";
 
 export type ErrorReason = "invalidResponse" | "invalidUrl" | "unknown" | "invalidBody" | "notFound" | "validationFailed" | "noResponses";
 
-export type CoreSdkErrorDetails<TReason extends ErrorReason = ErrorReason> = (
-	| Details<
+export type ErrorReasonData =
+	| TReasonData<
 			"invalidResponse",
 			{
 				readonly kontentErrorResponse: KontentErrorResponseData | undefined;
 			} & Pick<AdapterResponse<HttpServiceStatus>, "isValidResponse" | "responseHeaders" | "status" | "statusText">
 	  >
-	| Details<
+	| TReasonData<
 			"notFound",
 			{
 				readonly kontentErrorResponse: KontentErrorResponseData | undefined;
 			} & Pick<AdapterResponse<404>, "isValidResponse" | "responseHeaders" | "status" | "statusText">
 	  >
-	| Details<
+	| TReasonData<
 			"invalidBody",
 			{
 				readonly originalError: unknown;
 			}
 	  >
-	| Details<
+	| TReasonData<
 			"invalidUrl",
 			{
 				readonly originalError: unknown;
 			}
 	  >
-	| Details<
+	| TReasonData<
 			"unknown",
 			{
 				readonly originalError: unknown;
 			}
 	  >
-	| Details<
+	| TReasonData<
 			"validationFailed",
 			{
 				readonly reason: "validationFailed";
@@ -46,17 +46,14 @@ export type CoreSdkErrorDetails<TReason extends ErrorReason = ErrorReason> = (
 				readonly url: string;
 			}
 	  >
-	| Details<
+	| TReasonData<
 			"noResponses",
 			{
 				readonly url: string;
 			}
-	  >
-) & {
-	readonly reason: TReason;
-};
+	  >;
 
-export type CoreSdkError<TReason extends ErrorReason = ErrorReason> = {
+export type SdkErrorDetails = {
 	/**
 	 * The message of the error
 	 */
@@ -76,8 +73,25 @@ export type CoreSdkError<TReason extends ErrorReason = ErrorReason> = {
 	 * The number of times the request has been retried.
 	 */
 	readonly retryAttempt?: number;
-} & CoreSdkErrorDetails<TReason>;
+} & ErrorReasonData;
 
-type Details<TReason extends ErrorReason, TDetails> = {
+export class SdkError extends Error {
+	readonly details: SdkErrorDetails;
+
+	constructor(details: SdkErrorDetails) {
+		super(getErrorMessage(details));
+
+		this.details = details;
+	}
+}
+
+type TReasonData<TReason extends ErrorReason, TData> = {
 	readonly reason: TReason;
-} & TDetails;
+} & TData;
+
+function getErrorMessage(error: SdkErrorDetails): string {
+	if ((error.reason === "invalidResponse" || error.reason === "notFound") && error.kontentErrorResponse) {
+		return `${error.message} ${error.kontentErrorResponse.message}`;
+	}
+	return error.message;
+}

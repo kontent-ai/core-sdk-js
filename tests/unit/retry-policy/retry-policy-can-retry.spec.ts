@@ -88,7 +88,7 @@ for (const testCase of testCases) {
 		});
 
 		it(`Should retry '${testCase.expectedRetries}' times`, () => {
-			expect(error?.retryAttempt).toBe(testCase.expectedRetries);
+			expect(error?.details.retryAttempt).toBe(testCase.expectedRetries);
 		});
 	});
 }

@@ -9,6 +9,7 @@ import { getDefaultHttpService } from "../http/http.service.js";
 import type { CommonHeaderNames, ContinuationHeaderName, Header, SDKInfo } from "../models/core.models.js";
 import type { JsonValue } from "../models/json.models.js";
 import type { EmptyObject } from "../models/utility.models.js";
+import { createSdkError } from "../utils/error.utils.js";
 import { getSdkIdHeader } from "../utils/header.utils.js";
 import type { PagingQuery, Query, SdkConfig, SdkResponse, SuccessfulHttpResponse } from "./sdk-models.js";
 
@@ -121,11 +122,11 @@ async function resolvePagingQueryAsync<TPayload extends JsonValue, TBodyData ext
 	if (responses.length === 0) {
 		return {
 			success: false,
-			error: {
+			error: createSdkError({
 				reason: "noResponses",
 				url: data.url,
 				message: "No responses were processed. Expected at least one response to be fetched when using paging queries.",
-			},
+			}),
 		};
 	}
 
@@ -177,13 +178,13 @@ async function resolveQueryAsync<TPayload extends JsonValue, TBodyData extends J
 		if (!isValid) {
 			return {
 				success: false,
-				error: {
+				error: createSdkError({
 					message: `Failed to validate response schema for url '${url}'`,
 					reason: "validationFailed",
 					zodError: validationError,
 					response,
 					url,
-				},
+				}),
 			};
 		}
 	}

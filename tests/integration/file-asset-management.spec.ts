@@ -12,7 +12,7 @@ describe("Integration tests - Binary file / asset management", async () => {
 		retryStrategy: {
 			maxRetries: 5,
 			getDelayBetweenRetriesMs: (error) => {
-				if (error.reason === "notFound") {
+				if (error.details.reason === "notFound") {
 					return 1000;
 				}
 
@@ -20,7 +20,7 @@ describe("Integration tests - Binary file / asset management", async () => {
 			},
 			logRetryAttempt: false,
 			canRetryError: (error) => {
-				if (error.reason === "notFound") {
+				if (error.details.reason === "notFound") {
 					// we intetionally retry 404 because when we upload a file and get the URL back, the file might not yet be accessible
 					// and the request will fail with 404.
 					return true;
@@ -91,8 +91,7 @@ describe("Integration tests - Binary file / asset management", async () => {
 	} = await uploadBinaryFileAsync();
 
 	if (!uploadedBinaryFileSuccess) {
-		console.error(uploadedBinaryFileError);
-		throw new Error("Failed to upload binary file", { cause: uploadedBinaryFileError });
+		throw new Error(`Failed to upload binary file`, { cause: uploadedBinaryFileError });
 	}
 
 	it("Upload response status should be 200", () => {

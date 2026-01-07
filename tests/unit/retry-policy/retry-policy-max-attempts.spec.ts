@@ -60,7 +60,7 @@ describe("Retry policy - max retries", async () => {
 		});
 
 		it(`Should retry '${maxRetries}' times`, () => {
-			expect(error?.retryAttempt).toStrictEqual(retryStrategy.maxRetries);
+			expect(error?.details.retryAttempt).toStrictEqual(retryStrategy.maxRetries);
 		});
 	}
 });

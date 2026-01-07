@@ -1,7 +1,8 @@
 import type { HttpResponse } from "../http/http.models.js";
 import type { Header, HttpMethod, RetryStrategyOptions } from "../models/core.models.js";
-import type { CoreSdkError } from "../models/error.models.js";
+import type { SdkError } from "../models/error.models.js";
 import type { JsonValue } from "../models/json.models.js";
+import { createSdkError } from "./error.utils.js";
 import { getRetryAfterHeaderValue } from "./header.utils.js";
 
 type RetryResult =
@@ -15,20 +16,20 @@ type RetryResult =
 
 const defaultMaxRetries: NonNullable<RetryStrategyOptions["maxRetries"]> = 3;
 const getDefaultDelayBetweenRetriesMs: NonNullable<RetryStrategyOptions["getDelayBetweenRetriesMs"]> = (error) => {
-	if (error.reason === "notFound" || error.reason === "invalidResponse") {
+	if (error.details.reason === "notFound" || error.details.reason === "invalidResponse") {
 		return getRetryFromHeaderMs({ error });
 	}
 
 	return 0;
 };
 const defaultCanRetryError: NonNullable<RetryStrategyOptions["canRetryError"]> = (error) => {
-	if (error.reason === "invalidResponse") {
-		if (error.kontentErrorResponse) {
+	if (error.details.reason === "invalidResponse") {
+		if (error.details.kontentErrorResponse) {
 			// The request is clearly invalid as we got an error response from the API
 			return false;
 		}
 
-		return error.status >= 500 || error.status === 429;
+		return error.details.status >= 500 || error.details.status === 429;
 	}
 
 	return true;
@@ -62,11 +63,11 @@ export async function runWithRetryAsync<TResponse extends JsonValue | Blob, TBod
 	if (!retryResult.canRetry) {
 		return {
 			success: false,
-			error: {
-				...error,
+			error: createSdkError({
+				...error.details,
 				retryAttempt: data.retryAttempt,
 				retryStrategyOptions: data.retryStrategyOptions,
-			},
+			}),
 		};
 	}
 
@@ -124,7 +125,7 @@ function getRetryResult({
 	options,
 }: {
 	readonly retryAttempt: number;
-	readonly error: CoreSdkError;
+	readonly error: SdkError;
 	readonly options: Required<RetryStrategyOptions>;
 }): RetryResult {
 	if (retryAttempt >= options.maxRetries) {
@@ -145,8 +146,12 @@ function getRetryResult({
 	};
 }
 
-function getRetryFromHeaderMs({ error }: { readonly error: CoreSdkError<"invalidResponse" | "notFound"> }): number {
-	const retryAfterHeaderValue = getRetryAfterHeaderValue(error.responseHeaders);
+function getRetryFromHeaderMs({ error }: { readonly error: SdkError }): number {
+	if (error.details.reason !== "invalidResponse" && error.details.reason !== "notFound") {
+		return 0;
+	}
+
+	const retryAfterHeaderValue = getRetryAfterHeaderValue(error.details.responseHeaders);
 
 	if (retryAfterHeaderValue) {
 		return retryAfterHeaderValue * 1000;
