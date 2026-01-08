@@ -4,10 +4,11 @@
 	"typescript.updateImportsOnFileMove.enabled": "always",
 	"editor.defaultFormatter": "biomejs.biome",
 	"editor.codeActionsOnSave": {
-		"source.fixAll.biome": "explicit",
-		"source.organizeImports": "explicit"
+		"source.fixAll.biome": "explicit"
 	},
 	"editor.formatOnSave": true,
+	"typescript.format.enable": false,
+	"javascript.format.enable": false,
 	"[markdown]": {
 		"editor.formatOnSave": true
 	},
