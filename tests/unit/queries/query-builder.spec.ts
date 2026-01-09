@@ -2,22 +2,15 @@ import { describe, expect, it } from "vitest";
 import z from "zod";
 import type { AdapterResponse } from "../../../lib/http/http.models.js";
 import { getDefaultHttpService } from "../../../lib/http/http.service.js";
-import type { ContinuationHeaderName } from "../../../lib/models/core.models.js";
-import { type ErrorReason, SdkError } from "../../../lib/models/error.models.js";
-import { getPagingQuery } from "../../../lib/sdk/sdk-queries.js";
+import { getQuery } from "../../../lib/sdk/sdk-queries.js";
 
-describe("Paging query with invalid continuation token", async () => {
+describe("Paging query ", async () => {
 	const httpService = getDefaultHttpService({
 		adapter: {
 			requestAsync: async () => {
 				const adapterResponse: AdapterResponse = {
 					isValidResponse: true,
-					responseHeaders: [
-						{
-							name: "X-Continuation" satisfies ContinuationHeaderName,
-							value: undefined,
-						},
-					],
+					responseHeaders: [],
 					status: 200,
 					statusText: "",
 					toJsonAsync: async () => {
@@ -33,9 +26,9 @@ describe("Paging query with invalid continuation token", async () => {
 		},
 	});
 
-	const { success, error } = await getPagingQuery({
+	const { success, error, response } = await getQuery({
 		authorizationApiKey: undefined,
-		continuationToken: "first-continuation-token",
+		continuationToken: "",
 		extraMetadata: () => ({}),
 		config: {
 			httpService,
@@ -54,18 +47,21 @@ describe("Paging query with invalid continuation token", async () => {
 			method: "GET",
 			body: {},
 		},
-		canFetchNextResponse: () => false,
-	}).toAllPromise();
+	}).toPromise();
 
-	it("Error should be an instance of SdkError", () => {
-		expect(error).toBeInstanceOf(SdkError);
+	it("Error should be undefined", () => {
+		expect(error).toBeUndefined();
 	});
 
-	it("Success should be false", () => {
-		expect(success).toBe(false);
+	it("Success should be true", () => {
+		expect(success).toBe(true);
 	});
 
-	it("Error reason should be invalid continuation token", () => {
-		expect(error?.details.reason).toBe<ErrorReason>("invalidContinuationToken");
+	it("Response should be defined", () => {
+		expect(response).toBeDefined();
+	});
+
+	it("Response payload should be null", () => {
+		expect(response?.payload).toBeNull();
 	});
 });

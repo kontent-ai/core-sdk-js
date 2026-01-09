@@ -27,7 +27,7 @@ export type ContinuationHeaderName = PickStringLiteral<CommonHeaderNames, "X-Con
 
 export type Header = {
 	readonly name: string;
-	readonly value: string | undefined;
+	readonly value: string;
 };
 
 export type HttpMethod = "GET" | "POST" | "PUT" | "DELETE" | "PATCH";

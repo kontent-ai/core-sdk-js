@@ -131,24 +131,11 @@ async function resolvePagingQueryAsync<TPayload extends JsonValue, TBodyData ext
 	}
 
 	const lastResponse: SdkResponse<TPayload, TExtraMetadata> = responses[0];
-	const lastContinuationToken: string | undefined = lastResponse.meta.continuationToken;
-
-	if (!lastContinuationToken) {
-		return {
-			success: false,
-			error: createSdkError({
-				response: lastResponse,
-				reason: "invalidContinuationToken",
-				url: data.request.url,
-				message: "No continuation token was found. Expected at least one response to be fetched when using paging queries.",
-			}),
-		};
-	}
 
 	return {
 		success: true,
 		responses: responses,
-		lastContinuationToken: lastContinuationToken,
+		lastContinuationToken: lastResponse.meta.continuationToken,
 	};
 }
 
