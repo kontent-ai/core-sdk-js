@@ -40,7 +40,6 @@ export type ErrorReasonData =
 	| TReasonData<
 			"validationFailed",
 			{
-				readonly reason: "validationFailed";
 				readonly zodError: ZodError;
 				readonly response: SuccessfulHttpResponse<JsonValue, JsonValue>;
 				readonly url: string;
