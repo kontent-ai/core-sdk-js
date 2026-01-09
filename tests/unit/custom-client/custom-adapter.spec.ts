@@ -3,9 +3,9 @@ import type { AdapterResponse } from "../../../lib/http/http.models.js";
 import { getDefaultHttpService } from "../../../lib/http/http.service.js";
 import type { Header } from "../../../lib/models/core.models.js";
 import type { JsonValue } from "../../../lib/models/json.models.js";
-import { getFakeBlob } from "../../../lib/testkit/test.utils.js";
+import { getFakeBlob } from "../../../lib/testkit/testkit.utils.js";
 
-describe("Custom adapter", async () => {
+describe("Custom adapter", () => {
 	const headerA: Header = {
 		name: "A",
 		value: "a",
@@ -24,7 +24,7 @@ describe("Custom adapter", async () => {
 
 	const blobResponse = getFakeBlob();
 
-	const httpService = await getDefaultHttpService({
+	const httpService = getDefaultHttpService({
 		adapter: {
 			requestAsync: async () => {
 				return await Promise.resolve({

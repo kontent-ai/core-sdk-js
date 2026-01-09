@@ -2,6 +2,7 @@ import type { HttpResponse } from "../http/http.models.js";
 import type { Header, HttpMethod, RetryStrategyOptions } from "../models/core.models.js";
 import type { SdkError } from "../models/error.models.js";
 import type { JsonValue } from "../models/json.models.js";
+import { sleepAsync } from "./core.utils.js";
 import { createSdkError } from "./error.utils.js";
 import { getRetryAfterHeaderValue } from "./header.utils.js";
 
@@ -73,7 +74,7 @@ export async function runWithRetryAsync<TResponse extends JsonValue | Blob, TBod
 
 	logRetryAttempt(data.retryStrategyOptions, newRetryAttempt, data.url);
 
-	await waitAsync(retryResult.retryInMs);
+	await sleepAsync(retryResult.retryInMs);
 
 	return await runWithRetryAsync({
 		funcAsync: data.funcAsync,
@@ -113,10 +114,6 @@ function logRetryAttempt(opts: Pick<RetryStrategyOptions, "logRetryAttempt">, re
 	if (opts.logRetryAttempt) {
 		opts.logRetryAttempt(retryAttempt, url);
 	}
-}
-
-function waitAsync(ms: number): Promise<void> {
-	return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 function getRetryResult({

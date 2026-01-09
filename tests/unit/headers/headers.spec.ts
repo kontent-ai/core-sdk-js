@@ -2,7 +2,7 @@ import { afterAll, describe, expect, it, vi } from "vitest";
 import { getDefaultHttpService } from "../../../lib/http/http.service.js";
 import type { CommonHeaderNames, Header } from "../../../lib/models/core.models.js";
 import { sdkInfo } from "../../../lib/sdk-info.js";
-import { getFetchJsonMock } from "../../../lib/testkit/test.utils.js";
+import { getFetchJsonMock } from "../../../lib/testkit/testkit.utils.js";
 import { getRetryAfterHeaderValue, getSdkIdHeader } from "../../../lib/utils/header.utils.js";
 
 const sdkIdHeader = getSdkIdHeader(sdkInfo);

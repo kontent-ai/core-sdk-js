@@ -1,8 +1,8 @@
 import { afterAll, describe, expect, it, vi } from "vitest";
 import { getDefaultHttpService } from "../../../lib/http/http.service.js";
 import type { RetryStrategyOptions } from "../../../lib/models/core.models.js";
-import { getFetchJsonMock } from "../../../lib/testkit/test.utils.js";
 import type { FetchResponse } from "../../../lib/testkit/testkit.models.js";
+import { getFetchJsonMock } from "../../../lib/testkit/testkit.utils.js";
 import { toRequiredRetryStrategyOptions } from "../../../lib/utils/retry.utils.js";
 
 const testCases: readonly {

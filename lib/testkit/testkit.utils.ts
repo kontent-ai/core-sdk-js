@@ -1,5 +1,4 @@
-import type { Mock } from "vitest";
-import { vi } from "vitest";
+import { type Mock, vi } from "vitest";
 import type { HttpServiceStatus } from "../http/http.models.js";
 import type { CommonHeaderNames } from "../models/core.models.js";
 import type { JsonValue } from "../models/json.models.js";
@@ -56,7 +55,7 @@ function getFetchMock<TResponseData extends JsonValue | Blob>({
 	readonly status: HttpServiceStatus;
 	readonly responseHeaders: readonly Header[];
 }): Mock<() => Promise<Response>> {
-	return vi.fn(() => {
+	return vi.fn(async () => {
 		const contentTypeHeader: Header | undefined = responseHeaders.find(
 			(m) => m.name.toLowerCase() === ("Content-Type" satisfies CommonHeaderNames).toLowerCase(),
 		)
@@ -66,7 +65,7 @@ function getFetchMock<TResponseData extends JsonValue | Blob>({
 					value: "application/json",
 				};
 
-		return Promise.resolve<Response>({
+		return await Promise.resolve<Response>({
 			// only implement the methods we need, ignore the rest
 			...({} as Response),
 			ok: status === 200,

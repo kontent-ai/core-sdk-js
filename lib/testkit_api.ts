@@ -1,3 +1,3 @@
-// biome-ignore lint/performance/noBarrelFile: One barrel for the Devkit API is fine
-export { getFakeBlob, getFetchBlobMock, getFetchJsonMock } from "./testkit/test.utils.js";
+/** biome-ignore-all lint/performance/noBarrelFile: One barrel for exported API is fine */
 export type { FetchResponse } from "./testkit/testkit.models.js";
+export { getFakeBlob, getFetchBlobMock, getFetchJsonMock } from "./testkit/testkit.utils.js";

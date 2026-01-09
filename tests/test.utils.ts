@@ -17,7 +17,3 @@ export function getEnvironmentRequiredValue(variableName: string): string {
 export function getEnvironmentOptionalValue(variableName: string): string | undefined {
 	return process.env[variableName];
 }
-
-export function sleepSecondsAsync(seconds: number): Promise<void> {
-	return new Promise((resolve) => setTimeout(resolve, seconds * 1000));
-}

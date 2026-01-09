@@ -1,4 +1,4 @@
-// biome-ignore lint/performance/noBarrelFile: One barrel for the public API is fine
+/** biome-ignore-all lint/performance/noBarrelFile: One barrel for exported API is fine */
 export { getDefaultHttpAdapter } from "./http/http.adapter.js";
 export type {
 	AdapterRequestOptions,
