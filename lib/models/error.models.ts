@@ -1,43 +1,27 @@
 import type { ZodError } from "zod";
 import type { AdapterResponse, HttpServiceStatus } from "../http/http.models.js";
-import type { SuccessfulHttpResponse } from "../sdk/sdk-models.js";
+import type { SdkResponse, SuccessfulHttpResponse } from "../sdk/sdk-models.js";
 import type { KontentErrorResponseData, RetryStrategyOptions } from "./core.models.js";
 import type { JsonValue } from "./json.models.js";
 
-export type ErrorReason = "invalidResponse" | "invalidUrl" | "unknown" | "invalidBody" | "notFound" | "validationFailed" | "noResponses";
+export type ErrorReason =
+	| "invalidContinuationToken"
+	| "invalidResponse"
+	| "invalidUrl"
+	| "unknown"
+	| "invalidBody"
+	| "notFound"
+	| "validationFailed"
+	| "noResponses";
 
 export type ErrorReasonData =
-	| TReasonData<
-			"invalidResponse",
-			{
-				readonly kontentErrorResponse: KontentErrorResponseData | undefined;
-			} & Pick<AdapterResponse<HttpServiceStatus>, "isValidResponse" | "responseHeaders" | "status" | "statusText">
-	  >
-	| TReasonData<
-			"notFound",
-			{
-				readonly kontentErrorResponse: KontentErrorResponseData | undefined;
-			} & Pick<AdapterResponse<404>, "isValidResponse" | "responseHeaders" | "status" | "statusText">
-	  >
-	| TReasonData<
-			"invalidBody",
-			{
-				readonly originalError: unknown;
-			}
-	  >
-	| TReasonData<
-			"invalidUrl",
-			{
-				readonly originalError: unknown;
-			}
-	  >
-	| TReasonData<
-			"unknown",
-			{
-				readonly originalError: unknown;
-			}
-	  >
-	| TReasonData<
+	| ReasonData<"invalidResponse", ErrorWithKontentErrorResponse>
+	| ReasonData<"notFound", ErrorWithKontentErrorResponse>
+	| ReasonData<"invalidContinuationToken", ErrorWithSdkResponse>
+	| ReasonData<"invalidBody", ErrorWithOriginalError>
+	| ReasonData<"invalidUrl", ErrorWithOriginalError>
+	| ReasonData<"unknown", ErrorWithOriginalError>
+	| ReasonData<
 			"validationFailed",
 			{
 				readonly zodError: ZodError;
@@ -45,7 +29,7 @@ export type ErrorReasonData =
 				readonly url: string;
 			}
 	  >
-	| TReasonData<
+	| ReasonData<
 			"noResponses",
 			{
 				readonly url: string;
@@ -84,7 +68,19 @@ export class SdkError extends Error {
 	}
 }
 
-type TReasonData<TReason extends ErrorReason, TData> = {
+type ErrorWithKontentErrorResponse = {
+	readonly kontentErrorResponse: KontentErrorResponseData | undefined;
+} & Pick<AdapterResponse<HttpServiceStatus>, "isValidResponse" | "responseHeaders" | "status" | "statusText">;
+
+type ErrorWithOriginalError = {
+	readonly originalError: unknown;
+};
+
+type ErrorWithSdkResponse = {
+	readonly response: SdkResponse<unknown, unknown>;
+};
+
+type ReasonData<TReason extends ErrorReason, TData> = {
 	readonly reason: TReason;
 } & TData;
 

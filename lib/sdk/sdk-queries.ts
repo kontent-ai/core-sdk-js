@@ -97,7 +97,7 @@ async function resolvePagingQueryAsync<TPayload extends JsonValue, TBodyData ext
 	const responses: SdkResponse<TPayload, TExtraMetadata>[] = [];
 	let nextContinuationToken: string | undefined = data.continuationToken;
 
-	while (nextContinuationToken) {
+	while (nextContinuationToken?.length) {
 		const { success, response, error } = await getQuery<TPayload, TBodyData, TExtraMetadata>({
 			...data,
 			continuationToken: nextContinuationToken,
@@ -124,8 +124,23 @@ async function resolvePagingQueryAsync<TPayload extends JsonValue, TBodyData ext
 			success: false,
 			error: createSdkError({
 				reason: "noResponses",
-				url: data.url,
+				url: data.request.url,
 				message: "No responses were processed. Expected at least one response to be fetched when using paging queries.",
+			}),
+		};
+	}
+
+	const lastResponse: SdkResponse<TPayload, TExtraMetadata> = responses[0];
+	const lastContinuationToken: string | undefined = lastResponse.meta.continuationToken;
+
+	if (!lastContinuationToken) {
+		return {
+			success: false,
+			error: createSdkError({
+				response: lastResponse,
+				reason: "invalidContinuationToken",
+				url: data.request.url,
+				message: "No continuation token was found. Expected at least one response to be fetched when using paging queries.",
 			}),
 		};
 	}
@@ -133,14 +148,13 @@ async function resolvePagingQueryAsync<TPayload extends JsonValue, TBodyData ext
 	return {
 		success: true,
 		responses: responses,
-		lastContinuationToken: responses.at(-1)?.meta.continuationToken ?? "",
+		lastContinuationToken: lastContinuationToken,
 	};
 }
 
 async function resolveQueryAsync<TPayload extends JsonValue, TBodyData extends JsonValue, TExtraMetadata>({
 	config,
 	request,
-	url,
 	extraMetadata,
 	zodSchema,
 	continuationToken,
@@ -151,7 +165,6 @@ async function resolveQueryAsync<TPayload extends JsonValue, TBodyData extends J
 	readonly request: Parameters<HttpService["requestAsync"]>[number] & { readonly body: TBodyData };
 	readonly extraMetadata: (response: SuccessfulHttpResponse<TPayload, TBodyData>) => TExtraMetadata;
 	readonly config: SdkConfig;
-	readonly url: string;
 	readonly zodSchema: ZodType<TPayload>;
 	readonly sdkInfo: SDKInfo;
 	readonly authorizationApiKey: string | undefined;
@@ -179,11 +192,11 @@ async function resolveQueryAsync<TPayload extends JsonValue, TBodyData extends J
 			return {
 				success: false,
 				error: createSdkError({
-					message: `Failed to validate response schema for url '${url}'`,
+					message: `Failed to validate response schema for url '${request.url}'`,
 					reason: "validationFailed",
 					zodError: validationError,
 					response,
-					url,
+					url: request.url,
 				}),
 			};
 		}
