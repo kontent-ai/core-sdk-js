@@ -10,13 +10,16 @@ import { toFetchHeaders } from "../utils/header.utils.js";
 export function mockGlobalFetchJsonResponse({
 	jsonResponse,
 	statusCode,
+	continuationToken,
 }: {
 	readonly jsonResponse: JsonValue;
 	readonly statusCode: HttpServiceStatus;
+	readonly continuationToken?: string;
 }): void {
 	global.fetch = getFetchJsonMock({
 		json: jsonResponse,
 		status: statusCode,
+		responseHeaders: continuationToken ? [{ name: "X-Continuation" satisfies ContinuationHeaderName, value: continuationToken }] : [],
 	});
 }
 

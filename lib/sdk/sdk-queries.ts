@@ -119,7 +119,9 @@ async function resolvePagingQueryAsync<TPayload extends JsonValue, TBodyData ext
 		}
 	}
 
-	if (responses.length === 0) {
+	const lastResponse: SdkResponse<TPayload, TExtraMetadata> | undefined = responses.at(-1);
+
+	if (!lastResponse) {
 		return {
 			success: false,
 			error: createSdkError({
@@ -129,8 +131,6 @@ async function resolvePagingQueryAsync<TPayload extends JsonValue, TBodyData ext
 			}),
 		};
 	}
-
-	const lastResponse: SdkResponse<TPayload, TExtraMetadata> = responses[0];
 
 	return {
 		success: true,
