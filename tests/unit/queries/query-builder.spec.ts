@@ -30,11 +30,11 @@ describe("Query builder", async () => {
 		},
 	}).toPromise();
 
-	it("Meta should contain the continuation token", () => {
+	it("Meta should have proper continuation token", () => {
 		expect(response?.meta.continuationToken).toStrictEqual(responseContinuationToken);
 	});
 
-	it("Meta should contain the status code", () => {
+	it("Meta should have proper status code", () => {
 		expect(response?.meta.status).toStrictEqual(responseStatusCode);
 	});
 
