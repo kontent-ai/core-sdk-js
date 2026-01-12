@@ -1,7 +1,7 @@
 import { afterAll, describe, expect, it, vi } from "vitest";
 import { getDefaultHttpService } from "../../../lib/http/http.service.js";
 import type { RetryStrategyOptions } from "../../../lib/models/core.models.js";
-import { getFetchJsonMock } from "../../../lib/testkit/testkit.utils.js";
+import { mockGlobalFetchJsonResponse } from "../../../lib/testkit/testkit.utils.js";
 import { toRequiredRetryStrategyOptions } from "../../../lib/utils/retry.utils.js";
 
 const testCases: readonly Required<RetryStrategyOptions>[] = [
@@ -37,9 +37,9 @@ describe("Retry policy - max retries", async () => {
 	});
 
 	for (const [maxRetries, retryStrategy] of Object.entries(testCases)) {
-		global.fetch = getFetchJsonMock({
-			json: {},
-			status: 500,
+		mockGlobalFetchJsonResponse({
+			jsonResponse: {},
+			statusCode: 500,
 		});
 
 		const { success, error } = await getDefaultHttpService({

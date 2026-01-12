@@ -2,7 +2,7 @@ import { afterAll, describe, expect, it, vi } from "vitest";
 import { getDefaultHttpService } from "../../../lib/http/http.service.js";
 import type { CommonHeaderNames, Header } from "../../../lib/models/core.models.js";
 import { sdkInfo } from "../../../lib/sdk-info.js";
-import { getFetchJsonMock } from "../../../lib/testkit/testkit.utils.js";
+import { mockGlobalFetchJsonResponse } from "../../../lib/testkit/testkit.utils.js";
 import { getRetryAfterHeaderValue, getSdkIdHeader } from "../../../lib/utils/header.utils.js";
 
 const sdkIdHeader = getSdkIdHeader(sdkInfo);
@@ -12,11 +12,11 @@ describe("Default headers", async () => {
 		vi.resetAllMocks();
 	});
 
-	global.fetch = getFetchJsonMock({
-		json: {},
-		status: 200,
-		responseHeaders: [],
+	mockGlobalFetchJsonResponse({
+		jsonResponse: {},
+		statusCode: 200,
 	});
+
 	const { success, response, error } = await getDefaultHttpService().requestAsync({
 		url: "https://domain.com",
 		method: "GET",
@@ -49,9 +49,9 @@ describe(`SDK tracking header '${sdkIdHeader.name}'`, async () => {
 
 	const customSdkId = "x";
 
-	global.fetch = getFetchJsonMock({
-		json: {},
-		status: 200,
+	mockGlobalFetchJsonResponse({
+		jsonResponse: {},
+		statusCode: 200,
 	});
 
 	const { success, response, error } = await getDefaultHttpService().requestAsync({
@@ -93,9 +93,9 @@ describe("Custom Http Service & Request headers", async () => {
 		vi.resetAllMocks();
 	});
 
-	global.fetch = getFetchJsonMock({
-		json: {},
-		status: 200,
+	mockGlobalFetchJsonResponse({
+		jsonResponse: {},
+		statusCode: 200,
 	});
 
 	const headerA: Header = {
