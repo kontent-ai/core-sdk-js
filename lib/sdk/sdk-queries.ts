@@ -21,6 +21,10 @@ type ResolveToAllPromiseQuery<TPayload extends JsonValue, TExtraMetadata = Empty
 	Pick<PagingQuery<TPayload, TExtraMetadata>, "toAllPromise">["toAllPromise"]
 >;
 
+type MetadataContextData = {
+	readonly continuationToken?: string;
+};
+
 export function getQuery<TPayload extends JsonValue, TBodyData extends JsonValue, TExtraMetadata>(
 	data: Parameters<typeof resolveQueryAsync<TPayload, TBodyData, TExtraMetadata>>[0],
 ): Pick<Query<TPayload, TExtraMetadata>, "toPromise"> {
@@ -150,7 +154,7 @@ async function resolveQueryAsync<TPayload extends JsonValue, TBodyData extends J
 }: {
 	readonly continuationToken: string | undefined;
 	readonly request: Parameters<HttpService["requestAsync"]>[number] & { readonly body: TBodyData };
-	readonly extraMetadata: (response: SuccessfulHttpResponse<TPayload, TBodyData>) => TExtraMetadata;
+	readonly extraMetadata: (response: SuccessfulHttpResponse<TPayload, TBodyData>, data: MetadataContextData) => TExtraMetadata;
 	readonly config: SdkConfig;
 	readonly zodSchema: ZodType<TPayload>;
 	readonly sdkInfo: SDKInfo;
@@ -189,6 +193,8 @@ async function resolveQueryAsync<TPayload extends JsonValue, TBodyData extends J
 		}
 	}
 
+	const continuationTokenFromResponse = extractContinuationToken(response.adapterResponse.responseHeaders);
+
 	const result: Awaited<ResolveToPromiseQuery<TPayload, TExtraMetadata>> = {
 		success: true,
 		response: {
@@ -196,8 +202,8 @@ async function resolveQueryAsync<TPayload extends JsonValue, TBodyData extends J
 			meta: {
 				responseHeaders: response.adapterResponse.responseHeaders,
 				status: response.adapterResponse.status,
-				continuationToken: extractContinuationToken(response.adapterResponse.responseHeaders),
-				...extraMetadata(response),
+				continuationToken: continuationTokenFromResponse,
+				...extraMetadata(response, { continuationToken: continuationTokenFromResponse }),
 			},
 		},
 	};
