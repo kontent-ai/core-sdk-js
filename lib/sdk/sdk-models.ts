@@ -57,7 +57,7 @@ export type PagingQuery<TPayload, TExtraData = unknown> = Query<TPayload, TExtra
 	toAllPromise(): Promise<PagingQueryResult<SdkResponse<TPayload, TExtraData>>>;
 };
 
-export type SuccessfulHttpResponse<TPayload extends JsonValue, TBodyData extends JsonValue> = Prettify<
+export type SuccessfulHttpResponse<TPayload extends JsonValue, TBodyData extends JsonValue | Blob> = Prettify<
 	Extract<HttpResponse<TPayload, TBodyData>, { readonly success: true }>["response"]
 >;
 
