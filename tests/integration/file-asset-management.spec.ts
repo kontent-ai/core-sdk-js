@@ -91,7 +91,7 @@ describe("Integration tests - Binary file / asset management", async () => {
 	} = await uploadBinaryFileAsync();
 
 	if (!uploadedBinaryFileSuccess) {
-		throw new Error(`Failed to upload binary file`, { cause: uploadedBinaryFileError });
+		throw uploadedBinaryFileError;
 	}
 
 	it("Upload response status should be 200", () => {
@@ -109,7 +109,7 @@ describe("Integration tests - Binary file / asset management", async () => {
 	} = await addAssetAsync(uploadedBinaryFileResponse.data.id);
 
 	if (!addAssetSuccess) {
-		throw new Error("Failed to add asset", { cause: addAssetError });
+		throw addAssetError;
 	}
 
 	it("Add asset response status should be 201", () => {
@@ -131,7 +131,7 @@ describe("Integration tests - Binary file / asset management", async () => {
 	} = await downloadAssetFileAsync(addAssetResponse.data.url);
 
 	if (!downloadedFileSuccess) {
-		throw new Error("Failed to download file", { cause: downloadedFileError });
+		throw downloadedFileError;
 	}
 
 	it("Download file response status should be 200", () => {
@@ -149,7 +149,7 @@ describe("Integration tests - Binary file / asset management", async () => {
 	} = await deleteAssetAsync(addAssetResponse.data.id);
 
 	if (!deletedFileSuccess) {
-		throw new Error("Failed to delete file", { cause: deletedFileError });
+		throw deletedFileError;
 	}
 
 	it("Delete file response status should be 204", () => {

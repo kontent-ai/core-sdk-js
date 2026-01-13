@@ -71,7 +71,7 @@ function getCombinedRequestHeaders({
 }): readonly Header[] {
 	return [
 		getSdkIdHeader({
-			host: "npmjs.com",
+			host: sdkInfo.host,
 			name: sdkInfo.name,
 			version: sdkInfo.version,
 		}),

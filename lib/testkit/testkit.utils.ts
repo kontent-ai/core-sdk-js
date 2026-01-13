@@ -44,7 +44,7 @@ export function getTestSdkInfo(): SDKInfo {
 	return {
 		name: "test",
 		version: "0.0.0",
-		host: "test",
+		host: "sdk",
 	};
 }
 
