@@ -25,7 +25,7 @@ type MetadataContextData = {
 	readonly continuationToken?: string;
 };
 
-export function getQuery<TPayload extends JsonValue, TBodyData extends JsonValue, TExtraMetadata>(
+export function getQuery<TPayload extends JsonValue, TBodyData extends JsonValue, TExtraMetadata = EmptyObject>(
 	data: Parameters<typeof resolveQueryAsync<TPayload, TBodyData, TExtraMetadata>>[0],
 ): Pick<Query<TPayload, TExtraMetadata>, "toPromise"> {
 	return {
