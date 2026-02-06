@@ -14,3 +14,8 @@ export type Override<Type, NewType extends { [key in keyof Type]?: NewType[key] 
  * Represents an empty object type.
  */
 export type EmptyObject = Record<string, never>;
+
+/**
+ * Picks a string literal type from a union type.
+ */
+export type PickStringLiteral<T extends string, U extends T> = U;

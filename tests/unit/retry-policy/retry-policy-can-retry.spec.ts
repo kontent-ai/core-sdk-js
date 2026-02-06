@@ -1,8 +1,8 @@
 import { afterAll, describe, expect, it, vi } from "vitest";
 import { getDefaultHttpService } from "../../../lib/http/http.service.js";
 import type { RetryStrategyOptions } from "../../../lib/models/core.models.js";
-import { getFetchJsonMock } from "../../../lib/testkit/test.utils.js";
 import type { FetchResponse } from "../../../lib/testkit/testkit.models.js";
+import { mockGlobalFetchJsonResponse } from "../../../lib/testkit/testkit.utils.js";
 import { toRequiredRetryStrategyOptions } from "../../../lib/utils/retry.utils.js";
 
 const testCases: readonly {
@@ -60,9 +60,9 @@ for (const testCase of testCases) {
 			vi.resetAllMocks();
 		});
 
-		global.fetch = getFetchJsonMock({
-			json: testCase.fetchResponse.json,
-			status: testCase.fetchResponse.statusCode,
+		mockGlobalFetchJsonResponse({
+			jsonResponse: testCase.fetchResponse.json,
+			statusCode: testCase.fetchResponse.statusCode,
 		});
 
 		const { success, error } = await getDefaultHttpService({
@@ -88,7 +88,7 @@ for (const testCase of testCases) {
 		});
 
 		it(`Should retry '${testCase.expectedRetries}' times`, () => {
-			expect(error?.retryAttempt).toBe(testCase.expectedRetries);
+			expect(error?.details.retryAttempt).toBe(testCase.expectedRetries);
 		});
 	});
 }

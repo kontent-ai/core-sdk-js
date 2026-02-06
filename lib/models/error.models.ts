@@ -1,44 +1,33 @@
+import type { ZodError } from "zod";
 import type { AdapterResponse, HttpServiceStatus } from "../http/http.models.js";
+import type { SuccessfulHttpResponse } from "../sdk/sdk-models.js";
 import type { KontentErrorResponseData, RetryStrategyOptions } from "./core.models.js";
+import type { JsonValue } from "./json.models.js";
 
-export type ErrorReason = "invalidResponse" | "invalidUrl" | "unknown" | "invalidBody" | "notFound";
+export type ErrorReason = "invalidResponse" | "invalidUrl" | "unknown" | "invalidBody" | "notFound" | "validationFailed" | "noResponses";
 
-export type CoreSdkErrorDetails<TReason extends ErrorReason = ErrorReason> = (
-	| Details<
-			"invalidResponse",
+export type ErrorReasonData =
+	| ReasonData<"invalidResponse", ErrorWithKontentErrorResponse>
+	| ReasonData<"notFound", ErrorWithKontentErrorResponse>
+	| ReasonData<"invalidBody", ErrorWithOriginalError>
+	| ReasonData<"invalidUrl", ErrorWithOriginalError>
+	| ReasonData<"unknown", ErrorWithOriginalError>
+	| ReasonData<
+			"validationFailed",
 			{
-				readonly kontentErrorResponse: KontentErrorResponseData | undefined;
-			} & Pick<AdapterResponse<HttpServiceStatus>, "isValidResponse" | "responseHeaders" | "status" | "statusText">
-	  >
-	| Details<
-			"notFound",
-			{
-				readonly kontentErrorResponse: KontentErrorResponseData | undefined;
-			} & Pick<AdapterResponse<404>, "isValidResponse" | "responseHeaders" | "status" | "statusText">
-	  >
-	| Details<
-			"invalidBody",
-			{
-				readonly originalError: unknown;
+				readonly zodError: ZodError;
+				readonly response: SuccessfulHttpResponse<JsonValue, JsonValue>;
+				readonly url: string;
 			}
 	  >
-	| Details<
-			"invalidUrl",
+	| ReasonData<
+			"noResponses",
 			{
-				readonly originalError: unknown;
+				readonly url: string;
 			}
-	  >
-	| Details<
-			"unknown",
-			{
-				readonly originalError: unknown;
-			}
-	  >
-) & {
-	readonly reason: TReason;
-};
+	  >;
 
-export type CoreSdkError<TReason extends ErrorReason = ErrorReason> = {
+export type SdkErrorDetails = {
 	/**
 	 * The message of the error
 	 */
@@ -58,8 +47,33 @@ export type CoreSdkError<TReason extends ErrorReason = ErrorReason> = {
 	 * The number of times the request has been retried.
 	 */
 	readonly retryAttempt?: number;
-} & CoreSdkErrorDetails<TReason>;
+} & ErrorReasonData;
 
-type Details<TReason extends ErrorReason, TDetails> = {
+export class SdkError extends Error {
+	readonly details: SdkErrorDetails;
+
+	constructor(details: SdkErrorDetails) {
+		super(getErrorMessage(details));
+
+		this.details = details;
+	}
+}
+
+type ErrorWithKontentErrorResponse = {
+	readonly kontentErrorResponse: KontentErrorResponseData | undefined;
+} & Pick<AdapterResponse<HttpServiceStatus>, "isValidResponse" | "responseHeaders" | "status" | "statusText">;
+
+type ErrorWithOriginalError = {
+	readonly originalError: unknown;
+};
+
+type ReasonData<TReason extends ErrorReason, TData> = {
 	readonly reason: TReason;
-} & TDetails;
+} & TData;
+
+function getErrorMessage(error: SdkErrorDetails): string {
+	if ((error.reason === "invalidResponse" || error.reason === "notFound") && error.kontentErrorResponse) {
+		return `${error.message} ${error.kontentErrorResponse.message}`;
+	}
+	return error.message;
+}

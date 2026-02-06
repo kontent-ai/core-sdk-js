@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { getDefaultHttpService } from "../../../lib/http/http.service.js";
+import { SdkError } from "../../../lib/models/error.models.js";
 import type { ErrorReason } from "../../../lib/public_api.js";
 
 class CustomError {}
@@ -28,6 +29,10 @@ describe("Unknown error", async () => {
 		body: null,
 	});
 
+	it("Error should be an instance of SdkError", () => {
+		expect(error).toBeInstanceOf(SdkError);
+	});
+
 	it("Success should be false", () => {
 		expect(success).toBe(false);
 	});
@@ -37,12 +42,12 @@ describe("Unknown error", async () => {
 	});
 
 	it("Error reason should be unknown", () => {
-		expect(error?.reason).toBe<ErrorReason>("unknown");
+		expect(error?.details.reason).toBe<ErrorReason>("unknown");
 	});
 
 	it("Original error should be propagated", () => {
-		if (error?.reason === "unknown") {
-			expect(error.originalError).toBeInstanceOf(CustomError);
+		if (error?.details.reason === "unknown") {
+			expect(error.details.originalError).toBeInstanceOf(CustomError);
 		} else {
 			throw new Error("Error reason is not unknown");
 		}

@@ -1,4 +1,5 @@
-import type { CoreSdkError } from "./error.models.js";
+import type { SdkError } from "./error.models.js";
+import type { PickStringLiteral } from "./utility.models.js";
 
 /**
  * SDK info for identification of the SDK
@@ -20,7 +21,9 @@ export type SDKInfo = {
 	readonly host: LiteralUnion<"npmjs.com">;
 };
 
-export type CommonHeaderNames = "Retry-After" | "X-KC-SDKID" | "Authorization" | "Content-Type" | "Content-Length";
+export type CommonHeaderNames = "Retry-After" | "X-KC-SDKID" | "Authorization" | "Content-Type" | "Content-Length" | "X-Continuation";
+
+export type ContinuationHeaderName = PickStringLiteral<CommonHeaderNames, "X-Continuation">;
 
 export type Header = {
 	readonly name: string;
@@ -56,14 +59,14 @@ export type RetryStrategyOptions = {
 	 *
 	 * If not provided, the default implementation will be used.
 	 */
-	readonly canRetryError?: (error: CoreSdkError) => boolean;
+	readonly canRetryError?: (error: SdkError) => boolean;
 
 	/**
 	 * Function to determine the delay between requests in milliseconds.
 	 *
 	 * If not provided, the default implementation will be used.
 	 */
-	readonly getDelayBetweenRetriesMs?: (error: CoreSdkError) => number;
+	readonly getDelayBetweenRetriesMs?: (error: SdkError) => number;
 
 	/**
 	 * Whether to log the retry attempt.

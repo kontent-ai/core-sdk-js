@@ -2,7 +2,7 @@ import { afterAll, describe, expect, it, vi } from "vitest";
 import type { HttpServiceStatus } from "../../../lib/http/http.models.js";
 import { getDefaultHttpService } from "../../../lib/http/http.service.js";
 import type { HttpMethod } from "../../../lib/models/core.models.js";
-import { getFetchJsonMock } from "../../../lib/testkit/test.utils.js";
+import { mockGlobalFetchJsonResponse } from "../../../lib/testkit/testkit.utils.js";
 
 type ResponseData = {
 	readonly codename: string;
@@ -17,9 +17,9 @@ describe("Execute request - Success (GET)", async () => {
 		vi.resetAllMocks();
 	});
 
-	global.fetch = getFetchJsonMock<ResponseData>({
-		json: responseData,
-		status: 200,
+	mockGlobalFetchJsonResponse({
+		jsonResponse: responseData,
+		statusCode: 200,
 	});
 
 	const { success, response, error } = await getDefaultHttpService().requestAsync<ResponseData, null>({
@@ -66,12 +66,15 @@ describe("Execute request - Success (POST)", async () => {
 		codename: "x",
 	};
 
-	global.fetch = getFetchJsonMock<ResponseData>({
-		json: responseData,
-		status: 200,
+	mockGlobalFetchJsonResponse({
+		jsonResponse: responseData,
+		statusCode: 200,
 	});
 
-	const { success, response, error } = await getDefaultHttpService().requestAsync<ResponseData, { readonly id: number; readonly codename: string }>({
+	const { success, response, error } = await getDefaultHttpService().requestAsync<
+		ResponseData,
+		{ readonly id: number; readonly codename: string }
+	>({
 		url: "https://domain.com",
 		method: "POST",
 		body: requestBody,

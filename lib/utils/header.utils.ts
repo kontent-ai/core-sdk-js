@@ -8,7 +8,9 @@ export function getSdkIdHeader(info: SDKInfo): Header {
 }
 
 export function getRetryAfterHeaderValue(headers: readonly Header[]): number | undefined {
-	const retryAfterHeader = headers.find((header) => header.name.toLowerCase() === ("Retry-After" satisfies CommonHeaderNames).toLowerCase());
+	const retryAfterHeader = headers.find(
+		(header) => header.name.toLowerCase() === ("Retry-After" satisfies CommonHeaderNames).toLowerCase(),
+	);
 
 	if (!retryAfterHeader) {
 		return undefined;

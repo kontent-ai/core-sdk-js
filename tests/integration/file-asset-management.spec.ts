@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import type { HttpServiceStatus } from "../../lib/http/http.models.js";
 import { getDefaultHttpService } from "../../lib/http/http.service.js";
+import { sleepAsync } from "../../lib/utils/core.utils.js";
 import { getIntegrationTestConfig } from "../integration-tests.config.js";
-import { sleepSecondsAsync } from "../test.utils.js";
 
 const fileToUpload = new Blob(["core-sdk-integration-test"], { type: "text/plain" });
 
@@ -12,7 +12,7 @@ describe("Integration tests - Binary file / asset management", async () => {
 		retryStrategy: {
 			maxRetries: 5,
 			getDelayBetweenRetriesMs: (error) => {
-				if (error.reason === "notFound") {
+				if (error.details.reason === "notFound") {
 					return 1000;
 				}
 
@@ -20,7 +20,7 @@ describe("Integration tests - Binary file / asset management", async () => {
 			},
 			logRetryAttempt: false,
 			canRetryError: (error) => {
-				if (error.reason === "notFound") {
+				if (error.details.reason === "notFound") {
 					// we intetionally retry 404 because when we upload a file and get the URL back, the file might not yet be accessible
 					// and the request will fail with 404.
 					return true;
@@ -84,11 +84,14 @@ describe("Integration tests - Binary file / asset management", async () => {
 		});
 	};
 
-	const { success: uploadedBinaryFileSuccess, response: uploadedBinaryFileResponse, error: uploadedBinaryFileError } = await uploadBinaryFileAsync();
+	const {
+		success: uploadedBinaryFileSuccess,
+		response: uploadedBinaryFileResponse,
+		error: uploadedBinaryFileError,
+	} = await uploadBinaryFileAsync();
 
 	if (!uploadedBinaryFileSuccess) {
-		console.error(uploadedBinaryFileError);
-		throw new Error("Failed to upload binary file", { cause: uploadedBinaryFileError });
+		throw uploadedBinaryFileError;
 	}
 
 	it("Upload response status should be 200", () => {
@@ -99,10 +102,14 @@ describe("Integration tests - Binary file / asset management", async () => {
 		expect(uploadedBinaryFileResponse.data.id).toBeDefined();
 	});
 
-	const { success: addAssetSuccess, response: addAssetResponse, error: addAssetError } = await addAssetAsync(uploadedBinaryFileResponse.data.id);
+	const {
+		success: addAssetSuccess,
+		response: addAssetResponse,
+		error: addAssetError,
+	} = await addAssetAsync(uploadedBinaryFileResponse.data.id);
 
 	if (!addAssetSuccess) {
-		throw new Error("Failed to add asset", { cause: addAssetError });
+		throw addAssetError;
 	}
 
 	it("Add asset response status should be 201", () => {
@@ -115,7 +122,7 @@ describe("Integration tests - Binary file / asset management", async () => {
 	});
 
 	// It may take a bit of time for the file to be available for download
-	await sleepSecondsAsync(5);
+	await sleepAsync(5000);
 
 	const {
 		success: downloadedFileSuccess,
@@ -124,7 +131,7 @@ describe("Integration tests - Binary file / asset management", async () => {
 	} = await downloadAssetFileAsync(addAssetResponse.data.url);
 
 	if (!downloadedFileSuccess) {
-		throw new Error("Failed to download file", { cause: downloadedFileError });
+		throw downloadedFileError;
 	}
 
 	it("Download file response status should be 200", () => {
@@ -135,10 +142,14 @@ describe("Integration tests - Binary file / asset management", async () => {
 		expect(await downloadedFileResponse.data.text()).toStrictEqual(await fileToUpload.text());
 	});
 
-	const { success: deletedFileSuccess, response: deletedFileResponse, error: deletedFileError } = await deleteAssetAsync(addAssetResponse.data.id);
+	const {
+		success: deletedFileSuccess,
+		response: deletedFileResponse,
+		error: deletedFileError,
+	} = await deleteAssetAsync(addAssetResponse.data.id);
 
 	if (!deletedFileSuccess) {
-		throw new Error("Failed to delete file", { cause: deletedFileError });
+		throw deletedFileError;
 	}
 
 	it("Delete file response status should be 204", () => {

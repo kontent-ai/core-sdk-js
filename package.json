@@ -1,6 +1,6 @@
 {
 	"name": "@kontent-ai/core-sdk",
-	"version": "11.0.2",
+	"version": "12.0.0-preview.8",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/kontent-ai/kontent-core-js"
@@ -46,17 +46,22 @@
 		"clean": "tsx scripts/clean.ts",
 		"update:version": "tsx ./scripts/update-version.ts"
 	},
+	"dependencies": {
+		"zod": "4.3.6"
+	},
+	"peerDependencies": {
+		"zod": "4.3.6"
+	},
 	"devDependencies": {
-		"@kontent-ai/biome-config": "0.5.1",
-		"@kontent-ai/eslint-config": "2.2.1",
-		"@typescript-eslint/eslint-plugin": "8.51.0",
+		"@kontent-ai/biome-config": "0.7.0",
+		"@kontent-ai/eslint-config": "2.3.0",
 		"eslint": "9.39.2",
-		"@biomejs/biome": "2.3.11",
-		"@types/node": "25.0.3",
+		"@biomejs/biome": "2.3.14",
+		"@types/node": "25.2.1",
 		"chalk": "5.6.2",
 		"typescript": "5.9.3",
-		"vitest": "4.0.16",
-		"dotenv-cli": "11.0.0",
+		"vitest": "4.0.18",
+		"dotenv": "17.2.4",
 		"tsx": "4.21.0"
 	}
 }
