@@ -3,7 +3,7 @@
 	"version": "12.0.0-preview.8",
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/kontent-ai/kontent-core-js"
+		"url": "https://github.com/kontent-ai/core-sdk-js"
 	},
 	"private": false,
 	"author": "richard sustek",
