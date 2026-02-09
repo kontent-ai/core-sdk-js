@@ -1,6 +1,8 @@
-import type { Header, HttpMethod, LiteralUnionNumber, RetryStrategyOptions } from "../models/core.models.js";
+import type { Header, HttpMethod, RetryStrategyOptions } from "../models/core.models.js";
 import type { SdkError } from "../models/error.models.js";
 import type { JsonValue } from "../models/json.models.js";
+import type { LiteralUnionNumber } from "../models/utility.models.js";
+import type { SdkResponse } from "../sdk/sdk-models.js";
 
 type Success<TData> = {
 	readonly success: true;
@@ -97,6 +99,7 @@ export type AdapterResponse<TStatusCode extends HttpServiceStatus = HttpServiceS
 	readonly responseHeaders: readonly Header[];
 	readonly status: TStatusCode;
 	readonly statusText: string;
+	readonly url: string;
 };
 
 export type AdapterRequestOptions = {
@@ -104,6 +107,20 @@ export type AdapterRequestOptions = {
 	readonly method: HttpMethod;
 	readonly body: string | Blob | undefined | null;
 	readonly requestHeaders?: readonly Header[];
+};
+
+export type GetNextPageData<TPayload extends JsonValue, TExtraMetadata> = (response: SdkResponse<TPayload, TExtraMetadata>) => {
+	readonly continuationToken?: string;
+	readonly nextPageUrl?: string;
+};
+
+export type PaginationConfig = {
+	readonly maxPagesCount?: number;
+};
+
+export type Pagination<TPayload extends JsonValue, TExtraMetadata> = {
+	readonly getNextPageData: GetNextPageData<TPayload, TExtraMetadata>;
+	readonly config?: PaginationConfig;
 };
 
 /**

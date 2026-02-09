@@ -216,6 +216,7 @@ export function getDefaultHttpService(config?: DefaultHttpServiceConfig): HttpSe
 							body: options.body,
 							method: options.method,
 							adapterResponse: {
+								url: response.url,
 								isValidResponse: response.isValidResponse,
 								responseHeaders: response.responseHeaders,
 								status: response.status,

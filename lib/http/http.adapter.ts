@@ -19,6 +19,7 @@ export function getDefaultHttpAdapter(): HttpAdapter {
 				responseHeaders: sdkResponseHeaders,
 				status: response.status,
 				statusText: response.statusText,
+				url: options.url,
 				toBlobAsync: async () => await response.blob(),
 				toJsonAsync: async () => {
 					const contentTypeResponseHeader = sdkResponseHeaders

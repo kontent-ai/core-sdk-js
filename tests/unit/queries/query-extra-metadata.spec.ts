@@ -16,7 +16,6 @@ describe("Query extra metadata", async () => {
 	};
 	const { response } = await getQuery({
 		authorizationApiKey: undefined,
-		continuationToken: undefined,
 		extraMetadata: (response, data) => {
 			it("Continuation token should be the same as the one from the response", () => {
 				expect(data.continuationToken).toStrictEqual(responseContinuationToken);

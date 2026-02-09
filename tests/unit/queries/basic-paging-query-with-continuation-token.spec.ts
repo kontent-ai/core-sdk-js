@@ -4,22 +4,22 @@ import { getDefaultHttpService } from "../../../lib/public_api.js";
 import { getPagingQuery } from "../../../lib/sdk/sdk-queries.js";
 import { getTestSdkInfo, mockGlobalFetchJsonResponse } from "../../../lib/testkit/testkit.utils.js";
 
-describe("Paging query builder", async () => {
+describe("Basic paging query with continuation token", async () => {
 	afterAll(() => {
 		vi.resetAllMocks();
 	});
 
 	const requestContinuationToken = "fake-request-continuation-token";
 	const responseStatusCode = 200;
-	const responsesCount: number = 5;
-	const expectedResponsesCount: number = responsesCount + 1;
+	const nextPagesCount: number = 5;
+	const expectedResponsesCount: number = nextPagesCount + 1;
 	let responseIndex: number = 0;
 
 	const getResponseContinuationToken = (index: number) => {
 		return `responseContinuationToken-${index}`;
 	};
 
-	const mockResponse = (index: number) => {
+	const mockResponseByIndex = (index: number) => {
 		mockGlobalFetchJsonResponse({
 			jsonResponse: null,
 			statusCode: responseStatusCode,
@@ -28,19 +28,22 @@ describe("Paging query builder", async () => {
 	};
 
 	// mock initial response
-	mockResponse(0);
+	mockResponseByIndex(0);
 
 	const { success, error, responses, lastContinuationToken } = await getPagingQuery({
 		authorizationApiKey: undefined,
-		continuationToken: requestContinuationToken,
-		canFetchNextResponse: () => {
-			if (responseIndex < responsesCount) {
-				responseIndex++;
-				// mock next response
-				mockResponse(responseIndex);
-				return true;
-			}
-			return false;
+		pagination: {
+			getNextPageData: () => {
+				if (responseIndex < nextPagesCount) {
+					responseIndex++;
+					// mock next response
+					mockResponseByIndex(responseIndex);
+					return {
+						continuationToken: requestContinuationToken,
+					};
+				}
+				return {};
+			},
 		},
 		extraMetadata: () => ({}),
 		config: {
@@ -71,6 +74,6 @@ describe("Paging query builder", async () => {
 	});
 
 	it("Last continuation token should be taken from the last response", () => {
-		expect(lastContinuationToken).toEqual(getResponseContinuationToken(responsesCount));
+		expect(lastContinuationToken).toEqual(getResponseContinuationToken(nextPagesCount));
 	});
 });

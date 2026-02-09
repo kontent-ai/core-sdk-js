@@ -1,5 +1,5 @@
 import type { SdkError } from "./error.models.js";
-import type { PickStringLiteral } from "./utility.models.js";
+import type { LiteralUnion, PickStringLiteral } from "./utility.models.js";
 
 /**
  * SDK info for identification of the SDK
@@ -77,13 +77,3 @@ export type RetryStrategyOptions = {
 	 */
 	readonly logRetryAttempt?: false | ((retryAttempt: number, url: string) => void);
 };
-
-/**
- * Adds intellisense for string union type, but also allows any string
- */
-export type LiteralUnion<T extends string | undefined> = T | (string & NonNullable<unknown>);
-
-/**
- * Adds intellisense for number union type, but also allows any number
- */
-export type LiteralUnionNumber<T extends number | undefined> = T | (number & NonNullable<unknown>);

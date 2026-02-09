@@ -52,10 +52,12 @@ export function getTestHttpServiceWithJsonResponse({
 	jsonResponse,
 	statusCode,
 	continuationToken,
+	url,
 }: {
 	readonly jsonResponse: JsonValue;
 	readonly statusCode: HttpServiceStatus;
 	readonly continuationToken?: string;
+	readonly url?: string;
 }): HttpService {
 	return getDefaultHttpService({
 		adapter: {
@@ -69,6 +71,7 @@ export function getTestHttpServiceWithJsonResponse({
 					],
 					status: statusCode,
 					statusText: "",
+					url: url ?? "https://default-url.com",
 					toJsonAsync: async () => {
 						return await Promise.resolve(jsonResponse);
 					},

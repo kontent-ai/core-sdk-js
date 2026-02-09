@@ -8,7 +8,7 @@ import type { SdkError } from "../models/error.models.js";
 import type { JsonValue } from "../models/json.models.js";
 import type { Prettify } from "../models/utility.models.js";
 
-export type SdkResponseMeta<TExtraMetadata = unknown> = Pick<AdapterResponse, "status" | "responseHeaders"> & {
+export type SdkResponseMeta<TExtraMetadata = unknown> = Pick<AdapterResponse, "status" | "responseHeaders" | "url"> & {
 	readonly continuationToken?: string;
 } & TExtraMetadata;
 

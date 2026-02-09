@@ -6,10 +6,13 @@ export type {
 	DefaultHttpServiceConfig,
 	DownloadFileRequestOptions,
 	ExecuteRequestOptions,
+	GetNextPageData,
 	HttpAdapter,
 	HttpResponse,
 	HttpService,
 	HttpServiceStatus,
+	Pagination,
+	PaginationConfig,
 	UploadFileRequestOptions,
 } from "./http/http.models.js";
 export { getDefaultHttpService } from "./http/http.service.js";
@@ -18,6 +21,8 @@ export type {
 	ContinuationHeaderName,
 	Header,
 	HttpMethod,
+	KontentErrorResponseData,
+	KontentValidationError,
 	RetryStrategyOptions,
 	SDKInfo,
 } from "./models/core.models.js";
@@ -35,7 +40,11 @@ export type {
 	SdkResponseMeta,
 	SuccessfulHttpResponse,
 } from "./sdk/sdk-models.js";
-export { extractContinuationToken, getPagingQuery, getQuery } from "./sdk/sdk-queries.js";
+export {
+	extractContinuationToken,
+	getPagingQuery,
+	getQuery,
+} from "./sdk/sdk-queries.js";
 export { isKontent404Error } from "./utils/error.utils.js";
 export { getSdkIdHeader } from "./utils/header.utils.js";
 export { toRequiredRetryStrategyOptions } from "./utils/retry.utils.js";

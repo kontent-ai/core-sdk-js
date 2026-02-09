@@ -9,7 +9,6 @@ describe("Query builder", async () => {
 
 	const { success, error, response } = await getQuery({
 		authorizationApiKey: undefined,
-		continuationToken: undefined,
 		extraMetadata: () => ({}),
 		config: {
 			httpService: getTestHttpServiceWithJsonResponse({
