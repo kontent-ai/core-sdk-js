@@ -3,6 +3,7 @@
  * to keep common code and behavior consistent.
  */
 
+import { match, P } from "ts-pattern";
 import type { ZodError, ZodType } from "zod";
 import type { HttpService, Pagination } from "../http/http.models.js";
 import { getDefaultHttpService } from "../http/http.service.js";
@@ -100,46 +101,42 @@ function getNextPageData<TPayload extends JsonValue, TExtraMetadata>({
 	readonly pageIndex: number;
 	readonly response: SdkResponse<TPayload, TExtraMetadata> | undefined;
 }): NextPageData {
-	if (pagination.config?.maxPagesCount === 0) {
-		return {
-			canFetchNextResponse: false,
-		};
-	}
-
-	if (pagination.config?.maxPagesCount && pagination.config.maxPagesCount > pageIndex) {
-		return {
-			canFetchNextResponse: false,
-		};
-	}
-
-	if (!response) {
-		return {
+	return match({ pagination, pageIndex, response })
+		.returnType<NextPageData>()
+		.with({ response: undefined }, () => ({
 			canFetchNextResponse: true,
 			fetchBy: "firstRequest",
-		};
-	}
+		}))
+		.with({ pagination: { config: { maxPagesCount: 0 } } }, () => ({
+			canFetchNextResponse: false,
+		}))
+		.with({ pagination: { config: { maxPagesCount: pageIndex } } }, () => ({
+			canFetchNextResponse: false,
+		}))
+		.with({ response: P.not(undefined) }, (m) => {
+			const responsePageData = m.pagination.getNextPageData(m.response);
 
-	const nextPageData = pagination.getNextPageData(response);
-
-	if (nextPageData.continuationToken) {
-		return {
-			canFetchNextResponse: true,
-			fetchBy: "continuationToken",
-			continuationToken: nextPageData.continuationToken,
-		};
-	}
-
-	if (nextPageData.nextPageUrl) {
-		return {
-			canFetchNextResponse: true,
-			fetchBy: "nextPageUrl",
-			nextPageUrl: nextPageData.nextPageUrl,
-		};
-	}
-
-	return {
-		canFetchNextResponse: false,
-	};
+			return match(responsePageData)
+				.returnType<NextPageData>()
+				.with({ continuationToken: P.string.minLength(1) }, (m) => ({
+					canFetchNextResponse: true,
+					fetchBy: "continuationToken",
+					continuationToken: m.continuationToken,
+				}))
+				.with({ nextPageUrl: P.string.minLength(1) }, (m) => ({
+					canFetchNextResponse: true,
+					fetchBy: "nextPageUrl",
+					nextPageUrl: m.nextPageUrl,
+				}))
+				.otherwise(() => ({
+					canFetchNextResponse: false,
+				}));
+		})
+		.otherwise(() => {
+			return {
+				canFetchNextResponse: false,
+			};
+		});
 }
 
 function getHttpService(config: SdkConfig) {
@@ -209,7 +206,7 @@ async function resolvePagingQueryAsync<TPayload extends JsonValue, TBodyData ext
 
 		nextPageData = getNextPageData({
 			pagination: data.pagination,
-			pageIndex: data.pageIndex + 1,
+			pageIndex: responses.length,
 			response: response,
 		});
 	}
@@ -271,7 +268,7 @@ async function resolveQueryAsync<TPayload extends JsonValue, TBodyData extends J
 	}
 
 	if (config.responseValidation?.enable) {
-		const { isValid, error: validationError } = await validateResponseAsync(response.data, zodSchema);
+		const { isValid, error: validationError } = await validateResponseSchemaAsync(response.data, zodSchema);
 		if (!isValid) {
 			return {
 				success: false,
@@ -305,7 +302,7 @@ async function resolveQueryAsync<TPayload extends JsonValue, TBodyData extends J
 	return result;
 }
 
-async function validateResponseAsync<TPayload extends JsonValue>(
+async function validateResponseSchemaAsync<TPayload extends JsonValue>(
 	data: TPayload,
 	zodSchema: ZodType<TPayload>,
 ): Promise<
@@ -332,6 +329,6 @@ async function validateResponseAsync<TPayload extends JsonValue>(
 	};
 }
 
-function isValidNextPage(nextPageData: NextPageData | undefined): nextPageData is ValidNextPageData {
-	return nextPageData?.canFetchNextResponse ?? false;
+function isValidNextPage(nextPageData: NextPageData): nextPageData is ValidNextPageData {
+	return nextPageData.canFetchNextResponse;
 }

@@ -47,7 +47,8 @@
 		"update:version": "tsx ./scripts/update-version.ts"
 	},
 	"dependencies": {
-		"zod": "4.3.6"
+		"zod": "4.3.6",
+		"ts-pattern": "5.9.0"
 	},
 	"peerDependencies": {
 		"zod": "4.3.6"
