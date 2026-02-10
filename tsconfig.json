@@ -15,11 +15,6 @@
 		"noEmit": true,
 		"declaration": true,
 		"sourceMap": true,
-		"importHelpers": true,
-
-		// Decorators
-		"experimentalDecorators": true,
-		"emitDecoratorMetadata": true,
 
 		// Strictness + type safety
 		"strict": true,
@@ -40,6 +35,6 @@
 		"skipLibCheck": true,
 		"typeRoots": ["./node_modules/@types"]
 	},
-	"include": ["lib/**/*", "tests/**/*", "eslint.config.js", "vitest.config.ts", "sample/**/*", "scripts/**/*"],
+	"include": ["lib/**/*", "tests/**/*", "scripts/**/*", "eslint.config.mjs", "vitest-unit.config.ts", "vitest-integration.config.ts"],
 	"exclude": ["node_modules"]
 }
