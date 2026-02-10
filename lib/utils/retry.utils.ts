@@ -1,3 +1,4 @@
+import { match, P } from "ts-pattern";
 import type { HttpResponse } from "../http/http.models.js";
 import type { Header, HttpMethod, RetryStrategyOptions } from "../models/core.models.js";
 import type { SdkError } from "../models/error.models.js";
@@ -17,23 +18,23 @@ type RetryResult =
 
 const defaultMaxRetries: NonNullable<RetryStrategyOptions["maxRetries"]> = 3;
 const getDefaultDelayBetweenRetriesMs: NonNullable<RetryStrategyOptions["getDelayBetweenRetriesMs"]> = (error) => {
-	if (error.details.reason === "notFound" || error.details.reason === "invalidResponse") {
-		return getRetryFromHeaderMs({ error });
-	}
-
-	return 0;
+	return match(error)
+		.returnType<number>()
+		.with({ details: { reason: "invalidResponse" } }, () => getRetryMsFromHeaders({ error }))
+		.otherwise(() => 0);
 };
 const defaultCanRetryError: NonNullable<RetryStrategyOptions["canRetryError"]> = (error) => {
-	if (error.details.reason === "invalidResponse") {
-		if (error.details.kontentErrorResponse) {
-			// The request is clearly invalid as we got an error response from the API
-			return false;
-		}
+	return match(error)
+		.returnType<boolean>()
+		.with({ details: { reason: "invalidResponse" } }, (m) => {
+			if (m.details.kontentErrorResponse) {
+				// The request is clearly invalid as we got an error response from the API
+				return false;
+			}
 
-		return error.details.status >= 500 || error.details.status === 429;
-	}
-
-	return true;
+			return m.details.status >= 500 || m.details.status === 429;
+		})
+		.otherwise(() => true);
 };
 
 export async function runWithRetryAsync<TResponse extends JsonValue | Blob, TBodyData extends JsonValue | Blob>(data: {
@@ -125,34 +126,35 @@ function getRetryResult({
 	readonly error: SdkError;
 	readonly options: Required<RetryStrategyOptions>;
 }): RetryResult {
-	if (retryAttempt >= options.maxRetries) {
-		return {
-			canRetry: false,
-		};
-	}
-
-	if (!options.canRetryError(error)) {
-		return {
-			canRetry: false,
-		};
-	}
-
-	return {
-		canRetry: true,
-		retryInMs: options.getDelayBetweenRetriesMs(error),
-	};
+	return match({ retryAttempt, options, error })
+		.returnType<RetryResult>()
+		.when(
+			(m) => m.retryAttempt >= m.options.maxRetries,
+			() => ({
+				canRetry: false,
+			}),
+		)
+		.when(
+			(m) => !m.options.canRetryError(m.error),
+			() => ({
+				canRetry: false,
+			}),
+		)
+		.otherwise((m) => ({
+			canRetry: true,
+			retryInMs: m.options.getDelayBetweenRetriesMs(m.error),
+		}));
 }
 
-function getRetryFromHeaderMs({ error }: { readonly error: SdkError }): number {
-	if (error.details.reason !== "invalidResponse" && error.details.reason !== "notFound") {
-		return 0;
-	}
-
-	const retryAfterHeaderValue = getRetryAfterHeaderValue(error.details.responseHeaders);
-
-	if (retryAfterHeaderValue) {
-		return retryAfterHeaderValue * 1000;
-	}
-
-	return 0;
+function getRetryMsFromHeaders({ error }: { readonly error: SdkError }): number {
+	return match(error)
+		.returnType<number>()
+		.with({ details: { responseHeaders: P.nonNullable } }, (m) => {
+			const retryAfterHeaderValue = getRetryAfterHeaderValue(m.details.responseHeaders);
+			if (retryAfterHeaderValue) {
+				return retryAfterHeaderValue * 1000;
+			}
+			return 0;
+		})
+		.otherwise(() => 0);
 }

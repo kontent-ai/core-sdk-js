@@ -1,3 +1,4 @@
+import { match, P } from "ts-pattern";
 import type { ZodError } from "zod";
 import type { AdapterResponse, HttpServiceStatus } from "../http/http.models.js";
 import type { SuccessfulHttpResponse } from "../sdk/sdk-models.js";
@@ -72,8 +73,11 @@ type ReasonData<TReason extends ErrorReason, TData> = {
 } & TData;
 
 function getErrorMessage(error: SdkErrorDetails): string {
-	if ((error.reason === "invalidResponse" || error.reason === "notFound") && error.kontentErrorResponse) {
-		return `${error.message} ${error.kontentErrorResponse.message}`;
-	}
-	return error.message;
+	return match(error)
+		.returnType<string>()
+		.with(
+			{ reason: P.union("invalidResponse", "notFound"), kontentErrorResponse: P.nonNullable },
+			(m) => `${m.message} ${m.kontentErrorResponse.message}`,
+		)
+		.otherwise(() => error.message);
 }

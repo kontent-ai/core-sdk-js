@@ -1,8 +1,9 @@
+import { match, P } from "ts-pattern";
 import type { CommonHeaderNames, Header, KontentErrorResponseData, RetryStrategyOptions } from "../models/core.models.js";
 import type { SdkError, SdkErrorDetails } from "../models/error.models.js";
 import type { JsonValue } from "../models/json.models.js";
 import { sdkInfo } from "../sdk-info.js";
-import { isNotUndefined } from "../utils/core.utils.js";
+import { isBlob, isNotUndefined } from "../utils/core.utils.js";
 import { createSdkError, getErrorMessage } from "../utils/error.utils.js";
 import { getSdkIdHeader } from "../utils/header.utils.js";
 import { runWithRetryAsync, toRequiredRetryStrategyOptions } from "../utils/retry.utils.js";
@@ -60,38 +61,36 @@ export function getDefaultHttpService(config?: DefaultHttpServiceConfig): HttpSe
 				};
 
 				const getRequestBody = (): Result<string | Blob | null, SdkError> => {
-					if (options.body === null) {
-						return {
+					return match(options.body)
+						.returnType<Result<string | Blob | null, SdkError>>()
+						.with(P.nullish, () => ({
 							success: true,
 							data: null,
-						};
-					}
-
-					if (options.body instanceof Blob) {
-						return {
+						}))
+						.when(isBlob, (blob) => ({
 							success: true,
-							data: options.body,
-						};
-					}
+							data: blob,
+						}))
+						.otherwise((m) => {
+							const { success: isParseSuccess, data: parsedBody, error: parseError } = tryCatch(() => JSON.stringify(m));
 
-					const { success, data: parsedBody, error } = tryCatch(() => JSON.stringify(options.body));
+							if (!isParseSuccess) {
+								return {
+									success: false,
+									error: createSdkError({
+										message: "Failed to stringify body of the response.",
+										url: options.url,
+										reason: "invalidBody",
+										originalError: parseError,
+									}),
+								};
+							}
 
-					if (!success) {
-						return {
-							success: false,
-							error: createSdkError({
-								message: "Failed to stringify body of request.",
-								url: options.url,
-								reason: "invalidBody",
-								originalError: error,
-							}),
-						};
-					}
-
-					return {
-						success: true,
-						data: parsedBody,
-					};
+							return {
+								success: true,
+								data: parsedBody,
+							};
+						});
 				};
 
 				const getUrl = (): Result<URL, SdkError> => {
@@ -170,8 +169,9 @@ export function getDefaultHttpService(config?: DefaultHttpServiceConfig): HttpSe
 						url: options.url,
 					};
 
-					if (response.status === 404) {
-						const error404: SdkErrorDetails = {
+					return await match(response)
+						.returnType<Promise<SdkErrorDetails>>()
+						.with({ status: 404 }, async () => ({
 							...sharedErrorData,
 							reason: "notFound",
 							isValidResponse: response.isValidResponse,
@@ -179,22 +179,16 @@ export function getDefaultHttpService(config?: DefaultHttpServiceConfig): HttpSe
 							status: 404,
 							statusText: response.statusText,
 							kontentErrorResponse: await getKontentErrorDataAsync(response),
-						};
-
-						return error404;
-					}
-
-					const error: SdkErrorDetails = {
-						...sharedErrorData,
-						reason: "invalidResponse",
-						isValidResponse: response.isValidResponse,
-						responseHeaders: response.responseHeaders,
-						status: response.status,
-						statusText: response.statusText,
-						kontentErrorResponse: await getKontentErrorDataAsync(response),
-					};
-
-					return error;
+						}))
+						.otherwise(async () => ({
+							...sharedErrorData,
+							reason: "invalidResponse",
+							isValidResponse: response.isValidResponse,
+							responseHeaders: response.responseHeaders,
+							status: response.status,
+							statusText: response.statusText,
+							kontentErrorResponse: await getKontentErrorDataAsync(response),
+						}));
 				};
 
 				const getErrorForInvalidResponseAsync = async (response: AdapterResponse): Promise<SdkError> => {
@@ -291,12 +285,8 @@ async function getKontentErrorDataAsync(response: AdapterResponse): Promise<Kont
 }
 
 function getRequestHeaders(headers: readonly Header[] | undefined, body: Blob | JsonValue): readonly Header[] {
-	const existingContentTypeHeader = headers?.find(
-		(header) => header.name.toLowerCase() === ("Content-Type" satisfies CommonHeaderNames).toLowerCase(),
-	);
-	const existingSdkVersionHeader = headers?.find(
-		(header) => header.name.toLowerCase() === ("X-KC-SDKID" satisfies CommonHeaderNames).toLowerCase(),
-	);
+	const existingContentTypeHeader = getExistingContentTypeHeader(headers ?? []);
+	const existingSdkVersionHeader = getExistingSdkVersionHeader(headers ?? []);
 
 	const contentTypeHeader: Header | undefined = existingContentTypeHeader
 		? undefined
@@ -322,4 +312,12 @@ function getRequestHeaders(headers: readonly Header[] | undefined, body: Blob | 
 			: undefined;
 
 	return [...(headers ?? []), contentTypeHeader, contentLengthHeader, sdkVersionHeader].filter(isNotUndefined);
+}
+
+function getExistingContentTypeHeader(headers: readonly Header[]): Header | undefined {
+	return headers.find((header) => header.name.toLowerCase() === ("Content-Type" satisfies CommonHeaderNames).toLowerCase());
+}
+
+function getExistingSdkVersionHeader(headers: readonly Header[]): Header | undefined {
+	return headers.find((header) => header.name.toLowerCase() === ("X-KC-SDKID" satisfies CommonHeaderNames).toLowerCase());
 }
