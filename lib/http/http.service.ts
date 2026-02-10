@@ -60,6 +60,9 @@ export function getDefaultHttpService(config?: DefaultHttpServiceConfig): HttpSe
 					return getRequestHeaders([...(config?.requestHeaders ?? []), ...(options.requestHeaders ?? [])], options.body);
 				};
 
+				const requestHeaders = getCombinedRequestHeaders();
+				const retryStrategyOptions: Required<RetryStrategyOptions> = toRequiredRetryStrategyOptions(config?.retryStrategy);
+
 				const getRequestBody = (): Result<string | Blob | null, SdkError> => {
 					return match(options.body)
 						.returnType<Result<string | Blob | null, SdkError>>()
@@ -113,9 +116,6 @@ export function getDefaultHttpService(config?: DefaultHttpServiceConfig): HttpSe
 						data: parsedUrl,
 					};
 				};
-
-				const requestHeaders = getCombinedRequestHeaders();
-				const retryStrategyOptions: Required<RetryStrategyOptions> = toRequiredRetryStrategyOptions(config?.retryStrategy);
 
 				const withRetryAsync = async (
 					funcAsync: () => Promise<HttpResponse<TResponseData, TBodyData>>,
