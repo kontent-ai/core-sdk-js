@@ -5,9 +5,18 @@ import type { SuccessfulHttpResponse } from "../sdk/sdk-models.js";
 import type { KontentErrorResponseData, RetryStrategyOptions } from "./core.models.js";
 import type { JsonValue } from "./json.models.js";
 
-export type ErrorReason = "invalidResponse" | "invalidUrl" | "unknown" | "invalidBody" | "notFound" | "validationFailed" | "noResponses";
+export type ErrorReason =
+	| "unauthorized"
+	| "invalidResponse"
+	| "invalidUrl"
+	| "unknown"
+	| "invalidBody"
+	| "notFound"
+	| "validationFailed"
+	| "noResponses";
 
 export type ErrorReasonData =
+	| ReasonData<"unauthorized", ErrorWithKontentErrorResponse>
 	| ReasonData<"invalidResponse", ErrorWithKontentErrorResponse>
 	| ReasonData<"notFound", ErrorWithKontentErrorResponse>
 	| ReasonData<"invalidBody", ErrorWithOriginalError>

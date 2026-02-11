@@ -41,8 +41,8 @@ export type KontentValidationError = {
 
 export type KontentErrorResponseData = {
 	readonly message: string;
-	readonly requestId?: string;
-	readonly error_code?: number;
+	readonly request_id: string;
+	readonly error_code: number;
 	readonly validation_errors?: readonly KontentValidationError[];
 };
 

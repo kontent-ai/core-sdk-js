@@ -25,6 +25,7 @@ export function getIntegrationTestConfig() {
 			getUploadAssetBinaryFileUrl: (filename: string) => `${baseMapiUrl}/files/${filename}`,
 			getDeleteAssetUrl: (assetId: string) => `${assetsUrl}/${assetId}`,
 			addAssetUrl: assetsUrl,
+			listItemsUrl: `${baseMapiUrl}/items`,
 		},
 	};
 }

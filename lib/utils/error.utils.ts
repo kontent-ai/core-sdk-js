@@ -1,6 +1,7 @@
 import type { AdapterResponse } from "../http/http.models.js";
 import type { HttpMethod, KontentErrorResponseData, KontentValidationError } from "../models/core.models.js";
 import { SdkError, type SdkErrorDetails } from "../models/error.models.js";
+import type { JsonValue } from "../models/json.models.js";
 import { isNotUndefined } from "./core.utils.js";
 
 export function createSdkError(details: SdkErrorDetails): SdkError {
@@ -24,6 +25,26 @@ export function getErrorMessage({
 }): string {
 	const details = kontentErrorResponse ? getKontentErrorResponseMessage(adapterResponse, kontentErrorResponse) : undefined;
 	return `Failed to execute '${method}' request '${url}'.${details ? ` ${details}` : ""}`;
+}
+
+/**
+ * Checks if the given JSON value is a Kontent API error response data.
+ */
+export function isKontentErrorResponseData(json: JsonValue): json is KontentErrorResponseData {
+	if (!json) {
+		return false;
+	}
+
+	if (
+		json instanceof Object &&
+		("message" satisfies keyof KontentErrorResponseData) in json &&
+		("request_id" satisfies keyof KontentErrorResponseData) in json &&
+		("error_code" satisfies keyof KontentErrorResponseData) in json
+	) {
+		return true;
+	}
+
+	return false;
 }
 
 function getValidationErrorMessage(validationErrors?: readonly KontentValidationError[]): string | undefined {

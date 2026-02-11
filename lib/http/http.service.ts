@@ -4,7 +4,7 @@ import type { SdkError, SdkErrorDetails } from "../models/error.models.js";
 import type { JsonValue } from "../models/json.models.js";
 import { sdkInfo } from "../sdk-info.js";
 import { isBlob, isNotUndefined } from "../utils/core.utils.js";
-import { createSdkError, getErrorMessage } from "../utils/error.utils.js";
+import { createSdkError, getErrorMessage, isKontentErrorResponseData } from "../utils/error.utils.js";
 import { getSdkIdHeader } from "../utils/header.utils.js";
 import { runWithRetryAsync, toRequiredRetryStrategyOptions } from "../utils/retry.utils.js";
 import { type Result, tryCatch, tryCatchAsync } from "../utils/try.utils.js";
@@ -171,14 +171,14 @@ export function getDefaultHttpService(config?: DefaultHttpServiceConfig): HttpSe
 
 					return await match(response)
 						.returnType<Promise<SdkErrorDetails>>()
-						.with({ status: 404 }, async () => ({
+						.with({ status: P.union(401, 404) }, async (m) => ({
 							...sharedErrorData,
-							reason: "notFound",
-							isValidResponse: response.isValidResponse,
-							responseHeaders: response.responseHeaders,
-							status: 404,
-							statusText: response.statusText,
-							kontentErrorResponse: await getKontentErrorDataAsync(response),
+							reason: m.status === 401 ? "unauthorized" : "notFound",
+							isValidResponse: m.isValidResponse,
+							responseHeaders: m.responseHeaders,
+							status: m.status,
+							statusText: m.statusText,
+							kontentErrorResponse: await getKontentErrorDataAsync(m),
 						}))
 						.otherwise(async () => ({
 							...sharedErrorData,
@@ -263,39 +263,32 @@ export function getDefaultHttpService(config?: DefaultHttpServiceConfig): HttpSe
 }
 
 async function getKontentErrorDataAsync(response: AdapterResponse): Promise<KontentErrorResponseData | undefined> {
-	if (
+	if (isApplicationJsonResponseType(response)) {
+		const json = await response.toJsonAsync();
+
+		if (isKontentErrorResponseData(json)) {
+			return json;
+		}
+	}
+
+	return undefined;
+}
+
+function isApplicationJsonResponseType(response: AdapterResponse): boolean {
+	return (
 		response.responseHeaders
 			.find((header) => header.name.toLowerCase() === ("Content-Type" satisfies CommonHeaderNames).toLowerCase())
 			?.value.toLowerCase()
-			.includes("application/json")
-	) {
-		const json = (await response.toJsonAsync()) as Partial<KontentErrorResponseData>;
-
-		// We check the existence of 'message' property which should always be set when the error is a Kontent API error
-		if (!json.message) {
-			return undefined;
-		}
-
-		return {
-			...json,
-			message: json.message,
-		};
-	}
-	return undefined;
+			.includes("application/json") ?? false
+	);
 }
 
 function getRequestHeaders(headers: readonly Header[] | undefined, body: Blob | JsonValue): readonly Header[] {
 	const existingContentTypeHeader = getExistingContentTypeHeader(headers ?? []);
 	const existingSdkVersionHeader = getExistingSdkVersionHeader(headers ?? []);
 
-	const contentTypeHeader: Header | undefined = existingContentTypeHeader
-		? undefined
-		: {
-				name: "Content-Type" satisfies CommonHeaderNames,
-				value: body instanceof Blob ? body.type : "application/json",
-			};
-
-	const sdkVersionHeader: Header | undefined = existingSdkVersionHeader
+	const contentTypeHeader = existingContentTypeHeader ? undefined : createDefaultContentTypeHeader(body);
+	const sdkVersionHeader = existingSdkVersionHeader
 		? undefined
 		: getSdkIdHeader({
 				host: sdkInfo.host,
@@ -303,15 +296,23 @@ function getRequestHeaders(headers: readonly Header[] | undefined, body: Blob | 
 				version: sdkInfo.version,
 			});
 
-	const contentLengthHeader: Header | undefined =
-		body instanceof Blob
-			? {
-					name: "Content-Length" satisfies CommonHeaderNames,
-					value: body.size.toString(),
-				}
-			: undefined;
+	const contentLengthHeader = body instanceof Blob ? createDefaultContentLengthHeader(body) : undefined;
 
 	return [...(headers ?? []), contentTypeHeader, contentLengthHeader, sdkVersionHeader].filter(isNotUndefined);
+}
+
+function createDefaultContentTypeHeader(body: Blob | JsonValue): Header {
+	return {
+		name: "Content-Type" satisfies CommonHeaderNames,
+		value: body instanceof Blob ? body.type : "application/json",
+	};
+}
+
+function createDefaultContentLengthHeader(body: Blob): Header {
+	return {
+		name: "Content-Length" satisfies CommonHeaderNames,
+		value: body.size.toString(),
+	};
 }
 
 function getExistingContentTypeHeader(headers: readonly Header[]): Header | undefined {

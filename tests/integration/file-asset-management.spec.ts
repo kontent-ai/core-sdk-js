@@ -9,6 +9,7 @@ const fileToUpload = new Blob(["core-sdk-integration-test"], { type: "text/plain
 describe("Integration tests - Binary file / asset management", async () => {
 	const config = getIntegrationTestConfig();
 	const httpService = getDefaultHttpService({
+		requestHeaders: config.getMapiAuthorizationHeaders(),
 		retryStrategy: {
 			maxRetries: 5,
 			getDelayBetweenRetriesMs: (error) => {
@@ -38,7 +39,6 @@ describe("Integration tests - Binary file / asset management", async () => {
 			url: config.urls.getUploadAssetBinaryFileUrl("core-sdk.txt"),
 			body: fileToUpload,
 			method: "POST",
-			requestHeaders: config.getMapiAuthorizationHeaders(),
 		});
 	};
 
@@ -65,7 +65,6 @@ describe("Integration tests - Binary file / asset management", async () => {
 				title: "Test file",
 			},
 			method: "POST",
-			requestHeaders: config.getMapiAuthorizationHeaders(),
 		});
 	};
 
@@ -74,7 +73,6 @@ describe("Integration tests - Binary file / asset management", async () => {
 			url: config.urls.getDeleteAssetUrl(assetId),
 			body: null,
 			method: "DELETE",
-			requestHeaders: config.getMapiAuthorizationHeaders(),
 		});
 	};
 
