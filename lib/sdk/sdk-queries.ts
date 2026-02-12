@@ -14,31 +14,33 @@ import { createSdkError } from "../utils/error.utils.js";
 import { getSdkIdHeader } from "../utils/header.utils.js";
 import type { PagingQuery, Query, QueryResponse, SdkConfig, SuccessfulHttpResponse } from "./sdk-models.js";
 
-type QueryPromiseResult<TData extends JsonValue, TMeta = EmptyObject> = ReturnType<Pick<Query<TData, TMeta>, "toPromise">["toPromise"]>;
+type QueryPromiseResult<TResponseData extends JsonValue, TMeta = EmptyObject> = ReturnType<
+	Pick<Query<TResponseData, TMeta>, "toPromise">["toPromise"]
+>;
 
-type PagingQueryPromiseResult<TData extends JsonValue, TMeta = EmptyObject> = ReturnType<
-	Pick<PagingQuery<TData, TMeta>, "toAllPromise">["toAllPromise"]
+type PagingQueryPromiseResult<TResponseData extends JsonValue, TMeta = EmptyObject> = ReturnType<
+	Pick<PagingQuery<TResponseData, TMeta>, "toAllPromise">["toAllPromise"]
 >;
 
 type MetadataContextData = {
 	readonly continuationToken?: string;
 };
 
-type MetadataMapper<TData extends JsonValue, TRequestBody extends RequestBody, TMeta> = (
-	response: SuccessfulHttpResponse<TData, TRequestBody>,
+type MetadataMapper<TResponseData extends JsonValue, TRequestBody extends RequestBody, TMeta> = (
+	response: SuccessfulHttpResponse<TResponseData, TRequestBody>,
 	data: MetadataContextData,
 ) => TMeta;
-type MetadataMapperConfig<TData extends JsonValue, TRequestBody extends RequestBody, TMeta> = {
-	readonly mapMetadata: MetadataMapper<TData, TRequestBody, TMeta>;
+type MetadataMapperConfig<TResponseData extends JsonValue, TRequestBody extends RequestBody, TMeta> = {
+	readonly mapMetadata: MetadataMapper<TResponseData, TRequestBody, TMeta>;
 };
-type ResolveQueryData<TData extends JsonValue, TRequestBody extends RequestBody, TMeta> = {
+type ResolveQueryData<TResponseData extends JsonValue, TRequestBody extends RequestBody, TMeta> = {
 	readonly pagination: NextPageStateWithRequest;
 	readonly request: Parameters<HttpService["requestAsync"]>[number] & { readonly body: TRequestBody };
 	readonly config: SdkConfig;
-	readonly zodSchema: ZodType<TData>;
+	readonly zodSchema: ZodType<TResponseData>;
 	readonly sdkInfo: SDKInfo;
 	readonly authorizationApiKey: string | undefined;
-} & MetadataMapperConfig<TData, TRequestBody, TMeta>;
+} & MetadataMapperConfig<TResponseData, TRequestBody, TMeta>;
 
 type NoNextPageState = {
 	readonly hasNextPage: false;
@@ -66,12 +68,12 @@ type NextPageStateWithRequest =
 
 type NextPageState = NextPageStateWithRequest | NoNextPageState;
 
-export function createQuery<TData extends JsonValue, TRequestBody extends RequestBody, TMeta = EmptyObject>(
-	data: Omit<ResolveQueryData<TData, TRequestBody, TMeta>, "continuationToken" | "pagination" | "pageIndex">,
-): Pick<Query<TData, TMeta>, "toPromise"> {
+export function createQuery<TResponseData extends JsonValue, TRequestBody extends RequestBody, TMeta = EmptyObject>(
+	data: Omit<ResolveQueryData<TResponseData, TRequestBody, TMeta>, "continuationToken" | "pagination" | "pageIndex">,
+): Pick<Query<TResponseData, TMeta>, "toPromise"> {
 	return {
 		toPromise: async () => {
-			return await resolveQueryAsync<TData, TRequestBody, TMeta>({
+			return await resolveQueryAsync<TResponseData, TRequestBody, TMeta>({
 				...data,
 				pagination: {
 					hasNextPage: true,
@@ -82,15 +84,15 @@ export function createQuery<TData extends JsonValue, TRequestBody extends Reques
 	};
 }
 
-export function createPagingQuery<TData extends JsonValue, TRequestBody extends RequestBody, TMeta = EmptyObject>(
-	data: Omit<ResolveQueryData<TData, TRequestBody, TMeta>, "pagination" | "pageIndex"> & {
-		readonly pagination: Pagination<TData, TMeta>;
+export function createPagingQuery<TResponseData extends JsonValue, TRequestBody extends RequestBody, TMeta = EmptyObject>(
+	data: Omit<ResolveQueryData<TResponseData, TRequestBody, TMeta>, "pagination" | "pageIndex"> & {
+		readonly pagination: Pagination<TResponseData, TMeta>;
 	},
-): Pick<PagingQuery<TData, TMeta>, "toPromise" | "toAllPromise"> {
+): Pick<PagingQuery<TResponseData, TMeta>, "toPromise" | "toAllPromise"> {
 	return {
-		...createQuery<TData, TRequestBody, TMeta>(data),
+		...createQuery<TResponseData, TRequestBody, TMeta>(data),
 		toAllPromise: async () => {
-			return await resolvePagingQueryAsync<TData, TRequestBody, TMeta>({
+			return await resolvePagingQueryAsync<TResponseData, TRequestBody, TMeta>({
 				...data,
 				pageIndex: 0,
 			});
@@ -103,14 +105,14 @@ export function extractContinuationToken(responseHeaders: readonly Header[]): st
 		?.value;
 }
 
-function resolveNextPageState<TData extends JsonValue, TMeta>({
+function resolveNextPageState<TResponseData extends JsonValue, TMeta>({
 	pagination,
 	pageIndex,
 	response,
 }: {
-	readonly pagination: Pagination<TData, TMeta>;
+	readonly pagination: Pagination<TResponseData, TMeta>;
 	readonly pageIndex: number;
-	readonly response: QueryResponse<TData, TMeta> | undefined;
+	readonly response: QueryResponse<TResponseData, TMeta> | undefined;
 }): NextPageState {
 	return match({ pagination, pageIndex, response })
 		.returnType<NextPageState>()
@@ -191,13 +193,13 @@ function getCombinedRequestHeaders({
 	];
 }
 
-async function resolvePagingQueryAsync<TData extends JsonValue, TRequestBody extends RequestBody, TMeta = EmptyObject>(
-	data: Omit<ResolveQueryData<TData, TRequestBody, TMeta>, "pagination"> & {
-		readonly pagination: Pagination<TData, TMeta>;
+async function resolvePagingQueryAsync<TResponseData extends JsonValue, TRequestBody extends RequestBody, TMeta = EmptyObject>(
+	data: Omit<ResolveQueryData<TResponseData, TRequestBody, TMeta>, "pagination"> & {
+		readonly pagination: Pagination<TResponseData, TMeta>;
 		readonly pageIndex: number;
 	},
-): Promise<PagingQueryPromiseResult<TData, TMeta>> {
-	const responses: QueryResponse<TData, TMeta>[] = [];
+): Promise<PagingQueryPromiseResult<TResponseData, TMeta>> {
+	const responses: QueryResponse<TResponseData, TMeta>[] = [];
 	let nextPageState: NextPageState = resolveNextPageState({
 		pagination: data.pagination,
 		pageIndex: data.pageIndex,
@@ -205,7 +207,7 @@ async function resolvePagingQueryAsync<TData extends JsonValue, TRequestBody ext
 	});
 
 	while (isNextPageAvailable(nextPageState)) {
-		const { success, response, error } = await resolveQueryAsync<TData, TRequestBody, TMeta>({
+		const { success, response, error } = await resolveQueryAsync<TResponseData, TRequestBody, TMeta>({
 			...data,
 			pagination: nextPageState,
 		});
@@ -226,7 +228,7 @@ async function resolvePagingQueryAsync<TData extends JsonValue, TRequestBody ext
 		});
 	}
 
-	const lastResponse: QueryResponse<TData, TMeta> | undefined = responses.at(-1);
+	const lastResponse: QueryResponse<TResponseData, TMeta> | undefined = responses.at(-1);
 
 	if (!lastResponse) {
 		return {
@@ -246,7 +248,7 @@ async function resolvePagingQueryAsync<TData extends JsonValue, TRequestBody ext
 	};
 }
 
-async function resolveQueryAsync<TData extends JsonValue, TRequestBody extends RequestBody, TMeta>({
+async function resolveQueryAsync<TResponseData extends JsonValue, TRequestBody extends RequestBody, TMeta>({
 	config,
 	request,
 	mapMetadata,
@@ -254,8 +256,8 @@ async function resolveQueryAsync<TData extends JsonValue, TRequestBody extends R
 	sdkInfo,
 	authorizationApiKey,
 	pagination,
-}: ResolveQueryData<TData, TRequestBody, TMeta>): QueryPromiseResult<TData, TMeta> {
-	const { success, response, error } = await getHttpService(config).requestAsync<TData, TRequestBody>({
+}: ResolveQueryData<TResponseData, TRequestBody, TMeta>): QueryPromiseResult<TResponseData, TMeta> {
+	const { success, response, error } = await getHttpService(config).requestAsync<TResponseData, TRequestBody>({
 		body: request.body,
 		url: pagination?.nextPageUrl ?? request.url,
 		method: request.method,
@@ -292,7 +294,7 @@ async function resolveQueryAsync<TData extends JsonValue, TRequestBody extends R
 
 	const continuationTokenFromResponse = extractContinuationToken(response.adapterResponse.responseHeaders);
 
-	const result: Awaited<QueryPromiseResult<TData, TMeta>> = {
+	const result: Awaited<QueryPromiseResult<TResponseData, TMeta>> = {
 		success: true,
 		response: {
 			data: response.data,
@@ -309,9 +311,9 @@ async function resolveQueryAsync<TData extends JsonValue, TRequestBody extends R
 	return result;
 }
 
-async function validateResponseSchemaAsync<TData extends JsonValue>(
-	data: TData,
-	zodSchema: ZodType<TData>,
+async function validateResponseSchemaAsync<TResponseData extends JsonValue>(
+	data: TResponseData,
+	zodSchema: ZodType<TResponseData>,
 ): Promise<
 	| {
 			readonly isValid: true;

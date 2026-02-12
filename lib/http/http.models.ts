@@ -116,7 +116,7 @@ export type AdapterRequestOptions = {
 	readonly requestHeaders?: readonly Header[];
 };
 
-export type GetNextPageData<TData extends JsonValue, TMeta> = (response: QueryResponse<TData, TMeta>) => {
+export type GetNextPageData<TResponseData extends JsonValue, TMeta> = (response: QueryResponse<TResponseData, TMeta>) => {
 	readonly continuationToken?: string;
 	readonly nextPageUrl?: string;
 };
@@ -125,8 +125,8 @@ export type PaginationConfig = {
 	readonly maxPagesCount?: number;
 };
 
-export type Pagination<TData extends JsonValue, TMeta> = {
-	readonly getNextPageData: GetNextPageData<TData, TMeta>;
+export type Pagination<TResponseData extends JsonValue, TMeta> = {
+	readonly getNextPageData: GetNextPageData<TResponseData, TMeta>;
 	readonly config?: PaginationConfig;
 };
 

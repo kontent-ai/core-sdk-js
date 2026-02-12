@@ -11,8 +11,8 @@ export type QueryResponseMeta<TMeta = unknown> = Pick<AdapterResponse, "status" 
 	readonly continuationToken?: string;
 } & TMeta;
 
-export type QueryResponse<TData, TMeta = unknown> = {
-	readonly data: TData;
+export type QueryResponse<TResponseData, TMeta = unknown> = {
+	readonly data: TResponseData;
 	readonly meta: QueryResponseMeta<TMeta>;
 };
 
@@ -47,13 +47,13 @@ export type SdkConfig = {
 	};
 };
 
-export type Query<TData, TMeta = unknown> = {
+export type Query<TResponseData, TMeta = unknown> = {
 	toUrl(): string;
-	toPromise(): Promise<QueryResult<QueryResponse<TData, TMeta>>>;
+	toPromise(): Promise<QueryResult<QueryResponse<TResponseData, TMeta>>>;
 };
 
-export type PagingQuery<TData, TMeta = unknown> = Query<TData, TMeta> & {
-	toAllPromise(): Promise<PagingQueryResult<QueryResponse<TData, TMeta>>>;
+export type PagingQuery<TResponseData, TMeta = unknown> = Query<TResponseData, TMeta> & {
+	toAllPromise(): Promise<PagingQueryResult<QueryResponse<TResponseData, TMeta>>>;
 };
 
 export type SuccessfulHttpResponse<TResponseData extends ResponseData, TRequestBody extends RequestBody> = Prettify<
