@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [10.12.2](https://github.com/kontent-ai/kontent-core-js/compare/v10.12.1...v10.12.2) (2026-02-12)
+
+
+### Bug Fixes
+
+* updates axios & updates karma ([8585766](https://github.com/kontent-ai/kontent-core-js/commit/8585766590d46dcb812864cc6555e9c41d51ad56))
+
 ### [10.12.1](https://github.com/kontent-ai/kontent-core-js/compare/v10.11.0...v10.12.1) (2025-11-11)
 
 ## [10.11.0](https://github.com/kontent-ai/kontent-core-js/compare/v10.10.1...v10.11.0) (2025-04-30)
