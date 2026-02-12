@@ -33,17 +33,17 @@ export type {
 	PagingQuery,
 	PagingQueryResult,
 	Query,
+	QueryResponse,
+	QueryResponseMeta,
 	QueryResult,
 	ResultOfSuccessfulQuery,
 	SdkConfig,
-	SdkResponse,
-	SdkResponseMeta,
 	SuccessfulHttpResponse,
 } from "./sdk/sdk-models.js";
 export {
+	createPagingQuery,
+	createQuery,
 	extractContinuationToken,
-	getPagingQuery,
-	getQuery,
 } from "./sdk/sdk-queries.js";
 export { isKontent404Error } from "./utils/error.utils.js";
 export { getSdkIdHeader } from "./utils/header.utils.js";

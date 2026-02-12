@@ -1,7 +1,7 @@
 import { afterAll, describe, expect, it, vi } from "vitest";
 import z from "zod";
 import { getDefaultHttpService } from "../../../lib/public_api.js";
-import { getPagingQuery } from "../../../lib/sdk/sdk-queries.js";
+import { createPagingQuery } from "../../../lib/sdk/sdk-queries.js";
 import { getTestSdkInfo, mockGlobalFetchJsonResponse } from "../../../lib/testkit/testkit.utils.js";
 
 describe("Basic paging query with page limit", async () => {
@@ -27,7 +27,7 @@ describe("Basic paging query with page limit", async () => {
 		statusCode: 200,
 	});
 
-	const { success, error, responses } = await getPagingQuery({
+	const { success, error, responses } = await createPagingQuery({
 		authorizationApiKey: undefined,
 		pagination: {
 			config: {
@@ -43,7 +43,7 @@ describe("Basic paging query with page limit", async () => {
 				return {};
 			},
 		},
-		extraMetadata: () => ({}),
+		mapMetadata: () => ({}),
 		config: {
 			httpService: getDefaultHttpService(),
 			responseValidation: {

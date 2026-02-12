@@ -2,7 +2,7 @@ import type { Header, HttpMethod, RetryStrategyOptions } from "../models/core.mo
 import type { SdkError } from "../models/error.models.js";
 import type { JsonObject, JsonValue } from "../models/json.models.js";
 import type { LiteralUnionNumber } from "../models/utility.models.js";
-import type { SdkResponse } from "../sdk/sdk-models.js";
+import type { QueryResponse } from "../sdk/sdk-models.js";
 
 type Success<TData> = {
 	readonly success: true;
@@ -41,22 +41,23 @@ export type DefaultHttpServiceConfig = {
 	readonly adapter?: HttpAdapter;
 };
 
-export type ResponseType = JsonValue | Blob;
+export type ResponseData = JsonValue | Blob;
 
 export type RequestBody = JsonObject | Blob | null;
+export type BodyData = RequestBody;
 
-export type HttpResponse<TResponseData extends ResponseType, TBodyData extends RequestBody> = HttpResult<{
+export type HttpResponse<TResponseData extends ResponseData, TRequestBody extends RequestBody> = HttpResult<{
 	readonly data: TResponseData;
-	readonly body: TBodyData;
+	readonly body: TRequestBody;
 	readonly method: HttpMethod;
 	readonly requestHeaders: readonly Header[];
 	readonly adapterResponse: Omit<AdapterResponse, "toJsonAsync" | "toBlobAsync">;
 }>;
 
-export type ExecuteRequestOptions<TBodyData extends RequestBody> = {
+export type ExecuteRequestOptions<TRequestBody extends RequestBody> = {
 	readonly url: string;
 	readonly method: HttpMethod;
-	readonly body: TBodyData;
+	readonly body: TRequestBody;
 	readonly requestHeaders?: readonly Header[];
 };
 
@@ -80,9 +81,9 @@ export type HttpService = {
 	/**
 	 * Executes request with the given method and body.
 	 */
-	requestAsync<TResponseData extends JsonValue, TBodyData extends RequestBody>(
-		opts: ExecuteRequestOptions<TBodyData>,
-	): Promise<HttpResponse<TResponseData, TBodyData>>;
+	requestAsync<TResponseData extends JsonValue, TRequestBody extends RequestBody>(
+		opts: ExecuteRequestOptions<TRequestBody>,
+	): Promise<HttpResponse<TResponseData, TRequestBody>>;
 
 	/**
 	 * Downloads a file from the given URL as a blob.
@@ -115,7 +116,7 @@ export type AdapterRequestOptions = {
 	readonly requestHeaders?: readonly Header[];
 };
 
-export type GetNextPageData<TPayload extends JsonValue, TExtraMetadata> = (response: SdkResponse<TPayload, TExtraMetadata>) => {
+export type GetNextPageData<TData extends JsonValue, TMeta> = (response: QueryResponse<TData, TMeta>) => {
 	readonly continuationToken?: string;
 	readonly nextPageUrl?: string;
 };
@@ -124,8 +125,8 @@ export type PaginationConfig = {
 	readonly maxPagesCount?: number;
 };
 
-export type Pagination<TPayload extends JsonValue, TExtraMetadata> = {
-	readonly getNextPageData: GetNextPageData<TPayload, TExtraMetadata>;
+export type Pagination<TData extends JsonValue, TMeta> = {
+	readonly getNextPageData: GetNextPageData<TData, TMeta>;
 	readonly config?: PaginationConfig;
 };
 

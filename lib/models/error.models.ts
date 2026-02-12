@@ -1,6 +1,6 @@
 import { match, P } from "ts-pattern";
 import type { ZodError } from "zod";
-import type { AdapterResponse, HttpServiceStatus, RequestBody, ResponseType } from "../http/http.models.js";
+import type { AdapterResponse, HttpServiceStatus, RequestBody, ResponseData } from "../http/http.models.js";
 import type { SuccessfulHttpResponse } from "../sdk/sdk-models.js";
 import type { KontentErrorResponseData, RetryStrategyOptions } from "./core.models.js";
 
@@ -25,7 +25,7 @@ export type ErrorReasonData =
 			"validationFailed",
 			{
 				readonly zodError: ZodError;
-				readonly response: SuccessfulHttpResponse<ResponseType, RequestBody>;
+				readonly response: SuccessfulHttpResponse<ResponseData, RequestBody>;
 				readonly url: string;
 			}
 	  >

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import z from "zod";
 import type { CommonHeaderNames, Header, HttpMethod } from "../../../lib/models/core.models.js";
-import { getQuery } from "../../../lib/sdk/sdk-queries.js";
+import { createQuery } from "../../../lib/sdk/sdk-queries.js";
 import { getTestHttpServiceWithJsonResponse, getTestSdkInfo } from "../../../lib/testkit/testkit.utils.js";
 import { getSdkIdHeader } from "../../../lib/utils/header.utils.js";
 
@@ -14,9 +14,9 @@ describe("Query extra metadata", async () => {
 		name: "x",
 		value: "y",
 	};
-	const { response } = await getQuery({
+	const { response } = await createQuery({
 		authorizationApiKey: undefined,
-		extraMetadata: (response, data) => {
+		mapMetadata: (response, data) => {
 			it("Continuation token should be the same as the one from the response", () => {
 				expect(data.continuationToken).toStrictEqual(responseContinuationToken);
 			});

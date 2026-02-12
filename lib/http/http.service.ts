@@ -18,18 +18,18 @@ import type {
 	HttpResponse,
 	HttpService,
 	RequestBody,
-	ResponseType,
+	ResponseData,
 	UploadFileRequestOptions,
 } from "./http.models.js";
 
 export function getDefaultHttpService(config?: DefaultHttpServiceConfig): HttpService {
-	const withUnknownErrorHandlingAsync = async <TResponseData extends ResponseType, TBodyData extends RequestBody>({
+	const withUnknownErrorHandlingAsync = async <TResponseData extends ResponseData, TRequestBody extends RequestBody>({
 		url,
 		funcAsync,
 	}: {
 		readonly url: string;
-		readonly funcAsync: () => Promise<HttpResponse<TResponseData, TBodyData>>;
-	}): Promise<HttpResponse<TResponseData, TBodyData>> => {
+		readonly funcAsync: () => Promise<HttpResponse<TResponseData, TRequestBody>>;
+	}): Promise<HttpResponse<TResponseData, TRequestBody>> => {
 		const { success, data, error } = await tryCatchAsync(funcAsync);
 
 		if (success) {
@@ -47,13 +47,13 @@ export function getDefaultHttpService(config?: DefaultHttpServiceConfig): HttpSe
 		};
 	};
 
-	const resolveRequestAsync = async <TResponseData extends ResponseType, TBodyData extends RequestBody>({
+	const resolveRequestAsync = async <TResponseData extends ResponseData, TRequestBody extends RequestBody>({
 		options,
 		resolveDataAsync,
 	}: {
-		readonly options: ExecuteRequestOptions<TBodyData>;
+		readonly options: ExecuteRequestOptions<TRequestBody>;
 		readonly resolveDataAsync: (response: AdapterResponse) => Promise<TResponseData>;
-	}): Promise<HttpResponse<TResponseData, TBodyData>> => {
+	}): Promise<HttpResponse<TResponseData, TRequestBody>> => {
 		return await withUnknownErrorHandlingAsync({
 			url: options.url,
 			funcAsync: async () => {
@@ -111,8 +111,10 @@ export function getDefaultHttpService(config?: DefaultHttpServiceConfig): HttpSe
 	};
 
 	return {
-		requestAsync: async <TResponseData extends JsonValue, TBodyData extends RequestBody>(options: ExecuteRequestOptions<TBodyData>) => {
-			return await resolveRequestAsync<TResponseData, TBodyData>({
+		requestAsync: async <TResponseData extends JsonValue, TRequestBody extends RequestBody>(
+			options: ExecuteRequestOptions<TRequestBody>,
+		) => {
+			return await resolveRequestAsync<TResponseData, TRequestBody>({
 				options,
 				resolveDataAsync: async (response) => {
 					return (await response.toJsonAsync()) as TResponseData;
@@ -146,7 +148,7 @@ export function getDefaultHttpService(config?: DefaultHttpServiceConfig): HttpSe
 	};
 }
 
-async function resolveResponseAsync<TResponseData extends ResponseType, TBodyData extends RequestBody>({
+async function resolveResponseAsync<TResponseData extends ResponseData, TRequestBody extends RequestBody>({
 	response,
 	resolveDataAsync,
 	method,
@@ -157,8 +159,8 @@ async function resolveResponseAsync<TResponseData extends ResponseType, TBodyDat
 	readonly resolveDataAsync: (response: AdapterResponse) => Promise<TResponseData>;
 	readonly method: HttpMethod;
 	readonly requestHeaders: readonly Header[];
-	readonly requestBody: TBodyData;
-}): Promise<HttpResponse<TResponseData, TBodyData>> {
+	readonly requestBody: TRequestBody;
+}): Promise<HttpResponse<TResponseData, TRequestBody>> {
 	if (!response.isValidResponse) {
 		return {
 			success: false,
@@ -184,19 +186,19 @@ async function resolveResponseAsync<TResponseData extends ResponseType, TBodyDat
 	};
 }
 
-async function withRetryAsync<TResponseData extends ResponseType, TBodyData extends RequestBody>({
+async function withRetryAsync<TResponseData extends ResponseData, TRequestBody extends RequestBody>({
 	funcAsync,
 	url,
 	retryStrategyOptions,
 	requestHeaders,
 	method,
 }: {
-	readonly funcAsync: () => Promise<HttpResponse<TResponseData, TBodyData>>;
+	readonly funcAsync: () => Promise<HttpResponse<TResponseData, TRequestBody>>;
 	readonly url: string;
 	readonly retryStrategyOptions: Required<RetryStrategyOptions>;
 	readonly requestHeaders: readonly Header[];
 	readonly method: HttpMethod;
-}): Promise<HttpResponse<TResponseData, TBodyData>> {
+}): Promise<HttpResponse<TResponseData, TRequestBody>> {
 	return await runWithRetryAsync({
 		url: url,
 		retryStrategyOptions,

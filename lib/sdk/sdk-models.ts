@@ -3,17 +3,17 @@
  * to keep common code and behavior consistent.
  */
 
-import type { AdapterResponse, HttpResponse, HttpService, RequestBody, ResponseType } from "../http/http.models.js";
+import type { AdapterResponse, HttpResponse, HttpService, RequestBody, ResponseData } from "../http/http.models.js";
 import type { SdkError } from "../models/error.models.js";
 import type { Prettify } from "../models/utility.models.js";
 
-export type SdkResponseMeta<TExtraMetadata = unknown> = Pick<AdapterResponse, "status" | "responseHeaders" | "url"> & {
+export type QueryResponseMeta<TMeta = unknown> = Pick<AdapterResponse, "status" | "responseHeaders" | "url"> & {
 	readonly continuationToken?: string;
-} & TExtraMetadata;
+} & TMeta;
 
-export type SdkResponse<TPayload, TExtraMetadata = unknown> = {
-	readonly payload: TPayload;
-	readonly meta: SdkResponseMeta<TExtraMetadata>;
+export type QueryResponse<TData, TMeta = unknown> = {
+	readonly data: TData;
+	readonly meta: QueryResponseMeta<TMeta>;
 };
 
 export type SdkConfig = {
@@ -38,7 +38,7 @@ export type SdkConfig = {
 	 */
 	readonly responseValidation?: {
 		/**
-		 * When enabled, the response payload will be validated against the expected Zod schema from which the types
+		 * When enabled, the response data will be validated against the expected Zod schema from which the types
 		 * this library are based on. This ensures that you are working with the correct data types.
 		 *
 		 * @default false
@@ -47,17 +47,17 @@ export type SdkConfig = {
 	};
 };
 
-export type Query<TPayload, TExtraData = unknown> = {
+export type Query<TData, TMeta = unknown> = {
 	toUrl(): string;
-	toPromise(): Promise<QueryResult<SdkResponse<TPayload, TExtraData>>>;
+	toPromise(): Promise<QueryResult<QueryResponse<TData, TMeta>>>;
 };
 
-export type PagingQuery<TPayload, TExtraData = unknown> = Query<TPayload, TExtraData> & {
-	toAllPromise(): Promise<PagingQueryResult<SdkResponse<TPayload, TExtraData>>>;
+export type PagingQuery<TData, TMeta = unknown> = Query<TData, TMeta> & {
+	toAllPromise(): Promise<PagingQueryResult<QueryResponse<TData, TMeta>>>;
 };
 
-export type SuccessfulHttpResponse<TPayload extends ResponseType, TBodyData extends RequestBody> = Prettify<
-	Extract<HttpResponse<TPayload, TBodyData>, { readonly success: true }>["response"]
+export type SuccessfulHttpResponse<TResponseData extends ResponseData, TRequestBody extends RequestBody> = Prettify<
+	Extract<HttpResponse<TResponseData, TRequestBody>, { readonly success: true }>["response"]
 >;
 
 export type ResultOfSuccessfulQuery<TQuery extends Query<unknown>> = Extract<

@@ -1,15 +1,15 @@
 import { describe, expect, it } from "vitest";
 import z from "zod";
-import { getQuery } from "../../../lib/sdk/sdk-queries.js";
+import { createQuery } from "../../../lib/sdk/sdk-queries.js";
 import { getTestHttpServiceWithJsonResponse, getTestSdkInfo } from "../../../lib/testkit/testkit.utils.js";
 
 describe("Query builder", async () => {
 	const responseContinuationToken = "fake-continuation-token";
 	const responseStatusCode = 200;
 
-	const { success, error, response } = await getQuery({
+	const { success, error, response } = await createQuery({
 		authorizationApiKey: undefined,
-		extraMetadata: () => ({}),
+		mapMetadata: () => ({}),
 		config: {
 			httpService: getTestHttpServiceWithJsonResponse({
 				jsonResponse: null,
@@ -45,7 +45,7 @@ describe("Query builder", async () => {
 		expect(success).toBeTruthy();
 	});
 
-	it("Response payload should be null", () => {
-		expect(response?.payload).toBeNull();
+	it("Response data should be null", () => {
+		expect(response?.data).toBeNull();
 	});
 });

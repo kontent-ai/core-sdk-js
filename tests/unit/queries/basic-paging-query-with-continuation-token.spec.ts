@@ -1,7 +1,7 @@
 import { afterAll, describe, expect, it, vi } from "vitest";
 import z from "zod";
 import { getDefaultHttpService } from "../../../lib/public_api.js";
-import { getPagingQuery } from "../../../lib/sdk/sdk-queries.js";
+import { createPagingQuery } from "../../../lib/sdk/sdk-queries.js";
 import { getTestSdkInfo, mockGlobalFetchJsonResponse } from "../../../lib/testkit/testkit.utils.js";
 
 describe("Basic paging query with continuation token", async () => {
@@ -30,7 +30,7 @@ describe("Basic paging query with continuation token", async () => {
 	// mock initial response
 	mockResponseByIndex(0);
 
-	const { success, error, responses, lastContinuationToken } = await getPagingQuery({
+	const { success, error, responses, lastContinuationToken } = await createPagingQuery({
 		authorizationApiKey: undefined,
 		pagination: {
 			getNextPageData: () => {
@@ -45,7 +45,7 @@ describe("Basic paging query with continuation token", async () => {
 				return {};
 			},
 		},
-		extraMetadata: () => ({}),
+		mapMetadata: () => ({}),
 		config: {
 			httpService: getDefaultHttpService(),
 			responseValidation: {
