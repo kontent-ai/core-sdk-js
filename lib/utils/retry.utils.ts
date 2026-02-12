@@ -1,8 +1,7 @@
 import { match, P } from "ts-pattern";
-import type { HttpResponse } from "../http/http.models.js";
+import type { HttpResponse, RequestBody, ResponseType } from "../http/http.models.js";
 import type { Header, HttpMethod, RetryStrategyOptions } from "../models/core.models.js";
 import type { SdkError } from "../models/error.models.js";
-import type { JsonValue } from "../models/json.models.js";
 import { sleepAsync } from "./core.utils.js";
 import { createSdkError } from "./error.utils.js";
 import { getRetryAfterHeaderValue } from "./header.utils.js";
@@ -37,7 +36,7 @@ const defaultCanRetryError: NonNullable<RetryStrategyOptions["canRetryError"]> =
 		.otherwise(() => true);
 };
 
-export async function runWithRetryAsync<TResponse extends JsonValue | Blob, TBodyData extends JsonValue | Blob>(data: {
+export async function runWithRetryAsync<TResponse extends ResponseType, TBodyData extends RequestBody>(data: {
 	readonly funcAsync: () => Promise<HttpResponse<TResponse, TBodyData>>;
 	readonly retryStrategyOptions: Required<RetryStrategyOptions>;
 	readonly retryAttempt: number;

@@ -3,9 +3,8 @@
  * to keep common code and behavior consistent.
  */
 
-import type { AdapterResponse, HttpResponse, HttpService } from "../http/http.models.js";
+import type { AdapterResponse, HttpResponse, HttpService, RequestBody, ResponseType } from "../http/http.models.js";
 import type { SdkError } from "../models/error.models.js";
-import type { JsonValue } from "../models/json.models.js";
 import type { Prettify } from "../models/utility.models.js";
 
 export type SdkResponseMeta<TExtraMetadata = unknown> = Pick<AdapterResponse, "status" | "responseHeaders" | "url"> & {
@@ -57,7 +56,7 @@ export type PagingQuery<TPayload, TExtraData = unknown> = Query<TPayload, TExtra
 	toAllPromise(): Promise<PagingQueryResult<SdkResponse<TPayload, TExtraData>>>;
 };
 
-export type SuccessfulHttpResponse<TPayload extends JsonValue, TBodyData extends JsonValue | Blob> = Prettify<
+export type SuccessfulHttpResponse<TPayload extends ResponseType, TBodyData extends RequestBody> = Prettify<
 	Extract<HttpResponse<TPayload, TBodyData>, { readonly success: true }>["response"]
 >;
 

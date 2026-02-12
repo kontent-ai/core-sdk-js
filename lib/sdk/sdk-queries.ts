@@ -5,7 +5,7 @@
 
 import { match, P } from "ts-pattern";
 import type { ZodError, ZodType } from "zod";
-import type { HttpService, Pagination } from "../http/http.models.js";
+import type { HttpService, Pagination, RequestBody } from "../http/http.models.js";
 import { getDefaultHttpService } from "../http/http.service.js";
 import type { CommonHeaderNames, ContinuationHeaderName, Header, SDKInfo } from "../models/core.models.js";
 import type { JsonValue } from "../models/json.models.js";
@@ -52,7 +52,7 @@ type ValidNextPageData =
 
 type NextPageData = ValidNextPageData | InvalidNextPageData;
 
-export function getQuery<TPayload extends JsonValue, TBodyData extends JsonValue, TExtraMetadata = EmptyObject>(
+export function getQuery<TPayload extends JsonValue, TBodyData extends RequestBody, TExtraMetadata = EmptyObject>(
 	data: Omit<
 		Parameters<typeof resolveQueryAsync<TPayload, TBodyData, TExtraMetadata>>[0],
 		"continuationToken" | "pagination" | "pageIndex"
@@ -71,7 +71,7 @@ export function getQuery<TPayload extends JsonValue, TBodyData extends JsonValue
 	};
 }
 
-export function getPagingQuery<TPayload extends JsonValue, TBodyData extends JsonValue, TExtraMetadata = EmptyObject>(
+export function getPagingQuery<TPayload extends JsonValue, TBodyData extends RequestBody, TExtraMetadata = EmptyObject>(
 	data: Omit<Parameters<typeof resolveQueryAsync<TPayload, TBodyData, TExtraMetadata>>[0], "pagination" | "pageIndex"> & {
 		readonly pagination: Pagination<TPayload, TExtraMetadata>;
 	},
@@ -180,7 +180,7 @@ function getCombinedRequestHeaders({
 	];
 }
 
-async function resolvePagingQueryAsync<TPayload extends JsonValue, TBodyData extends JsonValue, TExtraMetadata = EmptyObject>(
+async function resolvePagingQueryAsync<TPayload extends JsonValue, TBodyData extends RequestBody, TExtraMetadata = EmptyObject>(
 	data: Parameters<typeof getQuery<TPayload, TBodyData, TExtraMetadata>>[0] & {
 		readonly pagination: Pagination<TPayload, TExtraMetadata>;
 		readonly pageIndex: number;
@@ -231,7 +231,7 @@ async function resolvePagingQueryAsync<TPayload extends JsonValue, TBodyData ext
 	};
 }
 
-async function resolveQueryAsync<TPayload extends JsonValue, TBodyData extends JsonValue, TExtraMetadata>({
+async function resolveQueryAsync<TPayload extends JsonValue, TBodyData extends RequestBody, TExtraMetadata>({
 	config,
 	request,
 	extraMetadata,

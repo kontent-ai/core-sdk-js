@@ -1,6 +1,5 @@
-import type { CommonHeaderNames } from "../models/core.models.js";
 import type { JsonValue } from "../models/json.models.js";
-import { toFetchHeaders, toSdkHeaders } from "../utils/header.utils.js";
+import { isApplicationJsonResponseType, toFetchHeaders, toSdkHeaders } from "../utils/header.utils.js";
 import type { HttpAdapter } from "./http.models.js";
 
 export function getDefaultHttpAdapter(): HttpAdapter {
@@ -22,12 +21,7 @@ export function getDefaultHttpAdapter(): HttpAdapter {
 				url: options.url,
 				toBlobAsync: async () => await response.blob(),
 				toJsonAsync: async () => {
-					const contentTypeResponseHeader = sdkResponseHeaders
-						.find((m) => m.name.toLowerCase() === ("Content-Type" satisfies CommonHeaderNames).toLowerCase())
-						?.value.toLowerCase();
-
-					if (contentTypeResponseHeader?.includes("application/json")) {
-						// Includes instead of equal due to the fact that the header value can be 'application/json; charset=utf-8' or similar
+					if (isApplicationJsonResponseType(sdkResponseHeaders)) {
 						return (await response.json()) as JsonValue;
 					}
 

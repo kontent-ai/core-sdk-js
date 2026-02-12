@@ -38,3 +38,12 @@ export function toFetchHeaders(headers: readonly Header[]): Headers {
 		return headers;
 	}, new Headers());
 }
+
+export function isApplicationJsonResponseType(headers: readonly Header[]): boolean {
+	return (
+		headers
+			.find((header) => header.name.toLowerCase() === ("Content-Type" satisfies CommonHeaderNames).toLowerCase())
+			?.value.toLowerCase()
+			.includes("application/json") ?? false
+	);
+}

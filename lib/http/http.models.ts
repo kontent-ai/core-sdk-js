@@ -1,6 +1,6 @@
 import type { Header, HttpMethod, RetryStrategyOptions } from "../models/core.models.js";
 import type { SdkError } from "../models/error.models.js";
-import type { JsonValue } from "../models/json.models.js";
+import type { JsonObject, JsonValue } from "../models/json.models.js";
 import type { LiteralUnionNumber } from "../models/utility.models.js";
 import type { SdkResponse } from "../sdk/sdk-models.js";
 
@@ -41,7 +41,11 @@ export type DefaultHttpServiceConfig = {
 	readonly adapter?: HttpAdapter;
 };
 
-export type HttpResponse<TResponseData extends JsonValue | Blob, TBodyData extends JsonValue | Blob> = HttpResult<{
+export type ResponseType = JsonValue | Blob;
+
+export type RequestBody = JsonObject | Blob | null;
+
+export type HttpResponse<TResponseData extends ResponseType, TBodyData extends RequestBody> = HttpResult<{
 	readonly data: TResponseData;
 	readonly body: TBodyData;
 	readonly method: HttpMethod;
@@ -49,7 +53,7 @@ export type HttpResponse<TResponseData extends JsonValue | Blob, TBodyData exten
 	readonly adapterResponse: Omit<AdapterResponse, "toJsonAsync" | "toBlobAsync">;
 }>;
 
-export type ExecuteRequestOptions<TBodyData extends JsonValue | Blob> = {
+export type ExecuteRequestOptions<TBodyData extends RequestBody> = {
 	readonly url: string;
 	readonly method: HttpMethod;
 	readonly body: TBodyData;
@@ -76,7 +80,7 @@ export type HttpService = {
 	/**
 	 * Executes request with the given method and body.
 	 */
-	requestAsync<TResponseData extends JsonValue, TBodyData extends JsonValue>(
+	requestAsync<TResponseData extends JsonValue, TBodyData extends RequestBody>(
 		opts: ExecuteRequestOptions<TBodyData>,
 	): Promise<HttpResponse<TResponseData, TBodyData>>;
 
@@ -102,10 +106,12 @@ export type AdapterResponse<TStatusCode extends HttpServiceStatus = HttpServiceS
 	readonly url: string;
 };
 
+export type AdapterRequestBody = string | Blob | null;
+
 export type AdapterRequestOptions = {
 	readonly url: string;
 	readonly method: HttpMethod;
-	readonly body: string | Blob | undefined | null;
+	readonly body: AdapterRequestBody;
 	readonly requestHeaders?: readonly Header[];
 };
 
