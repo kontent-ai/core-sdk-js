@@ -66,11 +66,12 @@ export type ResultOfSuccessfulQuery<TQuery extends Query<unknown>> = Extract<
 >["response"];
 
 /**
- * A nomadic result type that represents a success or failure of an operation.
+ * Result type that represents a success or failure of an operation.
  *
  * Ensures that consumers of this library handle both success and failure cases.
  */
 export type QueryResult<TResponse> = (Success & { readonly response: TResponse }) | (Failure & { readonly response?: never });
+
 export type PagingQueryResult<TResponse> =
 	| (Success & { readonly responses: TResponse[]; readonly lastContinuationToken: string | undefined })
 	| (Failure & { readonly responses?: never; readonly lastContinuationToken?: never });

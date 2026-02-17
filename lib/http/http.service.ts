@@ -23,98 +23,12 @@ import type {
 } from "./http.models.js";
 
 export function getDefaultHttpService(config?: DefaultHttpServiceConfig): HttpService {
-	const withUnknownErrorHandlingAsync = async <TResponseData extends ResponseData, TRequestBody extends RequestBody>({
-		url,
-		funcAsync,
-	}: {
-		readonly url: string;
-		readonly funcAsync: () => Promise<HttpResponse<TResponseData, TRequestBody>>;
-	}): Promise<HttpResponse<TResponseData, TRequestBody>> => {
-		const { success, data, error } = await tryCatchAsync(funcAsync);
-
-		if (success) {
-			return data;
-		}
-
-		return {
-			success: false,
-			error: createSdkError({
-				message: "Unknown error. See the error object for more details.",
-				url: url,
-				reason: "unknown",
-				originalError: error,
-			}),
-		};
-	};
-
-	const resolveRequestAsync = async <TResponseData extends ResponseData, TRequestBody extends RequestBody>({
-		options,
-		resolveDataAsync,
-	}: {
-		readonly options: ExecuteRequestOptions<TRequestBody>;
-		readonly resolveDataAsync: (response: AdapterResponse) => Promise<TResponseData>;
-	}): Promise<HttpResponse<TResponseData, TRequestBody>> => {
-		return await withUnknownErrorHandlingAsync({
-			url: options.url,
-			funcAsync: async () => {
-				const { success: urlParsedSuccess, data: parsedUrl, error: urlError } = parseUrl(options.url);
-
-				if (!urlParsedSuccess) {
-					return {
-						success: false,
-						error: urlError,
-					};
-				}
-
-				const {
-					success: requestBodyParsedSuccess,
-					data: parsedRequestBody,
-					error: requestBodyError,
-				} = parseRequestBody({ requestBody: options.body, url: options.url });
-
-				if (!requestBodyParsedSuccess) {
-					return {
-						success: false,
-						error: requestBodyError,
-					};
-				}
-
-				const requestHeaders = getRequestHeaders({
-					headers: [...(config?.requestHeaders ?? []), ...(options.requestHeaders ?? [])],
-					body: options.body,
-				});
-
-				return await withRetryAsync({
-					funcAsync: async () => {
-						const adapter = config?.adapter ?? getDefaultHttpAdapter();
-
-						return await resolveResponseAsync({
-							method: options.method,
-							requestBody: options.body,
-							requestHeaders,
-							response: await adapter.requestAsync({
-								url: parsedUrl.toString(),
-								method: options.method,
-								requestHeaders,
-								body: parsedRequestBody,
-							}),
-							resolveDataAsync,
-						});
-					},
-					url: options.url,
-					retryStrategyOptions: toRequiredRetryStrategyOptions(config?.retryStrategy),
-					requestHeaders,
-					method: options.method,
-				});
-			},
-		});
-	};
-
 	return {
 		requestAsync: async <TResponseData extends JsonValue, TRequestBody extends RequestBody>(
 			options: ExecuteRequestOptions<TRequestBody>,
 		) => {
 			return await resolveRequestAsync<TResponseData, TRequestBody>({
+				config,
 				options,
 				resolveDataAsync: async (response) => {
 					return (await response.toJsonAsync()) as TResponseData;
@@ -124,6 +38,7 @@ export function getDefaultHttpService(config?: DefaultHttpServiceConfig): HttpSe
 
 		downloadFileAsync: async (options: DownloadFileRequestOptions): Promise<HttpResponse<Blob, null>> => {
 			return await resolveRequestAsync<Blob, null>({
+				config,
 				options: {
 					...options,
 					method: "GET",
@@ -139,12 +54,102 @@ export function getDefaultHttpService(config?: DefaultHttpServiceConfig): HttpSe
 			options: UploadFileRequestOptions,
 		): Promise<HttpResponse<TResponseData, Blob>> => {
 			return await resolveRequestAsync<TResponseData, Blob>({
+				config,
 				options,
 				resolveDataAsync: async (response) => {
 					return (await response.toJsonAsync()) as TResponseData;
 				},
 			});
 		},
+	};
+}
+
+async function resolveRequestAsync<TResponseData extends ResponseData, TRequestBody extends RequestBody>({
+	options,
+	resolveDataAsync,
+	config,
+}: {
+	readonly config: DefaultHttpServiceConfig | undefined;
+	readonly options: ExecuteRequestOptions<TRequestBody>;
+	readonly resolveDataAsync: (response: AdapterResponse) => Promise<TResponseData>;
+}): Promise<HttpResponse<TResponseData, TRequestBody>> {
+	return await withUnknownErrorHandlingAsync({
+		url: options.url,
+		funcAsync: async () => {
+			const { success: urlParsedSuccess, data: parsedUrl, error: urlError } = parseUrl(options.url);
+
+			if (!urlParsedSuccess) {
+				return {
+					success: false,
+					error: urlError,
+				};
+			}
+
+			const {
+				success: requestBodyParsedSuccess,
+				data: parsedRequestBody,
+				error: requestBodyError,
+			} = parseRequestBody({ requestBody: options.body, url: options.url });
+
+			if (!requestBodyParsedSuccess) {
+				return {
+					success: false,
+					error: requestBodyError,
+				};
+			}
+
+			const requestHeaders = getRequestHeaders({
+				headers: [...(config?.requestHeaders ?? []), ...(options.requestHeaders ?? [])],
+				body: options.body,
+			});
+
+			return await withRetryAsync({
+				funcAsync: async () => {
+					const adapter = config?.adapter ?? getDefaultHttpAdapter();
+
+					return await resolveResponseAsync({
+						method: options.method,
+						requestBody: options.body,
+						requestHeaders,
+						response: await adapter.requestAsync({
+							url: parsedUrl.toString(),
+							method: options.method,
+							requestHeaders,
+							body: parsedRequestBody,
+						}),
+						resolveDataAsync,
+					});
+				},
+				url: options.url,
+				retryStrategyOptions: toRequiredRetryStrategyOptions(config?.retryStrategy),
+				requestHeaders,
+				method: options.method,
+			});
+		},
+	});
+}
+
+async function withUnknownErrorHandlingAsync<TResponseData extends ResponseData, TRequestBody extends RequestBody>({
+	url,
+	funcAsync,
+}: {
+	readonly url: string;
+	readonly funcAsync: () => Promise<HttpResponse<TResponseData, TRequestBody>>;
+}): Promise<HttpResponse<TResponseData, TRequestBody>> {
+	const { success, data, error } = await tryCatchAsync(funcAsync);
+
+	if (success) {
+		return data;
+	}
+
+	return {
+		success: false,
+		error: createSdkError({
+			message: "Unknown error. See the error object for more details.",
+			url: url,
+			reason: "unknown",
+			originalError: error,
+		}),
 	};
 }
 
