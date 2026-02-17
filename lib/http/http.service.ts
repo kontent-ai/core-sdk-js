@@ -276,7 +276,7 @@ function parseRequestBody({
 				return {
 					success: false,
 					error: createSdkError({
-						message: "Failed to stringify body of the response.",
+						message: "Failed to stringify body of the request.",
 						url: url,
 						reason: "invalidBody",
 						originalError: parseError,
