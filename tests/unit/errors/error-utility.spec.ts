@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { createSdkError, isKontent404Error } from "../../../lib/utils/error.utils.js";
 
 describe("isKontent404Error utility function", () => {
-	it("Is Kontent AI not found error should be false", () => {
+	it("Should evaluate to true when error is a Kontent AI not found error", () => {
 		expect(
 			isKontent404Error(
 				createSdkError({
@@ -21,7 +21,7 @@ describe("isKontent404Error utility function", () => {
 		).toBe(true);
 	});
 
-	it("Is Kontent AI not found error should be false", () => {
+	it("Should evaluate to false when error is not a Kontent AI not found error", () => {
 		expect(
 			isKontent404Error(
 				createSdkError({
