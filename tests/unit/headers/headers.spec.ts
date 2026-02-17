@@ -6,6 +6,7 @@ import { mockGlobalFetchJsonResponse } from "../../../lib/testkit/testkit.utils.
 import {
 	getRetryAfterHeaderValue,
 	getSdkIdHeader,
+	isApplicationJsonResponseType,
 	toFetchHeaders,
 	toSdkHeaders,
 } from "../../../lib/utils/header.utils.js";
@@ -230,9 +231,7 @@ describe("Validation of toFetchHeaders utility function", () => {
 	it("Should convert single Header to Headers with one entry", () => {
 		const headers: readonly Header[] = [{ name: "Content-Type", value: "application/json" }];
 		const result = toFetchHeaders(headers);
-		expect(toSdkHeaders(result)).toStrictEqual([
-			{ name: "content-type", value: "application/json" },
-		]);
+		expect(toSdkHeaders(result)).toStrictEqual([{ name: "content-type", value: "application/json" }]);
 	});
 
 	it("Should convert multiple Headers to Headers", () => {
@@ -252,8 +251,33 @@ describe("Validation of toFetchHeaders utility function", () => {
 	it("Should preserve header names and values (normalized to lowercase by Headers API)", () => {
 		const headers: readonly Header[] = [{ name: "X-Custom-Header", value: "custom-value" }];
 		const result = toFetchHeaders(headers);
-		expect(toSdkHeaders(result)).toStrictEqual([
-			{ name: "x-custom-header", value: "custom-value" },
-		]);
+		expect(toSdkHeaders(result)).toStrictEqual([{ name: "x-custom-header", value: "custom-value" }]);
+	});
+});
+
+describe("Validation of isApplicationJsonResponseType utility function", () => {
+	it("Should return true when Content-Type is application/json", () => {
+		const headers: readonly Header[] = [{ name: "Content-Type" satisfies CommonHeaderNames, value: "application/json" }];
+		expect(isApplicationJsonResponseType(headers)).toBe(true);
+	});
+
+	it("Should return true when Content-Type is application/json with charset", () => {
+		const headers: readonly Header[] = [{ name: "Content-Type" satisfies CommonHeaderNames, value: "application/json; charset=utf-8" }];
+		expect(isApplicationJsonResponseType(headers)).toBe(true);
+	});
+
+	it("Should return false when headers are empty", () => {
+		const headers: readonly Header[] = [];
+		expect(isApplicationJsonResponseType(headers)).toBe(false);
+	});
+
+	it("Should return false when Content-Type header is missing", () => {
+		const headers: readonly Header[] = [{ name: "y", value: "x" }];
+		expect(isApplicationJsonResponseType(headers)).toBe(false);
+	});
+
+	it("Should return false when Content-Type is not application/json", () => {
+		const headers: readonly Header[] = [{ name: "Content-Type" satisfies CommonHeaderNames, value: "text/html" }];
+		expect(isApplicationJsonResponseType(headers)).toBe(false);
 	});
 });
