@@ -12,7 +12,7 @@ import type { JsonValue } from "../models/json.models.js";
 import type { EmptyObject } from "../models/utility.models.js";
 import { createSdkError } from "../utils/error.utils.js";
 import { getSdkIdHeader } from "../utils/header.utils.js";
-import type { PagingQuery, Query, QueryResponse, SdkConfig, SuccessfulHttpResponse } from "./sdk-models.js";
+import type { PagingQuery, PagingQueryResult, Query, QueryResponse, SdkConfig, SuccessfulHttpResponse } from "./sdk-models.js";
 
 type QueryPromiseResult<TResponseData extends JsonValue, TMeta = EmptyObject> = ReturnType<
 	Pick<Query<TResponseData, TMeta>, "toPromise">["toPromise"]
@@ -67,6 +67,16 @@ type NextPageStateWithRequest =
 	  };
 
 type NextPageState = NextPageStateWithRequest | NoNextPageState;
+
+type CollectPagesResult<TResponseData extends JsonValue, TMeta> =
+	| {
+			readonly success: true;
+			readonly responses: QueryResponse<TResponseData, TMeta>[];
+	  }
+	| {
+			readonly success: false;
+			readonly error: ReturnType<typeof createSdkError>;
+	  };
 
 export function createQuery<TResponseData extends JsonValue, TRequestBody extends RequestBody, TMeta = EmptyObject>(
 	data: Omit<ResolveQueryData<TResponseData, TRequestBody, TMeta>, "continuationToken" | "pagination" | "pageIndex">,
@@ -199,6 +209,24 @@ async function resolvePagingQueryAsync<TResponseData extends JsonValue, TRequest
 		readonly pageIndex: number;
 	},
 ): Promise<PagingQueryPromiseResult<TResponseData, TMeta>> {
+	const collectResult = await collectAllPagesAsync<TResponseData, TRequestBody, TMeta>(data);
+
+	if (!collectResult.success) {
+		return {
+			success: false,
+			error: collectResult.error,
+		};
+	}
+
+	return validateAndBuildPagingResult(collectResult.responses, data.request.url);
+}
+
+async function collectAllPagesAsync<TResponseData extends JsonValue, TRequestBody extends RequestBody, TMeta = EmptyObject>(
+	data: Omit<ResolveQueryData<TResponseData, TRequestBody, TMeta>, "pagination"> & {
+		readonly pagination: Pagination<TResponseData, TMeta>;
+		readonly pageIndex: number;
+	},
+): Promise<CollectPagesResult<TResponseData, TMeta>> {
 	const responses: QueryResponse<TResponseData, TMeta>[] = [];
 	let nextPageState: NextPageState = resolveNextPageState({
 		pagination: data.pagination,
@@ -207,35 +235,45 @@ async function resolvePagingQueryAsync<TResponseData extends JsonValue, TRequest
 	});
 
 	while (isNextPageAvailable(nextPageState)) {
-		const { success, response, error } = await resolveQueryAsync<TResponseData, TRequestBody, TMeta>({
+		const queryResult = await resolveQueryAsync<TResponseData, TRequestBody, TMeta>({
 			...data,
 			pagination: nextPageState,
 		});
 
-		if (!success) {
+		if (!queryResult.success) {
 			return {
 				success: false,
-				error: error,
+				error: queryResult.error,
 			};
 		}
 
-		responses.push(response);
+		responses.push(queryResult.response);
 
 		nextPageState = resolveNextPageState({
 			pagination: data.pagination,
 			pageIndex: responses.length,
-			response: response,
+			response: queryResult.response,
 		});
 	}
 
-	const lastResponse: QueryResponse<TResponseData, TMeta> | undefined = responses.at(-1);
+	return {
+		success: true,
+		responses,
+	};
+}
+
+function validateAndBuildPagingResult<TResponseData extends JsonValue, TMeta>(
+	responses: QueryResponse<TResponseData, TMeta>[],
+	requestUrl: string,
+): PagingQueryResult<QueryResponse<TResponseData, TMeta>> {
+	const lastResponse = responses.at(-1);
 
 	if (!lastResponse) {
 		return {
 			success: false,
 			error: createSdkError({
 				reason: "noResponses",
-				url: data.request.url,
+				url: requestUrl,
 				message: "No responses were processed. Expected at least one response to be fetched when using paging queries.",
 			}),
 		};
@@ -243,7 +281,7 @@ async function resolvePagingQueryAsync<TResponseData extends JsonValue, TRequest
 
 	return {
 		success: true,
-		responses: responses,
+		responses,
 		lastContinuationToken: lastResponse.meta.continuationToken,
 	};
 }
