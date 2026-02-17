@@ -25,13 +25,13 @@ These implementations are designed to work out-of-the-box but are also fully cus
 The `HttpService` comes with several built-in capabilities, such as:
 
 - **Retry policies**
-- **Request validation**
+- **Request parsing and validation** (URL parsing, body serialization)
 - **Automatic header and tracking management**
 - **Kontent.ai-specific error extraction**
 
 To customize these behaviors entirely, you can replace the `HttpService` with your own implementation.
 
-However, if your goal is to retain the core features (e.g., retry policies, request validation) and only swap out the underlying HTTP client, you can do so by supplying a custom `HttpAdapter` to the `getDefaultHttpService` method.
+However, if your goal is to retain the core features (e.g., retry policies, request parsing) and only swap out the underlying HTTP client, you can do so by supplying a custom `HttpAdapter` to the `getDefaultHttpService` method.
 
 ---
 
@@ -40,7 +40,7 @@ However, if your goal is to retain the core features (e.g., retry policies, requ
 Below is an example demonstrating how to provide your own HTTP client by implementing a custom `HttpAdapter`:
 
 ```typescript
-const httpService = await getDefaultHttpService({
+const httpService = getDefaultHttpService({
   adapter: {
     requestAsync: async (options) => {
       // Execute the request using your custom HTTP client
@@ -49,6 +49,7 @@ const httpService = await getDefaultHttpService({
         responseHeaders: <arrayOfHeaders>,
         status: <statusCode>,
         statusText: <statusText>,
+        url: options.url,
         toJsonAsync: async () => <responseInJson>,
         toBlobAsync: async () => <responseInBlob>,
       };
