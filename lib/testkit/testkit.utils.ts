@@ -132,23 +132,37 @@ function getFetchMock<TResponseData extends JsonValue | Blob>({
 	readonly responseHeaders: readonly Header[];
 }): Mock<() => Promise<Response>> {
 	return vi.fn(async () => {
-		const contentTypeHeader: Header | undefined = responseHeaders.find(
-			(m) => m.name.toLowerCase() === ("Content-Type" satisfies CommonHeaderNames).toLowerCase(),
-		)
-			? undefined
-			: {
-					name: "Content-Type" satisfies CommonHeaderNames,
-					value: "application/json",
-				};
+		const baseResponse: Partial<Response> = {
+			ok: status === 200,
+			headers: buildHeadersWithDefaultContentType(responseHeaders),
+			status,
+			json: async () => await Promise.resolve(json),
+			...(blob ? { blob: async () => await Promise.resolve(blob) } : {}),
+		};
 
 		return await Promise.resolve<Response>({
 			// only implement the methods we need, ignore the rest
 			...({} as Response),
-			ok: status === 200,
-			headers: toFetchHeaders([...responseHeaders, contentTypeHeader].filter(isNotUndefined)),
-			status,
-			json: async () => await Promise.resolve(json),
-			...(blob ? { blob: async () => await Promise.resolve(blob) } : {}),
+			...baseResponse,
 		});
 	});
+}
+
+function buildHeadersWithDefaultContentType(headers: readonly Header[]): Headers {
+	const defaultContentTypeHeader = getDefaultContentTypeHeaderIfMissing(headers);
+	const headersWithDefaults: readonly Header[] = [...headers, defaultContentTypeHeader].filter(isNotUndefined);
+	return toFetchHeaders(headersWithDefaults);
+}
+
+function getDefaultContentTypeHeaderIfMissing(headers: readonly Header[]): Header | undefined {
+	const hasContentTypeHeader = headers.some((m) => m.name.toLowerCase() === ("Content-Type" satisfies CommonHeaderNames).toLowerCase());
+
+	if (hasContentTypeHeader) {
+		return undefined;
+	}
+
+	return {
+		name: "Content-Type" satisfies CommonHeaderNames,
+		value: "application/json",
+	};
 }
