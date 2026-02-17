@@ -68,13 +68,15 @@ type NextPageStateWithRequest =
 
 type NextPageState = NextPageStateWithRequest | NoNextPageState;
 
-type CollectPagesResult<TResponseData extends JsonValue, TMeta> =
+type FetchAllPagesResult<TResponseData extends JsonValue, TMeta> =
 	| {
 			readonly success: true;
-			readonly responses: QueryResponse<TResponseData, TMeta>[];
+			readonly responses: readonly QueryResponse<TResponseData, TMeta>[];
+			readonly error?: never;
 	  }
 	| {
 			readonly success: false;
+			readonly responses?: never;
 			readonly error: ReturnType<typeof createSdkError>;
 	  };
 
@@ -209,61 +211,83 @@ async function resolvePagingQueryAsync<TResponseData extends JsonValue, TRequest
 		readonly pageIndex: number;
 	},
 ): Promise<PagingQueryPromiseResult<TResponseData, TMeta>> {
-	const collectResult = await collectAllPagesAsync<TResponseData, TRequestBody, TMeta>(data);
+	const { success, error, responses } = await fetchAllPagesAsync<TResponseData, TRequestBody, TMeta>(data);
 
-	if (!collectResult.success) {
+	if (!success) {
 		return {
 			success: false,
-			error: collectResult.error,
+			error: error,
 		};
 	}
 
-	return validateAndBuildPagingResult(collectResult.responses, data.request.url);
+	return validateAndBuildPagingResult(responses, data.request.url);
 }
 
-async function collectAllPagesAsync<TResponseData extends JsonValue, TRequestBody extends RequestBody, TMeta = EmptyObject>(
+async function fetchAllPagesAsync<TResponseData extends JsonValue, TRequestBody extends RequestBody, TMeta = EmptyObject>(
 	data: Omit<ResolveQueryData<TResponseData, TRequestBody, TMeta>, "pagination"> & {
 		readonly pagination: Pagination<TResponseData, TMeta>;
 		readonly pageIndex: number;
 	},
-): Promise<CollectPagesResult<TResponseData, TMeta>> {
-	const responses: QueryResponse<TResponseData, TMeta>[] = [];
-	let nextPageState: NextPageState = resolveNextPageState({
+): Promise<FetchAllPagesResult<TResponseData, TMeta>> {
+	const initialPageState: NextPageState = resolveNextPageState({
 		pagination: data.pagination,
 		pageIndex: data.pageIndex,
 		response: undefined,
 	});
 
-	while (isNextPageAvailable(nextPageState)) {
-		const queryResult = await resolveQueryAsync<TResponseData, TRequestBody, TMeta>({
-			...data,
-			pagination: nextPageState,
-		});
+	return await fetchAllPagesInternal<TResponseData, TRequestBody, TMeta>({
+		data,
+		nextPageState: initialPageState,
+		responses: [],
+	});
+}
 
-		if (!queryResult.success) {
-			return {
-				success: false,
-				error: queryResult.error,
-			};
-		}
-
-		responses.push(queryResult.response);
-
-		nextPageState = resolveNextPageState({
-			pagination: data.pagination,
-			pageIndex: responses.length,
-			response: queryResult.response,
-		});
+async function fetchAllPagesInternal<TResponseData extends JsonValue, TRequestBody extends RequestBody, TMeta = EmptyObject>({
+	data,
+	nextPageState,
+	responses,
+}: {
+	readonly data: Omit<ResolveQueryData<TResponseData, TRequestBody, TMeta>, "pagination"> & {
+		readonly pagination: Pagination<TResponseData, TMeta>;
+		readonly pageIndex: number;
+	};
+	readonly nextPageState: NextPageState;
+	readonly responses: readonly QueryResponse<TResponseData, TMeta>[];
+}): Promise<FetchAllPagesResult<TResponseData, TMeta>> {
+	if (!isNextPageAvailable(nextPageState)) {
+		return {
+			success: true,
+			responses,
+		};
 	}
 
-	return {
-		success: true,
-		responses,
-	};
+	const { success, error, response } = await resolveQueryAsync<TResponseData, TRequestBody, TMeta>({
+		...data,
+		pagination: nextPageState,
+	});
+
+	if (!success) {
+		return {
+			success: false,
+			error: error,
+		};
+	}
+
+	const updatedResponses: readonly QueryResponse<TResponseData, TMeta>[] = [...responses, response];
+
+	return await fetchAllPagesInternal<TResponseData, TRequestBody, TMeta>({
+		data,
+		nextPageState: resolveNextPageState({
+			pagination: data.pagination,
+			pageIndex: updatedResponses.length,
+			response: response,
+		}),
+		responses: updatedResponses,
+	});
 }
 
 function validateAndBuildPagingResult<TResponseData extends JsonValue, TMeta>(
-	responses: QueryResponse<TResponseData, TMeta>[],
+	responses: readonly QueryResponse<TResponseData, TMeta>[],
 	requestUrl: string,
 ): PagingQueryResult<QueryResponse<TResponseData, TMeta>> {
 	const lastResponse = responses.at(-1);
@@ -281,7 +305,7 @@ function validateAndBuildPagingResult<TResponseData extends JsonValue, TMeta>(
 
 	return {
 		success: true,
-		responses,
+		responses: [...responses],
 		lastContinuationToken: lastResponse.meta.continuationToken,
 	};
 }
