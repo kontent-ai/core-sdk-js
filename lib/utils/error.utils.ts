@@ -9,7 +9,7 @@ export function createSdkError(details: SdkErrorDetails): SdkError {
 }
 
 export function isKontent404Error(error: SdkError): boolean {
-	return error.details.reason === "invalidResponse" && error.details.status === 404;
+	return error.details.reason === "notFound";
 }
 
 export function getErrorMessage({
