@@ -1,14 +1,14 @@
 import type { AdapterResponse } from "../http/http.models.js";
-import type { HttpMethod, KontentErrorResponseData, KontentValidationError } from "../models/core.models.js";
-import { SdkError, type SdkErrorDetails } from "../models/error.models.js";
+import type { ErrorResponseData, HttpMethod, ValidationError } from "../models/core.models.js";
+import { type ErrorDetails, KontentSdkError } from "../models/error.models.js";
 import type { JsonValue } from "../models/json.models.js";
 import { isNotUndefined } from "./core.utils.js";
 
-export function createSdkError(details: SdkErrorDetails): SdkError {
-	return new SdkError(details);
+export function createSdkError(details: ErrorDetails): KontentSdkError {
+	return new KontentSdkError(details);
 }
 
-export function isKontent404Error(error: SdkError): boolean {
+export function isKontent404Error(error: KontentSdkError): boolean {
 	return error.details.reason === "notFound";
 }
 
@@ -21,7 +21,7 @@ export function getErrorMessage({
 	readonly url: string;
 	readonly method: HttpMethod;
 	readonly adapterResponse: AdapterResponse;
-	readonly kontentErrorResponse?: KontentErrorResponseData;
+	readonly kontentErrorResponse?: ErrorResponseData;
 }): string {
 	const details = kontentErrorResponse ? getKontentErrorResponseMessage(adapterResponse, kontentErrorResponse) : undefined;
 	return `Failed to execute '${method}' request '${url}'.${details ? ` ${details}` : ""}`;
@@ -30,16 +30,16 @@ export function getErrorMessage({
 /**
  * Checks if the given JSON value is a Kontent API error response data.
  */
-export function isKontentErrorResponseData(json: JsonValue): json is KontentErrorResponseData {
+export function isKontentErrorResponseData(json: JsonValue): json is ErrorResponseData {
 	if (!json) {
 		return false;
 	}
 
 	if (
 		json instanceof Object &&
-		("message" satisfies keyof KontentErrorResponseData) in json &&
-		("request_id" satisfies keyof KontentErrorResponseData) in json &&
-		("error_code" satisfies keyof KontentErrorResponseData) in json
+		("message" satisfies keyof ErrorResponseData) in json &&
+		("request_id" satisfies keyof ErrorResponseData) in json &&
+		("error_code" satisfies keyof ErrorResponseData) in json
 	) {
 		return true;
 	}
@@ -47,7 +47,7 @@ export function isKontentErrorResponseData(json: JsonValue): json is KontentErro
 	return false;
 }
 
-function getValidationErrorMessage(validationErrors?: readonly KontentValidationError[]): string | undefined {
+function getValidationErrorMessage(validationErrors?: readonly ValidationError[]): string | undefined {
 	if (!validationErrors?.length) {
 		return undefined;
 	}
@@ -63,7 +63,7 @@ function getValidationErrorMessage(validationErrors?: readonly KontentValidation
 		.join(", ");
 }
 
-function getKontentErrorResponseMessage(adapterResponse: AdapterResponse, kontentErrorResponse: KontentErrorResponseData): string {
+function getKontentErrorResponseMessage(adapterResponse: AdapterResponse, kontentErrorResponse: ErrorResponseData): string {
 	const validationErrorMessage = getValidationErrorMessage(kontentErrorResponse.validation_errors);
 	return `Request failed with status '${adapterResponse.status}' and status text '${adapterResponse.statusText}'.${kontentErrorResponse.message}${validationErrorMessage ? ` ${validationErrorMessage}` : ""}`;
 }

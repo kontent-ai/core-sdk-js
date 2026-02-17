@@ -11,17 +11,17 @@ export function getDefaultHttpAdapter(): HttpAdapter {
 				body: options.body,
 			});
 
-			const sdkResponseHeaders = toSdkHeaders(response.headers);
+			const sdkHeaders = toSdkHeaders(response.headers);
 
 			return {
 				isValidResponse: response.ok,
-				responseHeaders: sdkResponseHeaders,
+				responseHeaders: sdkHeaders,
 				status: response.status,
 				statusText: response.statusText,
 				url: options.url,
 				toBlobAsync: async () => await response.blob(),
 				toJsonAsync: async () => {
-					if (isApplicationJsonResponseType(sdkResponseHeaders)) {
+					if (isApplicationJsonResponseType(sdkHeaders)) {
 						return (await response.json()) as JsonValue;
 					}
 

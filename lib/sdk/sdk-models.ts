@@ -4,7 +4,7 @@
  */
 
 import type { AdapterResponse, HttpResponse, HttpService, RequestBody, ResponseData } from "../http/http.models.js";
-import type { SdkError } from "../models/error.models.js";
+import type { KontentSdkError } from "../models/error.models.js";
 import type { Prettify } from "../models/utility.models.js";
 
 export type QueryResponseMeta<TMeta = unknown> = Pick<AdapterResponse, "status" | "responseHeaders" | "url"> & {
@@ -82,5 +82,5 @@ type Success = {
 };
 type Failure = {
 	readonly success: false;
-	readonly error: SdkError;
+	readonly error: KontentSdkError;
 };

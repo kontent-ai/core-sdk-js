@@ -1,6 +1,6 @@
 import { match, P } from "ts-pattern";
-import type { CommonHeaderNames, Header, HttpMethod, KontentErrorResponseData, RetryStrategyOptions } from "../models/core.models.js";
-import type { SdkError, SdkErrorDetails } from "../models/error.models.js";
+import type { CommonHeaderNames, ErrorResponseData, Header, HttpMethod, RetryStrategyOptions } from "../models/core.models.js";
+import type { ErrorDetails, KontentSdkError } from "../models/error.models.js";
 import type { JsonValue } from "../models/json.models.js";
 import { sdkInfo } from "../sdk-info.js";
 import { isBlob, isNotUndefined } from "../utils/core.utils.js";
@@ -227,12 +227,12 @@ async function withRetryAsync<TResponseData extends ResponseData, TRequestBody e
 	});
 }
 
-async function getErrorForInvalidResponseAsync(response: AdapterResponse, method: HttpMethod): Promise<SdkError> {
+async function getErrorForInvalidResponseAsync(response: AdapterResponse, method: HttpMethod): Promise<KontentSdkError> {
 	return createSdkError(await getErrorDetailsForInvalidResponseAsync(response, method));
 }
 
-async function getErrorDetailsForInvalidResponseAsync(response: AdapterResponse, method: HttpMethod): Promise<SdkErrorDetails> {
-	const sharedErrorData: Pick<SdkErrorDetails, "message" | "url"> = {
+async function getErrorDetailsForInvalidResponseAsync(response: AdapterResponse, method: HttpMethod): Promise<ErrorDetails> {
+	const sharedErrorData: Pick<ErrorDetails, "message" | "url"> = {
 		message: getErrorMessage({
 			url: response.url,
 			adapterResponse: response,
@@ -242,7 +242,7 @@ async function getErrorDetailsForInvalidResponseAsync(response: AdapterResponse,
 	};
 
 	return await match(response)
-		.returnType<Promise<SdkErrorDetails>>()
+		.returnType<Promise<ErrorDetails>>()
 		.with({ status: P.union(401, 404) }, async (m) => ({
 			...sharedErrorData,
 			reason: m.status === 401 ? "unauthorized" : "notFound",
@@ -269,9 +269,9 @@ function parseRequestBody({
 }: {
 	readonly requestBody: RequestBody;
 	readonly url: string;
-}): Result<AdapterRequestBody, SdkError> {
+}): Result<AdapterRequestBody, KontentSdkError> {
 	return match(requestBody)
-		.returnType<Result<AdapterRequestBody, SdkError>>()
+		.returnType<Result<AdapterRequestBody, KontentSdkError>>()
 		.with(P.nullish, () => ({
 			success: true,
 			data: null,
@@ -302,7 +302,7 @@ function parseRequestBody({
 		});
 }
 
-async function getKontentErrorDataAsync(response: AdapterResponse): Promise<KontentErrorResponseData | undefined> {
+async function getKontentErrorDataAsync(response: AdapterResponse): Promise<ErrorResponseData | undefined> {
 	if (isApplicationJsonResponseType(response.responseHeaders)) {
 		const json = await response.toJsonAsync();
 
@@ -321,7 +321,7 @@ type ParsedRequest = {
 
 function parseAndValidateRequest<TRequestBody extends RequestBody>(
 	options: ExecuteRequestOptions<TRequestBody>,
-): Result<ParsedRequest, SdkError> {
+): Result<ParsedRequest, KontentSdkError> {
 	const { success: urlParsedSuccess, data: parsedUrl, error: urlError } = parseUrl(options.url);
 
 	if (!urlParsedSuccess) {
@@ -353,7 +353,7 @@ function parseAndValidateRequest<TRequestBody extends RequestBody>(
 	};
 }
 
-function parseUrl(url: string): Result<URL, SdkError> {
+function parseUrl(url: string): Result<URL, KontentSdkError> {
 	const { success, data: parsedUrl, error } = tryCatch(() => new URL(url));
 
 	if (!success) {

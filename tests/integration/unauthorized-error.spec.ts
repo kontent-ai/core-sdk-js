@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { getDefaultHttpService } from "../../lib/http/http.service.js";
-import { type ErrorReason, SdkError } from "../../lib/models/error.models.js";
+import { type ErrorReason, KontentSdkError } from "../../lib/models/error.models.js";
 import { getIntegrationTestConfig } from "../integration-tests.config.js";
 
 describe("Integration tests - Unauthorized error", async () => {
@@ -26,7 +26,7 @@ describe("Integration tests - Unauthorized error", async () => {
 	});
 
 	it("Error should be an instance of SdkError", () => {
-		expect(error).toBeInstanceOf(SdkError);
+		expect(error).toBeInstanceOf(KontentSdkError);
 	});
 
 	it("Error reason should be 'unauthorized' ", () => {

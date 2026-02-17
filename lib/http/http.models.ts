@@ -1,5 +1,5 @@
 import type { Header, HttpMethod, RetryStrategyOptions } from "../models/core.models.js";
-import type { SdkError } from "../models/error.models.js";
+import type { KontentSdkError } from "../models/error.models.js";
 import type { JsonObject, JsonValue } from "../models/json.models.js";
 import type { LiteralUnionNumber } from "../models/utility.models.js";
 import type { QueryResponse } from "../sdk/sdk-models.js";
@@ -13,7 +13,7 @@ type Success<TData> = {
 type Failure = {
 	readonly success: false;
 	readonly response?: never;
-	readonly error: SdkError;
+	readonly error: KontentSdkError;
 };
 
 export type HttpResult<TData> = Success<TData> | Failure;

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { KontentErrorResponseData } from "../../../lib/models/core.models.js";
+import type { ErrorResponseData } from "../../../lib/models/core.models.js";
 import { isKontentErrorResponseData } from "../../../lib/utils/error.utils.js";
 
 describe("isKontentErrorResponseData utility function", () => {
@@ -9,7 +9,7 @@ describe("isKontentErrorResponseData utility function", () => {
 				message: "Error message",
 				request_id: "123",
 				error_code: 0,
-			} satisfies KontentErrorResponseData),
+			} satisfies ErrorResponseData),
 		).toBe(true);
 	});
 
@@ -18,21 +18,21 @@ describe("isKontentErrorResponseData utility function", () => {
 			isKontentErrorResponseData({
 				message: "Error message",
 				error_code: 0,
-			} satisfies Omit<KontentErrorResponseData, "request_id">),
+			} satisfies Omit<ErrorResponseData, "request_id">),
 		).toBe(false);
 
 		expect(
 			isKontentErrorResponseData({
 				request_id: "123",
 				error_code: 0,
-			} satisfies Omit<KontentErrorResponseData, "message">),
+			} satisfies Omit<ErrorResponseData, "message">),
 		).toBe(false);
 
 		expect(
 			isKontentErrorResponseData({
 				message: "Error message",
 				request_id: "123",
-			} satisfies Omit<KontentErrorResponseData, "error_code">),
+			} satisfies Omit<ErrorResponseData, "error_code">),
 		).toBe(false);
 	});
 });

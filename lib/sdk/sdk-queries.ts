@@ -216,7 +216,7 @@ async function resolvePagingQueryAsync<TResponseData extends JsonValue, TRequest
 	if (!success) {
 		return {
 			success: false,
-			error: error,
+			error,
 		};
 	}
 

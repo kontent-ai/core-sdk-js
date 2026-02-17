@@ -1,4 +1,4 @@
-import type { SdkError } from "./error.models.js";
+import type { KontentSdkError } from "./error.models.js";
 import type { LiteralUnion, PickStringLiteral } from "./utility.models.js";
 
 /**
@@ -32,18 +32,18 @@ export type Header = {
 
 export type HttpMethod = "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
 
-export type KontentValidationError = {
+export type ValidationError = {
 	readonly message: string;
 	readonly path?: string;
 	readonly line?: number;
 	readonly position?: number;
 };
 
-export type KontentErrorResponseData = {
+export type ErrorResponseData = {
 	readonly message: string;
 	readonly request_id: string;
 	readonly error_code: number;
-	readonly validation_errors?: readonly KontentValidationError[];
+	readonly validation_errors?: readonly ValidationError[];
 };
 
 export type RetryStrategyOptions = {
@@ -59,14 +59,14 @@ export type RetryStrategyOptions = {
 	 *
 	 * If not provided, the default implementation will be used.
 	 */
-	readonly canRetryError?: (error: SdkError) => boolean;
+	readonly canRetryError?: (error: KontentSdkError) => boolean;
 
 	/**
 	 * Function to determine the delay between requests in milliseconds.
 	 *
 	 * If not provided, the default implementation will be used.
 	 */
-	readonly getDelayBetweenRetriesMs?: (error: SdkError) => number;
+	readonly getDelayBetweenRetriesMs?: (error: KontentSdkError) => number;
 
 	/**
 	 * Whether to log the retry attempt.

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { getDefaultHttpService } from "../../../lib/http/http.service.js";
-import { type ErrorReason, SdkError } from "../../../lib/models/error.models.js";
+import { type ErrorReason, KontentSdkError } from "../../../lib/models/error.models.js";
 
 const url = "invalid-url";
 
@@ -20,7 +20,7 @@ describe("Invalid url fail", async () => {
 	});
 
 	it("Error should be an instance of SdkError", () => {
-		expect(error).toBeInstanceOf(SdkError);
+		expect(error).toBeInstanceOf(KontentSdkError);
 	});
 
 	it("Retry attempt should be undefined because invalid should not be retried", () => {

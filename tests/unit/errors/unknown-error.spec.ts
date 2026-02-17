@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { getDefaultHttpService } from "../../../lib/http/http.service.js";
-import { SdkError } from "../../../lib/models/error.models.js";
+import { KontentSdkError } from "../../../lib/models/error.models.js";
 import type { ErrorReason } from "../../../lib/public_api.js";
 
 class CustomError {}
@@ -31,7 +31,7 @@ describe("Unknown error", async () => {
 	});
 
 	it("Error should be an instance of SdkError", () => {
-		expect(error).toBeInstanceOf(SdkError);
+		expect(error).toBeInstanceOf(KontentSdkError);
 	});
 
 	it("Success should be false", () => {

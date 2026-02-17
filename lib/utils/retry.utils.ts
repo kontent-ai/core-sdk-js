@@ -1,7 +1,7 @@
 import { match, P } from "ts-pattern";
 import type { HttpResponse, RequestBody, ResponseData } from "../http/http.models.js";
 import type { Header, HttpMethod, RetryStrategyOptions } from "../models/core.models.js";
-import type { SdkError } from "../models/error.models.js";
+import type { KontentSdkError } from "../models/error.models.js";
 import { sleepAsync } from "./core.utils.js";
 import { createSdkError } from "./error.utils.js";
 import { getRetryAfterHeaderValue } from "./header.utils.js";
@@ -122,7 +122,7 @@ function getRetryResult({
 	options,
 }: {
 	readonly retryAttempt: number;
-	readonly error: SdkError;
+	readonly error: KontentSdkError;
 	readonly options: Required<RetryStrategyOptions>;
 }): RetryResult {
 	return match({ retryAttempt, options, error })
@@ -145,7 +145,7 @@ function getRetryResult({
 		}));
 }
 
-function getRetryMsFromHeaders({ error }: { readonly error: SdkError }): number {
+function getRetryMsFromHeaders({ error }: { readonly error: KontentSdkError }): number {
 	return match(error)
 		.returnType<number>()
 		.with({ details: { responseHeaders: P.nonNullable } }, (m) => {

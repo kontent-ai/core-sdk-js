@@ -2,7 +2,7 @@ import { match, P } from "ts-pattern";
 import type { ZodError } from "zod";
 import type { AdapterResponse, HttpServiceStatus, RequestBody, ResponseData } from "../http/http.models.js";
 import type { SuccessfulHttpResponse } from "../sdk/sdk-models.js";
-import type { KontentErrorResponseData, RetryStrategyOptions } from "./core.models.js";
+import type { ErrorResponseData, RetryStrategyOptions } from "./core.models.js";
 
 export type ErrorReason =
 	| "unauthorized"
@@ -15,9 +15,9 @@ export type ErrorReason =
 	| "noResponses";
 
 export type ErrorReasonData =
-	| ReasonData<"unauthorized", ErrorWithKontentErrorResponse>
-	| ReasonData<"invalidResponse", ErrorWithKontentErrorResponse>
-	| ReasonData<"notFound", ErrorWithKontentErrorResponse>
+	| ReasonData<"unauthorized", ErrorWithKontentResponse>
+	| ReasonData<"invalidResponse", ErrorWithKontentResponse>
+	| ReasonData<"notFound", ErrorWithKontentResponse>
 	| ReasonData<"invalidBody", ErrorWithOriginalError>
 	| ReasonData<"invalidUrl", ErrorWithOriginalError>
 	| ReasonData<"unknown", ErrorWithOriginalError>
@@ -36,7 +36,7 @@ export type ErrorReasonData =
 			}
 	  >;
 
-export type SdkErrorDetails = {
+export type ErrorDetails = {
 	/**
 	 * The message of the error
 	 */
@@ -58,18 +58,18 @@ export type SdkErrorDetails = {
 	readonly retryAttempt?: number;
 } & ErrorReasonData;
 
-export class SdkError extends Error {
-	readonly details: SdkErrorDetails;
+export class KontentSdkError extends Error {
+	readonly details: ErrorDetails;
 
-	constructor(details: SdkErrorDetails) {
+	constructor(details: ErrorDetails) {
 		super(getErrorMessage(details));
 
 		this.details = details;
 	}
 }
 
-type ErrorWithKontentErrorResponse = {
-	readonly kontentErrorResponse: KontentErrorResponseData | undefined;
+type ErrorWithKontentResponse = {
+	readonly kontentErrorResponse: ErrorResponseData | undefined;
 } & Pick<AdapterResponse<HttpServiceStatus>, "isValidResponse" | "responseHeaders" | "status" | "statusText">;
 
 type ErrorWithOriginalError = {
@@ -80,7 +80,7 @@ type ReasonData<TReason extends ErrorReason, TData> = {
 	readonly reason: TReason;
 } & TData;
 
-function getErrorMessage(error: SdkErrorDetails): string {
+function getErrorMessage(error: ErrorDetails): string {
 	return match(error)
 		.returnType<string>()
 		.with(
