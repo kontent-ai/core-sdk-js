@@ -15,6 +15,7 @@ import type {
 	DefaultHttpServiceConfig,
 	DownloadFileRequestOptions,
 	ExecuteRequestOptions,
+	HttpAdapter,
 	HttpResponse,
 	HttpService,
 	RequestBody,
@@ -76,47 +77,36 @@ async function resolveRequestAsync<TResponseData extends ResponseData, TRequestB
 	return await withUnknownErrorHandlingAsync({
 		url: options.url,
 		funcAsync: async () => {
-			const { success: urlParsedSuccess, data: parsedUrl, error: urlError } = parseUrl(options.url);
+			const { success: parseSuccess, data: parsedRequest, error: parseError } = parseAndValidateRequest(options);
 
-			if (!urlParsedSuccess) {
+			if (!parseSuccess) {
 				return {
 					success: false,
-					error: urlError,
+					error: parseError,
 				};
 			}
 
-			const {
-				success: requestBodyParsedSuccess,
-				data: parsedRequestBody,
-				error: requestBodyError,
-			} = parseRequestBody({ requestBody: options.body, url: options.url });
-
-			if (!requestBodyParsedSuccess) {
-				return {
-					success: false,
-					error: requestBodyError,
-				};
-			}
-
-			const requestHeaders = getRequestHeaders({
-				headers: [...(config?.requestHeaders ?? []), ...(options.requestHeaders ?? [])],
+			const requestHeaders = buildRequestHeaders({
+				configHeaders: config?.requestHeaders,
+				optionHeaders: options.requestHeaders,
 				body: options.body,
 			});
 
 			return await withRetryAsync({
 				funcAsync: async () => {
-					const adapter = config?.adapter ?? getDefaultHttpAdapter();
+					const adapterResponse = await executeWithAdapter({
+						adapter: config?.adapter ?? getDefaultHttpAdapter(),
+						parsedUrl: parsedRequest.parsedUrl,
+						method: options.method,
+						requestHeaders,
+						parsedBody: parsedRequest.parsedBody,
+					});
 
 					return await resolveResponseAsync({
 						method: options.method,
 						requestBody: options.body,
 						requestHeaders,
-						response: await adapter.requestAsync({
-							url: parsedUrl.toString(),
-							method: options.method,
-							requestHeaders,
-							body: parsedRequestBody,
-						}),
+						response: adapterResponse,
 						resolveDataAsync,
 					});
 				},
@@ -189,6 +179,27 @@ async function resolveResponseAsync<TResponseData extends ResponseData, TRequest
 			requestHeaders: requestHeaders,
 		},
 	};
+}
+
+async function executeWithAdapter({
+	adapter,
+	parsedUrl,
+	method,
+	requestHeaders,
+	parsedBody,
+}: {
+	readonly adapter: HttpAdapter;
+	readonly parsedUrl: URL;
+	readonly method: HttpMethod;
+	readonly requestHeaders: readonly Header[];
+	readonly parsedBody: AdapterRequestBody;
+}): Promise<AdapterResponse> {
+	return await adapter.requestAsync({
+		url: parsedUrl.toString(),
+		method,
+		requestHeaders,
+		body: parsedBody,
+	});
 }
 
 async function withRetryAsync<TResponseData extends ResponseData, TRequestBody extends RequestBody>({
@@ -303,6 +314,45 @@ async function getKontentErrorDataAsync(response: AdapterResponse): Promise<Kont
 	return undefined;
 }
 
+type ParsedRequest = {
+	readonly parsedUrl: URL;
+	readonly parsedBody: AdapterRequestBody;
+};
+
+function parseAndValidateRequest<TRequestBody extends RequestBody>(
+	options: ExecuteRequestOptions<TRequestBody>,
+): Result<ParsedRequest, SdkError> {
+	const { success: urlParsedSuccess, data: parsedUrl, error: urlError } = parseUrl(options.url);
+
+	if (!urlParsedSuccess) {
+		return {
+			success: false,
+			error: urlError,
+		};
+	}
+
+	const {
+		success: requestBodyParsedSuccess,
+		data: parsedRequestBody,
+		error: requestBodyError,
+	} = parseRequestBody({ requestBody: options.body, url: options.url });
+
+	if (!requestBodyParsedSuccess) {
+		return {
+			success: false,
+			error: requestBodyError,
+		};
+	}
+
+	return {
+		success: true,
+		data: {
+			parsedUrl,
+			parsedBody: parsedRequestBody,
+		},
+	};
+}
+
 function parseUrl(url: string): Result<URL, SdkError> {
 	const { success, data: parsedUrl, error } = tryCatch(() => new URL(url));
 
@@ -324,15 +374,18 @@ function parseUrl(url: string): Result<URL, SdkError> {
 	};
 }
 
-function getRequestHeaders({
-	headers,
+function buildRequestHeaders({
+	configHeaders,
+	optionHeaders,
 	body,
 }: {
-	readonly headers: readonly Header[] | undefined;
+	readonly configHeaders: readonly Header[] | undefined;
+	readonly optionHeaders: readonly Header[] | undefined;
 	readonly body: Blob | JsonValue;
 }): readonly Header[] {
-	const existingContentTypeHeader = getExistingContentTypeHeader(headers ?? []);
-	const existingSdkVersionHeader = getExistingSdkVersionHeader(headers ?? []);
+	const combinedHeaders: readonly Header[] = [...(configHeaders ?? []), ...(optionHeaders ?? [])];
+	const existingContentTypeHeader = getExistingContentTypeHeader(combinedHeaders);
+	const existingSdkVersionHeader = getExistingSdkVersionHeader(combinedHeaders);
 
 	const contentTypeHeader = existingContentTypeHeader ? undefined : createDefaultContentTypeHeader(body);
 	const sdkVersionHeader = existingSdkVersionHeader
@@ -345,7 +398,7 @@ function getRequestHeaders({
 
 	const contentLengthHeader = body instanceof Blob ? createDefaultContentLengthHeader(body) : undefined;
 
-	return [...(headers ?? []), contentTypeHeader, contentLengthHeader, sdkVersionHeader].filter(isNotUndefined);
+	return [...combinedHeaders, contentTypeHeader, contentLengthHeader, sdkVersionHeader].filter(isNotUndefined);
 }
 
 function createDefaultContentTypeHeader(body: Blob | JsonValue): Header {
