@@ -208,7 +208,7 @@ function getCombinedRequestHeaders({
 	];
 }
 
-async function resolvePagingQueryAsync<TResponsePayload extends JsonValue, TRequestBody extends RequestBody, TMeta = EmptyObject>(
+async function resolvePagingQueryAsync<TResponsePayload extends JsonValue, TRequestBody extends RequestBody = null, TMeta = EmptyObject>(
 	data: Omit<ResolveQueryData<TResponsePayload, TRequestBody, TMeta>, "nextPageState" | "getNextPageData"> & {
 		readonly getNextPageData: GetNextPageData<TResponsePayload, TMeta>;
 		readonly paginationConfig: PaginationConfig;
@@ -227,7 +227,7 @@ async function resolvePagingQueryAsync<TResponsePayload extends JsonValue, TRequ
 	return validateAndBuildPagingResult(responses, data.request.url);
 }
 
-async function fetchAllPagesAsync<TResponsePayload extends JsonValue, TRequestBody extends RequestBody, TMeta = EmptyObject>(
+async function fetchAllPagesAsync<TResponsePayload extends JsonValue, TRequestBody extends RequestBody = null, TMeta = EmptyObject>(
 	data: Omit<ResolveQueryData<TResponsePayload, TRequestBody, TMeta>, "nextPageState"> & {
 		readonly getNextPageData: GetNextPageData<TResponsePayload, TMeta>;
 		readonly paginationConfig: PaginationConfig;
