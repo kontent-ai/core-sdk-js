@@ -5,7 +5,7 @@
 
 import { match, P } from "ts-pattern";
 import type { ZodError, ZodType } from "zod";
-import type { HttpService, Pagination, RequestBody } from "../http/http.models.js";
+import type { GetNextPageData, HttpService, PaginationConfig, RequestBody } from "../http/http.models.js";
 import { getDefaultHttpService } from "../http/http.service.js";
 import type { CommonHeaderNames, ContinuationHeaderName, Header, SDKInfo } from "../models/core.models.js";
 import type { JsonValue } from "../models/json.models.js";
@@ -34,7 +34,7 @@ type MetadataMapperConfig<TResponsePayload extends JsonValue, TRequestBody exten
 	readonly mapMetadata: MetadataMapper<TResponsePayload, TRequestBody, TMeta>;
 };
 type ResolveQueryData<TResponsePayload extends JsonValue, TRequestBody extends RequestBody, TMeta> = {
-	readonly pagination: NextPageStateWithRequest;
+	readonly nextPageState: NextPageStateWithRequest;
 	readonly request: Parameters<HttpService["requestAsync"]>[number] & { readonly body: TRequestBody };
 	readonly config: SdkConfig;
 	readonly zodSchema: ZodType<TResponsePayload>;
@@ -81,13 +81,13 @@ type FetchAllPagesResult<TResponsePayload extends JsonValue, TMeta> =
 	  };
 
 export function createQuery<TResponsePayload extends JsonValue, TRequestBody extends RequestBody, TMeta = EmptyObject>(
-	data: Omit<ResolveQueryData<TResponsePayload, TRequestBody, TMeta>, "continuationToken" | "pagination" | "pageIndex">,
+	data: Omit<ResolveQueryData<TResponsePayload, TRequestBody, TMeta>, "continuationToken" | "nextPageState" | "pageIndex">,
 ): Pick<Query<TResponsePayload, TMeta>, "toPromise"> {
 	return {
 		toPromise: async () => {
 			return await resolveQueryAsync<TResponsePayload, TRequestBody, TMeta>({
 				...data,
-				pagination: {
+				nextPageState: {
 					hasNextPage: true,
 					pageSource: "firstRequest",
 				},
@@ -97,16 +97,17 @@ export function createQuery<TResponsePayload extends JsonValue, TRequestBody ext
 }
 
 export function createPagingQuery<TResponsePayload extends JsonValue, TRequestBody extends RequestBody, TMeta = EmptyObject>(
-	data: Omit<ResolveQueryData<TResponsePayload, TRequestBody, TMeta>, "pagination" | "pageIndex"> & {
-		readonly pagination: Pagination<TResponsePayload, TMeta>;
+	data: Omit<ResolveQueryData<TResponsePayload, TRequestBody, TMeta>, "nextPageState" | "pageIndex"> & {
+		readonly getNextPageData: GetNextPageData<TResponsePayload, TMeta>;
 	},
 ): Pick<PagingQuery<TResponsePayload, TMeta>, "toPromise" | "toAllPromise"> {
 	return {
 		...createQuery<TResponsePayload, TRequestBody, TMeta>(data),
-		toAllPromise: async () => {
+		toAllPromise: async (config: PaginationConfig) => {
 			return await resolvePagingQueryAsync<TResponsePayload, TRequestBody, TMeta>({
 				...data,
 				pageIndex: 0,
+				paginationConfig: config,
 			});
 		},
 	};
@@ -118,28 +119,30 @@ export function extractContinuationToken(responseHeaders: readonly Header[]): st
 }
 
 function resolveNextPageState<TResponsePayload extends JsonValue, TMeta>({
-	pagination,
+	paginationConfig,
+	getNextPageData,
 	pageIndex,
 	response,
 }: {
-	readonly pagination: Pagination<TResponsePayload, TMeta>;
+	readonly getNextPageData: GetNextPageData<TResponsePayload, TMeta>;
+	readonly paginationConfig: PaginationConfig;
 	readonly pageIndex: number;
 	readonly response: QueryResponse<TResponsePayload, TMeta> | undefined;
 }): NextPageState {
-	return match({ pagination, pageIndex, response })
+	return match({ getNextPageData, paginationConfig, pageIndex, response })
 		.returnType<NextPageState>()
 		.with({ response: undefined }, () => ({
 			hasNextPage: true,
 			pageSource: "firstRequest",
 		}))
-		.with({ pagination: { config: { maxPagesCount: 0 } } }, () => ({
+		.with({ paginationConfig: { maxPagesCount: 0 } }, () => ({
 			hasNextPage: false,
 		}))
-		.with({ pagination: { config: { maxPagesCount: pageIndex } } }, () => ({
+		.with({ paginationConfig: { maxPagesCount: pageIndex } }, () => ({
 			hasNextPage: false,
 		}))
 		.with({ response: P.not(undefined) }, (m) => {
-			const responsePageData = m.pagination.getNextPageData(m.response);
+			const responsePageData = m.getNextPageData(m.response);
 
 			return match(responsePageData)
 				.returnType<NextPageState>()
@@ -206,8 +209,9 @@ function getCombinedRequestHeaders({
 }
 
 async function resolvePagingQueryAsync<TResponsePayload extends JsonValue, TRequestBody extends RequestBody, TMeta = EmptyObject>(
-	data: Omit<ResolveQueryData<TResponsePayload, TRequestBody, TMeta>, "pagination"> & {
-		readonly pagination: Pagination<TResponsePayload, TMeta>;
+	data: Omit<ResolveQueryData<TResponsePayload, TRequestBody, TMeta>, "nextPageState" | "getNextPageData"> & {
+		readonly getNextPageData: GetNextPageData<TResponsePayload, TMeta>;
+		readonly paginationConfig: PaginationConfig;
 		readonly pageIndex: number;
 	},
 ): Promise<PagingQueryPromiseResult<TResponsePayload, TMeta>> {
@@ -224,13 +228,15 @@ async function resolvePagingQueryAsync<TResponsePayload extends JsonValue, TRequ
 }
 
 async function fetchAllPagesAsync<TResponsePayload extends JsonValue, TRequestBody extends RequestBody, TMeta = EmptyObject>(
-	data: Omit<ResolveQueryData<TResponsePayload, TRequestBody, TMeta>, "pagination"> & {
-		readonly pagination: Pagination<TResponsePayload, TMeta>;
+	data: Omit<ResolveQueryData<TResponsePayload, TRequestBody, TMeta>, "nextPageState"> & {
+		readonly getNextPageData: GetNextPageData<TResponsePayload, TMeta>;
+		readonly paginationConfig: PaginationConfig;
 		readonly pageIndex: number;
 	},
 ): Promise<FetchAllPagesResult<TResponsePayload, TMeta>> {
 	const initialPageState: NextPageState = resolveNextPageState({
-		pagination: data.pagination,
+		getNextPageData: data.getNextPageData,
+		paginationConfig: data.paginationConfig,
 		pageIndex: data.pageIndex,
 		response: undefined,
 	});
@@ -247,8 +253,9 @@ async function fetchAllPagesInternal<TResponsePayload extends JsonValue, TReques
 	nextPageState,
 	responses,
 }: {
-	readonly queryData: Omit<ResolveQueryData<TResponsePayload, TRequestBody, TMeta>, "pagination"> & {
-		readonly pagination: Pagination<TResponsePayload, TMeta>;
+	readonly queryData: Omit<ResolveQueryData<TResponsePayload, TRequestBody, TMeta>, "nextPageState"> & {
+		readonly getNextPageData: GetNextPageData<TResponsePayload, TMeta>;
+		readonly paginationConfig: PaginationConfig;
 		readonly pageIndex: number;
 	};
 	readonly nextPageState: NextPageState;
@@ -263,7 +270,7 @@ async function fetchAllPagesInternal<TResponsePayload extends JsonValue, TReques
 
 	const { success, error, response } = await resolveQueryAsync<TResponsePayload, TRequestBody, TMeta>({
 		...queryData,
-		pagination: nextPageState,
+		nextPageState: nextPageState,
 	});
 
 	if (!success) {
@@ -278,7 +285,8 @@ async function fetchAllPagesInternal<TResponsePayload extends JsonValue, TReques
 	return await fetchAllPagesInternal<TResponsePayload, TRequestBody, TMeta>({
 		queryData: queryData,
 		nextPageState: resolveNextPageState({
-			pagination: queryData.pagination,
+			getNextPageData: queryData.getNextPageData,
+			paginationConfig: queryData.paginationConfig,
 			pageIndex: updatedResponses.length,
 			response: response,
 		}),
@@ -317,15 +325,15 @@ async function resolveQueryAsync<TResponsePayload extends JsonValue, TRequestBod
 	zodSchema,
 	sdkInfo,
 	authorizationApiKey,
-	pagination,
+	nextPageState,
 }: ResolveQueryData<TResponsePayload, TRequestBody, TMeta>): QueryPromiseResult<TResponsePayload, TMeta> {
 	const { success, response, error } = await getHttpService(config).requestAsync<TResponsePayload, TRequestBody>({
 		body: request.body,
-		url: pagination?.nextPageUrl ?? request.url,
+		url: nextPageState?.nextPageUrl ?? request.url,
 		method: request.method,
 		requestHeaders: getCombinedRequestHeaders({
 			requestHeaders: request.requestHeaders ?? [],
-			continuationToken: pagination?.continuationToken,
+			continuationToken: nextPageState?.continuationToken,
 			authorizationApiKey: authorizationApiKey,
 			sdkInfo,
 		}),

@@ -32,18 +32,16 @@ describe("Basic paging query with continuation token", async () => {
 
 	const { success, error, responses, lastContinuationToken } = await createPagingQuery({
 		authorizationApiKey: undefined,
-		pagination: {
-			getNextPageData: () => {
-				if (responseIndex < nextPagesCount) {
-					responseIndex++;
-					// mock next response
-					mockResponseByIndex(responseIndex);
-					return {
-						continuationToken: requestContinuationToken,
-					};
-				}
-				return {};
-			},
+		getNextPageData: () => {
+			if (responseIndex < nextPagesCount) {
+				responseIndex++;
+				// mock next response
+				mockResponseByIndex(responseIndex);
+				return {
+					continuationToken: requestContinuationToken,
+				};
+			}
+			return {};
 		},
 		mapMetadata: () => ({}),
 		config: {

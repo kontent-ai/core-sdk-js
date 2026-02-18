@@ -28,17 +28,16 @@ describe("Basic paging query with next page url", async () => {
 
 	const { success, error, responses } = await createPagingQuery({
 		authorizationApiKey: undefined,
-		pagination: {
-			getNextPageData: () => {
-				if (responseIndex < nextPagesCount) {
-					responseIndex++;
-					return {
-						nextPageUrl: getNextPageUrl(responseIndex),
-					};
-				}
-				return {};
-			},
+		getNextPageData: () => {
+			if (responseIndex < nextPagesCount) {
+				responseIndex++;
+				return {
+					nextPageUrl: getNextPageUrl(responseIndex),
+				};
+			}
+			return {};
 		},
+
 		mapMetadata: () => ({}),
 		config: {
 			httpService: getDefaultHttpService(),

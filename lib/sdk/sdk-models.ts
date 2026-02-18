@@ -3,7 +3,7 @@
  * to keep common code and behavior consistent.
  */
 
-import type { AdapterResponse, HttpResponse, HttpService, RequestBody, ResponseData } from "../http/http.models.js";
+import type { AdapterResponse, HttpResponse, HttpService, PaginationConfig, RequestBody, ResponseData } from "../http/http.models.js";
 import type { KontentSdkError } from "../models/error.models.js";
 import type { Prettify } from "../models/utility.models.js";
 
@@ -53,7 +53,7 @@ export type Query<TResponsePayload, TMeta = unknown> = {
 };
 
 export type PagingQuery<TResponsePayload, TMeta = unknown> = Query<TResponsePayload, TMeta> & {
-	toAllPromise(): Promise<PagingQueryResult<QueryResponse<TResponsePayload, TMeta>>>;
+	toAllPromise(config?: PaginationConfig): Promise<PagingQueryResult<QueryResponse<TResponsePayload, TMeta>>>;
 };
 
 export type SuccessfulHttpResponse<TResponsePayload extends ResponseData, TRequestBody extends RequestBody> = Prettify<

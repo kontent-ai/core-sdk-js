@@ -125,11 +125,6 @@ export type PaginationConfig = {
 	readonly maxPagesCount?: number;
 };
 
-export type Pagination<TResponsePayload extends JsonValue, TMeta> = {
-	readonly getNextPageData: GetNextPageData<TResponsePayload, TMeta>;
-	readonly config?: PaginationConfig;
-};
-
 /**
  * Defines the adapter responsible solely for executing HTTP requests.
  *

@@ -29,19 +29,14 @@ describe("Basic paging query with page limit", async () => {
 
 	const { success, error, responses } = await createPagingQuery({
 		authorizationApiKey: undefined,
-		pagination: {
-			config: {
-				maxPagesCount: pageLimit,
-			},
-			getNextPageData: () => {
-				if (responseIndex < nextPagesCount) {
-					responseIndex++;
-					return {
-						nextPageUrl: getNextPageUrl(responseIndex),
-					};
-				}
-				return {};
-			},
+		getNextPageData: () => {
+			if (responseIndex < nextPagesCount) {
+				responseIndex++;
+				return {
+					nextPageUrl: getNextPageUrl(responseIndex),
+				};
+			}
+			return {};
 		},
 		mapMetadata: () => ({}),
 		config: {
@@ -57,7 +52,9 @@ describe("Basic paging query with page limit", async () => {
 			method: "GET",
 			body: {},
 		},
-	}).toAllPromise();
+	}).toAllPromise({
+		maxPagesCount: pageLimit,
+	});
 
 	it("Error should be undefined", () => {
 		expect(error).toBeUndefined();

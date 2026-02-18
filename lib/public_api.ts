@@ -11,7 +11,6 @@ export type {
 	HttpResponse,
 	HttpService,
 	HttpServiceStatus,
-	Pagination,
 	PaginationConfig,
 	UploadFileRequestOptions,
 } from "./http/http.models.js";
