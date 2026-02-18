@@ -37,7 +37,7 @@ describe("Download file - Success", async () => {
 	});
 
 	it("Blob should be the same as the fake blob", () => {
-		expect(response?.data).toBeInstanceOf(Blob);
-		expect(response?.data).toStrictEqual(fakeBlob);
+		expect(response?.payload).toBeInstanceOf(Blob);
+		expect(response?.payload).toStrictEqual(fakeBlob);
 	});
 });

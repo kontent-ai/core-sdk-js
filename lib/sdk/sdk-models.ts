@@ -11,8 +11,8 @@ export type QueryResponseMeta<TMeta = unknown> = Pick<AdapterResponse, "status" 
 	readonly continuationToken?: string;
 } & TMeta;
 
-export type QueryResponse<TResponseData, TMeta = unknown> = {
-	readonly data: TResponseData;
+export type QueryResponse<TResponsePayload, TMeta = unknown> = {
+	readonly payload: TResponsePayload;
 	readonly meta: QueryResponseMeta<TMeta>;
 };
 
@@ -47,17 +47,17 @@ export type SdkConfig = {
 	};
 };
 
-export type Query<TResponseData, TMeta = unknown> = {
+export type Query<TResponsePayload, TMeta = unknown> = {
 	toUrl(): string;
-	toPromise(): Promise<QueryResult<QueryResponse<TResponseData, TMeta>>>;
+	toPromise(): Promise<QueryResult<QueryResponse<TResponsePayload, TMeta>>>;
 };
 
-export type PagingQuery<TResponseData, TMeta = unknown> = Query<TResponseData, TMeta> & {
-	toAllPromise(): Promise<PagingQueryResult<QueryResponse<TResponseData, TMeta>>>;
+export type PagingQuery<TResponsePayload, TMeta = unknown> = Query<TResponsePayload, TMeta> & {
+	toAllPromise(): Promise<PagingQueryResult<QueryResponse<TResponsePayload, TMeta>>>;
 };
 
-export type SuccessfulHttpResponse<TResponseData extends ResponseData, TRequestBody extends RequestBody> = Prettify<
-	Extract<HttpResponse<TResponseData, TRequestBody>, { readonly success: true }>["response"]
+export type SuccessfulHttpResponse<TResponsePayload extends ResponseData, TRequestBody extends RequestBody> = Prettify<
+	Extract<HttpResponse<TResponsePayload, TRequestBody>, { readonly success: true }>["response"]
 >;
 
 export type ResultOfSuccessfulQuery<TQuery extends Query<unknown>> = Extract<
@@ -70,10 +70,10 @@ export type ResultOfSuccessfulQuery<TQuery extends Query<unknown>> = Extract<
  *
  * Ensures that consumers of this library handle both success and failure cases.
  */
-export type QueryResult<TResponse> = (Success & { readonly response: TResponse }) | (Failure & { readonly response?: never });
+export type QueryResult<TResponsePayload> = (Success & { readonly response: TResponsePayload }) | (Failure & { readonly response?: never });
 
-export type PagingQueryResult<TResponse> =
-	| (Success & { readonly responses: TResponse[]; readonly lastContinuationToken: string | undefined })
+export type PagingQueryResult<TResponsePayload> =
+	| (Success & { readonly responses: TResponsePayload[]; readonly lastContinuationToken: string | undefined })
 	| (Failure & { readonly responses?: never; readonly lastContinuationToken?: never });
 
 type Success = {

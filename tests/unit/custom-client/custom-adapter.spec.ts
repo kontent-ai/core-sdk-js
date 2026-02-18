@@ -26,11 +26,12 @@ describe("Custom adapter", () => {
 
 	const httpService = getDefaultHttpService({
 		adapter: {
-			requestAsync: async () => {
+			requestAsync: async (m) => {
 				return await Promise.resolve({
 					isValidResponse: true,
 					responseHeaders: responseData.responseHeaders,
 					status: responseData.status,
+					url: m.url,
 					statusText: responseData.statusText,
 					toJsonAsync: async () => jsonResponse,
 					toBlobAsync: async () => blobResponse,
@@ -65,7 +66,7 @@ describe("Custom adapter", () => {
 		});
 
 		it("Json response should be equal to provided json", () => {
-			expect(JSON.stringify(response?.data)).toStrictEqual(JSON.stringify(jsonResponse));
+			expect(JSON.stringify(response?.payload)).toStrictEqual(JSON.stringify(jsonResponse));
 		});
 	});
 
@@ -93,7 +94,7 @@ describe("Custom adapter", () => {
 		});
 
 		it("Blob response should be equal to provided blob", () => {
-			expect(response?.data).toStrictEqual(blobResponse);
+			expect(response?.payload).toStrictEqual(blobResponse);
 		});
 	});
 
@@ -132,7 +133,7 @@ describe("Custom adapter", () => {
 		});
 
 		it("Json response should be equal to provided json", () => {
-			expect(JSON.stringify(response?.data)).toStrictEqual(JSON.stringify(jsonResponse));
+			expect(JSON.stringify(response?.payload)).toStrictEqual(JSON.stringify(jsonResponse));
 		});
 	});
 });

@@ -41,7 +41,7 @@ describe("Execute request - Success (GET)", async () => {
 	});
 
 	it("Response data should be set", () => {
-		expect(response?.data).toStrictEqual(responseData);
+		expect(response?.payload).toStrictEqual(responseData);
 	});
 
 	it("Response body should be null", () => {
@@ -93,7 +93,7 @@ describe("Execute request - Success (POST)", async () => {
 	});
 
 	it("Response data should be set", () => {
-		expect(response?.data).toStrictEqual(responseData);
+		expect(response?.payload).toStrictEqual(responseData);
 	});
 
 	it("Response body should be set", () => {

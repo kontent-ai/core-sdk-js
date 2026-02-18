@@ -25,14 +25,14 @@ import type {
 
 export function getDefaultHttpService(config?: DefaultHttpServiceConfig): HttpService {
 	return {
-		requestAsync: async <TResponseData extends JsonValue, TRequestBody extends RequestBody>(
+		requestAsync: async <TResponsePayload extends JsonValue, TRequestBody extends RequestBody>(
 			options: ExecuteRequestOptions<TRequestBody>,
 		) => {
-			return await resolveRequestAsync<TResponseData, TRequestBody>({
+			return await resolveRequestAsync<TResponsePayload, TRequestBody>({
 				config,
 				options,
-				resolveDataAsync: async (response) => {
-					return (await response.toJsonAsync()) as TResponseData;
+				resolvePayloadAsync: async (response) => {
+					return (await response.toJsonAsync()) as TResponsePayload;
 				},
 			});
 		},
@@ -45,35 +45,35 @@ export function getDefaultHttpService(config?: DefaultHttpServiceConfig): HttpSe
 					method: "GET",
 					body: null,
 				},
-				resolveDataAsync: async (response) => {
+				resolvePayloadAsync: async (response) => {
 					return await response.toBlobAsync();
 				},
 			});
 		},
 
-		uploadFileAsync: async <TResponseData extends JsonValue>(
+		uploadFileAsync: async <TResponsePayload extends JsonValue>(
 			options: UploadFileRequestOptions,
-		): Promise<HttpResponse<TResponseData, Blob>> => {
-			return await resolveRequestAsync<TResponseData, Blob>({
+		): Promise<HttpResponse<TResponsePayload, Blob>> => {
+			return await resolveRequestAsync<TResponsePayload, Blob>({
 				config,
 				options,
-				resolveDataAsync: async (response) => {
-					return (await response.toJsonAsync()) as TResponseData;
+				resolvePayloadAsync: async (response) => {
+					return (await response.toJsonAsync()) as TResponsePayload;
 				},
 			});
 		},
 	};
 }
 
-async function resolveRequestAsync<TResponseData extends ResponseData, TRequestBody extends RequestBody>({
+async function resolveRequestAsync<TResponsePayload extends ResponseData, TRequestBody extends RequestBody>({
 	options,
-	resolveDataAsync,
+	resolvePayloadAsync,
 	config,
 }: {
 	readonly config: DefaultHttpServiceConfig | undefined;
 	readonly options: ExecuteRequestOptions<TRequestBody>;
-	readonly resolveDataAsync: (response: AdapterResponse) => Promise<TResponseData>;
-}): Promise<HttpResponse<TResponseData, TRequestBody>> {
+	readonly resolvePayloadAsync: (response: AdapterResponse) => Promise<TResponsePayload>;
+}): Promise<HttpResponse<TResponsePayload, TRequestBody>> {
 	return await withUnknownErrorHandlingAsync({
 		url: options.url,
 		funcAsync: async () => {
@@ -107,7 +107,7 @@ async function resolveRequestAsync<TResponseData extends ResponseData, TRequestB
 						requestBody: options.body,
 						requestHeaders,
 						response: adapterResponse,
-						resolveDataAsync,
+						resolvePayloadAsync,
 					});
 				},
 				url: options.url,
@@ -119,13 +119,13 @@ async function resolveRequestAsync<TResponseData extends ResponseData, TRequestB
 	});
 }
 
-async function withUnknownErrorHandlingAsync<TResponseData extends ResponseData, TRequestBody extends RequestBody>({
+async function withUnknownErrorHandlingAsync<TResponsePayload extends ResponseData, TRequestBody extends RequestBody>({
 	url,
 	funcAsync,
 }: {
 	readonly url: string;
-	readonly funcAsync: () => Promise<HttpResponse<TResponseData, TRequestBody>>;
-}): Promise<HttpResponse<TResponseData, TRequestBody>> {
+	readonly funcAsync: () => Promise<HttpResponse<TResponsePayload, TRequestBody>>;
+}): Promise<HttpResponse<TResponsePayload, TRequestBody>> {
 	const { success, data, error } = await tryCatchAsync(funcAsync);
 
 	if (success) {
@@ -143,19 +143,19 @@ async function withUnknownErrorHandlingAsync<TResponseData extends ResponseData,
 	};
 }
 
-async function resolveResponseAsync<TResponseData extends ResponseData, TRequestBody extends RequestBody>({
+async function resolveResponseAsync<TResponsePayload extends ResponseData, TRequestBody extends RequestBody>({
 	response,
-	resolveDataAsync,
+	resolvePayloadAsync,
 	method,
 	requestHeaders,
 	requestBody,
 }: {
 	readonly response: AdapterResponse;
-	readonly resolveDataAsync: (response: AdapterResponse) => Promise<TResponseData>;
+	readonly resolvePayloadAsync: (response: AdapterResponse) => Promise<TResponsePayload>;
 	readonly method: HttpMethod;
 	readonly requestHeaders: readonly Header[];
 	readonly requestBody: TRequestBody;
-}): Promise<HttpResponse<TResponseData, TRequestBody>> {
+}): Promise<HttpResponse<TResponsePayload, TRequestBody>> {
 	if (!response.isValidResponse) {
 		return {
 			success: false,
@@ -166,7 +166,7 @@ async function resolveResponseAsync<TResponseData extends ResponseData, TRequest
 	return {
 		success: true,
 		response: {
-			data: await resolveDataAsync(response),
+			payload: await resolvePayloadAsync(response),
 			body: requestBody,
 			method: method,
 			adapterResponse: {
@@ -202,19 +202,19 @@ async function executeWithAdapter({
 	});
 }
 
-async function withRetryAsync<TResponseData extends ResponseData, TRequestBody extends RequestBody>({
+async function withRetryAsync<TResponsePayload extends ResponseData, TRequestBody extends RequestBody>({
 	funcAsync,
 	url,
 	retryStrategyOptions,
 	requestHeaders,
 	method,
 }: {
-	readonly funcAsync: () => Promise<HttpResponse<TResponseData, TRequestBody>>;
+	readonly funcAsync: () => Promise<HttpResponse<TResponsePayload, TRequestBody>>;
 	readonly url: string;
 	readonly retryStrategyOptions: Required<RetryStrategyOptions>;
 	readonly requestHeaders: readonly Header[];
 	readonly method: HttpMethod;
-}): Promise<HttpResponse<TResponseData, TRequestBody>> {
+}): Promise<HttpResponse<TResponsePayload, TRequestBody>> {
 	return await runWithRetryAsync({
 		url: url,
 		retryStrategyOptions,

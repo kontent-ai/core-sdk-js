@@ -46,8 +46,8 @@ export type ResponseData = JsonValue | Blob;
 export type RequestBody = JsonObject | Blob | null;
 export type BodyData = RequestBody;
 
-export type HttpResponse<TResponseData extends ResponseData, TRequestBody extends RequestBody> = HttpResult<{
-	readonly data: TResponseData;
+export type HttpResponse<TResponsePayload extends ResponseData, TRequestBody extends RequestBody> = HttpResult<{
+	readonly payload: TResponsePayload;
 	readonly body: TRequestBody;
 	readonly method: HttpMethod;
 	readonly requestHeaders: readonly Header[];
@@ -81,9 +81,9 @@ export type HttpService = {
 	/**
 	 * Executes request with the given method and body.
 	 */
-	requestAsync<TResponseData extends JsonValue, TRequestBody extends RequestBody>(
+	requestAsync<TResponsePayload extends JsonValue, TRequestBody extends RequestBody>(
 		opts: ExecuteRequestOptions<TRequestBody>,
-	): Promise<HttpResponse<TResponseData, TRequestBody>>;
+	): Promise<HttpResponse<TResponsePayload, TRequestBody>>;
 
 	/**
 	 * Downloads a file from the given URL as a blob.
@@ -93,7 +93,7 @@ export type HttpService = {
 	/**
 	 * This method is used to upload a kontent.ai binary file.
 	 */
-	uploadFileAsync<TResponseData extends JsonValue>(opts: UploadFileRequestOptions): Promise<HttpResponse<TResponseData, Blob>>;
+	uploadFileAsync<TResponsePayload extends JsonValue>(opts: UploadFileRequestOptions): Promise<HttpResponse<TResponsePayload, Blob>>;
 };
 
 export type AdapterResponse<TStatusCode extends HttpServiceStatus = HttpServiceStatus> = {
@@ -116,7 +116,7 @@ export type AdapterRequestOptions = {
 	readonly requestHeaders?: readonly Header[];
 };
 
-export type GetNextPageData<TResponseData extends JsonValue, TMeta> = (response: QueryResponse<TResponseData, TMeta>) => {
+export type GetNextPageData<TResponsePayload extends JsonValue, TMeta> = (response: QueryResponse<TResponsePayload, TMeta>) => {
 	readonly continuationToken?: string;
 	readonly nextPageUrl?: string;
 };
@@ -125,8 +125,8 @@ export type PaginationConfig = {
 	readonly maxPagesCount?: number;
 };
 
-export type Pagination<TResponseData extends JsonValue, TMeta> = {
-	readonly getNextPageData: GetNextPageData<TResponseData, TMeta>;
+export type Pagination<TResponsePayload extends JsonValue, TMeta> = {
+	readonly getNextPageData: GetNextPageData<TResponsePayload, TMeta>;
 	readonly config?: PaginationConfig;
 };
 

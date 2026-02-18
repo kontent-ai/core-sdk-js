@@ -46,6 +46,6 @@ describe("Query builder", async () => {
 	});
 
 	it("Response data should be null", () => {
-		expect(response?.data).toBeNull();
+		expect(response?.payload).toBeNull();
 	});
 });

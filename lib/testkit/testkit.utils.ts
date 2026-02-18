@@ -103,12 +103,12 @@ function getFetchBlobMock({
 	});
 }
 
-function getFetchJsonMock<TResponseData extends JsonValue>({
+function getFetchJsonMock<TResponsePayload extends JsonValue>({
 	json,
 	status,
 	responseHeaders,
 }: {
-	readonly json: TResponseData;
+	readonly json: TResponsePayload;
 	readonly status: HttpServiceStatus;
 	readonly responseHeaders?: readonly Header[];
 }): Mock<() => Promise<Response>> {
@@ -120,14 +120,14 @@ function getFetchJsonMock<TResponseData extends JsonValue>({
 	});
 }
 
-function getFetchMock<TResponseData extends JsonValue | Blob>({
+function getFetchMock<TResponsePayload extends JsonValue | Blob>({
 	json,
 	blob,
 	status,
 	responseHeaders,
 }: {
-	readonly json: TResponseData extends JsonValue ? JsonValue : undefined;
-	readonly blob: TResponseData extends Blob ? Blob : undefined;
+	readonly json: TResponsePayload extends JsonValue ? JsonValue : undefined;
+	readonly blob: TResponsePayload extends Blob ? Blob : undefined;
 	readonly status: HttpServiceStatus;
 	readonly responseHeaders: readonly Header[];
 }): Mock<() => Promise<Response>> {
