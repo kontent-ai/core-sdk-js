@@ -9,7 +9,7 @@ import type { JsonValue } from "../models/json.models.js";
 import type { EmptyObject } from "../models/utility.models.js";
 import { createSdkError } from "../utils/error.utils.js";
 import type { PagingQuery, PagingQueryResult, QueryResponse } from "./sdk-models.js";
-import { createQuery, type ResolveQueryData, resolveQueryAsync } from "./sdk-query.js";
+import { createQuery, type QueryPromiseResult, type ResolveQueryData, resolveQueryAsync } from "./sdk-query.js";
 
 type PagingQueryPromiseResult<TResponsePayload extends JsonValue, TMeta = EmptyObject> = ReturnType<
 	Pick<PagingQuery<TResponsePayload, TMeta>, "toAllPromise">["toAllPromise"]
@@ -57,17 +57,52 @@ export function createPagingQuery<TResponsePayload extends JsonValue, TRequestBo
 	data: Omit<ResolveQueryData<TResponsePayload, TRequestBody, TMeta>, "nextPageState" | "pageIndex"> & {
 		readonly getNextPageData: GetNextPageData<TResponsePayload, TMeta>;
 	},
-): Pick<PagingQuery<TResponsePayload, TMeta>, "toPromise" | "toAllPromise"> {
+): Pick<PagingQuery<TResponsePayload, TMeta>, "toPromise" | "toAllPromise" | "pages"> {
+	const getPagingData: (
+		config: PaginationConfig,
+	) => Parameters<typeof resolvePagingQueryAsync<TResponsePayload, TRequestBody, TMeta>>[0] = (config) => {
+		return {
+			...data,
+			pageIndex: 0,
+			paginationConfig: config,
+		};
+	};
+
 	return {
 		...createQuery<TResponsePayload, TRequestBody, TMeta>(data),
 		toAllPromise: async (config: PaginationConfig) => {
-			return await resolvePagingQueryAsync<TResponsePayload, TRequestBody, TMeta>({
-				...data,
-				pageIndex: 0,
-				paginationConfig: config,
-			});
+			return await resolvePagingQueryAsync<TResponsePayload, TRequestBody, TMeta>(getPagingData(config));
 		},
+		pages: () => createPagingQueryIterator<TResponsePayload, TRequestBody, TMeta>(getPagingData({})),
 	};
+}
+
+async function* createPagingQueryIterator<TResponsePayload extends JsonValue, TRequestBody extends RequestBody, TMeta = EmptyObject>(
+	data: Parameters<typeof resolvePagingQueryAsync<TResponsePayload, TRequestBody, TMeta>>[0],
+): AsyncGenerator<QueryResponse<TResponsePayload, TMeta>> {
+	let nextPageState: NextPageState = { hasNextPage: true, pageSource: "firstRequest" };
+
+	while (isNextPageAvailable(nextPageState)) {
+		const result: Awaited<QueryPromiseResult<TResponsePayload, TMeta>> = await resolveQueryAsync<TResponsePayload, TRequestBody, TMeta>(
+			{
+				...data,
+				nextPageState: nextPageState,
+			},
+		);
+
+		if (!result.success) {
+			throw result.error;
+		}
+
+		yield result.response;
+
+		nextPageState = resolveNextPageState({
+			getNextPageData: data.getNextPageData,
+			paginationConfig: data.paginationConfig,
+			pageIndex: data.pageIndex + 1,
+			response: result.response,
+		});
+	}
 }
 
 function resolveNextPageState<TResponsePayload extends JsonValue, TMeta>({

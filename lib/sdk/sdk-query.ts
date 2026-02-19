@@ -13,7 +13,7 @@ import { createSdkError } from "../utils/error.utils.js";
 import { getSdkIdHeader } from "../utils/header.utils.js";
 import type { Query, SdkConfig, SuccessfulHttpResponse } from "./sdk-models.js";
 
-type QueryPromiseResult<TResponsePayload extends JsonValue, TMeta = EmptyObject> = ReturnType<
+export type QueryPromiseResult<TResponsePayload extends JsonValue, TMeta = EmptyObject> = ReturnType<
 	Pick<Query<TResponsePayload, TMeta>, "toPromise">["toPromise"]
 >;
 

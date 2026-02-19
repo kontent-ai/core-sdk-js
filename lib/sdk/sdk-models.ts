@@ -54,6 +54,7 @@ export type Query<TResponsePayload, TMeta = unknown> = {
 
 export type PagingQuery<TResponsePayload, TMeta = unknown> = Query<TResponsePayload, TMeta> & {
 	toAllPromise(config?: PaginationConfig): Promise<PagingQueryResult<QueryResponse<TResponsePayload, TMeta>>>;
+	pages(): AsyncGenerator<QueryResponse<TResponsePayload, TMeta>>;
 };
 
 export type SuccessfulHttpResponse<TResponsePayload extends ResponseData, TRequestBody extends RequestBody> = Prettify<
