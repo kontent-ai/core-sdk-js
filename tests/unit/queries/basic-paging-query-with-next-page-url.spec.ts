@@ -1,7 +1,7 @@
 import { afterAll, describe, expect, it, vi } from "vitest";
 import z from "zod";
 import { getDefaultHttpService } from "../../../lib/public_api.js";
-import { createPagingQuery } from "../../../lib/sdk/sdk-queries.js";
+import { createPagingQuery } from "../../../lib/sdk/paging-sdk-query.js";
 import { getTestSdkInfo, mockGlobalFetchJsonResponse } from "../../../lib/testkit/testkit.utils.js";
 
 describe("Basic paging query with next page url", async () => {
