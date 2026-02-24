@@ -1,18 +1,17 @@
 import { afterAll, describe, expect, it, vi } from "vitest";
 import z from "zod";
-import { getDefaultHttpService } from "../../../lib/public_api.js";
+import { type GetNextPageData, getDefaultHttpService } from "../../../lib/public_api.js";
 import { createPagingQuery } from "../../../lib/sdk/paging-sdk-query.js";
 import { getTestSdkInfo, mockGlobalFetchJsonResponse } from "../../../lib/testkit/testkit.utils.js";
+import { preventInfinitePaging } from "../../test.utils.js";
 
 describe("Basic paging query with continuation token", async () => {
 	afterAll(() => {
 		vi.resetAllMocks();
 	});
 
-	const requestContinuationToken = "fake-request-continuation-token";
 	const responseStatusCode = 200;
-	const nextPagesCount: number = 5;
-	const expectedResponsesCount: number = nextPagesCount + 1;
+	const maxPagesCount: number = 5;
 	let responseIndex: number = 0;
 
 	const getResponseContinuationToken = (index: number) => {
@@ -33,15 +32,18 @@ describe("Basic paging query with continuation token", async () => {
 	const { success, error, responses, lastContinuationToken } = await createPagingQuery({
 		authorizationApiKey: undefined,
 		getNextPageData: () => {
-			if (responseIndex < nextPagesCount) {
-				responseIndex++;
-				// mock next response
-				mockResponseByIndex(responseIndex);
-				return {
-					continuationToken: requestContinuationToken,
-				};
-			}
-			return {};
+			responseIndex++;
+
+			const data: ReturnType<GetNextPageData<null, null>> = preventInfinitePaging({
+				responseIndex,
+				maxPagesCount,
+				continuationToken: getResponseContinuationToken(responseIndex),
+			});
+
+			// mock next response
+			mockResponseByIndex(responseIndex);
+
+			return data;
 		},
 		mapMetadata: () => ({}),
 		config: {
@@ -57,7 +59,7 @@ describe("Basic paging query with continuation token", async () => {
 			method: "GET",
 			body: {},
 		},
-	}).toAllPromise();
+	}).toAllPromise({ maxPagesCount: maxPagesCount });
 
 	it("Error should be undefined", () => {
 		expect(error).toBeUndefined();
@@ -67,11 +69,11 @@ describe("Basic paging query with continuation token", async () => {
 		expect(success).toBeTruthy();
 	});
 
-	it(`Responses should be an array of length "${expectedResponsesCount}"`, () => {
-		expect(responses).toHaveLength(expectedResponsesCount);
+	it(`Responses should be an array of length "${maxPagesCount}"`, () => {
+		expect(responses).toHaveLength(maxPagesCount);
 	});
 
 	it("Last continuation token should be taken from the last response", () => {
-		expect(lastContinuationToken).toEqual(getResponseContinuationToken(nextPagesCount));
+		expect(lastContinuationToken).toEqual(getResponseContinuationToken(maxPagesCount - 1));
 	});
 });

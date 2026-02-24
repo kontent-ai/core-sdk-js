@@ -1,24 +1,19 @@
 import { afterAll, describe, expect, it, vi } from "vitest";
 import z from "zod";
-import { getDefaultHttpService, type QueryResponse } from "../../../lib/public_api.js";
+import { type GetNextPageData, getDefaultHttpService, type QueryResponse } from "../../../lib/public_api.js";
 import { createPagingQuery } from "../../../lib/sdk/paging-sdk-query.js";
 import { getTestSdkInfo, mockGlobalFetchJsonResponse } from "../../../lib/testkit/testkit.utils.js";
+import { getNextPageUrl, preventInfinitePaging } from "../../test.utils.js";
 
 describe("Async pages iterator", async () => {
 	afterAll(() => {
 		vi.resetAllMocks();
 	});
 
-	const getNextPageUrl = (index: number) => {
-		return `https://page-url.com/${index}`;
-	};
-
-	const initialRequestUrl = getNextPageUrl(0);
-	const nextPagesCount: number = 5;
+	const maxPagesCount: number = 5;
 	let responseIndex: number = 0;
-	const expectedResponsesCount: number = nextPagesCount + 1;
 
-	const expectedResponseUrls: readonly string[] = Array.from({ length: expectedResponsesCount }, (_, index) => getNextPageUrl(index));
+	const expectedResponseUrls: readonly string[] = Array.from({ length: maxPagesCount }, (_, index) => getNextPageUrl(index));
 
 	// mock initial response
 	mockGlobalFetchJsonResponse({
@@ -29,13 +24,15 @@ describe("Async pages iterator", async () => {
 	const pagesIterator = createPagingQuery<null, null>({
 		authorizationApiKey: undefined,
 		getNextPageData: () => {
-			if (responseIndex < nextPagesCount) {
-				responseIndex++;
-				return {
-					nextPageUrl: getNextPageUrl(responseIndex),
-				};
-			}
-			return {};
+			responseIndex++;
+
+			const data: ReturnType<GetNextPageData<null, null>> = preventInfinitePaging({
+				responseIndex,
+				maxPagesCount,
+				nextPageUrl: getNextPageUrl(responseIndex),
+			});
+
+			return data;
 		},
 
 		mapMetadata: () => ({}),
@@ -48,7 +45,7 @@ describe("Async pages iterator", async () => {
 		sdkInfo: getTestSdkInfo(),
 		zodSchema: z.null(),
 		request: {
-			url: initialRequestUrl,
+			url: expectedResponseUrls?.[0] ?? "n/a",
 			method: "GET",
 			body: null,
 		},
@@ -58,14 +55,18 @@ describe("Async pages iterator", async () => {
 
 	for await (const page of pagesIterator) {
 		responses.push(page);
+
+		if (responses.length === maxPagesCount) {
+			break;
+		}
 	}
 
 	it("All responses should be successful", () => {
 		expect(responses.every((response) => response)).toBeTruthy();
 	});
 
-	it(`Responses should be an array of length "${expectedResponsesCount}"`, () => {
-		expect(responses).toHaveLength(expectedResponsesCount);
+	it(`Responses should be an array of length "${maxPagesCount}"`, () => {
+		expect(responses).toHaveLength(maxPagesCount);
 	});
 
 	it("Response urls should be correct & in the expected order", () => {

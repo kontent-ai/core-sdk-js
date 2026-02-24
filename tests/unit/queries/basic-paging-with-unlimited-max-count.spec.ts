@@ -1,25 +1,19 @@
 import { afterAll, describe, expect, it, vi } from "vitest";
 import z from "zod";
-import { getDefaultHttpService } from "../../../lib/public_api.js";
+import { type GetNextPageData, getDefaultHttpService } from "../../../lib/public_api.js";
 import { createPagingQuery } from "../../../lib/sdk/paging-sdk-query.js";
 import { getTestSdkInfo, mockGlobalFetchJsonResponse } from "../../../lib/testkit/testkit.utils.js";
+import { getNextPageUrl } from "../../test.utils.js";
 
-describe("Basic paging query with page limit", async () => {
+describe("Basic paging query with unlimited max count", async () => {
 	afterAll(() => {
 		vi.resetAllMocks();
 	});
 
-	const getNextPageUrl = (index: number) => {
-		return `https://page-url.com/${index}`;
-	};
-
-	const initialRequestUrl = getNextPageUrl(0);
-	const nextPagesCount: number = 5;
-	const pageLimit: number = 3;
+	const maxPagesCount: number = 5;
 	let responseIndex: number = 0;
-	const expectedResponsesCount: number = pageLimit;
 
-	const expectedResponseUrls: readonly string[] = Array.from({ length: expectedResponsesCount }, (_, index) => getNextPageUrl(index));
+	const expectedResponseUrls: readonly string[] = Array.from({ length: maxPagesCount }, (_, index) => getNextPageUrl(index));
 
 	// mock initial response
 	mockGlobalFetchJsonResponse({
@@ -30,13 +24,18 @@ describe("Basic paging query with page limit", async () => {
 	const { success, error, responses } = await createPagingQuery({
 		authorizationApiKey: undefined,
 		getNextPageData: () => {
-			if (responseIndex < nextPagesCount) {
-				responseIndex++;
-				return {
-					nextPageUrl: getNextPageUrl(responseIndex),
-				};
+			responseIndex++;
+
+			// stop paging after maxPagesCount responses
+			if (responseIndex === maxPagesCount) {
+				return {};
 			}
-			return {};
+
+			const data: ReturnType<GetNextPageData<null, null>> = {
+				nextPageUrl: getNextPageUrl(responseIndex),
+			};
+
+			return data;
 		},
 		mapMetadata: () => ({}),
 		config: {
@@ -48,12 +47,12 @@ describe("Basic paging query with page limit", async () => {
 		sdkInfo: getTestSdkInfo(),
 		zodSchema: z.null(),
 		request: {
-			url: initialRequestUrl,
+			url: expectedResponseUrls?.[0] ?? "n/a",
 			method: "GET",
 			body: {},
 		},
 	}).toAllPromise({
-		maxPagesCount: pageLimit,
+		maxPagesCount: undefined,
 	});
 
 	it("Error should be undefined", () => {
@@ -64,8 +63,8 @@ describe("Basic paging query with page limit", async () => {
 		expect(success).toBeTruthy();
 	});
 
-	it(`Responses should be an array of length "${expectedResponsesCount}"`, () => {
-		expect(responses).toHaveLength(expectedResponsesCount);
+	it(`Responses should be an array of length "${maxPagesCount}"`, () => {
+		expect(responses).toHaveLength(maxPagesCount);
 	});
 
 	it("Response urls should be correct & in the expected order", () => {
