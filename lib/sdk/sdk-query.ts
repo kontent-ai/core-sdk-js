@@ -8,12 +8,11 @@ import type { HttpService, RequestBody } from "../http/http.models.js";
 import { getDefaultHttpService } from "../http/http.service.js";
 import type { CommonHeaderNames, ContinuationHeaderName, Header, SDKInfo } from "../models/core.models.js";
 import type { JsonValue } from "../models/json.models.js";
-import type { EmptyObject } from "../models/utility.models.js";
 import { createSdkError } from "../utils/error.utils.js";
 import { getSdkIdHeader } from "../utils/header.utils.js";
 import type { NextPageStateWithRequest, Query, SdkConfig, SuccessfulHttpResponse } from "./sdk-models.js";
 
-export type QueryPromiseResult<TResponsePayload extends JsonValue, TMeta = EmptyObject> = ReturnType<
+export type QueryPromiseResult<TResponsePayload extends JsonValue, TMeta> = ReturnType<
 	Pick<Query<TResponsePayload, TMeta>, "toPromise">["toPromise"]
 >;
 
@@ -38,7 +37,7 @@ export type ResolveQueryData<TResponsePayload extends JsonValue, TRequestBody ex
 	readonly authorizationApiKey: string | undefined;
 } & MetadataMapperConfig<TResponsePayload, TRequestBody, TMeta>;
 
-export function createQuery<TResponsePayload extends JsonValue, TRequestBody extends RequestBody, TMeta = EmptyObject>(
+export function createQuery<TResponsePayload extends JsonValue, TRequestBody extends RequestBody, TMeta>(
 	data: Omit<ResolveQueryData<TResponsePayload, TRequestBody, TMeta>, "continuationToken" | "nextPageState" | "pageIndex">,
 ): Pick<Query<TResponsePayload, TMeta>, "toPromise"> {
 	return {

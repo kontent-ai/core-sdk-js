@@ -5,7 +5,6 @@
 
 import type { AdapterResponse, HttpResponse, HttpService, PaginationConfig, RequestBody, ResponseData } from "../http/http.models.js";
 import type { KontentSdkError } from "../models/error.models.js";
-import type { Prettify } from "../models/utility.models.js";
 
 export type QueryResponseMeta<TMeta = unknown> = Pick<AdapterResponse, "status" | "responseHeaders" | "url"> & {
 	readonly continuationToken?: string;
@@ -47,12 +46,12 @@ export type SdkConfig = {
 	};
 };
 
-export type Query<TResponsePayload, TMeta = unknown> = {
+export type Query<TResponsePayload, TMeta> = {
 	toUrl(): string;
 	toPromise(): Promise<QueryResult<QueryResponse<TResponsePayload, TMeta>>>;
 };
 
-export type PagingQuery<TResponsePayload, TMeta = unknown> = Query<TResponsePayload, TMeta> & {
+export type PagingQuery<TResponsePayload, TMeta> = Query<TResponsePayload, TMeta> & {
 	toAllPromise(config?: PaginationConfig): Promise<PagingQueryResult<QueryResponse<TResponsePayload, TMeta>>>;
 	pages(config?: PaginationConfig): AsyncGenerator<QueryResponse<TResponsePayload, TMeta>>;
 };
@@ -77,12 +76,8 @@ export type NextPageStateWithRequest =
 			readonly nextPageUrl?: never;
 	  };
 
-export type SuccessfulHttpResponse<TResponsePayload extends ResponseData, TRequestBody extends RequestBody> = Prettify<
-	Extract<HttpResponse<TResponsePayload, TRequestBody>, { readonly success: true }>["response"]
->;
-
-export type ResultOfSuccessfulQuery<TQuery extends Query<unknown>> = Extract<
-	Awaited<ReturnType<TQuery["toPromise"]>>,
+export type SuccessfulHttpResponse<TResponsePayload extends ResponseData, TRequestBody extends RequestBody> = Extract<
+	HttpResponse<TResponsePayload, TRequestBody>,
 	{ readonly success: true }
 >["response"];
 

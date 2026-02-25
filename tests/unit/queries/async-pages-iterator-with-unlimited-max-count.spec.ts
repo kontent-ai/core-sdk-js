@@ -21,7 +21,7 @@ describe("Async pages iterator with unlimited max count", async () => {
 		statusCode: 200,
 	});
 
-	const pagesIterator = createPagingQuery<null, null>({
+	const pagesIterator = createPagingQuery<null, null, null>({
 		authorizationApiKey: undefined,
 		getNextPageData: () => {
 			responseIndex++;
@@ -35,7 +35,7 @@ describe("Async pages iterator with unlimited max count", async () => {
 			return data;
 		},
 
-		mapMetadata: () => ({}),
+		mapMetadata: () => null,
 		config: {
 			httpService: getDefaultHttpService(),
 			responseValidation: {

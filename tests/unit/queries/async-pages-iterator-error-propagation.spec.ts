@@ -16,7 +16,7 @@ describe("Async pages iterator error propagation", async () => {
 	const maxPagesCount: number = 5;
 	let responseIndex: number = 0;
 
-	const pagesIterator = createPagingQuery<null, null>({
+	const pagesIterator = createPagingQuery<null, null, null>({
 		authorizationApiKey: undefined,
 		getNextPageData: () => {
 			responseIndex++;
@@ -30,7 +30,7 @@ describe("Async pages iterator error propagation", async () => {
 			return data;
 		},
 
-		mapMetadata: () => ({}),
+		mapMetadata: () => null,
 		config: {
 			httpService: getDefaultHttpService(),
 			responseValidation: {

@@ -36,7 +36,6 @@ export type {
 	QueryResponse,
 	QueryResponseMeta,
 	QueryResult,
-	ResultOfSuccessfulQuery,
 	SdkConfig,
 	SuccessfulHttpResponse,
 } from "./sdk/sdk-models.js";
