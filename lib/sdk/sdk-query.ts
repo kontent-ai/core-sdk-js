@@ -11,7 +11,7 @@ import type { JsonValue } from "../models/json.models.js";
 import type { EmptyObject } from "../models/utility.models.js";
 import { createSdkError } from "../utils/error.utils.js";
 import { getSdkIdHeader } from "../utils/header.utils.js";
-import type { Query, SdkConfig, SuccessfulHttpResponse } from "./sdk-models.js";
+import type { NextPageStateWithRequest, Query, SdkConfig, SuccessfulHttpResponse } from "./sdk-models.js";
 
 export type QueryPromiseResult<TResponsePayload extends JsonValue, TMeta = EmptyObject> = ReturnType<
 	Pick<Query<TResponsePayload, TMeta>, "toPromise">["toPromise"]
@@ -28,26 +28,6 @@ type MetadataMapper<TResponsePayload extends JsonValue, TRequestBody extends Req
 type MetadataMapperConfig<TResponsePayload extends JsonValue, TRequestBody extends RequestBody, TMeta> = {
 	readonly mapMetadata: MetadataMapper<TResponsePayload, TRequestBody, TMeta>;
 };
-
-type NextPageStateWithRequest =
-	| {
-			readonly pageSource: "continuationToken";
-			readonly hasNextPage: true;
-			readonly continuationToken: string;
-			readonly nextPageUrl?: never;
-	  }
-	| {
-			readonly pageSource: "nextPageUrl";
-			readonly hasNextPage: true;
-			readonly continuationToken?: never;
-			readonly nextPageUrl: string;
-	  }
-	| {
-			readonly pageSource: "firstRequest";
-			readonly hasNextPage: true;
-			readonly continuationToken?: never;
-			readonly nextPageUrl?: never;
-	  };
 
 export type ResolveQueryData<TResponsePayload extends JsonValue, TRequestBody extends RequestBody, TMeta> = {
 	readonly nextPageState: NextPageStateWithRequest;

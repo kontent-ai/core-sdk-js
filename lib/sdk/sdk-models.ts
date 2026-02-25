@@ -57,6 +57,26 @@ export type PagingQuery<TResponsePayload, TMeta = unknown> = Query<TResponsePayl
 	pages(): AsyncGenerator<QueryResponse<TResponsePayload, TMeta>>;
 };
 
+export type NextPageStateWithRequest =
+	| {
+			readonly pageSource: "continuationToken";
+			readonly hasNextPage: true;
+			readonly continuationToken: string;
+			readonly nextPageUrl?: never;
+	  }
+	| {
+			readonly pageSource: "nextPageUrl";
+			readonly hasNextPage: true;
+			readonly continuationToken?: never;
+			readonly nextPageUrl: string;
+	  }
+	| {
+			readonly pageSource: "firstRequest";
+			readonly hasNextPage: true;
+			readonly continuationToken?: never;
+			readonly nextPageUrl?: never;
+	  };
+
 export type SuccessfulHttpResponse<TResponsePayload extends ResponseData, TRequestBody extends RequestBody> = Prettify<
 	Extract<HttpResponse<TResponsePayload, TRequestBody>, { readonly success: true }>["response"]
 >;

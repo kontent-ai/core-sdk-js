@@ -8,7 +8,7 @@ import type { GetNextPageData, PaginationConfig, RequestBody } from "../http/htt
 import type { JsonValue } from "../models/json.models.js";
 import type { EmptyObject } from "../models/utility.models.js";
 import { createSdkError } from "../utils/error.utils.js";
-import type { PagingQuery, PagingQueryResult, QueryResponse } from "./sdk-models.js";
+import type { NextPageStateWithRequest, PagingQuery, PagingQueryResult, QueryResponse } from "./sdk-models.js";
 import { createQuery, type QueryPromiseResult, type ResolveQueryData, resolveQueryAsync } from "./sdk-query.js";
 
 type PagingQueryPromiseResult<TResponsePayload extends JsonValue, TMeta = EmptyObject> = ReturnType<
@@ -18,26 +18,6 @@ type PagingQueryPromiseResult<TResponsePayload extends JsonValue, TMeta = EmptyO
 type NoNextPageState = {
 	readonly hasNextPage: false;
 };
-
-type NextPageStateWithRequest =
-	| {
-			readonly pageSource: "continuationToken";
-			readonly hasNextPage: true;
-			readonly continuationToken: string;
-			readonly nextPageUrl?: never;
-	  }
-	| {
-			readonly pageSource: "nextPageUrl";
-			readonly hasNextPage: true;
-			readonly continuationToken?: never;
-			readonly nextPageUrl: string;
-	  }
-	| {
-			readonly pageSource: "firstRequest";
-			readonly hasNextPage: true;
-			readonly continuationToken?: never;
-			readonly nextPageUrl?: never;
-	  };
 
 type NextPageState = NextPageStateWithRequest | NoNextPageState;
 
