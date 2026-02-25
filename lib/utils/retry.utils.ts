@@ -106,7 +106,7 @@ export function toRequiredRetryStrategyOptions(options?: RetryStrategyOptions): 
 	};
 }
 
-export function getDefaultRetryAttemptLogMessage(retryAttempt: number, maxRetries: number, url: string): string {
+function getDefaultRetryAttemptLogMessage(retryAttempt: number, maxRetries: number, url: string): string {
 	return `Retry attempt '${retryAttempt}' from a maximum of '${maxRetries}' retries. Requested url: '${url}'`;
 }
 

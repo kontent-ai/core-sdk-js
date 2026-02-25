@@ -16,7 +16,7 @@ type Failure = {
 	readonly error: KontentSdkError;
 };
 
-export type HttpResult<TData> = Success<TData> | Failure;
+type HttpResult<TData> = Success<TData> | Failure;
 
 /**
  * Helper status codes for the HTTP service.
@@ -44,7 +44,6 @@ export type DefaultHttpServiceConfig = {
 export type ResponseData = JsonValue | Blob;
 
 export type RequestBody = JsonObject | Blob | null;
-export type BodyData = RequestBody;
 
 export type HttpResponse<TResponsePayload extends ResponseData, TRequestBody extends RequestBody> = HttpResult<{
 	readonly payload: TResponsePayload;
