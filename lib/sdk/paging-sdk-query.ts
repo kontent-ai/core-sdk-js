@@ -39,28 +39,29 @@ export function createPagingQuery<TResponsePayload extends JsonValue, TRequestBo
 	},
 ): Pick<PagingQuery<TResponsePayload, TMeta>, "toPromise" | "toAllPromise" | "pages"> {
 	const getPagingData: (
-		config: PaginationConfig,
+		config: PaginationConfig | undefined,
 	) => Parameters<typeof resolvePagingQueryAsync<TResponsePayload, TRequestBody, TMeta>>[0] = (config) => {
 		return {
 			...data,
 			pageIndex: 0,
-			paginationConfig: config,
+			paginationConfig: config ?? {},
 		};
 	};
 
 	return {
 		...createQuery<TResponsePayload, TRequestBody, TMeta>(data),
-		toAllPromise: async (config: PaginationConfig) => {
+		toAllPromise: async (config?: PaginationConfig) => {
 			return await resolvePagingQueryAsync<TResponsePayload, TRequestBody, TMeta>(getPagingData(config));
 		},
-		pages: () => createPagingQueryIterator<TResponsePayload, TRequestBody, TMeta>(getPagingData({})),
+		pages: (config?: PaginationConfig) => createPagingQueryIterator<TResponsePayload, TRequestBody, TMeta>(getPagingData(config)),
 	};
 }
 
 async function* createPagingQueryIterator<TResponsePayload extends JsonValue, TRequestBody extends RequestBody, TMeta = EmptyObject>(
-	data: Parameters<typeof resolvePagingQueryAsync<TResponsePayload, TRequestBody, TMeta>>[0],
+	data: Omit<Parameters<typeof resolvePagingQueryAsync<TResponsePayload, TRequestBody, TMeta>>[0], "pageIndex">,
 ): AsyncGenerator<QueryResponse<TResponsePayload, TMeta>> {
 	let nextPageState: NextPageState = { hasNextPage: true, pageSource: "firstRequest" };
+	let pageIndex: number = 0;
 
 	while (isNextPageAvailable(nextPageState)) {
 		const result: Awaited<QueryPromiseResult<TResponsePayload, TMeta>> = await resolveQueryAsync<TResponsePayload, TRequestBody, TMeta>(
@@ -76,10 +77,11 @@ async function* createPagingQueryIterator<TResponsePayload extends JsonValue, TR
 
 		yield result.response;
 
+		pageIndex++;
 		nextPageState = resolveNextPageState({
 			getNextPageData: data.getNextPageData,
 			paginationConfig: data.paginationConfig,
-			pageIndex: data.pageIndex + 1,
+			pageIndex: pageIndex,
 			response: result.response,
 		});
 	}

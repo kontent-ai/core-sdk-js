@@ -5,7 +5,7 @@ import { createPagingQuery } from "../../../lib/sdk/paging-sdk-query.js";
 import { getTestSdkInfo, mockGlobalFetchJsonResponse } from "../../../lib/testkit/testkit.utils.js";
 import { getNextPageUrl, preventInfinitePaging } from "../../test.utils.js";
 
-describe("Async pages iterator", async () => {
+describe("Async pages iterator with unlimited max count", async () => {
 	afterAll(() => {
 		vi.resetAllMocks();
 	});
