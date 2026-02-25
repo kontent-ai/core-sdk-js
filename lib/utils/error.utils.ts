@@ -8,8 +8,12 @@ export function createSdkError(details: ErrorDetails): KontentSdkError {
 	return new KontentSdkError(details);
 }
 
-export function isKontent404Error(error: KontentSdkError): boolean {
-	return error.details.reason === "notFound";
+export function isKontent404Error(error: unknown): boolean {
+	return isKontentSdkError(error) && error.details.reason === "notFound";
+}
+
+export function isKontentSdkError(error: unknown): error is KontentSdkError {
+	return error instanceof KontentSdkError;
 }
 
 export function getErrorMessage({
