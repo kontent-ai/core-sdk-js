@@ -7,9 +7,13 @@ export function getEndpointUrl({
 	readonly path: string;
 	readonly baseUrl: string;
 }): string {
-	return removeDuplicateSlashes(`${baseUrl}/${environmentId}/${path}`);
+	return `${removeTrailingSlashes(baseUrl)}${removeDuplicateSlashes(`/${environmentId}/${path}`)}`;
 }
 
 function removeDuplicateSlashes(path: string): string {
 	return path.replace(/\/+/g, "/");
+}
+
+function removeTrailingSlashes(path: string): string {
+	return path.replace(/\/+$/, "");
 }
