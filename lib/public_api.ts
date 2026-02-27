@@ -27,7 +27,7 @@ export type {
 } from "./models/core.models.js";
 export { type ErrorReason, type ErrorReasonData, KontentSdkError } from "./models/error.models.js";
 export type { JsonArray, JsonObject, JsonValue } from "./models/json.models.js";
-export type { EmptyObject, Override, Prettify } from "./models/utility.models.js";
+export type { EmptyObject } from "./models/utility.models.js";
 export { createPagingQuery, isPagingQuery } from "./sdk/paging-sdk-query.js";
 export type {
 	kontentUuidSchema,
