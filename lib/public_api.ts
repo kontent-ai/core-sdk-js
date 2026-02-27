@@ -28,7 +28,7 @@ export type {
 export { type ErrorReason, type ErrorReasonData, KontentSdkError } from "./models/error.models.js";
 export type { JsonArray, JsonObject, JsonValue } from "./models/json.models.js";
 export type { EmptyObject } from "./models/utility.models.js";
-export { createPagingQuery, isPagingQuery } from "./sdk/paging-sdk-query.js";
+export { createPagingQuery } from "./sdk/paging-sdk-query.js";
 export type {
 	kontentUuidSchema,
 	nilUuid,
@@ -42,6 +42,7 @@ export type {
 	SuccessfulHttpResponse,
 } from "./sdk/sdk-models.js";
 export { createQuery, extractContinuationToken } from "./sdk/sdk-query.js";
+export { isPagingQuery } from "./sdk/sdk-utils.js";
 export { isKontent404Error, isKontentSdkError } from "./utils/error.utils.js";
 export { getSdkIdHeader } from "./utils/header.utils.js";
 export { toRequiredRetryStrategyOptions } from "./utils/retry.utils.js";
