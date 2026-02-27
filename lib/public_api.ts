@@ -29,7 +29,7 @@ export { type ErrorReason, type ErrorReasonData, KontentSdkError } from "./model
 export type { JsonArray, JsonObject, JsonValue } from "./models/json.models.js";
 export type { EmptyObject } from "./models/utility.models.js";
 export { createPagingQuery } from "./sdk/paging-sdk-query.js";
-export  {
+export {
 	kontentUuidSchema,
 	nilUuid,
 	type PagingQuery,
