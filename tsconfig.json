@@ -2,7 +2,8 @@
 	"compileOnSave": true,
 	"compilerOptions": {
 		// Language + runtime environment
-		"target": "es2022",
+		"rootDir": ".",
+		"target": "esnext",
 		"lib": ["esnext"],
 
 		// Modules + resolution
@@ -33,7 +34,9 @@
 
 		// Perf / compatibility
 		"skipLibCheck": true,
-		"typeRoots": ["./node_modules/@types"]
+
+		// Types
+		"types": ["node"]
 	},
 	"include": ["lib/**/*", "tests/**/*", "scripts/**/*", "eslint.config.mjs", "vitest-unit.config.ts", "vitest-integration.config.ts"],
 	"exclude": ["node_modules"]
