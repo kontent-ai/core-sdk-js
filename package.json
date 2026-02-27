@@ -1,6 +1,6 @@
 {
 	"name": "@kontent-ai/core-sdk",
-	"version": "12.0.0-preview.13",
+	"version": "12.0.0-preview.14",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/kontent-ai/core-sdk-js"
