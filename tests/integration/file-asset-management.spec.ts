@@ -136,7 +136,7 @@ describe("Integration tests - Binary file / asset management", async () => {
 	});
 
 	// It may take a bit of time for the file to be available for download
-	await sleepAsync(5000);
+	await sleepAsync(10000);
 
 	const {
 		success: downloadedFileSuccess,
