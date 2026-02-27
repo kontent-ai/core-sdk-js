@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { isPagingQuery } from "../../../lib/sdk/paging-sdk-query.js";
 import type { PagingQuery, Query } from "../../../lib/sdk/sdk-models.js";
+import { isPagingQuery } from "../../../lib/sdk/sdk-utils.js";
 
 describe("isPagingQuery", () => {
 	it("returns true for object with paging query shape", () => {
