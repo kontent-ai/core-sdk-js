@@ -48,6 +48,7 @@ export type SdkConfig = {
 };
 
 export type Query<TResponsePayload, TMeta> = {
+	schema: z.ZodType<TResponsePayload>;
 	toUrl(): string;
 	toPromise(): Promise<QueryResult<QueryResponse<TResponsePayload, TMeta>>>;
 };

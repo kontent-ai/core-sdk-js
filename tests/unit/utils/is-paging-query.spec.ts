@@ -1,21 +1,23 @@
 import { describe, expect, it } from "vitest";
+import z from "zod";
 import type { PagingQuery, Query } from "../../../lib/sdk/sdk-models.js";
 import { isPagingQuery } from "../../../lib/sdk/sdk-utils.js";
 
 describe("isPagingQuery", () => {
 	it("returns true for object with paging query shape", () => {
 		const pagingQueryLike: PagingQuery<unknown, unknown> = {
+			schema: z.null(),
 			toUrl: () => {
 				return "x";
 			},
-			toPromise: async () => {
-				return await Promise.resolve({} as never);
+			toPromise: () => {
+				return {} as never;
 			},
-			toAllPromise: async () => {
-				return await Promise.resolve({} as never);
+			toAllPromise: () => {
+				return {} as never;
 			},
 			pages: () => {
-				return (async function* () {})();
+				return {} as never;
 			},
 		};
 
@@ -24,11 +26,12 @@ describe("isPagingQuery", () => {
 
 	it("returns false when only toPromise is present", () => {
 		const queryLike: Query<unknown, unknown> = {
+			schema: z.null(),
 			toUrl: () => {
 				return "x";
 			},
-			toPromise: async () => {
-				return await Promise.resolve({} as never);
+			toPromise: () => {
+				return {} as never;
 			},
 		};
 
@@ -41,31 +44,31 @@ describe("isPagingQuery", () => {
 	});
 
 	it("returns false when one of paging methods is missing", () => {
-		const missingPages = {
+		const missingPages: Omit<PagingQuery<unknown, unknown>, "pages"> = {
+			schema: z.null(),
 			toUrl: () => {
 				return "x";
 			},
-			toPromise: async () => {
-				return await Promise.resolve({} as never);
+			toPromise: () => {
+				return {} as never;
 			},
-			toAllPromise: async () => {
-				return await Promise.resolve({} as never);
+			toAllPromise: () => {
+				return {} as never;
 			},
-		} as unknown as PagingQuery<unknown, unknown>;
+		};
 
-		const missingToAllPromise = {
+		const missingToAllPromise: Omit<PagingQuery<unknown, unknown>, "toAllPromise"> = {
+			schema: z.null(),
 			toUrl: () => {
 				return "x";
 			},
-			toPromise: async () => {
-				return await Promise.resolve({} as never);
+			toPromise: () => {
+				return {} as never;
 			},
 			pages: () => {
-				return (async function* () {
-					// no-op
-				})();
+				return {} as never;
 			},
-		} as unknown as PagingQuery<unknown, unknown>;
+		};
 
 		expect(isPagingQuery(missingPages)).toBe(false);
 		expect(isPagingQuery(missingToAllPromise)).toBe(false);

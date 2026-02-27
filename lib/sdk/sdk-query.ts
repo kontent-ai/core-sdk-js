@@ -39,8 +39,9 @@ export type ResolveQueryData<TResponsePayload extends JsonValue, TRequestBody ex
 
 export function createQuery<TResponsePayload extends JsonValue, TRequestBody extends RequestBody, TMeta>(
 	data: Omit<ResolveQueryData<TResponsePayload, TRequestBody, TMeta>, "continuationToken" | "nextPageState" | "pageIndex">,
-): Pick<Query<TResponsePayload, TMeta>, "toPromise"> {
+): Pick<Query<TResponsePayload, TMeta>, "toPromise" | "schema"> {
 	return {
+		schema: data.zodSchema,
 		toPromise: async () => {
 			return await resolveQueryAsync<TResponsePayload, TRequestBody, TMeta>({
 				...data,
