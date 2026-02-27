@@ -7,7 +7,7 @@ import { match, P } from "ts-pattern";
 import type { GetNextPageData, PaginationConfig, RequestBody } from "../http/http.models.js";
 import type { JsonValue } from "../models/json.models.js";
 import { createSdkError } from "../utils/error.utils.js";
-import type { NextPageStateWithRequest, PagingQuery, PagingQueryResult, QueryResponse } from "./sdk-models.js";
+import type { NextPageStateWithRequest, PagingQuery, PagingQueryResult, Query, QueryResponse } from "./sdk-models.js";
 import { createQuery, type QueryPromiseResult, type ResolveQueryData, resolveQueryAsync } from "./sdk-query.js";
 
 type PagingQueryPromiseResult<TResponsePayload extends JsonValue, TMeta> = ReturnType<
@@ -31,6 +31,10 @@ type FetchAllPagesResult<TResponsePayload extends JsonValue, TMeta> =
 			readonly responses?: never;
 			readonly error: ReturnType<typeof createSdkError>;
 	  };
+
+export function isPagingQuery<T, TBody = null>(query: Query<T, TBody> | PagingQuery<T, TBody>): query is PagingQuery<T, TBody> {
+	return "toPromise" in query && "toAllPromise" in query && "pages" in query;
+}
 
 export function createPagingQuery<TResponsePayload extends JsonValue, TRequestBody extends RequestBody, TMeta>(
 	data: Omit<ResolveQueryData<TResponsePayload, TRequestBody, TMeta>, "nextPageState" | "pageIndex"> & {

@@ -3,6 +3,7 @@
  * to keep common code and behavior consistent.
  */
 
+import z from "zod";
 import type { AdapterResponse, HttpResponse, HttpService, PaginationConfig, RequestBody, ResponseData } from "../http/http.models.js";
 import type { KontentSdkError } from "../models/error.models.js";
 
@@ -91,6 +92,10 @@ export type QueryResult<TResponsePayload> = (Success & { readonly response: TRes
 export type PagingQueryResult<TResponsePayload> =
 	| (Success & { readonly responses: TResponsePayload[]; readonly lastContinuationToken: string | undefined })
 	| (Failure & { readonly responses?: never; readonly lastContinuationToken?: never });
+
+export const nilUuid = "00000000-0000-0000-0000-000000000000";
+
+export const kontentUuidSchema = z.union([z.uuid({ version: "v4" }), z.literal(nilUuid)]);
 
 type Success = {
 	readonly success: true;
