@@ -1,9 +1,8 @@
+import path from "node:path";
+import { loadEnvFile } from "node:process";
+import { fileURLToPath } from "node:url";
 import chalk from "chalk";
-import * as dotenv from "dotenv";
 import type { GetNextPageData } from "../lib/public_api.js";
-
-// needed to load .env environment to current process when run via package.json script
-dotenv.config();
 
 export function getEnvironmentRequiredValue(variableName: string): string {
 	const value = getEnvironmentOptionalValue(variableName);
@@ -16,6 +15,7 @@ export function getEnvironmentRequiredValue(variableName: string): string {
 }
 
 export function getEnvironmentOptionalValue(variableName: string): string | undefined {
+	loadEnvironmentVariables();
 	return process.env[variableName];
 }
 
@@ -42,4 +42,16 @@ export function preventInfinitePaging({
 
 export function getNextPageUrl(index: number): string {
 	return `https://page-url.com/${index}`;
+}
+
+function loadEnvironmentVariables(): void {
+	loadEnvFile(getEnvFilePath());
+}
+
+function getRootDirectory(): string {
+	return path.dirname(fileURLToPath(import.meta.url));
+}
+
+function getEnvFilePath(): string {
+	return path.resolve(getRootDirectory(), "..", ".env");
 }
