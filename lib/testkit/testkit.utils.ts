@@ -54,7 +54,7 @@ export function getTestHttpServiceWithJsonResponse({
 	continuationToken,
 	url,
 }: {
-	readonly jsonResponse: JsonValue;
+	readonly jsonResponse: JsonValue | (() => Promise<JsonValue>);
 	readonly statusCode: HttpServiceStatus;
 	readonly continuationToken?: string;
 	readonly url?: string;
@@ -73,7 +73,7 @@ export function getTestHttpServiceWithJsonResponse({
 					statusText: "",
 					url: url ?? "https://default-url.com",
 					toJsonAsync: async () => {
-						return await Promise.resolve(jsonResponse);
+						return await Promise.resolve(typeof jsonResponse === "function" ? await jsonResponse() : jsonResponse);
 					},
 					toBlobAsync: () => {
 						throw new Error("n/a");

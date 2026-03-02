@@ -91,8 +91,16 @@ export type SuccessfulHttpResponse<TResponsePayload extends ResponseData, TReque
 export type QueryResult<TResponsePayload> = (Success & { readonly response: TResponsePayload }) | (Failure & { readonly response?: never });
 
 export type PagingQueryResult<TResponsePayload> =
-	| (Success & { readonly responses: TResponsePayload[]; readonly lastContinuationToken: string | undefined })
-	| (Failure & { readonly responses?: never; readonly lastContinuationToken?: never });
+	| (Success & {
+			readonly responses: readonly TResponsePayload[];
+			readonly partialResponses?: never;
+			readonly lastContinuationToken: string | undefined;
+	  })
+	| (Failure & {
+			readonly responses?: never;
+			readonly lastContinuationToken?: never;
+			readonly partialResponses: readonly TResponsePayload[];
+	  });
 
 export const nilUuid = "00000000-0000-0000-0000-000000000000";
 
