@@ -133,7 +133,7 @@ function getFetchMock<TResponsePayload extends JsonValue | Blob>({
 }): Mock<() => Promise<Response>> {
 	return vi.fn(async () => {
 		const baseResponse: Partial<Response> = {
-			ok: status === 200,
+			ok: status >= 200 && status < 300,
 			headers: buildHeadersWithDefaultContentType(responseHeaders),
 			status,
 			json: async () => await Promise.resolve(json),
