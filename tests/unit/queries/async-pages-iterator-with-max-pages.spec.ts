@@ -53,8 +53,12 @@ describe("Async pages iterator with max pages count", async () => {
 
 	const responses: QueryResponse<null>[] = [];
 
-	for await (const page of pagesIterator) {
-		responses.push(page);
+	for await (const { success, response } of pagesIterator) {
+		if (success) {
+			responses.push(response);
+		} else {
+			break;
+		}
 	}
 
 	it("All responses should be successful", () => {

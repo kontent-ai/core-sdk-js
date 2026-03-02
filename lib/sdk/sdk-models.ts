@@ -55,7 +55,7 @@ export type Query<TResponsePayload, TMeta> = {
 
 export type PagingQuery<TResponsePayload, TMeta> = Query<TResponsePayload, TMeta> & {
 	toAllPromise(config?: PaginationConfig): Promise<PagingQueryResult<QueryResponse<TResponsePayload, TMeta>>>;
-	pages(config?: PaginationConfig): AsyncGenerator<QueryResponse<TResponsePayload, TMeta>>;
+	pages(config?: PaginationConfig): AsyncGenerator<QueryResult<QueryResponse<TResponsePayload, TMeta>>>;
 };
 
 export type NextPageStateWithRequest =
