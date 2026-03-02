@@ -77,7 +77,12 @@ async function resolveRequestAsync<TResponsePayload extends ResponseData, TReque
 	return await withUnknownErrorHandlingAsync({
 		url: options.url,
 		funcAsync: async () => {
-			const { success: parseSuccess, data: parsedRequest, error: parseError } = parseAndValidateRequest(options);
+			const retryStrategyOptions = toRequiredRetryStrategyOptions(config?.retryStrategy);
+			const {
+				success: parseSuccess,
+				data: parsedRequest,
+				error: parseError,
+			} = parseAndValidateRequest(options, retryStrategyOptions);
 
 			if (!parseSuccess) {
 				return {
@@ -93,7 +98,7 @@ async function resolveRequestAsync<TResponsePayload extends ResponseData, TReque
 			});
 
 			return await withRetryAsync({
-				funcAsync: async () => {
+				funcAsync: async (retryAttempt, retryStrategyOptions) => {
 					const adapterResponse = await executeWithAdapter({
 						adapter: config?.adapter ?? getDefaultHttpAdapter(),
 						parsedUrl: parsedRequest.parsedUrl,
@@ -103,15 +108,17 @@ async function resolveRequestAsync<TResponsePayload extends ResponseData, TReque
 					});
 
 					return await resolveResponseAsync({
+						retryStrategyOptions,
 						method: options.method,
 						requestBody: options.body,
 						requestHeaders,
 						response: adapterResponse,
 						resolvePayloadAsync,
+						retryAttempt,
 					});
 				},
 				url: options.url,
-				retryStrategyOptions: toRequiredRetryStrategyOptions(config?.retryStrategy),
+				retryStrategyOptions,
 				requestHeaders,
 				method: options.method,
 			});
@@ -139,6 +146,8 @@ async function withUnknownErrorHandlingAsync<TResponsePayload extends ResponseDa
 			url: url,
 			reason: "unknown",
 			originalError: error,
+			retryStrategyOptions: undefined,
+			retryAttempt: undefined,
 		}),
 	};
 }
@@ -149,17 +158,21 @@ async function resolveResponseAsync<TResponsePayload extends ResponseData, TRequ
 	method,
 	requestHeaders,
 	requestBody,
+	retryAttempt,
+	retryStrategyOptions,
 }: {
 	readonly response: AdapterResponse;
 	readonly resolvePayloadAsync: (response: AdapterResponse) => Promise<TResponsePayload>;
 	readonly method: HttpMethod;
 	readonly requestHeaders: readonly Header[];
 	readonly requestBody: TRequestBody;
+	readonly retryAttempt: number;
+	readonly retryStrategyOptions: Required<RetryStrategyOptions>;
 }): Promise<HttpResponse<TResponsePayload, TRequestBody>> {
 	if (!response.isValidResponse) {
 		return {
 			success: false,
-			error: await getErrorForInvalidResponseAsync(response, method),
+			error: await getErrorForInvalidResponseAsync({ response, method, retryAttempt, retryStrategyOptions }),
 		};
 	}
 
@@ -209,29 +222,53 @@ async function withRetryAsync<TResponsePayload extends ResponseData, TRequestBod
 	requestHeaders,
 	method,
 }: {
-	readonly funcAsync: () => Promise<HttpResponse<TResponsePayload, TRequestBody>>;
+	readonly funcAsync: (
+		retryAttempt: number,
+		retryStrategyOptions: Required<RetryStrategyOptions>,
+	) => Promise<HttpResponse<TResponsePayload, TRequestBody>>;
 	readonly url: string;
 	readonly retryStrategyOptions: Required<RetryStrategyOptions>;
 	readonly requestHeaders: readonly Header[];
 	readonly method: HttpMethod;
 }): Promise<HttpResponse<TResponsePayload, TRequestBody>> {
+	const retryAttempt = 0;
 	return await runWithRetryAsync({
 		url: url,
 		retryStrategyOptions,
-		retryAttempt: 0,
+		retryAttempt,
 		requestHeaders,
 		method: method,
 		funcAsync: async () => {
-			return await funcAsync();
+			return await funcAsync(retryAttempt, retryStrategyOptions);
 		},
 	});
 }
 
-async function getErrorForInvalidResponseAsync(response: AdapterResponse, method: HttpMethod): Promise<KontentSdkError> {
-	return createSdkError(await getErrorDetailsForInvalidResponseAsync(response, method));
+async function getErrorForInvalidResponseAsync({
+	response,
+	method,
+	retryAttempt,
+	retryStrategyOptions,
+}: {
+	readonly response: AdapterResponse;
+	readonly method: HttpMethod;
+	readonly retryAttempt: number;
+	readonly retryStrategyOptions: Required<RetryStrategyOptions>;
+}): Promise<KontentSdkError> {
+	return createSdkError(await getErrorDetailsForInvalidResponseAsync({ response, method, retryAttempt, retryStrategyOptions }));
 }
 
-async function getErrorDetailsForInvalidResponseAsync(response: AdapterResponse, method: HttpMethod): Promise<ErrorDetails> {
+async function getErrorDetailsForInvalidResponseAsync({
+	response,
+	method,
+	retryAttempt,
+	retryStrategyOptions,
+}: {
+	readonly response: AdapterResponse;
+	readonly method: HttpMethod;
+	readonly retryAttempt: number;
+	readonly retryStrategyOptions: Required<RetryStrategyOptions>;
+}): Promise<ErrorDetails> {
 	const sharedErrorData: Pick<ErrorDetails, "message" | "url"> = {
 		message: getErrorMessage({
 			url: response.url,
@@ -251,6 +288,8 @@ async function getErrorDetailsForInvalidResponseAsync(response: AdapterResponse,
 			status: m.status,
 			statusText: m.statusText,
 			kontentErrorResponse: await getKontentErrorDataAsync(m),
+			retryStrategyOptions,
+			retryAttempt,
 		}))
 		.otherwise(async () => ({
 			...sharedErrorData,
@@ -260,15 +299,19 @@ async function getErrorDetailsForInvalidResponseAsync(response: AdapterResponse,
 			status: response.status,
 			statusText: response.statusText,
 			kontentErrorResponse: await getKontentErrorDataAsync(response),
+			retryStrategyOptions,
+			retryAttempt,
 		}));
 }
 
 function parseRequestBody({
 	requestBody,
 	url,
+	retryStrategyOptions,
 }: {
 	readonly requestBody: RequestBody;
 	readonly url: string;
+	readonly retryStrategyOptions: Required<RetryStrategyOptions>;
 }): Result<AdapterRequestBody, KontentSdkError> {
 	return match(requestBody)
 		.returnType<Result<AdapterRequestBody, KontentSdkError>>()
@@ -291,6 +334,8 @@ function parseRequestBody({
 						url: url,
 						reason: "invalidBody",
 						originalError: parseError,
+						retryStrategyOptions,
+						retryAttempt: undefined,
 					}),
 				};
 			}
@@ -321,8 +366,9 @@ type ParsedRequest = {
 
 function parseAndValidateRequest<TRequestBody extends RequestBody>(
 	options: ExecuteRequestOptions<TRequestBody>,
+	retryStrategyOptions: Required<RetryStrategyOptions>,
 ): Result<ParsedRequest, KontentSdkError> {
-	const { success: urlParsedSuccess, data: parsedUrl, error: urlError } = parseUrl(options.url);
+	const { success: urlParsedSuccess, data: parsedUrl, error: urlError } = parseUrl({ url: options.url, retryStrategyOptions });
 
 	if (!urlParsedSuccess) {
 		return {
@@ -335,7 +381,7 @@ function parseAndValidateRequest<TRequestBody extends RequestBody>(
 		success: requestBodyParsedSuccess,
 		data: parsedRequestBody,
 		error: requestBodyError,
-	} = parseRequestBody({ requestBody: options.body, url: options.url });
+	} = parseRequestBody({ requestBody: options.body, url: options.url, retryStrategyOptions });
 
 	if (!requestBodyParsedSuccess) {
 		return {
@@ -353,7 +399,13 @@ function parseAndValidateRequest<TRequestBody extends RequestBody>(
 	};
 }
 
-function parseUrl(url: string): Result<URL, KontentSdkError> {
+function parseUrl({
+	url,
+	retryStrategyOptions,
+}: {
+	readonly url: string;
+	readonly retryStrategyOptions: Required<RetryStrategyOptions>;
+}): Result<URL, KontentSdkError> {
 	const { success, data: parsedUrl, error } = tryCatch(() => new URL(url));
 
 	if (!success) {
@@ -364,6 +416,8 @@ function parseUrl(url: string): Result<URL, KontentSdkError> {
 				url: url,
 				reason: "invalidUrl",
 				originalError: error,
+				retryStrategyOptions,
+				retryAttempt: undefined,
 			}),
 		};
 	}

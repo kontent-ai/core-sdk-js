@@ -139,6 +139,8 @@ export async function resolveQueryAsync<TResponsePayload extends JsonValue, TReq
 					zodError: validationError,
 					response,
 					url: request.url,
+					retryStrategyOptions: undefined,
+					retryAttempt: undefined,
 				}),
 			};
 		}

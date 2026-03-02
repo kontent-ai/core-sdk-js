@@ -37,14 +37,14 @@ const defaultCanRetryError: NonNullable<RetryStrategyOptions["canRetryError"]> =
 };
 
 export async function runWithRetryAsync<TResponse extends ResponseData, TRequestBody extends RequestBody>(data: {
-	readonly funcAsync: () => Promise<HttpResponse<TResponse, TRequestBody>>;
+	readonly funcAsync: (retryAttempt: number) => Promise<HttpResponse<TResponse, TRequestBody>>;
 	readonly retryStrategyOptions: Required<RetryStrategyOptions>;
 	readonly retryAttempt: number;
 	readonly url: string;
 	readonly requestHeaders: readonly Header[];
 	readonly method: HttpMethod;
 }): Promise<HttpResponse<TResponse, TRequestBody>> {
-	const { success, response, error } = await data.funcAsync();
+	const { success, response, error } = await data.funcAsync(data.retryAttempt);
 
 	if (success) {
 		return {

@@ -50,12 +50,12 @@ export type ErrorDetails = {
 	/**
 	 * Used retry strategy.
 	 */
-	readonly retryStrategyOptions?: Required<RetryStrategyOptions>;
+	readonly retryStrategyOptions: Required<RetryStrategyOptions> | undefined;
 
 	/**
 	 * The number of times the request has been retried.
 	 */
-	readonly retryAttempt?: number;
+	readonly retryAttempt: number | undefined;
 } & ErrorReasonData;
 
 export class KontentSdkError extends Error {

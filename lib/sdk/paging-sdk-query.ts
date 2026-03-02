@@ -234,6 +234,8 @@ function validateAndBuildPagingResult<TResponsePayload extends JsonValue, TMeta>
 		return {
 			success: false,
 			error: createSdkError({
+				retryStrategyOptions: undefined,
+				retryAttempt: undefined,
 				reason: "noResponses",
 				url: requestUrl,
 				message: "No responses were processed. Expected at least one response to be fetched when using paging queries.",

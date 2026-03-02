@@ -51,9 +51,7 @@ describe("Basic paging query with unlimited max count", async () => {
 			method: "GET",
 			body: {},
 		},
-	}).toAllPromise({
-		maxPagesCount: undefined,
-	});
+	}).toAllPromise();
 
 	it("Error should be undefined", () => {
 		expect(error).toBeUndefined();

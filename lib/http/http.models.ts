@@ -116,8 +116,8 @@ export type AdapterRequestOptions = {
 };
 
 export type GetNextPageData<TResponsePayload extends JsonValue, TMeta> = (response: QueryResponse<TResponsePayload, TMeta>) => {
-	readonly continuationToken?: string;
-	readonly nextPageUrl?: string;
+	readonly continuationToken?: string | undefined;
+	readonly nextPageUrl?: string | undefined;
 };
 
 export type PaginationConfig = {
