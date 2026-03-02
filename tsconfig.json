@@ -10,7 +10,6 @@
 		"module": "NodeNext",
 		"moduleResolution": "nodenext",
 		"resolveJsonModule": true,
-		"allowSyntheticDefaultImports": true,
 
 		// Emit behavior (even if `noEmit` is true, these are useful for tooling expectations)
 		"noEmit": true,
@@ -19,18 +18,16 @@
 
 		// Strictness + type safety
 		"strict": true,
-		"alwaysStrict": true,
 		"noImplicitAny": true,
-		"strictNullChecks": true,
-		"strictFunctionTypes": true,
-		"strictPropertyInitialization": true,
-
-		// Lint-like correctness checks
 		"noImplicitReturns": true,
 		"allowUnreachableCode": false,
 		"noUnusedLocals": true,
 		"noUnusedParameters": true,
 		"forceConsistentCasingInFileNames": true,
+		"exactOptionalPropertyTypes": true,
+		"noUncheckedIndexedAccess": true,
+		"noFallthroughCasesInSwitch": true,
+		"useUnknownInCatchVariables": true,
 
 		// Perf / compatibility
 		"skipLibCheck": true,

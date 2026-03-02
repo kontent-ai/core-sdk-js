@@ -17,7 +17,7 @@ export type QueryPromiseResult<TResponsePayload extends JsonValue, TMeta> = Retu
 >;
 
 type MetadataContextData = {
-	readonly continuationToken?: string;
+	readonly continuationToken: string | undefined;
 };
 
 type MetadataMapper<TResponsePayload extends JsonValue, TRequestBody extends RequestBody, TMeta> = (

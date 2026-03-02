@@ -8,7 +8,7 @@ import type { AdapterResponse, HttpResponse, HttpService, PaginationConfig, Requ
 import type { KontentSdkError } from "../models/error.models.js";
 
 export type QueryResponseMeta<TMeta = unknown> = Pick<AdapterResponse, "status" | "responseHeaders" | "url"> & {
-	readonly continuationToken?: string;
+	readonly continuationToken: string | undefined;
 } & TMeta;
 
 export type QueryResponse<TResponsePayload, TMeta = unknown> = {
