@@ -65,7 +65,6 @@ for (const testCase of testCases) {
 		});
 
 		it(`Should retry '${testCase.expectedRetries}' times`, () => {
-			console.log(error);
 			expect(error?.details.retryAttempt).toBe(testCase.expectedRetries);
 		});
 	});
