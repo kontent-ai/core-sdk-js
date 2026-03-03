@@ -7,7 +7,7 @@ const body: Record<string, unknown> = {};
 body.self = body;
 
 describe("Invalid payload retry", async () => {
-	const { success, error } = await getDefaultHttpService({
+	const { error } = await getDefaultHttpService({
 		adapter: {
 			requestAsync: async () => {
 				return await Promise.resolve({
@@ -29,19 +29,11 @@ describe("Invalid payload retry", async () => {
 		body: null,
 	});
 
-	it("Success should be false", () => {
-		expect(success).toBe(false);
-	});
-
-	it("Error should be defined", () => {
-		expect(error).toBeDefined();
-	});
-
 	it("Error should be an instance of SdkError", () => {
 		expect(error).toBeInstanceOf(KontentSdkError);
 	});
 
-	it("Retry attempt should be undefined because invalid payload should not be retried", () => {
+	it("Retry attempt should be 0 because invalid payload should not be retried", () => {
 		expect(error?.details.retryAttempt).toBe(0);
 	});
 

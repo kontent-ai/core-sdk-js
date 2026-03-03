@@ -22,14 +22,7 @@ describe("Integration tests - Binary file / asset management", async () => {
 		requestHeaders: config.getMapiAuthorizationHeaders(),
 		retryStrategy: {
 			maxRetries: 5,
-			getDelayBetweenRetriesMs: (error) => {
-				if (error.details.reason === "notFound") {
-					return 1000;
-				}
-
-				return 0;
-			},
-			canRetryError: (error) => {
+			canRetryUnhandledError: (error) => {
 				if (error.details.reason === "notFound") {
 					// we intetionally retry 404 because when we upload a file and get the URL back, the file might not yet be accessible
 					// and the request will fail with 404.

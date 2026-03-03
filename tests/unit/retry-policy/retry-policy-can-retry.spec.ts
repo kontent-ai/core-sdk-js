@@ -1,8 +1,7 @@
-import { afterAll, describe, expect, it, vi } from "vitest";
-import { getDefaultHttpService } from "../../../lib/http/http.service.js";
+import { describe, expect, it } from "vitest";
 import type { RetryStrategyOptions } from "../../../lib/models/core.models.js";
 import type { FetchResponse } from "../../../lib/testkit/testkit.models.js";
-import { mockGlobalFetchJsonResponse } from "../../../lib/testkit/testkit.utils.js";
+import { getTestHttpServiceWithJsonResponse } from "../../../lib/testkit/testkit.utils.js";
 import { resolveDefaultRetryStrategyOptions } from "../../../lib/utils/retry.utils.js";
 
 type TestCase = RetryStrategyOptions & {
@@ -13,44 +12,30 @@ type TestCase = RetryStrategyOptions & {
 
 const testCases: readonly TestCase[] = [
 	{
-		title: "Default retry - Can retry",
-		canRetryError: resolveDefaultRetryStrategyOptions({}).canRetryError,
-		maxRetries: 1,
-		expectedRetries: 1,
-		getDelayBetweenRetriesMs: () => 0,
+		title: "By default unhandled errors are not retried even if max retries is > 0",
+		canRetryUnhandledError: resolveDefaultRetryStrategyOptions({}).canRetryUnhandledError,
+		maxRetries: 5,
+		expectedRetries: 0,
 		fetchResponse: {
 			statusCode: 500,
 			json: {},
 		},
 	},
 	{
-		title: `Default retry - Can't retry`,
-		canRetryError: resolveDefaultRetryStrategyOptions({}).canRetryError,
-		maxRetries: 0,
+		title: `Can't retry if canRetryUnhandledError returns false`,
+		canRetryUnhandledError: () => false,
+		maxRetries: 5,
 		expectedRetries: 0,
-		getDelayBetweenRetriesMs: () => 0,
-		fetchResponse: {
-			statusCode: 400,
-			json: {},
-		},
-	},
-	{
-		title: `Custom retry - Can't retry`,
-		canRetryError: () => false,
-		maxRetries: 1,
-		expectedRetries: 0,
-		getDelayBetweenRetriesMs: () => 0,
 		fetchResponse: {
 			statusCode: 500,
 			json: {},
 		},
 	},
 	{
-		title: "Custom retry - Can retry",
-		canRetryError: () => true,
+		title: "Can retry when unhandled errors are set to be retried via custom callback",
+		canRetryUnhandledError: () => true,
 		maxRetries: 1,
 		expectedRetries: 1,
-		getDelayBetweenRetriesMs: () => 0,
 		fetchResponse: {
 			statusCode: 500,
 			json: {},
@@ -60,19 +45,12 @@ const testCases: readonly TestCase[] = [
 
 for (const testCase of testCases) {
 	describe(testCase.title, async () => {
-		afterAll(() => {
-			vi.resetAllMocks();
-		});
-
-		mockGlobalFetchJsonResponse({
+		const { success, error } = await getTestHttpServiceWithJsonResponse({
 			jsonResponse: testCase.fetchResponse.json,
 			statusCode: testCase.fetchResponse.statusCode,
-		});
-
-		const { success, error } = await getDefaultHttpService({
 			retryStrategy: testCase,
+			isValidResponse: false,
 		}).requestAsync({
-			// we need valid url
 			url: "https://domain.com",
 			method: "GET",
 			body: null,
@@ -87,6 +65,7 @@ for (const testCase of testCases) {
 		});
 
 		it(`Should retry '${testCase.expectedRetries}' times`, () => {
+			console.log(error);
 			expect(error?.details.retryAttempt).toBe(testCase.expectedRetries);
 		});
 	});

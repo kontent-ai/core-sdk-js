@@ -8,26 +8,18 @@ const body: Record<string, unknown> = {};
 body.self = body;
 
 describe("Invalid body retry", async () => {
-	const { success, error } = await getDefaultHttpService({}).requestAsync({
+	const { error } = await getDefaultHttpService({}).requestAsync({
 		url: "https://domain.com",
 		method: "POST",
 		body: body as unknown as RequestBody,
 	});
 
-	it("Success should be false", () => {
-		expect(success).toBe(false);
-	});
-
-	it("Error should be defined", () => {
-		expect(error).toBeDefined();
+	it("Retry attempt should be 0 because invalid body should not be retried", () => {
+		expect(error?.details.retryAttempt).toBe(0);
 	});
 
 	it("Error should be an instance of SdkError", () => {
 		expect(error).toBeInstanceOf(KontentSdkError);
-	});
-
-	it("Retry attempt should be undefined because invalid body should not be retried", () => {
-		expect(error?.details.retryAttempt).toBe(0);
 	});
 
 	it(`Error details should be of type '${"invalidBody" satisfies ErrorReason}'`, () => {

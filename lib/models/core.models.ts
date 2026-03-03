@@ -50,23 +50,28 @@ export type RetryStrategyOptions = {
 	/**
 	 * Maximum number of retry attempts.
 	 *
-	 * If not provided, the default implementation will be used.
+	 * If not provided, the default number of retries defined within the SDK will be used.
 	 */
 	readonly maxRetries?: number;
 
 	/**
-	 * Function to determine if the error should be retried.
+	 * Determines whether an error should be retried.
 	 *
-	 * If not provided, the default implementation will be used.
-	 */
-	readonly canRetryError?: (error: KontentSdkError) => boolean;
-
-	/**
-	 * Function to determine the delay between requests in milliseconds.
+	 * This callback is evaluated only after SDK-defined retry rules are checked.
+	 * The SDK handles the following cases directly:
 	 *
-	 * If not provided, the default implementation will be used.
+	 * - Retried automatically:
+	 *   - HTTP 429 (rate limit exceeded)
+	 *
+	 * - Not retried automatically:
+	 *   - Invalid request body (`invalidBody`)
+	 *   - Invalid payload (`invalidPayload`)
+	 *   - Invalid URL (`invalidUrl`)
+	 *   - API business/validation error response (`kontentErrorResponse`)
+	 *
+	 * For other error types, return `true` to retry or `false` to stop.
 	 */
-	readonly getDelayBetweenRetriesMs?: (error: KontentSdkError) => number;
+	readonly canRetryUnhandledError?: (error: KontentSdkError) => boolean;
 
 	/**
 	 * Controls logging for retry attempts.
@@ -78,9 +83,7 @@ export type RetryStrategyOptions = {
 	readonly logRetryAttempt?: "logToConsole" | ((retryAttempt: number, url: string) => void);
 };
 
-export type ResolvedRetryStrategyOptions = Pick<
-	Required<RetryStrategyOptions>,
-	"maxRetries" | "canRetryError" | "getDelayBetweenRetriesMs"
-> & {
+export type ResolvedRetryStrategyOptions = Pick<Required<RetryStrategyOptions>, "maxRetries" | "canRetryUnhandledError"> & {
 	readonly logRetryAttempt: undefined | ((retryAttempt: number, url: string) => void);
+	readonly getDelayBetweenRetriesMs: (error: KontentSdkError) => number;
 };

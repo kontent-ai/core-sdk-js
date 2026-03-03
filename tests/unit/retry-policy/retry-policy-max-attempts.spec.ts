@@ -1,46 +1,34 @@
-import { afterAll, describe, expect, it, vi } from "vitest";
-import { getDefaultHttpService } from "../../../lib/http/http.service.js";
+import { describe, expect, it } from "vitest";
 import type { RetryStrategyOptions } from "../../../lib/models/core.models.js";
-import { mockGlobalFetchJsonResponse } from "../../../lib/testkit/testkit.utils.js";
+import { getTestHttpServiceWithJsonResponse } from "../../../lib/testkit/testkit.utils.js";
 
 const testRetryStrategies: readonly RetryStrategyOptions[] = [
 	{
 		maxRetries: 0,
-		getDelayBetweenRetriesMs: () => 0,
-		canRetryError: () => true,
+		canRetryUnhandledError: () => true,
 	},
 	{
 		maxRetries: 1,
-		getDelayBetweenRetriesMs: () => 0,
-		canRetryError: () => true,
+		canRetryUnhandledError: () => true,
 	},
 	{
 		maxRetries: 2,
-		getDelayBetweenRetriesMs: () => 0,
-		canRetryError: () => true,
+		canRetryUnhandledError: () => true,
 	},
 	{
 		maxRetries: 5,
-		getDelayBetweenRetriesMs: () => 0,
-		canRetryError: () => true,
+		canRetryUnhandledError: () => true,
 	},
 ];
 
 describe("Retry policy - max retries", async () => {
-	afterAll(() => {
-		vi.resetAllMocks();
-	});
-
 	for (const [maxRetries, retryStrategy] of Object.entries(testRetryStrategies)) {
-		mockGlobalFetchJsonResponse({
+		const { success, error } = await getTestHttpServiceWithJsonResponse({
 			jsonResponse: {},
 			statusCode: 500,
-		});
-
-		const { success, error } = await getDefaultHttpService({
 			retryStrategy,
+			isValidResponse: false,
 		}).requestAsync({
-			// we need valid url
 			url: "https://domain.com",
 			method: "GET",
 			body: null,

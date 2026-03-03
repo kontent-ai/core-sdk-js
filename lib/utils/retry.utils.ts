@@ -16,24 +16,9 @@ type RetryResult =
 	  };
 
 const defaultMaxRetries: NonNullable<RetryStrategyOptions["maxRetries"]> = 3;
-const getDefaultDelayBetweenRetriesMs: NonNullable<RetryStrategyOptions["getDelayBetweenRetriesMs"]> = (error) => {
-	return match(error)
-		.returnType<number>()
-		.with({ details: { reason: "invalidResponse" } }, () => getRetryMsFromHeaders({ error }))
-		.otherwise(() => 0);
-};
-const defaultCanRetryError: NonNullable<RetryStrategyOptions["canRetryError"]> = (error) => {
-	return match(error)
-		.returnType<boolean>()
-		.with({ details: { reason: "invalidResponse" } }, (m) => {
-			if (m.details.kontentErrorResponse) {
-				// The request is clearly invalid as we got an error response from the API
-				return false;
-			}
 
-			return m.details.status >= 500 || m.details.status === 429;
-		})
-		.otherwise(() => true);
+const defaultCanRetryUnhandledError: NonNullable<RetryStrategyOptions["canRetryUnhandledError"]> = (_error) => {
+	return false;
 };
 
 export async function runWithRetryAsync<TResponse extends ResponseData, TRequestBody extends RequestBody>(data: {
@@ -56,7 +41,7 @@ export async function runWithRetryAsync<TResponse extends ResponseData, TRequest
 	const retryResult = getRetryResult({
 		error,
 		retryAttempt: data.retryAttempt,
-		options: data.retryStrategyOptions,
+		retryStrategyOptions: data.retryStrategyOptions,
 	});
 
 	if (!retryResult.canRetry) {
@@ -87,10 +72,10 @@ export async function runWithRetryAsync<TResponse extends ResponseData, TRequest
 export function resolveDefaultRetryStrategyOptions(options?: RetryStrategyOptions): ResolvedRetryStrategyOptions {
 	const maxRetries: number = options?.maxRetries ?? defaultMaxRetries;
 
-	return {
+	const resolvedOptions: ResolvedRetryStrategyOptions = {
 		maxRetries: maxRetries,
-		canRetryError: options?.canRetryError ?? defaultCanRetryError,
-		getDelayBetweenRetriesMs: options?.getDelayBetweenRetriesMs ?? getDefaultDelayBetweenRetriesMs,
+		canRetryUnhandledError: options?.canRetryUnhandledError ?? defaultCanRetryUnhandledError,
+		getDelayBetweenRetriesMs: (error) => getRetryMsFromHeaders({ error }),
 		logRetryAttempt: match(options?.logRetryAttempt)
 			.returnType<ResolvedRetryStrategyOptions["logRetryAttempt"]>()
 			.with("logToConsole", () => (retryAttempt, url) => {
@@ -98,6 +83,8 @@ export function resolveDefaultRetryStrategyOptions(options?: RetryStrategyOption
 			})
 			.otherwise((m) => m),
 	};
+
+	return resolvedOptions;
 }
 
 async function waitBeforeNextRetryAsync({ retryInMs }: { readonly retryInMs: number }): Promise<void> {
@@ -113,37 +100,67 @@ function getDefaultRetryAttemptLogMessage(retryAttempt: number, maxRetries: numb
 }
 
 function getRetryResult({
-	retryAttempt,
+	retryStrategyOptions,
 	error,
-	options,
+	retryAttempt,
 }: {
 	readonly retryAttempt: number;
 	readonly error: KontentSdkError;
-	readonly options: ResolvedRetryStrategyOptions;
+	readonly retryStrategyOptions: ResolvedRetryStrategyOptions;
 }): RetryResult {
+	if (
+		!canRetryError({
+			retryAttempt,
+			error,
+			maxRetries: retryStrategyOptions.maxRetries,
+			canRetryUnhandledError: retryStrategyOptions.canRetryUnhandledError,
+		})
+	) {
+		return {
+			canRetry: false,
+		};
+	}
+
+	return {
+		canRetry: true,
+		retryInMs: retryStrategyOptions.getDelayBetweenRetriesMs(error),
+	};
+}
+
+function canRetryError({
+	retryAttempt,
+	error,
+	maxRetries,
+	canRetryUnhandledError,
+}: {
+	readonly retryAttempt: number;
+	readonly error: KontentSdkError;
+	readonly maxRetries: Required<RetryStrategyOptions>["maxRetries"];
+	readonly canRetryUnhandledError: NonNullable<RetryStrategyOptions["canRetryUnhandledError"]>;
+}): boolean {
 	return (
-		match({ retryAttempt, options, error })
-			.returnType<RetryResult>()
+		match({ retryAttempt, error })
+			.returnType<boolean>()
 			// Order of the condition matters
 			// First check if the retry attempt is greater than the maximum retries
 			// Then all other cases
-			.with({ retryAttempt: P.when((m) => m >= options.maxRetries) }, () => ({
-				canRetry: false,
-			}))
-
-			.with({ error: { details: { reason: P.union("invalidBody", "invalidPayload", "invalidUrl") } } }, () => ({
-				canRetry: false,
-			}))
-			.when(
-				(m) => !m.options.canRetryError(m.error),
-				() => ({
-					canRetry: false,
-				}),
+			.with({ retryAttempt: P.when((m) => m >= maxRetries) }, () => false)
+			.with({ error: { details: { status: 429 } } }, () => {
+				// Always retry 429 errors
+				return true;
+			})
+			.with({ error: { details: { kontentErrorResponse: P.nonNullable } } }, () => {
+				// The request is clearly invalid as we got an error response from the API
+				// and we should not retry such requests
+				return false;
+			})
+			.with(
+				{ error: { details: { reason: P.union("invalidBody", "invalidPayload", "invalidUrl", "notFound", "unauthorized") } } },
+				() => false,
 			)
-			.otherwise((m) => ({
-				canRetry: true,
-				retryInMs: m.options.getDelayBetweenRetriesMs(m.error),
-			}))
+			.otherwise(() => {
+				return canRetryUnhandledError(error);
+			})
 	);
 }
 

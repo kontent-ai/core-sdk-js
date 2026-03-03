@@ -1,7 +1,7 @@
 import { type Mock, vi } from "vitest";
 import type { AdapterResponse, HttpService, HttpServiceStatus } from "../http/http.models.js";
 import { getDefaultHttpService } from "../http/http.service.js";
-import type { CommonHeaderNames, ContinuationHeaderName, SDKInfo } from "../models/core.models.js";
+import type { CommonHeaderNames, ContinuationHeaderName, RetryStrategyOptions, SDKInfo } from "../models/core.models.js";
 import type { JsonValue } from "../models/json.models.js";
 import type { Header } from "../public_api.js";
 import { isNotUndefined } from "../utils/core.utils.js";
@@ -53,17 +53,22 @@ export function getTestHttpServiceWithJsonResponse({
 	statusCode,
 	continuationToken,
 	url,
+	retryStrategy,
+	isValidResponse,
 }: {
 	readonly jsonResponse: JsonValue | (() => Promise<JsonValue>);
 	readonly statusCode: HttpServiceStatus;
 	readonly continuationToken?: string;
 	readonly url?: string;
+	readonly retryStrategy?: RetryStrategyOptions;
+	readonly isValidResponse?: boolean;
 }): HttpService {
 	return getDefaultHttpService({
+		retryStrategy: retryStrategy ?? {},
 		adapter: {
 			requestAsync: async () => {
 				const adapterResponse: AdapterResponse = {
-					isValidResponse: true,
+					isValidResponse: isValidResponse ?? true,
 					responseHeaders: [
 						...(continuationToken
 							? [{ name: "X-Continuation" satisfies ContinuationHeaderName, value: continuationToken }]
