@@ -4,7 +4,7 @@ import { type ErrorReason, KontentSdkError } from "../../../lib/models/error.mod
 
 const url = "invalid-url";
 
-describe("Invalid url fail", async () => {
+describe("Invalid url retry", async () => {
 	const { success, error } = await getDefaultHttpService({}).requestAsync({
 		url,
 		method: "GET",
@@ -23,8 +23,8 @@ describe("Invalid url fail", async () => {
 		expect(error).toBeInstanceOf(KontentSdkError);
 	});
 
-	it("Retry attempt should be undefined because invalid should not be retried", () => {
-		expect(error?.details.retryAttempt).toBeUndefined();
+	it("Retry attempt should be undefined because invalid URL should not be retried", () => {
+		expect(error?.details.retryAttempt).toBe(0);
 	});
 
 	it("Error message should be set", () => {

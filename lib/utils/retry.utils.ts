@@ -66,8 +66,8 @@ export async function runWithRetryAsync<TResponse extends ResponseData, TRequest
 			success: false,
 			error: createSdkError({
 				...error.details,
+				// override the retry attempt with the current value
 				retryAttempt: data.retryAttempt,
-				retryStrategyOptions: data.retryStrategyOptions,
 			}),
 		};
 	}
@@ -75,7 +75,7 @@ export async function runWithRetryAsync<TResponse extends ResponseData, TRequest
 	// log retry attempt when available
 	data.retryStrategyOptions.logRetryAttempt?.(newRetryAttempt, data.url);
 
-	await sleepAsync(retryResult.retryInMs);
+	await waitBeforeNextRetryAsync({ retryInMs: retryResult.retryInMs });
 
 	return await runWithRetryAsync({
 		funcAsync: data.funcAsync,
@@ -87,7 +87,7 @@ export async function runWithRetryAsync<TResponse extends ResponseData, TRequest
 	});
 }
 
-export function resolveRetryStrategyOptions(options?: RetryStrategyOptions): ResolvedRetryStrategyOptions {
+export function resolveDefaultRetryStrategyOptions(options?: RetryStrategyOptions): ResolvedRetryStrategyOptions {
 	const maxRetries: number = options?.maxRetries ?? defaultMaxRetries;
 
 	return {
@@ -103,6 +103,14 @@ export function resolveRetryStrategyOptions(options?: RetryStrategyOptions): Res
 	};
 }
 
+async function waitBeforeNextRetryAsync({ retryInMs }: { readonly retryInMs: number }): Promise<void> {
+	if (retryInMs <= 0) {
+		return;
+	}
+
+	await sleepAsync(retryInMs);
+}
+
 function getDefaultRetryAttemptLogMessage(retryAttempt: number, maxRetries: number, url: string): string {
 	return `Retry attempt '${retryAttempt}' from a maximum of '${maxRetries}' retries. Requested url: '${url}'`;
 }
@@ -116,24 +124,32 @@ function getRetryResult({
 	readonly error: KontentSdkError;
 	readonly options: ResolvedRetryStrategyOptions;
 }): RetryResult {
-	return match({ retryAttempt, options, error })
-		.returnType<RetryResult>()
-		.when(
-			(m) => m.retryAttempt >= m.options.maxRetries,
-			() => ({
+	return (
+		match({ retryAttempt, options, error })
+			.returnType<RetryResult>()
+			// Order of the condition matters
+			// First check if the retry attempt is greater than the maximum retries
+			// Then all other cases
+			.with({ retryAttempt: P.when((m) => m >= options.maxRetries) }, () => ({
 				canRetry: false,
-			}),
-		)
-		.when(
-			(m) => !m.options.canRetryError(m.error),
-			() => ({
+			}))
+			.with({ error: { details: { reason: "invalidUrl" } } }, () => ({
 				canRetry: false,
-			}),
-		)
-		.otherwise((m) => ({
-			canRetry: true,
-			retryInMs: m.options.getDelayBetweenRetriesMs(m.error),
-		}));
+			}))
+			.with({ error: { details: { reason: "invalidBody" } } }, () => ({
+				canRetry: false,
+			}))
+			.when(
+				(m) => !m.options.canRetryError(m.error),
+				() => ({
+					canRetry: false,
+				}),
+			)
+			.otherwise((m) => ({
+				canRetry: true,
+				retryInMs: m.options.getDelayBetweenRetriesMs(m.error),
+			}))
+	);
 }
 
 function getRetryMsFromHeaders({ error }: { readonly error: KontentSdkError }): number {

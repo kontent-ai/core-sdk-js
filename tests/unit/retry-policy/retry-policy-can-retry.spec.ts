@@ -3,7 +3,7 @@ import { getDefaultHttpService } from "../../../lib/http/http.service.js";
 import type { RetryStrategyOptions } from "../../../lib/models/core.models.js";
 import type { FetchResponse } from "../../../lib/testkit/testkit.models.js";
 import { mockGlobalFetchJsonResponse } from "../../../lib/testkit/testkit.utils.js";
-import { resolveRetryStrategyOptions } from "../../../lib/utils/retry.utils.js";
+import { resolveDefaultRetryStrategyOptions } from "../../../lib/utils/retry.utils.js";
 
 type TestCase = RetryStrategyOptions & {
 	readonly title: string;
@@ -14,7 +14,7 @@ type TestCase = RetryStrategyOptions & {
 const testCases: readonly TestCase[] = [
 	{
 		title: "Default retry - Can retry",
-		canRetryError: resolveRetryStrategyOptions({}).canRetryError,
+		canRetryError: resolveDefaultRetryStrategyOptions({}).canRetryError,
 		maxRetries: 1,
 		expectedRetries: 1,
 		getDelayBetweenRetriesMs: () => 0,
@@ -25,7 +25,7 @@ const testCases: readonly TestCase[] = [
 	},
 	{
 		title: `Default retry - Can't retry`,
-		canRetryError: resolveRetryStrategyOptions({}).canRetryError,
+		canRetryError: resolveDefaultRetryStrategyOptions({}).canRetryError,
 		maxRetries: 0,
 		expectedRetries: 0,
 		getDelayBetweenRetriesMs: () => 0,

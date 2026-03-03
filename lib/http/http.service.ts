@@ -6,7 +6,7 @@ import { sdkInfo } from "../sdk-info.js";
 import { isBlob, isNotUndefined } from "../utils/core.utils.js";
 import { createSdkError, getErrorMessage, isKontentErrorResponseData } from "../utils/error.utils.js";
 import { getSdkIdHeader, isApplicationJsonResponseType } from "../utils/header.utils.js";
-import { resolveRetryStrategyOptions, runWithRetryAsync } from "../utils/retry.utils.js";
+import { resolveDefaultRetryStrategyOptions, runWithRetryAsync } from "../utils/retry.utils.js";
 import { type Result, tryCatch, tryCatchAsync } from "../utils/try.utils.js";
 import { getDefaultHttpAdapter } from "./http.adapter.js";
 import type {
@@ -77,20 +77,6 @@ async function resolveRequestAsync<TResponsePayload extends ResponseData, TReque
 	return await withUnknownErrorHandlingAsync({
 		url: options.url,
 		funcAsync: async () => {
-			const retryStrategyOptions = resolveRetryStrategyOptions(config?.retryStrategy);
-			const {
-				success: parseSuccess,
-				data: parsedRequest,
-				error: parseError,
-			} = parseAndValidateRequest(options, retryStrategyOptions);
-
-			if (!parseSuccess) {
-				return {
-					success: false,
-					error: parseError,
-				};
-			}
-
 			const requestHeaders = buildRequestHeaders({
 				configHeaders: config?.requestHeaders,
 				optionHeaders: options.requestHeaders,
@@ -99,6 +85,19 @@ async function resolveRequestAsync<TResponsePayload extends ResponseData, TReque
 
 			return await withRetryAsync({
 				funcAsync: async (retryAttempt, retryStrategyOptions) => {
+					const {
+						success: parseSuccess,
+						data: parsedRequest,
+						error: parseError,
+					} = parseAndValidateRequest(options, retryStrategyOptions);
+
+					if (!parseSuccess) {
+						return {
+							success: false,
+							error: parseError,
+						};
+					}
+
 					const adapterResponse = await executeWithAdapter({
 						adapter: config?.adapter ?? getDefaultHttpAdapter(),
 						parsedUrl: parsedRequest.parsedUrl,
@@ -118,7 +117,7 @@ async function resolveRequestAsync<TResponsePayload extends ResponseData, TReque
 					});
 				},
 				url: options.url,
-				retryStrategyOptions,
+				retryStrategyOptions: resolveDefaultRetryStrategyOptions(config?.retryStrategy),
 				requestHeaders,
 				method: options.method,
 			});

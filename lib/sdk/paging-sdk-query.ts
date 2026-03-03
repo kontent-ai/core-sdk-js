@@ -87,14 +87,10 @@ function resolveNextPageState<TResponsePayload extends JsonValue, TMeta>({
 	readonly getNextPageData: GetNextPageData<TResponsePayload, TMeta>;
 	readonly paginationConfig: PaginationConfig;
 	readonly pageIndex: number;
-	readonly response: QueryResponse<TResponsePayload, TMeta> | undefined;
+	readonly response: QueryResponse<TResponsePayload, TMeta>;
 }): NextPageState {
 	return match({ getNextPageData, paginationConfig, pageIndex, response })
 		.returnType<NextPageState>()
-		.with({ response: undefined }, () => ({
-			hasNextPage: true,
-			pageSource: "firstRequest",
-		}))
 		.with({ paginationConfig: { maxPagesCount: 0 } }, () => ({
 			hasNextPage: false,
 		}))
