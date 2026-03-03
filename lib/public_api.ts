@@ -45,7 +45,7 @@ export { createQuery, extractContinuationToken } from "./sdk/sdk-query.js";
 export { isPagingQuery } from "./sdk/sdk-utils.js";
 export { isKontent404Error, isKontentSdkError } from "./utils/error.utils.js";
 export { getSdkIdHeader } from "./utils/header.utils.js";
-export { resolveDefaultRetryStrategyOptions as resolveRetryStrategyOptions } from "./utils/retry.utils.js";
+export { resolveDefaultRetryStrategyOptions } from "./utils/retry.utils.js";
 export { tryCatch, tryCatchAsync } from "./utils/try.utils.js";
 export { getCodenameSchema } from "./utils/type.utils.js";
 export { getEndpointUrl } from "./utils/url.utils.js";
