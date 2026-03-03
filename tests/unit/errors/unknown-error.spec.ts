@@ -8,20 +8,8 @@ class CustomError {}
 describe("Unknown error", async () => {
 	const { success, response, error } = await getDefaultHttpService({
 		adapter: {
-			requestAsync: async (m) => {
-				return await Promise.resolve({
-					isValidResponse: true,
-					responseHeaders: [],
-					status: 500,
-					statusText: "",
-					url: m.url,
-					toJsonAsync: () => {
-						throw new CustomError();
-					},
-					toBlobAsync: () => {
-						throw new CustomError();
-					},
-				});
+			requestAsync: () => {
+				throw new CustomError();
 			},
 		},
 	}).requestAsync({

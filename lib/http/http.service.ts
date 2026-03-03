@@ -4,7 +4,7 @@ import type { ErrorDetails, KontentSdkError } from "../models/error.models.js";
 import type { JsonValue } from "../models/json.models.js";
 import { sdkInfo } from "../sdk-info.js";
 import { isBlob, isNotUndefined } from "../utils/core.utils.js";
-import { createSdkError, getErrorMessage, isKontentErrorResponseData } from "../utils/error.utils.js";
+import { createSdkError, getErrorMessage, isKontentErrorResponseData, isKontentSdkError } from "../utils/error.utils.js";
 import { getSdkIdHeader, isApplicationJsonResponseType } from "../utils/header.utils.js";
 import { resolveDefaultRetryStrategyOptions, runWithRetryAsync } from "../utils/retry.utils.js";
 import { type Result, tryCatch, tryCatchAsync } from "../utils/try.utils.js";
@@ -74,79 +74,66 @@ async function resolveRequestAsync<TResponsePayload extends ResponseData, TReque
 	readonly options: ExecuteRequestOptions<TRequestBody>;
 	readonly resolvePayloadAsync: (response: AdapterResponse) => Promise<TResponsePayload>;
 }): Promise<HttpResponse<TResponsePayload, TRequestBody>> {
-	return await withUnknownErrorHandlingAsync({
-		url: options.url,
-		funcAsync: async () => {
-			return await withRetryAsync({
-				funcAsync: async (retryAttempt, retryStrategyOptions) => {
-					const {
-						success: parseSuccess,
-						data: parsedRequest,
-						error: parseError,
-					} = parseAndValidateRequest(options, retryStrategyOptions);
+	return await withRetryAsync({
+		funcAsync: async (retryAttempt, retryStrategyOptions) => {
+			const {
+				success: parseSuccess,
+				data: parsedRequest,
+				error: parseError,
+			} = parseAndValidateRequest(options, retryStrategyOptions);
 
-					if (!parseSuccess) {
-						return {
-							success: false,
-							error: parseError,
-						};
-					}
+			if (!parseSuccess) {
+				return {
+					success: false,
+					error: parseError,
+				};
+			}
 
-					const requestHeaders = buildRequestHeaders({
-						configHeaders: config?.requestHeaders,
-						optionHeaders: options.requestHeaders,
-						body: options.body,
-					});
+			const requestHeaders = buildRequestHeaders({
+				configHeaders: config?.requestHeaders,
+				optionHeaders: options.requestHeaders,
+				body: options.body,
+			});
 
-					const adapterResponse = await executeWithAdapter({
-						adapter: config?.adapter ?? getDefaultHttpAdapter(),
-						parsedUrl: parsedRequest.parsedUrl,
-						method: options.method,
-						requestHeaders,
-						parsedBody: parsedRequest.parsedBody,
-					});
+			const responseOrError = await executeRequestAsync({
+				adapter: config?.adapter ?? getDefaultHttpAdapter(),
+				parsedUrl: parsedRequest.parsedUrl,
+				method: options.method,
+				requestHeaders,
+				parsedBody: parsedRequest.parsedBody,
+			});
 
-					return await resolveResponseAsync({
-						retryStrategyOptions,
-						method: options.method,
-						requestBody: options.body,
-						requestHeaders,
-						response: adapterResponse,
-						resolvePayloadAsync,
-						retryAttempt,
-					});
-				},
-				url: options.url,
-				retryStrategyOptions: resolveDefaultRetryStrategyOptions(config?.retryStrategy),
+			if (isKontentSdkError(responseOrError)) {
+				return {
+					success: false,
+					error: responseOrError,
+				};
+			}
+
+			return await resolveResponseAsync({
+				retryStrategyOptions,
+				method: options.method,
+				requestBody: options.body,
+				requestHeaders,
+				response: responseOrError,
+				resolvePayloadAsync,
+				retryAttempt,
 			});
 		},
+		url: options.url,
+		retryStrategyOptions: resolveDefaultRetryStrategyOptions(config?.retryStrategy),
 	});
 }
 
-async function withUnknownErrorHandlingAsync<TResponsePayload extends ResponseData, TRequestBody extends RequestBody>({
-	url,
-	funcAsync,
-}: {
-	readonly url: string;
-	readonly funcAsync: () => Promise<HttpResponse<TResponsePayload, TRequestBody>>;
-}): Promise<HttpResponse<TResponsePayload, TRequestBody>> {
-	const { success, data, error } = await tryCatchAsync(funcAsync);
-
-	if (success) {
-		return data;
-	}
-
-	return {
-		success: false,
-		error: createSdkError({
-			message: "Unknown error. See the error object for more details.",
-			url: url,
-			reason: "unknown",
-			originalError: error,
-			retryStrategyOptions: undefined,
-			retryAttempt: undefined,
-		}),
-	};
+function createUnknownError(url: string, error: unknown): KontentSdkError {
+	return createSdkError({
+		message: "Unknown error. See the error object for more details.",
+		url: url,
+		reason: "unknown",
+		originalError: error,
+		retryStrategyOptions: undefined,
+		retryAttempt: undefined,
+	});
 }
 
 async function resolveResponseAsync<TResponsePayload extends ResponseData, TRequestBody extends RequestBody>({
@@ -173,10 +160,30 @@ async function resolveResponseAsync<TResponsePayload extends ResponseData, TRequ
 		};
 	}
 
+	const {
+		success: payloadSuccess,
+		data: payload,
+		error: resolveError,
+	} = await tryCatchAsync(async () => await resolvePayloadAsync(response));
+
+	if (!payloadSuccess) {
+		return {
+			success: false,
+			error: createSdkError({
+				message: "Failed to resolve payload from response.",
+				url: response.url,
+				reason: "invalidPayload",
+				originalError: resolveError,
+				retryStrategyOptions,
+				retryAttempt,
+			}),
+		};
+	}
+
 	return {
 		success: true,
 		response: {
-			payload: await resolvePayloadAsync(response),
+			payload,
 			body: requestBody,
 			method: method,
 			adapterResponse: {
@@ -191,7 +198,7 @@ async function resolveResponseAsync<TResponsePayload extends ResponseData, TRequ
 	};
 }
 
-async function executeWithAdapter({
+async function executeRequestAsync({
 	adapter,
 	parsedUrl,
 	method,
@@ -203,13 +210,22 @@ async function executeWithAdapter({
 	readonly method: HttpMethod;
 	readonly requestHeaders: readonly Header[];
 	readonly parsedBody: AdapterRequestBody;
-}): Promise<AdapterResponse> {
-	return await adapter.requestAsync({
-		url: parsedUrl.toString(),
-		method,
-		requestHeaders,
-		body: parsedBody,
-	});
+}): Promise<AdapterResponse | KontentSdkError> {
+	const { success, error, data } = await tryCatchAsync(
+		async () =>
+			await adapter.requestAsync({
+				url: parsedUrl.toString(),
+				method,
+				requestHeaders,
+				body: parsedBody,
+			}),
+	);
+
+	if (!success) {
+		return createUnknownError(parsedUrl.toString(), error);
+	}
+
+	return data;
 }
 
 async function withRetryAsync<TResponsePayload extends ResponseData, TRequestBody extends RequestBody>({

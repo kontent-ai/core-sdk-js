@@ -73,6 +73,7 @@ export async function runWithRetryAsync<TResponse extends ResponseData, TRequest
 	// log retry attempt when available
 	data.retryStrategyOptions.logRetryAttempt?.(newRetryAttempt, data.url);
 
+	// wait before the next retry
 	await waitBeforeNextRetryAsync({ retryInMs: retryResult.retryInMs });
 
 	return await runWithRetryAsync({
@@ -129,10 +130,8 @@ function getRetryResult({
 			.with({ retryAttempt: P.when((m) => m >= options.maxRetries) }, () => ({
 				canRetry: false,
 			}))
-			.with({ error: { details: { reason: "invalidUrl" } } }, () => ({
-				canRetry: false,
-			}))
-			.with({ error: { details: { reason: "invalidBody" } } }, () => ({
+
+			.with({ error: { details: { reason: P.union("invalidBody", "invalidPayload", "invalidUrl") } } }, () => ({
 				canRetry: false,
 			}))
 			.when(
