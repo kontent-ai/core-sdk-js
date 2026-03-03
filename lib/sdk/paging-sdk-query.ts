@@ -134,32 +134,14 @@ async function fetchAllPagesAsync<TResponsePayload extends JsonValue, TRequestBo
 		readonly pageIndex: number;
 	},
 ): Promise<PagingQueryPromiseResult<TResponsePayload, TMeta>> {
-	let nextPageState: NextPageState = { hasNextPage: true, pageSource: "firstRequest" };
-	let pageIndex: number = 0;
 	const responses: QueryResponse<TResponsePayload, TMeta>[] = [];
 
-	while (isNextPageAvailable(nextPageState)) {
-		const result: Awaited<QueryPromiseResult<TResponsePayload, TMeta>> = await resolveQueryAsync<TResponsePayload, TRequestBody, TMeta>(
-			{
-				...data,
-				nextPageState,
-			},
-		);
-
+	for await (const result of createPagingQueryIterator<TResponsePayload, TRequestBody, TMeta>(data)) {
 		if (!result.success) {
 			return { success: false, error: result.error, partialResponses: responses };
 		}
 
 		responses.push(result.response);
-
-		pageIndex++;
-
-		nextPageState = resolveNextPageState({
-			getNextPageData: data.getNextPageData,
-			paginationConfig: data.paginationConfig,
-			pageIndex: pageIndex,
-			response: result.response,
-		});
 	}
 
 	return validateAndBuildPagingResult({ responses, initialUrl: data.request.url });
