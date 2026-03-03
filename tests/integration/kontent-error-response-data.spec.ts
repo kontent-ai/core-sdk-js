@@ -9,7 +9,6 @@ describe("Integration tests - Kontent error response data", async () => {
 		requestHeaders: config.getMapiAuthorizationHeaders(),
 		retryStrategy: {
 			maxRetries: 0,
-			logRetryAttempt: false,
 			canRetryError: () => {
 				return false;
 			},

@@ -8,7 +8,6 @@ describe("Integration tests - Unauthorized error", async () => {
 	const httpService = getDefaultHttpService({
 		retryStrategy: {
 			maxRetries: 0,
-			logRetryAttempt: false,
 			canRetryError: () => {
 				return false;
 			},

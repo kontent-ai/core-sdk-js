@@ -2,33 +2,28 @@ import { afterAll, describe, expect, it, vi } from "vitest";
 import { getDefaultHttpService } from "../../../lib/http/http.service.js";
 import type { RetryStrategyOptions } from "../../../lib/models/core.models.js";
 import { mockGlobalFetchJsonResponse } from "../../../lib/testkit/testkit.utils.js";
-import { toRequiredRetryStrategyOptions } from "../../../lib/utils/retry.utils.js";
 
-const testCases: readonly Required<RetryStrategyOptions>[] = [
-	toRequiredRetryStrategyOptions({
+const testRetryStrategies: readonly RetryStrategyOptions[] = [
+	{
 		maxRetries: 0,
 		getDelayBetweenRetriesMs: () => 0,
-		logRetryAttempt: false,
 		canRetryError: () => true,
-	}),
-	toRequiredRetryStrategyOptions({
+	},
+	{
 		maxRetries: 1,
 		getDelayBetweenRetriesMs: () => 0,
-		logRetryAttempt: false,
 		canRetryError: () => true,
-	}),
-	toRequiredRetryStrategyOptions({
+	},
+	{
 		maxRetries: 2,
 		getDelayBetweenRetriesMs: () => 0,
-		logRetryAttempt: false,
 		canRetryError: () => true,
-	}),
-	toRequiredRetryStrategyOptions({
+	},
+	{
 		maxRetries: 5,
 		getDelayBetweenRetriesMs: () => 0,
-		logRetryAttempt: false,
 		canRetryError: () => true,
-	}),
+	},
 ];
 
 describe("Retry policy - max retries", async () => {
@@ -36,7 +31,7 @@ describe("Retry policy - max retries", async () => {
 		vi.resetAllMocks();
 	});
 
-	for (const [maxRetries, retryStrategy] of Object.entries(testCases)) {
+	for (const [maxRetries, retryStrategy] of Object.entries(testRetryStrategies)) {
 		mockGlobalFetchJsonResponse({
 			jsonResponse: {},
 			statusCode: 500,

@@ -3,20 +3,21 @@ import { getDefaultHttpService } from "../../../lib/http/http.service.js";
 import type { RetryStrategyOptions } from "../../../lib/models/core.models.js";
 import type { FetchResponse } from "../../../lib/testkit/testkit.models.js";
 import { mockGlobalFetchJsonResponse } from "../../../lib/testkit/testkit.utils.js";
-import { toRequiredRetryStrategyOptions } from "../../../lib/utils/retry.utils.js";
+import { resolveRetryStrategyOptions } from "../../../lib/utils/retry.utils.js";
 
-const testCases: readonly {
+type TestCase = RetryStrategyOptions & {
 	readonly title: string;
-	readonly canRetryError: NonNullable<RetryStrategyOptions["canRetryError"]>;
-	readonly maxRetries: number;
 	readonly expectedRetries: number;
 	readonly fetchResponse: FetchResponse;
-}[] = [
+};
+
+const testCases: readonly TestCase[] = [
 	{
 		title: "Default retry - Can retry",
-		canRetryError: toRequiredRetryStrategyOptions({}).canRetryError,
+		canRetryError: resolveRetryStrategyOptions({}).canRetryError,
 		maxRetries: 1,
 		expectedRetries: 1,
+		getDelayBetweenRetriesMs: () => 0,
 		fetchResponse: {
 			statusCode: 500,
 			json: {},
@@ -24,9 +25,10 @@ const testCases: readonly {
 	},
 	{
 		title: `Default retry - Can't retry`,
-		canRetryError: toRequiredRetryStrategyOptions({}).canRetryError,
+		canRetryError: resolveRetryStrategyOptions({}).canRetryError,
 		maxRetries: 0,
 		expectedRetries: 0,
+		getDelayBetweenRetriesMs: () => 0,
 		fetchResponse: {
 			statusCode: 400,
 			json: {},
@@ -37,6 +39,7 @@ const testCases: readonly {
 		canRetryError: () => false,
 		maxRetries: 1,
 		expectedRetries: 0,
+		getDelayBetweenRetriesMs: () => 0,
 		fetchResponse: {
 			statusCode: 500,
 			json: {},
@@ -47,6 +50,7 @@ const testCases: readonly {
 		canRetryError: () => true,
 		maxRetries: 1,
 		expectedRetries: 1,
+		getDelayBetweenRetriesMs: () => 0,
 		fetchResponse: {
 			statusCode: 500,
 			json: {},
@@ -66,12 +70,7 @@ for (const testCase of testCases) {
 		});
 
 		const { success, error } = await getDefaultHttpService({
-			retryStrategy: toRequiredRetryStrategyOptions({
-				canRetryError: testCase.canRetryError,
-				getDelayBetweenRetriesMs: () => 0,
-				maxRetries: testCase.maxRetries,
-				logRetryAttempt: false,
-			}),
+			retryStrategy: testCase,
 		}).requestAsync({
 			// we need valid url
 			url: "https://domain.com",

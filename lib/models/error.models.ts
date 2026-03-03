@@ -2,7 +2,7 @@ import { match, P } from "ts-pattern";
 import type { ZodError } from "zod";
 import type { AdapterResponse, HttpServiceStatus, RequestBody, ResponseData } from "../http/http.models.js";
 import type { SuccessfulHttpResponse } from "../sdk/sdk-models.js";
-import type { ErrorResponseData, RetryStrategyOptions } from "./core.models.js";
+import type { ErrorResponseData, ResolvedRetryStrategyOptions } from "./core.models.js";
 
 export type ErrorReason =
 	| "unauthorized"
@@ -50,7 +50,7 @@ export type ErrorDetails = {
 	/**
 	 * Used retry strategy.
 	 */
-	readonly retryStrategyOptions: Required<RetryStrategyOptions> | undefined;
+	readonly retryStrategyOptions: ResolvedRetryStrategyOptions | undefined;
 
 	/**
 	 * The number of times the request has been retried.

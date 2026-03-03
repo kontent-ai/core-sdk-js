@@ -69,11 +69,18 @@ export type RetryStrategyOptions = {
 	readonly getDelayBetweenRetriesMs?: (error: KontentSdkError) => number;
 
 	/**
-	 * Whether to log the retry attempt.
+	 * Controls logging for retry attempts.
 	 *
-	 * If false, the retry attempt will not be logged.
-	 * If undefined, the default implementation will be used.
-	 * Otherwise, the function will be called with the retry attempt and url.
+	 * If undefined, no retry logging occurs (default behavior).
+	 * If set to `'logToConsole'`, retries are logged to the console.
+	 * If a function is provided, it is called with the retry attempt and url.
 	 */
-	readonly logRetryAttempt?: false | ((retryAttempt: number, url: string) => void);
+	readonly logRetryAttempt?: "logToConsole" | ((retryAttempt: number, url: string) => void);
+};
+
+export type ResolvedRetryStrategyOptions = Pick<
+	Required<RetryStrategyOptions>,
+	"maxRetries" | "canRetryError" | "getDelayBetweenRetriesMs"
+> & {
+	readonly logRetryAttempt: undefined | ((retryAttempt: number, url: string) => void);
 };

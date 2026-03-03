@@ -27,7 +27,7 @@ export function createPagingQuery<TResponsePayload extends JsonValue, TRequestBo
 ): PagingQuery<TResponsePayload, TMeta> {
 	const getPagingData: (
 		config: PaginationConfig | undefined,
-	) => Parameters<typeof resolvePagingQueryAsync<TResponsePayload, TRequestBody, TMeta>>[0] = (config) => {
+	) => Parameters<typeof fetchAllPagesAsync<TResponsePayload, TRequestBody, TMeta>>[0] = (config) => {
 		return {
 			...data,
 			pageIndex: 0,
@@ -41,14 +41,14 @@ export function createPagingQuery<TResponsePayload extends JsonValue, TRequestBo
 		},
 		...createQuery<TResponsePayload, TRequestBody, TMeta>(data),
 		toAllPromise: async (config?: PaginationConfig) => {
-			return await resolvePagingQueryAsync<TResponsePayload, TRequestBody, TMeta>(getPagingData(config));
+			return await fetchAllPagesAsync<TResponsePayload, TRequestBody, TMeta>(getPagingData(config));
 		},
 		pages: (config?: PaginationConfig) => createPagingQueryIterator<TResponsePayload, TRequestBody, TMeta>(getPagingData(config)),
 	};
 }
 
 async function* createPagingQueryIterator<TResponsePayload extends JsonValue, TRequestBody extends RequestBody, TMeta>(
-	data: Omit<Parameters<typeof resolvePagingQueryAsync<TResponsePayload, TRequestBody, TMeta>>[0], "pageIndex">,
+	data: Omit<Parameters<typeof fetchAllPagesAsync<TResponsePayload, TRequestBody, TMeta>>[0], "pageIndex">,
 ): AsyncGenerator<QueryResult<QueryResponse<TResponsePayload, TMeta>>> {
 	let nextPageState: NextPageState = { hasNextPage: true, pageSource: "firstRequest" };
 	let pageIndex: number = 0;
@@ -125,26 +125,6 @@ function resolveNextPageState<TResponsePayload extends JsonValue, TMeta>({
 				hasNextPage: false,
 			};
 		});
-}
-
-async function resolvePagingQueryAsync<TResponsePayload extends JsonValue, TRequestBody extends RequestBody, TMeta>(
-	data: Omit<ResolveQueryData<TResponsePayload, TRequestBody, TMeta>, "nextPageState" | "getNextPageData"> & {
-		readonly getNextPageData: GetNextPageData<TResponsePayload, TMeta>;
-		readonly paginationConfig: PaginationConfig;
-		readonly pageIndex: number;
-	},
-): Promise<PagingQueryPromiseResult<TResponsePayload, TMeta>> {
-	const { success, error, responses, partialResponses } = await fetchAllPagesAsync<TResponsePayload, TRequestBody, TMeta>(data);
-
-	if (!success) {
-		return {
-			success: false,
-			error,
-			partialResponses,
-		};
-	}
-
-	return validateAndBuildPagingResult({ responses, initialUrl: data.request.url });
 }
 
 async function fetchAllPagesAsync<TResponsePayload extends JsonValue, TRequestBody extends RequestBody, TMeta>(

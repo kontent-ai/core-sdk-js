@@ -1,6 +1,6 @@
 import { match, P } from "ts-pattern";
 import type { HttpResponse, RequestBody, ResponseData } from "../http/http.models.js";
-import type { Header, HttpMethod, RetryStrategyOptions } from "../models/core.models.js";
+import type { Header, HttpMethod, ResolvedRetryStrategyOptions, RetryStrategyOptions } from "../models/core.models.js";
 import type { KontentSdkError } from "../models/error.models.js";
 import { sleepAsync } from "./core.utils.js";
 import { createSdkError } from "./error.utils.js";
@@ -38,7 +38,7 @@ const defaultCanRetryError: NonNullable<RetryStrategyOptions["canRetryError"]> =
 
 export async function runWithRetryAsync<TResponse extends ResponseData, TRequestBody extends RequestBody>(data: {
 	readonly funcAsync: (retryAttempt: number) => Promise<HttpResponse<TResponse, TRequestBody>>;
-	readonly retryStrategyOptions: Required<RetryStrategyOptions>;
+	readonly retryStrategyOptions: ResolvedRetryStrategyOptions;
 	readonly retryAttempt: number;
 	readonly url: string;
 	readonly requestHeaders: readonly Header[];
@@ -72,7 +72,8 @@ export async function runWithRetryAsync<TResponse extends ResponseData, TRequest
 		};
 	}
 
-	logRetryAttempt(data.retryStrategyOptions, newRetryAttempt, data.url);
+	// log retry attempt when available
+	data.retryStrategyOptions.logRetryAttempt?.(newRetryAttempt, data.url);
 
 	await sleepAsync(retryResult.retryInMs);
 
@@ -86,34 +87,24 @@ export async function runWithRetryAsync<TResponse extends ResponseData, TRequest
 	});
 }
 
-export function toRequiredRetryStrategyOptions(options?: RetryStrategyOptions): Required<RetryStrategyOptions> {
+export function resolveRetryStrategyOptions(options?: RetryStrategyOptions): ResolvedRetryStrategyOptions {
 	const maxRetries: number = options?.maxRetries ?? defaultMaxRetries;
 
 	return {
 		maxRetries: maxRetries,
 		canRetryError: options?.canRetryError ?? defaultCanRetryError,
 		getDelayBetweenRetriesMs: options?.getDelayBetweenRetriesMs ?? getDefaultDelayBetweenRetriesMs,
-		logRetryAttempt:
-			options?.logRetryAttempt === false
-				? false
-				: (attempt, url) => {
-						if (options?.logRetryAttempt) {
-							options.logRetryAttempt(attempt, url);
-						} else {
-							console.warn(getDefaultRetryAttemptLogMessage(attempt, maxRetries, url));
-						}
-					},
+		logRetryAttempt: match(options?.logRetryAttempt)
+			.returnType<ResolvedRetryStrategyOptions["logRetryAttempt"]>()
+			.with("logToConsole", () => (retryAttempt, url) => {
+				console.warn(getDefaultRetryAttemptLogMessage(retryAttempt, maxRetries, url));
+			})
+			.otherwise((m) => m),
 	};
 }
 
 function getDefaultRetryAttemptLogMessage(retryAttempt: number, maxRetries: number, url: string): string {
 	return `Retry attempt '${retryAttempt}' from a maximum of '${maxRetries}' retries. Requested url: '${url}'`;
-}
-
-function logRetryAttempt(opts: Pick<RetryStrategyOptions, "logRetryAttempt">, retryAttempt: number, url: string): void {
-	if (opts.logRetryAttempt) {
-		opts.logRetryAttempt(retryAttempt, url);
-	}
 }
 
 function getRetryResult({
@@ -123,7 +114,7 @@ function getRetryResult({
 }: {
 	readonly retryAttempt: number;
 	readonly error: KontentSdkError;
-	readonly options: Required<RetryStrategyOptions>;
+	readonly options: ResolvedRetryStrategyOptions;
 }): RetryResult {
 	return match({ retryAttempt, options, error })
 		.returnType<RetryResult>()

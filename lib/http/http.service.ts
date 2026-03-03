@@ -1,12 +1,12 @@
 import { match, P } from "ts-pattern";
-import type { CommonHeaderNames, ErrorResponseData, Header, HttpMethod, RetryStrategyOptions } from "../models/core.models.js";
+import type { CommonHeaderNames, ErrorResponseData, Header, HttpMethod, ResolvedRetryStrategyOptions } from "../models/core.models.js";
 import type { ErrorDetails, KontentSdkError } from "../models/error.models.js";
 import type { JsonValue } from "../models/json.models.js";
 import { sdkInfo } from "../sdk-info.js";
 import { isBlob, isNotUndefined } from "../utils/core.utils.js";
 import { createSdkError, getErrorMessage, isKontentErrorResponseData } from "../utils/error.utils.js";
 import { getSdkIdHeader, isApplicationJsonResponseType } from "../utils/header.utils.js";
-import { runWithRetryAsync, toRequiredRetryStrategyOptions } from "../utils/retry.utils.js";
+import { resolveRetryStrategyOptions, runWithRetryAsync } from "../utils/retry.utils.js";
 import { type Result, tryCatch, tryCatchAsync } from "../utils/try.utils.js";
 import { getDefaultHttpAdapter } from "./http.adapter.js";
 import type {
@@ -77,7 +77,7 @@ async function resolveRequestAsync<TResponsePayload extends ResponseData, TReque
 	return await withUnknownErrorHandlingAsync({
 		url: options.url,
 		funcAsync: async () => {
-			const retryStrategyOptions = toRequiredRetryStrategyOptions(config?.retryStrategy);
+			const retryStrategyOptions = resolveRetryStrategyOptions(config?.retryStrategy);
 			const {
 				success: parseSuccess,
 				data: parsedRequest,
@@ -167,7 +167,7 @@ async function resolveResponseAsync<TResponsePayload extends ResponseData, TRequ
 	readonly requestHeaders: readonly Header[];
 	readonly requestBody: TRequestBody;
 	readonly retryAttempt: number;
-	readonly retryStrategyOptions: Required<RetryStrategyOptions>;
+	readonly retryStrategyOptions: ResolvedRetryStrategyOptions;
 }): Promise<HttpResponse<TResponsePayload, TRequestBody>> {
 	if (!response.isValidResponse) {
 		return {
@@ -224,21 +224,20 @@ async function withRetryAsync<TResponsePayload extends ResponseData, TRequestBod
 }: {
 	readonly funcAsync: (
 		retryAttempt: number,
-		retryStrategyOptions: Required<RetryStrategyOptions>,
+		retryStrategyOptions: ResolvedRetryStrategyOptions,
 	) => Promise<HttpResponse<TResponsePayload, TRequestBody>>;
 	readonly url: string;
-	readonly retryStrategyOptions: Required<RetryStrategyOptions>;
+	readonly retryStrategyOptions: ResolvedRetryStrategyOptions;
 	readonly requestHeaders: readonly Header[];
 	readonly method: HttpMethod;
 }): Promise<HttpResponse<TResponsePayload, TRequestBody>> {
-	const retryAttempt = 0;
 	return await runWithRetryAsync({
 		url: url,
 		retryStrategyOptions,
-		retryAttempt,
+		retryAttempt: 0,
 		requestHeaders,
 		method: method,
-		funcAsync: async () => {
+		funcAsync: async (retryAttempt) => {
 			return await funcAsync(retryAttempt, retryStrategyOptions);
 		},
 	});
@@ -253,7 +252,7 @@ async function getErrorForInvalidResponseAsync({
 	readonly response: AdapterResponse;
 	readonly method: HttpMethod;
 	readonly retryAttempt: number;
-	readonly retryStrategyOptions: Required<RetryStrategyOptions>;
+	readonly retryStrategyOptions: ResolvedRetryStrategyOptions;
 }): Promise<KontentSdkError> {
 	return createSdkError(await getErrorDetailsForInvalidResponseAsync({ response, method, retryAttempt, retryStrategyOptions }));
 }
@@ -267,7 +266,7 @@ async function getErrorDetailsForInvalidResponseAsync({
 	readonly response: AdapterResponse;
 	readonly method: HttpMethod;
 	readonly retryAttempt: number;
-	readonly retryStrategyOptions: Required<RetryStrategyOptions>;
+	readonly retryStrategyOptions: ResolvedRetryStrategyOptions;
 }): Promise<ErrorDetails> {
 	const sharedErrorData: Pick<ErrorDetails, "message" | "url"> = {
 		message: getErrorMessage({
@@ -311,7 +310,7 @@ function parseRequestBody({
 }: {
 	readonly requestBody: RequestBody;
 	readonly url: string;
-	readonly retryStrategyOptions: Required<RetryStrategyOptions>;
+	readonly retryStrategyOptions: ResolvedRetryStrategyOptions;
 }): Result<AdapterRequestBody, KontentSdkError> {
 	return match(requestBody)
 		.returnType<Result<AdapterRequestBody, KontentSdkError>>()
@@ -366,7 +365,7 @@ type ParsedRequest = {
 
 function parseAndValidateRequest<TRequestBody extends RequestBody>(
 	options: ExecuteRequestOptions<TRequestBody>,
-	retryStrategyOptions: Required<RetryStrategyOptions>,
+	retryStrategyOptions: ResolvedRetryStrategyOptions,
 ): Result<ParsedRequest, KontentSdkError> {
 	const { success: urlParsedSuccess, data: parsedUrl, error: urlError } = parseUrl({ url: options.url, retryStrategyOptions });
 
@@ -404,7 +403,7 @@ function parseUrl({
 	retryStrategyOptions,
 }: {
 	readonly url: string;
-	readonly retryStrategyOptions: Required<RetryStrategyOptions>;
+	readonly retryStrategyOptions: ResolvedRetryStrategyOptions;
 }): Result<URL, KontentSdkError> {
 	const { success, data: parsedUrl, error } = tryCatch(() => new URL(url));
 

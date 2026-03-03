@@ -29,7 +29,6 @@ describe("Integration tests - Binary file / asset management", async () => {
 
 				return 0;
 			},
-			logRetryAttempt: false,
 			canRetryError: (error) => {
 				if (error.details.reason === "notFound") {
 					// we intetionally retry 404 because when we upload a file and get the URL back, the file might not yet be accessible
