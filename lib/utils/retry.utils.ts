@@ -1,6 +1,6 @@
 import { match, P } from "ts-pattern";
 import type { HttpResponse, RequestBody, ResponseData } from "../http/http.models.js";
-import type { Header, HttpMethod, ResolvedRetryStrategyOptions, RetryStrategyOptions } from "../models/core.models.js";
+import type { ResolvedRetryStrategyOptions, RetryStrategyOptions } from "../models/core.models.js";
 import type { KontentSdkError } from "../models/error.models.js";
 import { sleepAsync } from "./core.utils.js";
 import { createSdkError } from "./error.utils.js";
@@ -41,8 +41,6 @@ export async function runWithRetryAsync<TResponse extends ResponseData, TRequest
 	readonly retryStrategyOptions: ResolvedRetryStrategyOptions;
 	readonly retryAttempt: number;
 	readonly url: string;
-	readonly requestHeaders: readonly Header[];
-	readonly method: HttpMethod;
 }): Promise<HttpResponse<TResponse, TRequestBody>> {
 	const { success, response, error } = await data.funcAsync(data.retryAttempt);
 
@@ -82,8 +80,6 @@ export async function runWithRetryAsync<TResponse extends ResponseData, TRequest
 		retryStrategyOptions: data.retryStrategyOptions,
 		retryAttempt: newRetryAttempt,
 		url: data.url,
-		requestHeaders: data.requestHeaders,
-		method: data.method,
 	});
 }
 

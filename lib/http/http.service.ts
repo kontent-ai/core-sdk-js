@@ -77,12 +77,6 @@ async function resolveRequestAsync<TResponsePayload extends ResponseData, TReque
 	return await withUnknownErrorHandlingAsync({
 		url: options.url,
 		funcAsync: async () => {
-			const requestHeaders = buildRequestHeaders({
-				configHeaders: config?.requestHeaders,
-				optionHeaders: options.requestHeaders,
-				body: options.body,
-			});
-
 			return await withRetryAsync({
 				funcAsync: async (retryAttempt, retryStrategyOptions) => {
 					const {
@@ -97,6 +91,12 @@ async function resolveRequestAsync<TResponsePayload extends ResponseData, TReque
 							error: parseError,
 						};
 					}
+
+					const requestHeaders = buildRequestHeaders({
+						configHeaders: config?.requestHeaders,
+						optionHeaders: options.requestHeaders,
+						body: options.body,
+					});
 
 					const adapterResponse = await executeWithAdapter({
 						adapter: config?.adapter ?? getDefaultHttpAdapter(),
@@ -118,8 +118,6 @@ async function resolveRequestAsync<TResponsePayload extends ResponseData, TReque
 				},
 				url: options.url,
 				retryStrategyOptions: resolveDefaultRetryStrategyOptions(config?.retryStrategy),
-				requestHeaders,
-				method: options.method,
 			});
 		},
 	});
@@ -218,8 +216,6 @@ async function withRetryAsync<TResponsePayload extends ResponseData, TRequestBod
 	funcAsync,
 	url,
 	retryStrategyOptions,
-	requestHeaders,
-	method,
 }: {
 	readonly funcAsync: (
 		retryAttempt: number,
@@ -227,15 +223,11 @@ async function withRetryAsync<TResponsePayload extends ResponseData, TRequestBod
 	) => Promise<HttpResponse<TResponsePayload, TRequestBody>>;
 	readonly url: string;
 	readonly retryStrategyOptions: ResolvedRetryStrategyOptions;
-	readonly requestHeaders: readonly Header[];
-	readonly method: HttpMethod;
 }): Promise<HttpResponse<TResponsePayload, TRequestBody>> {
 	return await runWithRetryAsync({
-		url: url,
+		url,
 		retryStrategyOptions,
 		retryAttempt: 0,
-		requestHeaders,
-		method: method,
 		funcAsync: async (retryAttempt) => {
 			return await funcAsync(retryAttempt, retryStrategyOptions);
 		},
