@@ -1,8 +1,11 @@
+import { existsSync } from "node:fs";
 import path from "node:path";
 import { loadEnvFile } from "node:process";
 import { fileURLToPath } from "node:url";
 import chalk from "chalk";
 import type { GetNextPageData } from "../lib/public_api.js";
+
+loadEnvironmentVariables();
 
 export function getEnvironmentRequiredValue(variableName: string): string {
 	const value = getEnvironmentOptionalValue(variableName);
@@ -15,7 +18,6 @@ export function getEnvironmentRequiredValue(variableName: string): string {
 }
 
 export function getEnvironmentOptionalValue(variableName: string): string | undefined {
-	loadEnvironmentVariables();
 	return process.env[variableName];
 }
 
@@ -45,13 +47,9 @@ export function getNextPageUrl(index: number): string {
 }
 
 function loadEnvironmentVariables(): void {
-	loadEnvFile(getEnvFilePath());
-}
+	const envFilePath = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", ".env");
 
-function getRootDirectory(): string {
-	return path.dirname(fileURLToPath(import.meta.url));
-}
-
-function getEnvFilePath(): string {
-	return path.resolve(getRootDirectory(), "..", ".env");
+	if (existsSync(envFilePath)) {
+		loadEnvFile(envFilePath);
+	}
 }
