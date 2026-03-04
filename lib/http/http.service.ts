@@ -459,7 +459,7 @@ function buildRequestHeaders({
 				version: sdkInfo.version,
 			});
 
-	const contentLengthHeader = body instanceof Blob ? createDefaultContentLengthHeader(body) : undefined;
+	const contentLengthHeader = isBlob(body) ? createDefaultContentLengthHeader(body) : undefined;
 
 	return [...combinedHeaders, contentTypeHeader, contentLengthHeader, sdkVersionHeader].filter(isNotUndefined);
 }
@@ -467,7 +467,7 @@ function buildRequestHeaders({
 function createDefaultContentTypeHeader(body: Blob | JsonValue): Header {
 	return {
 		name: "Content-Type" satisfies CommonHeaderNames,
-		value: body instanceof Blob ? body.type : "application/json",
+		value: isBlob(body) ? body.type : "application/json",
 	};
 }
 
