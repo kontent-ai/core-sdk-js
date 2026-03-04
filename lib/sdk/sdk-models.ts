@@ -6,6 +6,7 @@
 import z from "zod";
 import type { AdapterResponse, HttpResponse, HttpService, PaginationConfig, RequestBody, ResponseData } from "../http/http.models.js";
 import type { KontentSdkError } from "../models/error.models.js";
+import type { Failure, Success } from "../utils/try-catch.utils.js";
 
 export type QueryResponseMeta<TMeta = unknown> = Pick<AdapterResponse, "status" | "responseHeaders" | "url"> & {
 	readonly continuationToken: string | undefined;
@@ -88,29 +89,25 @@ export type SuccessfulHttpResponse<TResponsePayload extends ResponseData, TReque
  *
  * Ensures that consumers of this library handle both success and failure cases.
  */
-export type QueryResult<TResponsePayload> = (Success & { readonly response: TResponsePayload }) | (Failure & { readonly response?: never });
+export type QueryResult<TResponsePayload> =
+	| Success<{ readonly response: TResponsePayload }>
+	| Failure<{ readonly response?: never }, KontentSdkError>;
 
 export type PagingQueryResult<TResponsePayload> =
-	| (Success & {
+	| Success<{
 			readonly responses: readonly TResponsePayload[];
 			readonly partialResponses?: never;
 			readonly lastContinuationToken: string | undefined;
-	  })
-	| (Failure & {
-			readonly responses?: never;
-			readonly lastContinuationToken?: never;
-			readonly partialResponses: readonly TResponsePayload[];
-	  });
+	  }>
+	| Failure<
+			{
+				readonly responses?: never;
+				readonly lastContinuationToken?: never;
+				readonly partialResponses: readonly TResponsePayload[];
+			},
+			KontentSdkError
+	  >;
 
 export const nilUuid = "00000000-0000-0000-0000-000000000000";
 
 export const kontentUuidSchema = z.union([z.uuid({ version: "v4" }), z.literal(nilUuid)]);
-
-type Success = {
-	readonly success: true;
-	readonly error?: never;
-};
-type Failure = {
-	readonly success: false;
-	readonly error: KontentSdkError;
-};

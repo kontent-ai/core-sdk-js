@@ -3,20 +3,9 @@ import type { KontentSdkError } from "../models/error.models.js";
 import type { JsonObject, JsonValue } from "../models/json.models.js";
 import type { LiteralUnionNumber } from "../models/utility.models.js";
 import type { QueryResponse } from "../sdk/sdk-models.js";
+import type { Failure, Success } from "../utils/try-catch.utils.js";
 
-type Success<TData> = {
-	readonly success: true;
-	readonly response: TData;
-	readonly error?: never;
-};
-
-type Failure = {
-	readonly success: false;
-	readonly response?: never;
-	readonly error: KontentSdkError;
-};
-
-type HttpResult<TData> = Success<TData> | Failure;
+export type HttpResult<TResponse> = Success<{ readonly response: TResponse }> | Failure<{ readonly response?: never }, KontentSdkError>;
 
 /**
  * Helper status codes for the HTTP service.

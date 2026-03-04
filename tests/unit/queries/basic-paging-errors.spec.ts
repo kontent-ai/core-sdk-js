@@ -56,7 +56,7 @@ describe("Basic paging errors", async () => {
 	it("Error should be defined", () => {
 		expect(error).toBeDefined();
 		expect(error).toBeInstanceOf(KontentSdkError);
-		expect(error?.details.reason).toBe<ErrorReason>("invalidPayload");
+		expect(error?.details?.reason).toBe<ErrorReason>("invalidPayload");
 	});
 
 	it("Success should be false", () => {

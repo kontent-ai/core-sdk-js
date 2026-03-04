@@ -7,7 +7,7 @@ import { isBlob, isNotUndefined } from "../utils/core.utils.js";
 import { createSdkError, getErrorMessage, isKontentErrorResponseData, isKontentSdkError } from "../utils/error.utils.js";
 import { getSdkIdHeader, isApplicationJsonResponseType } from "../utils/header.utils.js";
 import { resolveDefaultRetryStrategyOptions, runWithRetryAsync } from "../utils/retry.utils.js";
-import { type Result, tryCatch, tryCatchAsync } from "../utils/try.utils.js";
+import { type TryCatchResult, tryCatch, tryCatchAsync } from "../utils/try-catch.utils.js";
 import { getDefaultHttpAdapter } from "./http.adapter.js";
 import type {
 	AdapterRequestBody,
@@ -313,9 +313,9 @@ function parseRequestBody({
 	readonly requestBody: RequestBody;
 	readonly url: string;
 	readonly retryStrategyOptions: ResolvedRetryStrategyOptions;
-}): Result<AdapterRequestBody, KontentSdkError> {
+}): TryCatchResult<AdapterRequestBody, KontentSdkError> {
 	return match(requestBody)
-		.returnType<Result<AdapterRequestBody, KontentSdkError>>()
+		.returnType<TryCatchResult<AdapterRequestBody, KontentSdkError>>()
 		.with(P.nullish, () => ({
 			success: true,
 			data: null,
@@ -372,7 +372,7 @@ type ParsedRequest = {
 function parseAndValidateRequest<TRequestBody extends RequestBody>(
 	options: ExecuteRequestOptions<TRequestBody>,
 	retryStrategyOptions: ResolvedRetryStrategyOptions,
-): Result<ParsedRequest, KontentSdkError> {
+): TryCatchResult<ParsedRequest, KontentSdkError> {
 	const { success: urlParsedSuccess, data: parsedUrl, error: urlError } = parseUrl({ url: options.url, retryStrategyOptions });
 
 	if (!urlParsedSuccess) {
@@ -410,7 +410,7 @@ function parseUrl({
 }: {
 	readonly url: string;
 	readonly retryStrategyOptions: ResolvedRetryStrategyOptions;
-}): Result<URL, KontentSdkError> {
+}): TryCatchResult<URL, KontentSdkError> {
 	const { success, data: parsedUrl, error } = tryCatch(() => new URL(url));
 
 	if (!success) {

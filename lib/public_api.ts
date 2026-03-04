@@ -9,6 +9,7 @@ export type {
 	GetNextPageData,
 	HttpAdapter,
 	HttpResponse,
+	HttpResult,
 	HttpService,
 	HttpServiceStatus,
 	PaginationConfig,
@@ -25,7 +26,7 @@ export type {
 	SDKInfo,
 	ValidationError,
 } from "./models/core.models.js";
-export { type ErrorDetails as ErrorReasonData, type ErrorReason, KontentSdkError } from "./models/error.models.js";
+export { type ErrorDetails, type ErrorReason, KontentSdkError } from "./models/error.models.js";
 export type { JsonArray, JsonObject, JsonValue } from "./models/json.models.js";
 export type { EmptyObject } from "./models/utility.models.js";
 export { createPagingQuery } from "./sdk/paging-sdk-query.js";
@@ -46,6 +47,6 @@ export { isPagingQuery } from "./sdk/sdk-utils.js";
 export { isKontent404Error, isKontentSdkError } from "./utils/error.utils.js";
 export { getSdkIdHeader } from "./utils/header.utils.js";
 export { resolveDefaultRetryStrategyOptions } from "./utils/retry.utils.js";
-export { tryCatch, tryCatchAsync } from "./utils/try.utils.js";
+export { tryCatch, tryCatchAsync } from "./utils/try-catch.utils.js";
 export { getCodenameSchema } from "./utils/type.utils.js";
 export { getEndpointUrl } from "./utils/url.utils.js";
