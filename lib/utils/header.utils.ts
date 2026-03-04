@@ -7,10 +7,12 @@ export function getSdkIdHeader(info: SDKInfo): Header {
 	};
 }
 
+export function findHeaderByName(headers: readonly Header[], name: CommonHeaderNames): Header | undefined {
+	return headers.find((header) => header.name.toLowerCase() === name.toLowerCase());
+}
+
 export function getRetryAfterHeaderValue(headers: readonly Header[]): number | undefined {
-	const retryAfterHeader = headers.find(
-		(header) => header.name.toLowerCase() === ("Retry-After" satisfies CommonHeaderNames).toLowerCase(),
-	);
+	const retryAfterHeader = findHeaderByName(headers, "Retry-After");
 
 	if (!retryAfterHeader) {
 		return undefined;
@@ -40,10 +42,5 @@ export function toFetchHeaders(headers: readonly Header[]): Headers {
 }
 
 export function isApplicationJsonResponseType(headers: readonly Header[]): boolean {
-	return (
-		headers
-			.find((header) => header.name.toLowerCase() === ("Content-Type" satisfies CommonHeaderNames).toLowerCase())
-			?.value.toLowerCase()
-			.includes("application/json") ?? false
-	);
+	return findHeaderByName(headers, "Content-Type")?.value.toLowerCase().includes("application/json") ?? false;
 }

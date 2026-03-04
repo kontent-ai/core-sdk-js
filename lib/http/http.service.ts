@@ -5,7 +5,7 @@ import type { JsonValue } from "../models/json.models.js";
 import { sdkInfo } from "../sdk-info.js";
 import { isBlob, isNotUndefined } from "../utils/core.utils.js";
 import { createSdkError, getErrorMessage, isKontentErrorResponseData, isKontentSdkError } from "../utils/error.utils.js";
-import { getSdkIdHeader, isApplicationJsonResponseType } from "../utils/header.utils.js";
+import { findHeaderByName, getSdkIdHeader, isApplicationJsonResponseType } from "../utils/header.utils.js";
 import { resolveDefaultRetryStrategyOptions, runWithRetryAsync } from "../utils/retry.utils.js";
 import { type TryCatchResult, tryCatch, tryCatchAsync } from "../utils/try-catch.utils.js";
 import { getDefaultHttpAdapter } from "./http.adapter.js";
@@ -479,9 +479,9 @@ function createDefaultContentLengthHeader(body: Blob): Header {
 }
 
 function getExistingContentTypeHeader(headers: readonly Header[]): Header | undefined {
-	return headers.find((header) => header.name.toLowerCase() === ("Content-Type" satisfies CommonHeaderNames).toLowerCase());
+	return findHeaderByName(headers, "Content-Type");
 }
 
 function getExistingSdkVersionHeader(headers: readonly Header[]): Header | undefined {
-	return headers.find((header) => header.name.toLowerCase() === ("X-KC-SDKID" satisfies CommonHeaderNames).toLowerCase());
+	return findHeaderByName(headers, "X-KC-SDKID");
 }

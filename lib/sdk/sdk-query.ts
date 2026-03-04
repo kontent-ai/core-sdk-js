@@ -6,10 +6,10 @@
 import type { ZodError, ZodType } from "zod";
 import type { HttpService, RequestBody } from "../http/http.models.js";
 import { getDefaultHttpService } from "../http/http.service.js";
-import type { CommonHeaderNames, ContinuationHeaderName, Header, SDKInfo } from "../models/core.models.js";
+import type { CommonHeaderNames, Header, SDKInfo } from "../models/core.models.js";
 import type { JsonValue } from "../models/json.models.js";
 import { createSdkError } from "../utils/error.utils.js";
-import { getSdkIdHeader } from "../utils/header.utils.js";
+import { findHeaderByName, getSdkIdHeader } from "../utils/header.utils.js";
 import type { NextPageStateWithRequest, Query, SdkConfig, SuccessfulHttpResponse } from "./sdk-models.js";
 
 export type QueryPromiseResult<TResponsePayload extends JsonValue, TMeta> = ReturnType<
@@ -55,8 +55,7 @@ export function createQuery<TResponsePayload extends JsonValue, TRequestBody ext
 }
 
 export function extractContinuationToken(responseHeaders: readonly Header[]): string | undefined {
-	return responseHeaders.find((header) => header.name.toLowerCase() === ("X-Continuation" satisfies ContinuationHeaderName).toLowerCase())
-		?.value;
+	return findHeaderByName(responseHeaders, "X-Continuation")?.value;
 }
 
 function getHttpService(config: SdkConfig) {

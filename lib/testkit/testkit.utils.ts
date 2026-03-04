@@ -5,7 +5,7 @@ import type { CommonHeaderNames, ContinuationHeaderName, RetryStrategyOptions, S
 import type { JsonValue } from "../models/json.models.js";
 import type { Header } from "../public_api.js";
 import { isNotUndefined } from "../utils/core.utils.js";
-import { toFetchHeaders } from "../utils/header.utils.js";
+import { findHeaderByName, toFetchHeaders } from "../utils/header.utils.js";
 
 export function mockGlobalFetchJsonResponse({
 	jsonResponse,
@@ -160,7 +160,7 @@ function buildHeadersWithDefaultContentType(headers: readonly Header[]): Headers
 }
 
 function getDefaultContentTypeHeaderIfMissing(headers: readonly Header[]): Header | undefined {
-	const hasContentTypeHeader = headers.some((m) => m.name.toLowerCase() === ("Content-Type" satisfies CommonHeaderNames).toLowerCase());
+	const hasContentTypeHeader = findHeaderByName(headers, "Content-Type");
 
 	if (hasContentTypeHeader) {
 		return undefined;
