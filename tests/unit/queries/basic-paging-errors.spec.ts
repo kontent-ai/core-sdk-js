@@ -1,26 +1,16 @@
-import { afterAll, describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 import z from "zod";
 import { type ErrorReason, type GetNextPageData, KontentSdkError } from "../../../lib/public_api.js";
 import { createPagingQuery } from "../../../lib/sdk/paging-sdk-query.js";
-import { getTestHttpServiceWithJsonResponse, getTestSdkInfo, mockGlobalFetchJsonResponse } from "../../../lib/testkit/testkit.utils.js";
+import { getTestHttpServiceWithJsonResponse, getTestSdkInfo } from "../../../lib/testkit/testkit.utils.js";
 import { getNextPageUrl } from "../../test.utils.js";
 
 describe("Basic paging errors", async () => {
-	afterAll(() => {
-		vi.resetAllMocks();
-	});
-
 	const throwErrorAtResponseIndex: number = 3;
 	const maxPagesCount: number = 5;
 	let responseIndex: number = 0;
 
 	const expectedResponseUrls: readonly string[] = Array.from({ length: maxPagesCount }, (_, index) => getNextPageUrl(index));
-
-	// mock initial response
-	mockGlobalFetchJsonResponse({
-		jsonResponse: null,
-		statusCode: 200,
-	});
 
 	const { success, error, responses, partialResponses } = await createPagingQuery({
 		authorizationApiKey: undefined,
