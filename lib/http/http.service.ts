@@ -74,8 +74,11 @@ async function resolveRequestAsync<TResponsePayload extends ResponseData, TReque
 	readonly options: ExecuteRequestOptions<TRequestBody>;
 	readonly resolvePayloadAsync: (response: AdapterResponse) => Promise<TResponsePayload>;
 }): Promise<HttpResponse<TResponsePayload, TRequestBody>> {
-	return await withRetryAsync({
-		funcAsync: async (retryAttempt, retryStrategyOptions) => {
+	const retryStrategyOptions = resolveDefaultRetryStrategyOptions(config?.retryStrategy);
+
+	return await runWithRetryAsync({
+		retryAttempt: 0,
+		funcAsync: async (retryAttempt) => {
 			const {
 				success: parseSuccess,
 				data: parsedRequest,
@@ -121,7 +124,7 @@ async function resolveRequestAsync<TResponsePayload extends ResponseData, TReque
 			});
 		},
 		url: options.url,
-		retryStrategyOptions: resolveDefaultRetryStrategyOptions(config?.retryStrategy),
+		retryStrategyOptions,
 	});
 }
 
@@ -234,28 +237,6 @@ async function executeRequestAsync({
 	}
 
 	return data;
-}
-
-async function withRetryAsync<TResponsePayload extends ResponseData, TRequestBody extends RequestBody>({
-	funcAsync,
-	url,
-	retryStrategyOptions,
-}: {
-	readonly funcAsync: (
-		retryAttempt: number,
-		retryStrategyOptions: ResolvedRetryStrategyOptions,
-	) => Promise<HttpResponse<TResponsePayload, TRequestBody>>;
-	readonly url: string;
-	readonly retryStrategyOptions: ResolvedRetryStrategyOptions;
-}): Promise<HttpResponse<TResponsePayload, TRequestBody>> {
-	return await runWithRetryAsync({
-		url,
-		retryStrategyOptions,
-		retryAttempt: 0,
-		funcAsync: async (retryAttempt) => {
-			return await funcAsync(retryAttempt, retryStrategyOptions);
-		},
-	});
 }
 
 async function getErrorForInvalidResponseAsync({
