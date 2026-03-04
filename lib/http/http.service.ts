@@ -428,8 +428,8 @@ function buildRequestHeaders({
 	readonly body: Blob | JsonValue;
 }): readonly Header[] {
 	const combinedHeaders: readonly Header[] = [...(configHeaders ?? []), ...(optionHeaders ?? [])];
-	const existingContentTypeHeader = getExistingContentTypeHeader(combinedHeaders);
-	const existingSdkVersionHeader = getExistingSdkVersionHeader(combinedHeaders);
+	const existingContentTypeHeader = findHeaderByName(combinedHeaders, "Content-Type");
+	const existingSdkVersionHeader = findHeaderByName(combinedHeaders, "X-KC-SDKID");
 
 	const contentTypeHeader = existingContentTypeHeader ? undefined : createDefaultContentTypeHeader(body);
 	const sdkVersionHeader = existingSdkVersionHeader
@@ -457,12 +457,4 @@ function createDefaultContentLengthHeader(body: Blob): Header {
 		name: "Content-Length" satisfies CommonHeaderNames,
 		value: body.size.toString(),
 	};
-}
-
-function getExistingContentTypeHeader(headers: readonly Header[]): Header | undefined {
-	return findHeaderByName(headers, "Content-Type");
-}
-
-function getExistingSdkVersionHeader(headers: readonly Header[]): Header | undefined {
-	return findHeaderByName(headers, "X-KC-SDKID");
 }
