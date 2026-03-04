@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { getDefaultHttpService } from "../../../lib/http/http.service.js";
-import { type ErrorReason, KontentSdkError } from "../../../lib/models/error.models.js";
+import { getDefaultHttpService } from "../../../../lib/http/http.service.js";
+import { type ErrorReason, KontentSdkError } from "../../../../lib/models/error.models.js";
 
 // Unserializable body
 const body: Record<string, unknown> = {};
 body.self = body;
 
-describe("Invalid payload retry", async () => {
+describe("Invalid payload error", async () => {
 	const { error } = await getDefaultHttpService({
 		adapter: {
 			requestAsync: async () => {
@@ -34,7 +34,7 @@ describe("Invalid payload retry", async () => {
 	});
 
 	it("Retry attempt should be 0 because invalid payload should not be retried", () => {
-		expect(error?.details.retryAttempt).toBe(0);
+		expect(error?.retryAttempt).toBe(0);
 	});
 
 	it(`Error details should be of type '${"invalidPayload" satisfies ErrorReason}'`, () => {

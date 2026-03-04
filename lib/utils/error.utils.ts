@@ -1,11 +1,20 @@
 import type { AdapterResponse } from "../http/http.models.js";
 import type { ErrorResponseData, HttpMethod, ValidationError } from "../models/core.models.js";
-import { type ErrorDetails, KontentSdkError } from "../models/error.models.js";
+import { type BaseErrorData, type ErrorDetails, KontentSdkError } from "../models/error.models.js";
 import type { JsonValue } from "../models/json.models.js";
 import { isNotUndefined } from "./core.utils.js";
 
-export function createSdkError(details: ErrorDetails): KontentSdkError {
-	return new KontentSdkError(details);
+export function createSdkError({
+	baseErrorData,
+	details,
+}: {
+	readonly baseErrorData: BaseErrorData;
+	readonly details: ErrorDetails;
+}): KontentSdkError {
+	return new KontentSdkError({
+		baseErrorData,
+		details,
+	});
 }
 
 export function isKontent404Error(error: unknown): boolean {

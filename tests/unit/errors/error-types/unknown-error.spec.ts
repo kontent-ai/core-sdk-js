@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { getDefaultHttpService } from "../../../lib/http/http.service.js";
-import { KontentSdkError } from "../../../lib/models/error.models.js";
-import type { ErrorReason } from "../../../lib/public_api.js";
+import { getDefaultHttpService } from "../../../../lib/http/http.service.js";
+import { KontentSdkError } from "../../../../lib/models/error.models.js";
+import type { ErrorReason } from "../../../../lib/public_api.js";
 
 class CustomError {}
 
-describe("Unknown error", async () => {
+describe("Unknown error (unhandled)", async () => {
 	const { success, response, error } = await getDefaultHttpService({
 		adapter: {
 			requestAsync: () => {

@@ -15,7 +15,7 @@ export type ErrorReason =
 	| "noResponses"
 	| "invalidPayload";
 
-export type ErrorReasonData =
+export type ErrorDetails =
 	| ReasonData<"unauthorized", ErrorWithKontentResponse>
 	| ReasonData<"invalidResponse", ErrorWithKontentResponse>
 	| ReasonData<"notFound", ErrorWithKontentResponse>
@@ -38,7 +38,7 @@ export type ErrorReasonData =
 			}
 	  >;
 
-export type ErrorDetails = {
+export interface BaseErrorData {
 	/**
 	 * The message of the error
 	 */
@@ -58,14 +58,27 @@ export type ErrorDetails = {
 	 * The number of times the request has been retried.
 	 */
 	readonly retryAttempt: number | undefined;
-} & ErrorReasonData;
+}
 
-export class KontentSdkError extends Error {
+export class KontentSdkError extends Error implements BaseErrorData {
 	readonly details: ErrorDetails;
+	readonly url: string;
+	readonly retryStrategyOptions: ResolvedRetryStrategyOptions | undefined;
+	readonly retryAttempt: number | undefined;
 
-	constructor(details: ErrorDetails) {
-		super(getErrorMessage(details));
+	constructor({
+		baseErrorData: { message, url, retryStrategyOptions, retryAttempt },
+		details,
+	}: {
+		readonly baseErrorData: BaseErrorData;
+		readonly details: ErrorDetails;
+	}) {
+		super(getErrorMessage(message, details));
 
+		this.message = message;
+		this.url = url;
+		this.retryStrategyOptions = retryStrategyOptions;
+		this.retryAttempt = retryAttempt;
 		this.details = details;
 	}
 }
@@ -82,12 +95,12 @@ type ReasonData<TReason extends ErrorReason, TData> = {
 	readonly reason: TReason;
 } & TData;
 
-function getErrorMessage(error: ErrorDetails): string {
+function getErrorMessage(message: string, error: ErrorDetails): string {
 	return match(error)
 		.returnType<string>()
 		.with(
 			{ reason: P.union("invalidResponse", "notFound"), kontentErrorResponse: P.nonNullable },
-			(m) => `${m.message} ${m.kontentErrorResponse.message}`,
+			(m) => `${message} ${m.kontentErrorResponse.message}`,
 		)
-		.otherwise(() => error.message);
+		.otherwise(() => message);
 }

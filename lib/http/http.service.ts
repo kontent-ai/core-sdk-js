@@ -127,12 +127,16 @@ async function resolveRequestAsync<TResponsePayload extends ResponseData, TReque
 
 function createUnknownError(url: string, error: unknown): KontentSdkError {
 	return createSdkError({
-		message: "Unknown error. See the error object for more details.",
-		url: url,
-		reason: "unknown",
-		originalError: error,
-		retryStrategyOptions: undefined,
-		retryAttempt: undefined,
+		baseErrorData: {
+			message: "Unknown error. See the error object for more details.",
+			url: url,
+			retryStrategyOptions: undefined,
+			retryAttempt: undefined,
+		},
+		details: {
+			reason: "unknown",
+			originalError: error,
+		},
 	});
 }
 
@@ -170,12 +174,16 @@ async function resolveResponseAsync<TResponsePayload extends ResponseData, TRequ
 		return {
 			success: false,
 			error: createSdkError({
-				message: "Failed to resolve payload from response.",
-				url: response.url,
-				reason: "invalidPayload",
-				originalError: resolveError,
-				retryStrategyOptions,
-				retryAttempt,
+				baseErrorData: {
+					message: "Failed to resolve payload from response.",
+					url: response.url,
+					retryStrategyOptions,
+					retryAttempt,
+				},
+				details: {
+					reason: "invalidPayload",
+					originalError: resolveError,
+				},
 			}),
 		};
 	}
@@ -261,52 +269,39 @@ async function getErrorForInvalidResponseAsync({
 	readonly retryAttempt: number;
 	readonly retryStrategyOptions: ResolvedRetryStrategyOptions;
 }): Promise<KontentSdkError> {
-	return createSdkError(await getErrorDetailsForInvalidResponseAsync({ response, method, retryAttempt, retryStrategyOptions }));
+	return createSdkError({
+		baseErrorData: {
+			message: getErrorMessage({
+				url: response.url,
+				adapterResponse: response,
+				method: method,
+			}),
+			url: response.url,
+			retryAttempt,
+			retryStrategyOptions,
+		},
+		details: await getErrorDetailsForInvalidResponseAsync({ response }),
+	});
 }
 
-async function getErrorDetailsForInvalidResponseAsync({
-	response,
-	method,
-	retryAttempt,
-	retryStrategyOptions,
-}: {
-	readonly response: AdapterResponse;
-	readonly method: HttpMethod;
-	readonly retryAttempt: number;
-	readonly retryStrategyOptions: ResolvedRetryStrategyOptions;
-}): Promise<ErrorDetails> {
-	const sharedErrorData: Pick<ErrorDetails, "message" | "url"> = {
-		message: getErrorMessage({
-			url: response.url,
-			adapterResponse: response,
-			method: method,
-		}),
-		url: response.url,
-	};
-
+async function getErrorDetailsForInvalidResponseAsync({ response }: { readonly response: AdapterResponse }): Promise<ErrorDetails> {
 	return await match(response)
 		.returnType<Promise<ErrorDetails>>()
 		.with({ status: P.union(401, 404) }, async (m) => ({
-			...sharedErrorData,
 			reason: m.status === 401 ? "unauthorized" : "notFound",
 			isValidResponse: m.isValidResponse,
 			responseHeaders: m.responseHeaders,
 			status: m.status,
 			statusText: m.statusText,
 			kontentErrorResponse: await getKontentErrorDataAsync(m),
-			retryStrategyOptions,
-			retryAttempt,
 		}))
 		.otherwise(async () => ({
-			...sharedErrorData,
 			reason: "invalidResponse",
 			isValidResponse: response.isValidResponse,
 			responseHeaders: response.responseHeaders,
 			status: response.status,
 			statusText: response.statusText,
 			kontentErrorResponse: await getKontentErrorDataAsync(response),
-			retryStrategyOptions,
-			retryAttempt,
 		}));
 }
 
@@ -336,12 +331,16 @@ function parseRequestBody({
 				return {
 					success: false,
 					error: createSdkError({
-						message: "Failed to stringify body of the request.",
-						url: url,
-						reason: "invalidBody",
-						originalError: parseError,
-						retryStrategyOptions,
-						retryAttempt: undefined,
+						baseErrorData: {
+							message: "Failed to stringify body of the request.",
+							url: url,
+							retryStrategyOptions,
+							retryAttempt: undefined,
+						},
+						details: {
+							reason: "invalidBody",
+							originalError: parseError,
+						},
 					}),
 				};
 			}
@@ -418,12 +417,16 @@ function parseUrl({
 		return {
 			success: false,
 			error: createSdkError({
-				message: `Failed to parse url '${url}'.`,
-				url: url,
-				reason: "invalidUrl",
-				originalError: error,
-				retryStrategyOptions,
-				retryAttempt: undefined,
+				baseErrorData: {
+					message: `Failed to parse url '${url}'.`,
+					url: url,
+					retryStrategyOptions,
+					retryAttempt: undefined,
+				},
+				details: {
+					reason: "invalidUrl",
+					originalError: error,
+				},
 			}),
 		};
 	}

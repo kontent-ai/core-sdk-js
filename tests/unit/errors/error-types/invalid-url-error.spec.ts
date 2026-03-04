@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { getDefaultHttpService } from "../../../lib/http/http.service.js";
-import { type ErrorReason, KontentSdkError } from "../../../lib/models/error.models.js";
+import { getDefaultHttpService } from "../../../../lib/http/http.service.js";
+import { type ErrorReason, KontentSdkError } from "../../../../lib/models/error.models.js";
 
 const url = "invalid-url";
 
-describe("Invalid url retry", async () => {
+describe("Invalid url error", async () => {
 	const { error } = await getDefaultHttpService({}).requestAsync({
 		url,
 		method: "GET",
@@ -16,7 +16,7 @@ describe("Invalid url retry", async () => {
 	});
 
 	it("Retry attempt should be 0 because invalid URL should not be retried", () => {
-		expect(error?.details.retryAttempt).toBe(0);
+		expect(error?.retryAttempt).toBe(0);
 	});
 
 	it(`Error details should be of type '${"invalidUrl" satisfies ErrorReason}'`, () => {

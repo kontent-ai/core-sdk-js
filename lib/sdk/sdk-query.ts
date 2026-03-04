@@ -134,13 +134,18 @@ export async function resolveQueryAsync<TResponsePayload extends JsonValue, TReq
 			return {
 				success: false,
 				error: createSdkError({
-					message: `Failed to validate response schema for url '${request.url}'`,
-					reason: "validationFailed",
-					zodError: validationError,
-					response,
-					url: request.url,
-					retryStrategyOptions: undefined,
-					retryAttempt: undefined,
+					baseErrorData: {
+						message: `Failed to validate response schema for url '${request.url}'`,
+						url: request.url,
+						retryStrategyOptions: undefined,
+						retryAttempt: undefined,
+					},
+					details: {
+						reason: "validationFailed",
+						zodError: validationError,
+						response,
+						url: request.url,
+					},
 				}),
 			};
 		}

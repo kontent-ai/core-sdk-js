@@ -6,16 +6,20 @@ describe("isKontent404Error utility function", () => {
 		expect(
 			isKontent404Error(
 				createSdkError({
-					message: "",
-					url: "",
-					reason: "notFound",
-					isValidResponse: false,
-					status: 404,
-					statusText: "",
-					responseHeaders: [],
-					retryAttempt: undefined,
-					retryStrategyOptions: undefined,
-					kontentErrorResponse: undefined,
+					baseErrorData: {
+						message: "",
+						url: "",
+						retryAttempt: undefined,
+						retryStrategyOptions: undefined,
+					},
+					details: {
+						reason: "notFound",
+						isValidResponse: false,
+						status: 404,
+						statusText: "",
+						responseHeaders: [],
+						kontentErrorResponse: undefined,
+					},
 				}),
 			),
 		).toBe(true);
@@ -25,16 +29,20 @@ describe("isKontent404Error utility function", () => {
 		expect(
 			isKontent404Error(
 				createSdkError({
-					message: "",
-					url: "",
-					reason: "invalidResponse",
-					isValidResponse: false,
-					status: 404,
-					statusText: "",
-					responseHeaders: [],
-					retryAttempt: undefined,
-					retryStrategyOptions: undefined,
-					kontentErrorResponse: undefined,
+					baseErrorData: {
+						message: "",
+						url: "",
+						retryAttempt: undefined,
+						retryStrategyOptions: undefined,
+					},
+					details: {
+						reason: "invalidResponse",
+						isValidResponse: false,
+						status: 404,
+						statusText: "",
+						responseHeaders: [],
+						kontentErrorResponse: undefined,
+					},
 				}),
 			),
 		).toBe(false);

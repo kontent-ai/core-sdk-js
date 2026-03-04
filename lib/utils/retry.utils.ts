@@ -48,9 +48,13 @@ export async function runWithRetryAsync<TResponse extends ResponseData, TRequest
 		return {
 			success: false,
 			error: createSdkError({
-				...error.details,
-				// override the retry attempt with the current value
-				retryAttempt: data.retryAttempt,
+				baseErrorData: {
+					message: error.message,
+					url: error.url,
+					retryStrategyOptions: data.retryStrategyOptions,
+					retryAttempt: data.retryAttempt,
+				},
+				details: error.details,
 			}),
 		};
 	}
