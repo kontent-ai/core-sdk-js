@@ -1,11 +1,11 @@
 import { afterAll, describe, expect, it, vi } from "vitest";
+import { coreSdkInfo } from "../../../lib/core-sdk-info.js";
 import { getDefaultHttpService } from "../../../lib/http/http.service.js";
 import type { CommonHeaderNames, Header } from "../../../lib/models/core.models.js";
-import { sdkInfo } from "../../../lib/sdk-info.js";
 import { mockGlobalFetchJsonResponse } from "../../../lib/testkit/testkit.utils.js";
 import { getSdkIdHeader } from "../../../lib/utils/header.utils.js";
 
-const sdkIdHeader = getSdkIdHeader(sdkInfo);
+const sdkIdHeader = getSdkIdHeader(coreSdkInfo);
 
 describe("Default headers", async () => {
 	afterAll(() => {

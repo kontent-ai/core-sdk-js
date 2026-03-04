@@ -1,8 +1,8 @@
 import { match, P } from "ts-pattern";
+import { coreSdkInfo } from "../core-sdk-info.js";
 import type { CommonHeaderNames, ErrorResponseData, Header, HttpMethod, ResolvedRetryStrategyOptions } from "../models/core.models.js";
 import type { ErrorDetails, KontentSdkError } from "../models/error.models.js";
 import type { JsonValue } from "../models/json.models.js";
-import { sdkInfo } from "../sdk-info.js";
 import { isBlob, isNotUndefined } from "../utils/core.utils.js";
 import { createSdkError, getErrorMessage, isKontentErrorResponseData, isKontentSdkError } from "../utils/error.utils.js";
 import { findHeaderByName, getSdkIdHeader, isApplicationJsonResponseType } from "../utils/header.utils.js";
@@ -454,9 +454,9 @@ function buildRequestHeaders({
 	const sdkVersionHeader = existingSdkVersionHeader
 		? undefined
 		: getSdkIdHeader({
-				host: sdkInfo.host,
-				name: sdkInfo.name,
-				version: sdkInfo.version,
+				host: coreSdkInfo.host,
+				name: coreSdkInfo.name,
+				version: coreSdkInfo.version,
 			});
 
 	const contentLengthHeader = isBlob(body) ? createDefaultContentLengthHeader(body) : undefined;
