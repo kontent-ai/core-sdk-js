@@ -6,10 +6,10 @@
 import type { ZodError, ZodType } from "zod";
 import type { HttpService, RequestBody } from "../http/http.models.js";
 import { getDefaultHttpService } from "../http/http.service.js";
-import type { CommonHeaderNames, Header, SDKInfo } from "../models/core.models.js";
+import type { Header, SDKInfo } from "../models/core.models.js";
 import type { JsonValue } from "../models/json.models.js";
 import { createSdkError } from "../utils/error.utils.js";
-import { findHeaderByName, getSdkIdHeader } from "../utils/header.utils.js";
+import { createAuthorizationHeader, createContinuationHeader, findHeaderByName, getSdkIdHeader } from "../utils/header.utils.js";
 import type { NextPageStateWithRequest, Query, SdkConfig, SuccessfulHttpResponse } from "./sdk-models.js";
 
 export type QueryPromiseResult<TResponsePayload extends JsonValue, TMeta> = ReturnType<
@@ -80,22 +80,8 @@ function getCombinedRequestHeaders({
 			version: sdkInfo.version,
 		}),
 		...requestHeaders,
-		...(continuationToken
-			? [
-					{
-						name: "X-Continuation" satisfies CommonHeaderNames,
-						value: continuationToken,
-					},
-				]
-			: []),
-		...(authorizationApiKey
-			? [
-					{
-						name: "Authorization" satisfies CommonHeaderNames,
-						value: `Bearer ${authorizationApiKey}`,
-					},
-				]
-			: []),
+		...(continuationToken ? [createContinuationHeader(continuationToken)] : []),
+		...(authorizationApiKey ? [createAuthorizationHeader(authorizationApiKey)] : []),
 	];
 }
 

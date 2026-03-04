@@ -7,6 +7,20 @@ export function getSdkIdHeader(info: SDKInfo): Header {
 	};
 }
 
+export function createContinuationHeader(token: string): Header {
+	return {
+		name: "X-Continuation" satisfies CommonHeaderNames,
+		value: token,
+	};
+}
+
+export function createAuthorizationHeader(apiKey: string): Header {
+	return {
+		name: "Authorization" satisfies CommonHeaderNames,
+		value: `Bearer ${apiKey}`,
+	};
+}
+
 export function findHeaderByName(headers: readonly Header[], name: CommonHeaderNames): Header | undefined {
 	return headers.find((header) => header.name.toLowerCase() === name.toLowerCase());
 }
