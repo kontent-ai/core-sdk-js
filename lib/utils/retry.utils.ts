@@ -17,10 +17,6 @@ type RetryResult =
 
 const defaultMaxRetries: NonNullable<RetryStrategyOptions["maxRetries"]> = 3;
 
-const defaultcanRetryUnknownError: NonNullable<RetryStrategyOptions["canRetryUnknownError"]> = (_error) => {
-	return false;
-};
-
 const defaultcanRetryInvalidResponseError: NonNullable<RetryStrategyOptions["canRetryAdapterError"]> = (_error) => {
 	return false;
 };
@@ -82,7 +78,6 @@ export function resolveDefaultRetryStrategyOptions(options?: RetryStrategyOption
 
 	const resolvedOptions: ResolvedRetryStrategyOptions = {
 		maxRetries: maxRetries,
-		canRetryUnknownError: options?.canRetryUnknownError ?? defaultcanRetryUnknownError,
 		getDelayBetweenRetriesMs: (error) => getRetryMsFromHeaders({ error }),
 		canRetryAdapterError: options?.canRetryAdapterError ?? defaultcanRetryInvalidResponseError,
 		logRetryAttempt: match(options?.logRetryAttempt)
@@ -122,7 +117,6 @@ function getRetryResult({
 			retryAttempt,
 			error,
 			maxRetries: retryStrategyOptions.maxRetries,
-			canRetryUnknownError: retryStrategyOptions.canRetryUnknownError,
 			canRetryAdapterError: retryStrategyOptions.canRetryAdapterError,
 		})
 	) {
@@ -141,13 +135,11 @@ function canRetryError({
 	retryAttempt,
 	error,
 	maxRetries,
-	canRetryUnknownError,
 	canRetryAdapterError,
 }: {
 	readonly retryAttempt: number;
 	readonly error: KontentSdkError;
 	readonly maxRetries: Required<RetryStrategyOptions>["maxRetries"];
-	readonly canRetryUnknownError: NonNullable<RetryStrategyOptions["canRetryUnknownError"]>;
 	readonly canRetryAdapterError: NonNullable<RetryStrategyOptions["canRetryAdapterError"]>;
 }): boolean {
 	if (hasExceededMaxRetries({ retryAttempt, maxRetries })) {
@@ -181,12 +173,6 @@ function canRetryError({
 			},
 			() => false,
 		)
-		.with({ details: { reason: "unknown" } }, (m) => {
-			if (isErrorWithReason(m, m.details.reason)) {
-				return canRetryUnknownError(m);
-			}
-			throw new Error("Failed to assert unknown error");
-		})
 		.with({ details: { reason: "adapterError" } }, (m) => {
 			if (isErrorWithReason(m, m.details.reason)) {
 				return canRetryAdapterError(m);

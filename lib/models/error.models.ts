@@ -13,7 +13,6 @@ export type ErrorDetails =
 	| ReasonData<"notFound", ErrorWithKontentResponse>
 	| ReasonData<"invalidBody", ErrorWithOriginalError>
 	| ReasonData<"invalidUrl", ErrorWithOriginalError>
-	| ReasonData<"unknown", ErrorWithOriginalError>
 	| ReasonData<
 			"validationFailed",
 			{

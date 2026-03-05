@@ -55,25 +55,6 @@ export type RetryStrategyOptions = {
 	readonly maxRetries?: number;
 
 	/**
-	 * Determines whether an unknown error should be retried.
-	 *
-	 * This callback is evaluated only after SDK-defined retry rules are checked.
-	 * The SDK handles the following cases directly:
-	 *
-	 * - Retried automatically:
-	 *   - HTTP 429 (rate limit exceeded)
-	 *
-	 * - Not retried automatically:
-	 *   - Invalid request body (`invalidBody`)
-	 *   - Invalid URL (`invalidUrl`)
-	 *   - 404 Not Found (`notFound`)
-	 *   - 401 Unauthorized (`unauthorized`)
-	 *   - API business/validation error response (`kontentErrorResponse`)
-	 *
-	 */
-	readonly canRetryUnknownError?: (error: KontentSdkError<ErrorDetailsFor<"unknown">>) => boolean;
-
-	/**
 	 * Determines whether an adapter error should be retried.
 	 *
 	 * Adapter errors occur when the HTTP adapter fails to execute the request
@@ -105,10 +86,7 @@ export type RetryStrategyOptions = {
 	readonly logRetryAttempt?: "logToConsole" | ((retryAttempt: number, url: string) => void);
 };
 
-export type ResolvedRetryStrategyOptions = Pick<
-	Required<RetryStrategyOptions>,
-	"maxRetries" | "canRetryUnknownError" | "canRetryAdapterError"
-> & {
+export type ResolvedRetryStrategyOptions = Pick<Required<RetryStrategyOptions>, "maxRetries" | "canRetryAdapterError"> & {
 	readonly logRetryAttempt: undefined | ((retryAttempt: number, url: string) => void);
 	readonly getDelayBetweenRetriesMs: (error: KontentSdkError) => number;
 };

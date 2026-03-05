@@ -8,9 +8,9 @@ describe("Integration tests - Kontent error response data", async () => {
 	const httpService = getDefaultHttpService({
 		requestHeaders: config.getMapiAuthorizationHeaders(),
 		retryStrategy: {
-			maxRetries: 0,
-			canRetryUnknownError: () => {
-				return false;
+			maxRetries: 3,
+			canRetryAdapterError: () => {
+				return true;
 			},
 		},
 	});
