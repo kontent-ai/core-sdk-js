@@ -96,14 +96,14 @@ export type AdapterResponse<TPayload extends AdapterPayload> = {
 export type AdapterRequestBody = string | Blob | null;
 export type AdapterPayload = JsonValue | Blob | null;
 
-export type AdapterRequestOptions = {
+export type AdapterExecuteRequestOptions = {
 	readonly url: string;
 	readonly method: HttpMethod;
 	readonly body: AdapterRequestBody;
 	readonly requestHeaders?: readonly Header[];
 };
 
-export type AdapterDownloadFileOptions = Pick<AdapterRequestOptions, "url" | "requestHeaders">;
+export type AdapterDownloadFileOptions = Pick<AdapterExecuteRequestOptions, "url" | "requestHeaders">;
 
 export type GetNextPageData<TResponsePayload extends JsonValue, TMeta> = (response: QueryResponse<TResponsePayload, TMeta>) => {
 	readonly continuationToken?: string | undefined;
@@ -126,6 +126,6 @@ export type PaginationConfig = {
  * Alternatively, you may implement the entire `HttpService` interface to create a fully customized HTTP service.
  */
 export type HttpAdapter = {
-	readonly executeRequestAsync: (options: AdapterRequestOptions) => Promise<AdapterResponse<JsonValue>>;
-	readonly downloadFileAsync: (options: AdapterDownloadFileOptions) => Promise<AdapterResponse<Blob>>;
+	readonly executeRequestAsync?: (options: AdapterExecuteRequestOptions) => Promise<AdapterResponse<JsonValue>>;
+	readonly downloadFileAsync?: (options: AdapterDownloadFileOptions) => Promise<AdapterResponse<Blob>>;
 };

@@ -26,6 +26,8 @@ import type {
 } from "./http.models.js";
 
 export function getDefaultHttpService(config?: DefaultHttpServiceConfig): HttpService {
+	const adapter = getHttpAdapter(config);
+
 	return {
 		requestAsync: async <TPayload extends JsonValue, TRequestBody extends RequestBody>(
 			options: ExecuteRequestOptions<TRequestBody>,
@@ -33,7 +35,7 @@ export function getDefaultHttpService(config?: DefaultHttpServiceConfig): HttpSe
 			return await resolveRequestAsync<TPayload, TRequestBody>({
 				config,
 				options,
-				runAdapterFuncAsync: async ({ adapter, parsedUrl, method, requestHeaders, parsedBody }) => {
+				runAdapterFuncAsync: async ({ parsedUrl, method, requestHeaders, parsedBody }) => {
 					return (await adapter.executeRequestAsync({
 						url: parsedUrl.toString(),
 						method,
@@ -52,7 +54,7 @@ export function getDefaultHttpService(config?: DefaultHttpServiceConfig): HttpSe
 					method: "GET",
 					body: null,
 				},
-				runAdapterFuncAsync: async ({ adapter, parsedUrl, requestHeaders }) => {
+				runAdapterFuncAsync: async ({ parsedUrl, requestHeaders }) => {
 					return await adapter.downloadFileAsync({
 						url: parsedUrl.toString(),
 						requestHeaders,
@@ -65,7 +67,7 @@ export function getDefaultHttpService(config?: DefaultHttpServiceConfig): HttpSe
 			return await resolveRequestAsync<TPayload, Blob>({
 				config,
 				options,
-				runAdapterFuncAsync: async ({ adapter, parsedUrl, method, requestHeaders, parsedBody }) => {
+				runAdapterFuncAsync: async ({ parsedUrl, method, requestHeaders, parsedBody }) => {
 					return (await adapter.executeRequestAsync({
 						url: parsedUrl.toString(),
 						method,
@@ -75,6 +77,13 @@ export function getDefaultHttpService(config?: DefaultHttpServiceConfig): HttpSe
 				},
 			});
 		},
+	};
+}
+
+function getHttpAdapter(config?: DefaultHttpServiceConfig): Required<HttpAdapter> {
+	return {
+		downloadFileAsync: config?.adapter?.downloadFileAsync ?? getDefaultHttpAdapter().downloadFileAsync,
+		executeRequestAsync: config?.adapter?.executeRequestAsync ?? getDefaultHttpAdapter().executeRequestAsync,
 	};
 }
 
@@ -191,7 +200,6 @@ function resolveResponse<TPayload extends ResponseData, TRequestBody extends Req
 }
 
 type ResolveRequestData = {
-	readonly adapter: HttpAdapter;
 	readonly parsedUrl: URL;
 	readonly method: HttpMethod;
 	readonly requestHeaders: readonly Header[];
@@ -199,7 +207,6 @@ type ResolveRequestData = {
 };
 
 async function executeRequestAsync<TPayload extends AdapterPayload>({
-	adapter,
 	parsedUrl,
 	method,
 	requestHeaders,
@@ -216,7 +223,6 @@ async function executeRequestAsync<TPayload extends AdapterPayload>({
 	const { success, error, data } = await tryCatchAsync(
 		async () =>
 			await runAdapterFuncAsync({
-				adapter,
 				parsedUrl,
 				method,
 				requestHeaders,
