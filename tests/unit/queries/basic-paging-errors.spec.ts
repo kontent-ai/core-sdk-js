@@ -56,12 +56,12 @@ describe("Basic paging errors", async () => {
 	it("Error should be defined & unknown", () => {
 		expect(error).toBeDefined();
 		expect(error).toBeInstanceOf(KontentSdkError);
-		expect(error?.details?.reason).toBe<ErrorReason>("unknown");
+		expect(error?.details?.reason).toBe<ErrorReason>("adapterError");
 
-		if (error?.details?.reason === "unknown") {
+		if (error?.details?.reason === "adapterError") {
 			expect(error.details.originalError).toBeInstanceOf(Error);
 		} else {
-			throw new Error("Error reason is not unknown");
+			throw new Error("Error reason is not adapterError");
 		}
 	});
 

@@ -11,19 +11,19 @@ type TestCase = RetryStrategyOptions & {
 const testCases: readonly TestCase[] = [
 	{
 		title: "By default unhandled errors are not retried even if max retries is > 0",
-		canRetryUnknownError: resolveDefaultRetryStrategyOptions({}).canRetryUnknownError,
+		canRetryAdapterError: resolveDefaultRetryStrategyOptions({}).canRetryAdapterError,
 		maxRetries: 5,
 		expectedRetries: 0,
 	},
 	{
-		title: `Can't retry if canRetryUnknownError returns false`,
-		canRetryUnknownError: () => false,
+		title: `Can't retry requests`,
+		canRetryAdapterError: () => false,
 		maxRetries: 5,
 		expectedRetries: 0,
 	},
 	{
 		title: "Can retry when unhandled errors are set to be retried via custom callback",
-		canRetryUnknownError: () => true,
+		canRetryAdapterError: () => true,
 		maxRetries: 1,
 		expectedRetries: 1,
 	},
@@ -31,19 +31,19 @@ const testCases: readonly TestCase[] = [
 		title: "Can retry, but should not retry because max retries is 0",
 		expectedRetries: 0,
 		maxRetries: 0,
-		canRetryUnknownError: () => true,
+		canRetryAdapterError: () => true,
 	},
 	{
 		title: "Should retry 2 times",
 		expectedRetries: 2,
 		maxRetries: 2,
-		canRetryUnknownError: () => true,
+		canRetryAdapterError: () => true,
 	},
 	{
 		title: "Should retry 5 times",
 		expectedRetries: 5,
 		maxRetries: 5,
-		canRetryUnknownError: () => true,
+		canRetryAdapterError: () => true,
 	},
 ];
 
@@ -53,7 +53,7 @@ for (const testCase of testCases) {
 			retryStrategy: testCase,
 			adapter: {
 				executeRequestAsync: () => {
-					throw new Error("Testing unhandled error");
+					throw new Error("Testing retry policy");
 				},
 			},
 		}).requestAsync({

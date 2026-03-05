@@ -1,7 +1,7 @@
 import { match, P } from "ts-pattern";
 import { coreSdkInfo } from "../core-sdk-info.js";
 import type { CommonHeaderNames, ErrorResponseData, Header, HttpMethod, ResolvedRetryStrategyOptions } from "../models/core.models.js";
-import type { ErrorDetails, ErrorReason, KontentSdkError } from "../models/error.models.js";
+import type { ErrorDetails, ErrorDetailsFor, ErrorReason, KontentSdkError } from "../models/error.models.js";
 import type { JsonValue } from "../models/json.models.js";
 import type { PickStringLiteral } from "../models/utility.models.js";
 import { isBlob, isDefined } from "../utils/core.utils.js";
@@ -147,16 +147,16 @@ async function processHttpRequestAsync<TPayload extends AdapterPayload, TRequest
 	});
 }
 
-function createUnknownError(url: string, error: unknown): KontentSdkError {
+function createAdapterError(url: string, error: unknown): KontentSdkError<ErrorDetailsFor<"adapterError">> {
 	return createSdkError({
 		baseErrorData: {
-			message: "Unknown error. See the error object for more details.",
+			message: `Adapter failed to execute the request for url '${url}'. See the error object for more details.`,
 			url: url,
 			retryStrategyOptions: undefined,
 			retryAttempt: undefined,
 		},
 		details: {
-			reason: "unknown",
+			reason: "adapterError",
 			originalError: error,
 		},
 	});
@@ -227,7 +227,7 @@ async function runAdapterRequestAsync<TPayload extends AdapterPayload>({
 	);
 
 	if (!success) {
-		return createUnknownError(parsedUrl.toString(), error);
+		return createAdapterError(parsedUrl.toString(), error);
 	}
 
 	return data;

@@ -7,6 +7,7 @@ import type { ErrorResponseData, ResolvedRetryStrategyOptions } from "./core.mod
 export type ErrorReason = ErrorDetails["reason"];
 
 export type ErrorDetails =
+	| ReasonData<"adapterError", ErrorWithOriginalError>
 	| ReasonData<"unauthorized", ErrorWithKontentResponse>
 	| ReasonData<"invalidResponse", ErrorWithKontentResponse>
 	| ReasonData<"notFound", ErrorWithKontentResponse>
@@ -73,7 +74,7 @@ export class KontentSdkError<TDetails extends ErrorDetails = ErrorDetails> exten
 	}
 }
 
-export type ErrorDetailsFor<TReason extends ErrorReason> = Extract<ErrorDetails, { reason: TReason }>;
+export type ErrorDetailsFor<TReason extends ErrorReason> = Extract<ErrorDetails, { readonly reason: TReason }>;
 
 type ErrorWithKontentResponse = {
 	readonly kontentErrorResponse: ErrorResponseData | undefined;

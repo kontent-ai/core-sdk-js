@@ -21,6 +21,10 @@ const defaultcanRetryUnknownError: NonNullable<RetryStrategyOptions["canRetryUnk
 	return false;
 };
 
+const defaultcanRetryInvalidResponseError: NonNullable<RetryStrategyOptions["canRetryAdapterError"]> = (_error) => {
+	return false;
+};
+
 export async function runWithRetryAsync<TResponse extends HttpPayload, TRequestBody extends HttpRequestBody>(data: {
 	readonly funcAsync: (retryAttempt: number) => Promise<HttpResponse<TResponse, TRequestBody>>;
 	readonly retryStrategyOptions: ResolvedRetryStrategyOptions;
@@ -80,6 +84,7 @@ export function resolveDefaultRetryStrategyOptions(options?: RetryStrategyOption
 		maxRetries: maxRetries,
 		canRetryUnknownError: options?.canRetryUnknownError ?? defaultcanRetryUnknownError,
 		getDelayBetweenRetriesMs: (error) => getRetryMsFromHeaders({ error }),
+		canRetryAdapterError: options?.canRetryAdapterError ?? defaultcanRetryInvalidResponseError,
 		logRetryAttempt: match(options?.logRetryAttempt)
 			.returnType<ResolvedRetryStrategyOptions["logRetryAttempt"]>()
 			.with("logToConsole", () => (retryAttempt, url) => {
@@ -118,6 +123,7 @@ function getRetryResult({
 			error,
 			maxRetries: retryStrategyOptions.maxRetries,
 			canRetryUnknownError: retryStrategyOptions.canRetryUnknownError,
+			canRetryAdapterError: retryStrategyOptions.canRetryAdapterError,
 		})
 	) {
 		return {
@@ -136,11 +142,13 @@ function canRetryError({
 	error,
 	maxRetries,
 	canRetryUnknownError,
+	canRetryAdapterError,
 }: {
 	readonly retryAttempt: number;
 	readonly error: KontentSdkError;
 	readonly maxRetries: Required<RetryStrategyOptions>["maxRetries"];
 	readonly canRetryUnknownError: NonNullable<RetryStrategyOptions["canRetryUnknownError"]>;
+	readonly canRetryAdapterError: NonNullable<RetryStrategyOptions["canRetryAdapterError"]>;
 }): boolean {
 	if (hasExceededMaxRetries({ retryAttempt, maxRetries })) {
 		return false;
@@ -152,20 +160,38 @@ function canRetryError({
 
 	return match(error)
 		.returnType<boolean>()
-		.with({ details: { reason: "invalidResponse" } }, () => {
+		.with({ details: { kontentErrorResponse: P.nonNullable } }, () => {
 			// The request is clearly invalid as we got an error response from the API
 			// and we should not retry such requests
 			return false;
 		})
 		.with(
-			{ details: { reason: P.union("invalidBody", "invalidUrl", "notFound", "unauthorized", "validationFailed", "noResponses") } },
+			{
+				details: {
+					reason: P.union(
+						"invalidBody",
+						"invalidResponse",
+						"invalidUrl",
+						"notFound",
+						"unauthorized",
+						"validationFailed",
+						"noResponses",
+					),
+				},
+			},
 			() => false,
 		)
 		.with({ details: { reason: "unknown" } }, (m) => {
-			if (isErrorWithReason(m, "unknown")) {
+			if (isErrorWithReason(m, m.details.reason)) {
 				return canRetryUnknownError(m);
 			}
 			throw new Error("Failed to assert unknown error");
+		})
+		.with({ details: { reason: "adapterError" } }, (m) => {
+			if (isErrorWithReason(m, m.details.reason)) {
+				return canRetryAdapterError(m);
+			}
+			throw new Error("Failed to assert adapter error");
 		})
 		.exhaustive();
 }
