@@ -86,7 +86,6 @@ export type HttpService = {
 
 export type AdapterResponse<TPayload extends AdapterPayload> = {
 	readonly payload: TPayload;
-	readonly isValidResponse: boolean;
 	readonly responseHeaders: readonly Header[];
 	readonly status: HttpServiceStatus;
 	readonly statusText: string;

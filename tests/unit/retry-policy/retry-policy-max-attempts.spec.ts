@@ -27,7 +27,7 @@ describe("Retry policy - max retries", async () => {
 			jsonResponse: {},
 			statusCode: 500,
 			retryStrategy,
-			isValidResponse: false,
+			isSuccessfulResponse: false,
 		}).requestAsync({
 			url: "https://domain.com",
 			method: "GET",

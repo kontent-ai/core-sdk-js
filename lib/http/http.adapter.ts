@@ -18,7 +18,6 @@ export function getDefaultHttpAdapter(): Required<HttpAdapter> {
 		payload: TPayload,
 	): AdapterResponse<TPayload> => {
 		return {
-			isValidResponse: response.ok,
 			responseHeaders: toSdkHeaders(response.headers),
 			status: response.status,
 			statusText: response.statusText,

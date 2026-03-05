@@ -11,10 +11,9 @@ describe("Custom adapter", () => {
 		value: "a",
 	};
 
-	const responseData: Pick<AdapterResponse<JsonValue>, "status" | "statusText" | "isValidResponse" | "responseHeaders"> = {
+	const responseData: Pick<AdapterResponse<JsonValue>, "status" | "statusText" | "responseHeaders"> = {
 		status: 200,
 		statusText: "Ok",
-		isValidResponse: true,
 		responseHeaders: [headerA],
 	};
 
@@ -28,7 +27,6 @@ describe("Custom adapter", () => {
 		adapter: {
 			executeRequestAsync: async (options) => {
 				const response: AdapterResponse<JsonValue> = {
-					isValidResponse: true,
 					responseHeaders: responseData.responseHeaders,
 					status: responseData.status,
 					url: options.url,
@@ -40,7 +38,6 @@ describe("Custom adapter", () => {
 			},
 			downloadFileAsync: async (options) => {
 				const response: AdapterResponse<Blob> = {
-					isValidResponse: true,
 					responseHeaders: responseData.responseHeaders,
 					status: responseData.status,
 					url: options.url,
@@ -69,7 +66,6 @@ describe("Custom adapter", () => {
 		});
 
 		it("Base response values should be equal to test values", () => {
-			expect(response?.adapterResponse.isValidResponse).toBe(responseData.isValidResponse);
 			expect(response?.adapterResponse.status).toBe(responseData.status);
 			expect(response?.adapterResponse.statusText).toBe(responseData.statusText);
 		});
@@ -97,7 +93,6 @@ describe("Custom adapter", () => {
 		});
 
 		it("Base response values should be equal to test values", () => {
-			expect(response?.adapterResponse.isValidResponse).toBe(responseData.isValidResponse);
 			expect(response?.adapterResponse.status).toBe(responseData.status);
 			expect(response?.adapterResponse.statusText).toBe(responseData.statusText);
 		});
@@ -129,7 +124,6 @@ describe("Custom adapter", () => {
 		});
 
 		it("Base response values should be equal to test values", () => {
-			expect(response?.adapterResponse.isValidResponse).toBe(responseData.isValidResponse);
 			expect(response?.adapterResponse.status).toBe(responseData.status);
 			expect(response?.adapterResponse.statusText).toBe(responseData.statusText);
 		});

@@ -75,7 +75,7 @@ export class KontentSdkError extends Error implements BaseErrorData {
 
 type ErrorWithKontentResponse = {
 	readonly kontentErrorResponse: ErrorResponseData | undefined;
-} & Pick<AdapterResponse<HttpServiceStatus>, "isValidResponse" | "responseHeaders" | "status" | "statusText">;
+} & Pick<AdapterResponse<HttpServiceStatus>, "responseHeaders" | "status" | "statusText">;
 
 type ErrorWithOriginalError = {
 	readonly originalError: unknown;

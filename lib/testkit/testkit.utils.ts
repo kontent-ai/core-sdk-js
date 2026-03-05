@@ -54,14 +54,13 @@ export function getTestHttpServiceWithJsonResponse({
 	continuationToken,
 	url,
 	retryStrategy,
-	isValidResponse,
 }: {
 	readonly jsonResponse: JsonValue | (() => Promise<JsonValue>);
 	readonly statusCode: HttpServiceStatus;
 	readonly continuationToken?: string;
 	readonly url?: string;
 	readonly retryStrategy?: RetryStrategyOptions;
-	readonly isValidResponse?: boolean;
+	readonly isSuccessfulResponse?: boolean;
 }): HttpService {
 	const getUrl = () => url ?? "https://default-url.com";
 	return getDefaultHttpService({
@@ -69,7 +68,6 @@ export function getTestHttpServiceWithJsonResponse({
 		adapter: {
 			executeRequestAsync: async () => {
 				return {
-					isValidResponse: isValidResponse ?? true,
 					responseHeaders: [...(continuationToken ? [createContinuationHeader(continuationToken)] : [])],
 					status: statusCode,
 					statusText: "",
@@ -79,7 +77,6 @@ export function getTestHttpServiceWithJsonResponse({
 			},
 			downloadFileAsync: async () => {
 				return {
-					isValidResponse: true,
 					responseHeaders: [],
 					status: 200,
 					statusText: "",

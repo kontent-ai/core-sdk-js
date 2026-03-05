@@ -185,7 +185,7 @@ function mapAdapterResponse<TPayload extends HttpPayload, TRequestBody extends H
 	readonly retryAttempt: number;
 	readonly retryStrategyOptions: ResolvedRetryStrategyOptions;
 }): HttpResponse<TPayload, TRequestBody> {
-	if (!response.isValidResponse) {
+	if (!isSuccessfulResponse(response)) {
 		return {
 			success: false,
 			error: createInvalidResponseError({ response, method, retryAttempt, retryStrategyOptions }),
@@ -241,6 +241,10 @@ async function runAdapterRequestAsync<TPayload extends AdapterPayload>({
 	return data;
 }
 
+function isSuccessfulResponse(response: AdapterResponse<AdapterPayload>): boolean {
+	return response.status >= 200 && response.status < 300;
+}
+
 function createInvalidResponseError({
 	response,
 	method,
@@ -276,7 +280,6 @@ function extractInvalidResponseErrorDetails({ response }: { readonly response: A
 
 	return {
 		reason,
-		isValidResponse: response.isValidResponse,
 		responseHeaders: response.responseHeaders,
 		status: response.status,
 		statusText: response.statusText,

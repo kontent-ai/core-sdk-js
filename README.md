@@ -53,7 +53,6 @@ const httpService = getDefaultHttpService({
         payload: response.headers.get("content-type")?.includes("application/json")
           ? await response.json()
           : null,
-        isValidResponse: response.ok,
         responseHeaders: [...response.headers.entries()].map(([name, value]) => ({ name, value })),
         status: response.status,
         statusText: response.statusText,
@@ -65,7 +64,6 @@ const httpService = getDefaultHttpService({
 
       return {
         payload: await response.blob(),
-        isValidResponse: response.ok,
         responseHeaders: [...response.headers.entries()].map(([name, value]) => ({ name, value })),
         status: response.status,
         statusText: response.statusText,

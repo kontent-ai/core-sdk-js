@@ -14,7 +14,6 @@ describe("isKontent404Error utility function", () => {
 					},
 					details: {
 						reason: "notFound",
-						isValidResponse: false,
 						status: 404,
 						statusText: "",
 						responseHeaders: [],
@@ -37,7 +36,6 @@ describe("isKontent404Error utility function", () => {
 					},
 					details: {
 						reason: "invalidResponse",
-						isValidResponse: false,
 						status: 404,
 						statusText: "",
 						responseHeaders: [],

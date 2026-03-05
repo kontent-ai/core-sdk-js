@@ -49,7 +49,7 @@ for (const testCase of testCases) {
 			jsonResponse: testCase.fetchResponse.json,
 			statusCode: testCase.fetchResponse.statusCode,
 			retryStrategy: testCase,
-			isValidResponse: false,
+			isSuccessfulResponse: false,
 		}).requestAsync({
 			url: "https://domain.com",
 			method: "GET",
