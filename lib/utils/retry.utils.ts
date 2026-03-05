@@ -158,10 +158,7 @@ function canRetryError({
 				// and we should not retry such requests
 				return false;
 			})
-			.with(
-				{ error: { details: { reason: P.union("invalidBody", "invalidPayload", "invalidUrl", "notFound", "unauthorized") } } },
-				() => false,
-			)
+			.with({ error: { details: { reason: P.union("invalidBody", "invalidUrl", "notFound", "unauthorized") } } }, () => false)
 			.otherwise(() => {
 				return canRetryUnhandledError(error);
 			})

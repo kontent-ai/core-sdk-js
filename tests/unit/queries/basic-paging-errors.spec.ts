@@ -53,10 +53,16 @@ describe("Basic paging errors", async () => {
 		},
 	}).toAllPromise();
 
-	it("Error should be defined", () => {
+	it("Error should be defined & unknown", () => {
 		expect(error).toBeDefined();
 		expect(error).toBeInstanceOf(KontentSdkError);
-		expect(error?.details?.reason).toBe<ErrorReason>("invalidPayload");
+		expect(error?.details?.reason).toBe<ErrorReason>("unknown");
+
+		if (error?.details?.reason === "unknown") {
+			expect(error.details.originalError).toBeInstanceOf(Error);
+		} else {
+			throw new Error("Error reason is not unknown");
+		}
 	});
 
 	it("Success should be false", () => {

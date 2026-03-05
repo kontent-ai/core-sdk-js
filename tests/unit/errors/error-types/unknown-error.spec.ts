@@ -8,7 +8,10 @@ class CustomError {}
 describe("Unknown error (unhandled)", async () => {
 	const { success, response, error } = await getDefaultHttpService({
 		adapter: {
-			requestAsync: () => {
+			executeRequestAsync: () => {
+				throw new CustomError();
+			},
+			downloadFileAsync: () => {
 				throw new CustomError();
 			},
 		},

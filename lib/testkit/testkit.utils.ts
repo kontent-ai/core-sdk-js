@@ -1,5 +1,5 @@
 import { type Mock, vi } from "vitest";
-import type { AdapterResponse, HttpService, HttpServiceStatus } from "../http/http.models.js";
+import type { HttpService, HttpServiceStatus } from "../http/http.models.js";
 import { getDefaultHttpService } from "../http/http.service.js";
 import type { CommonHeaderNames, RetryStrategyOptions, SDKInfo } from "../models/core.models.js";
 import type { JsonValue } from "../models/json.models.js";
@@ -63,25 +63,29 @@ export function getTestHttpServiceWithJsonResponse({
 	readonly retryStrategy?: RetryStrategyOptions;
 	readonly isValidResponse?: boolean;
 }): HttpService {
+	const getUrl = () => url ?? "https://default-url.com";
 	return getDefaultHttpService({
 		retryStrategy: retryStrategy ?? {},
 		adapter: {
-			requestAsync: async () => {
-				const adapterResponse: AdapterResponse = {
+			executeRequestAsync: async () => {
+				return {
 					isValidResponse: isValidResponse ?? true,
 					responseHeaders: [...(continuationToken ? [createContinuationHeader(continuationToken)] : [])],
 					status: statusCode,
 					statusText: "",
-					url: url ?? "https://default-url.com",
-					toJsonAsync: async () => {
-						return await Promise.resolve(typeof jsonResponse === "function" ? await jsonResponse() : jsonResponse);
-					},
-					toBlobAsync: () => {
-						throw new Error("n/a");
-					},
+					url: getUrl(),
+					payload: typeof jsonResponse === "function" ? await jsonResponse() : jsonResponse,
 				};
-
-				return await Promise.resolve<AdapterResponse>(adapterResponse);
+			},
+			downloadFileAsync: async () => {
+				return {
+					isValidResponse: true,
+					responseHeaders: [],
+					status: 200,
+					statusText: "",
+					url: getUrl(),
+					payload: await Promise.resolve(getFakeBlob()),
+				};
 			},
 		},
 	});

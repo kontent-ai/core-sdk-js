@@ -1,7 +1,6 @@
-import type { AdapterResponse } from "../http/http.models.js";
+import type { AdapterPayload, AdapterResponse } from "../http/http.models.js";
 import type { ErrorResponseData, HttpMethod, ValidationError } from "../models/core.models.js";
 import { type BaseErrorData, type ErrorDetails, KontentSdkError } from "../models/error.models.js";
-import type { JsonValue } from "../models/json.models.js";
 import { isNotUndefined } from "./core.utils.js";
 
 export function createSdkError({
@@ -33,7 +32,7 @@ export function getErrorMessage({
 }: {
 	readonly url: string;
 	readonly method: HttpMethod;
-	readonly adapterResponse: AdapterResponse;
+	readonly adapterResponse: AdapterResponse<AdapterPayload>;
 	readonly kontentErrorResponse?: ErrorResponseData;
 }): string {
 	const details = kontentErrorResponse ? getKontentErrorResponseMessage(adapterResponse, kontentErrorResponse) : undefined;
@@ -43,7 +42,7 @@ export function getErrorMessage({
 /**
  * Checks if the given JSON value is a Kontent API error response data.
  */
-export function isKontentErrorResponseData(json: JsonValue): json is ErrorResponseData {
+export function isKontentErrorResponseData(json: unknown): json is ErrorResponseData {
 	if (!json) {
 		return false;
 	}
@@ -76,7 +75,7 @@ function getValidationErrorMessage(validationErrors?: readonly ValidationError[]
 		.join(", ");
 }
 
-function getKontentErrorResponseMessage(adapterResponse: AdapterResponse, kontentErrorResponse: ErrorResponseData): string {
+function getKontentErrorResponseMessage(adapterResponse: AdapterResponse<AdapterPayload>, kontentErrorResponse: ErrorResponseData): string {
 	const validationErrorMessage = getValidationErrorMessage(kontentErrorResponse.validation_errors);
 	return `Request failed with status '${adapterResponse.status}' and status text '${adapterResponse.statusText}'.${kontentErrorResponse.message}${validationErrorMessage ? ` ${validationErrorMessage}` : ""}`;
 }

@@ -4,11 +4,19 @@
  */
 
 import z from "zod";
-import type { AdapterResponse, HttpResponse, HttpService, PaginationConfig, RequestBody, ResponseData } from "../http/http.models.js";
+import type {
+	AdapterPayload,
+	AdapterResponse,
+	HttpResponse,
+	HttpService,
+	PaginationConfig,
+	RequestBody,
+	ResponseData,
+} from "../http/http.models.js";
 import type { KontentSdkError } from "../models/error.models.js";
 import type { Failure, Success } from "../utils/try-catch.utils.js";
 
-export type QueryResponseMeta<TMeta = unknown> = Pick<AdapterResponse, "status" | "responseHeaders" | "url"> & {
+export type QueryResponseMeta<TMeta = unknown> = Pick<AdapterResponse<AdapterPayload>, "status" | "responseHeaders" | "url"> & {
 	readonly continuationToken: string | undefined;
 } & TMeta;
 

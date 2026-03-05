@@ -10,7 +10,6 @@ export type ErrorDetails =
 	| ReasonData<"unauthorized", ErrorWithKontentResponse>
 	| ReasonData<"invalidResponse", ErrorWithKontentResponse>
 	| ReasonData<"notFound", ErrorWithKontentResponse>
-	| ReasonData<"invalidPayload", ErrorWithOriginalError>
 	| ReasonData<"invalidBody", ErrorWithOriginalError>
 	| ReasonData<"invalidUrl", ErrorWithOriginalError>
 	| ReasonData<"unknown", ErrorWithOriginalError>

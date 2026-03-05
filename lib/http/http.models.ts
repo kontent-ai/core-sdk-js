@@ -34,12 +34,12 @@ export type ResponseData = JsonValue | Blob;
 
 export type RequestBody = JsonObject | Blob | null;
 
-export type HttpResponse<TResponsePayload extends ResponseData, TRequestBody extends RequestBody> = HttpResult<{
-	readonly payload: TResponsePayload;
+export type HttpResponse<TPayload extends AdapterPayload, TRequestBody extends RequestBody> = HttpResult<{
+	readonly payload: TPayload;
 	readonly body: TRequestBody;
 	readonly method: HttpMethod;
 	readonly requestHeaders: readonly Header[];
-	readonly adapterResponse: Omit<AdapterResponse, "toJsonAsync" | "toBlobAsync">;
+	readonly adapterResponse: AdapterResponse<TPayload>;
 }>;
 
 export type ExecuteRequestOptions<TRequestBody extends RequestBody> = {
@@ -53,7 +53,7 @@ export type UploadFileRequestOptions = Omit<ExecuteRequestOptions<Blob>, "method
 	readonly method: Extract<HttpMethod, "POST" | "PUT" | "PATCH">;
 };
 
-export type DownloadFileRequestOptions = Pick<ExecuteRequestOptions<Blob>, "url" | "requestHeaders">;
+export type DownloadFileRequestOptions = Pick<ExecuteRequestOptions<null>, "url" | "requestHeaders">;
 
 /**
  * Represents the HTTP service used for making requests to the Kontent.ai API.
@@ -84,18 +84,17 @@ export type HttpService = {
 	uploadFileAsync<TResponsePayload extends JsonValue>(opts: UploadFileRequestOptions): Promise<HttpResponse<TResponsePayload, Blob>>;
 };
 
-export type AdapterResponse<TStatusCode extends HttpServiceStatus = HttpServiceStatus> = {
-	readonly toJsonAsync: () => Promise<JsonValue>;
-	readonly toBlobAsync: () => Promise<Blob>;
-
+export type AdapterResponse<TPayload extends AdapterPayload> = {
+	readonly payload: TPayload;
 	readonly isValidResponse: boolean;
 	readonly responseHeaders: readonly Header[];
-	readonly status: TStatusCode;
+	readonly status: HttpServiceStatus;
 	readonly statusText: string;
 	readonly url: string;
 };
 
 export type AdapterRequestBody = string | Blob | null;
+export type AdapterPayload = JsonValue | Blob | null;
 
 export type AdapterRequestOptions = {
 	readonly url: string;
@@ -103,6 +102,8 @@ export type AdapterRequestOptions = {
 	readonly body: AdapterRequestBody;
 	readonly requestHeaders?: readonly Header[];
 };
+
+export type AdapterDownloadFileOptions = Pick<AdapterRequestOptions, "url" | "requestHeaders">;
 
 export type GetNextPageData<TResponsePayload extends JsonValue, TMeta> = (response: QueryResponse<TResponsePayload, TMeta>) => {
 	readonly continuationToken?: string | undefined;
@@ -125,5 +126,6 @@ export type PaginationConfig = {
  * Alternatively, you may implement the entire `HttpService` interface to create a fully customized HTTP service.
  */
 export type HttpAdapter = {
-	readonly requestAsync: (options: AdapterRequestOptions) => Promise<AdapterResponse>;
+	readonly executeRequestAsync: (options: AdapterRequestOptions) => Promise<AdapterResponse<JsonValue>>;
+	readonly downloadFileAsync: (options: AdapterDownloadFileOptions) => Promise<AdapterResponse<Blob>>;
 };

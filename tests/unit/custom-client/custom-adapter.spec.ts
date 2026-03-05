@@ -11,7 +11,7 @@ describe("Custom adapter", () => {
 		value: "a",
 	};
 
-	const responseData: Pick<AdapterResponse, "status" | "statusText" | "isValidResponse" | "responseHeaders"> = {
+	const responseData: Pick<AdapterResponse<JsonValue>, "status" | "statusText" | "isValidResponse" | "responseHeaders"> = {
 		status: 200,
 		statusText: "Ok",
 		isValidResponse: true,
@@ -26,16 +26,29 @@ describe("Custom adapter", () => {
 
 	const httpService = getDefaultHttpService({
 		adapter: {
-			requestAsync: async (m) => {
-				return await Promise.resolve({
+			executeRequestAsync: async (options) => {
+				const response: AdapterResponse<JsonValue> = {
 					isValidResponse: true,
 					responseHeaders: responseData.responseHeaders,
 					status: responseData.status,
-					url: m.url,
+					url: options.url,
 					statusText: responseData.statusText,
-					toJsonAsync: async () => jsonResponse,
-					toBlobAsync: async () => blobResponse,
-				});
+					payload: jsonResponse,
+				};
+
+				return await Promise.resolve(response);
+			},
+			downloadFileAsync: async (options) => {
+				const response: AdapterResponse<Blob> = {
+					isValidResponse: true,
+					responseHeaders: responseData.responseHeaders,
+					status: responseData.status,
+					url: options.url,
+					statusText: responseData.statusText,
+					payload: blobResponse,
+				};
+
+				return await Promise.resolve(response);
 			},
 		},
 	});
