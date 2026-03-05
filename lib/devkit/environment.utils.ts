@@ -1,10 +1,10 @@
-import chalk from "chalk";
+import { colorize } from "./console.utils.js";
 
 export function getEnvironmentRequiredValue(variableName: string): string {
 	const value = getEnvironmentOptionalValue(variableName);
 
 	if (!value) {
-		throw new Error(`Missing environment variable '${chalk.red(variableName)}'`);
+		throw new Error(`Missing environment variable '${colorize("red", variableName)}'`);
 	}
 
 	return value;

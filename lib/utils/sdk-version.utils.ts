@@ -1,5 +1,5 @@
 import { readFileSync, writeFileSync } from "node:fs";
-import chalk from "chalk";
+import { colorize } from "../devkit/console.utils.js";
 
 const sdkVersionPlaceholderMacro = "{{version}}";
 
@@ -12,5 +12,5 @@ export function replaceSdkVersionPlaceholder(filePath: string, version: string):
 
 	writeFileSync(filePath, fileContent.replace(sdkVersionPlaceholderMacro, version));
 
-	console.log(`Updated SDK version in '${chalk.yellow(filePath)}' to '${chalk.green(version)}'`);
+	console.log(`Updated SDK version in '${colorize("yellow", filePath)}' to '${colorize("green", version)}'`);
 }
