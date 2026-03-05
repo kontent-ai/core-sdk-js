@@ -37,21 +37,39 @@ However, if your goal is to retain the core features (e.g., retry policies, requ
 
 ## Example: Custom `HttpAdapter` Implementation
 
-Below is an example demonstrating how to provide your own HTTP client by implementing a custom `HttpAdapter`:
+Below is an example demonstrating how to provide your own HTTP client by implementing a custom `HttpAdapter`. Both `executeRequestAsync` and `downloadFileAsync` are optional — you only need to implement the methods you want to override:
 
 ```typescript
 const httpService = getDefaultHttpService({
   adapter: {
-    requestAsync: async (options) => {
-      // Execute the request using your custom HTTP client
+    executeRequestAsync: async (options) => {
+      const response = await fetch(options.url, {
+        method: options.method,
+        headers: options.requestHeaders,
+        body: options.body,
+      });
+
       return {
-        isValidResponse: <true | false>,
-        responseHeaders: <arrayOfHeaders>,
-        status: <statusCode>,
-        statusText: <statusText>,
+        payload: response.headers.get("content-type")?.includes("application/json")
+          ? await response.json()
+          : null,
+        isValidResponse: response.ok,
+        responseHeaders: [...response.headers.entries()].map(([name, value]) => ({ name, value })),
+        status: response.status,
+        statusText: response.statusText,
         url: options.url,
-        toJsonAsync: async () => <responseInJson>,
-        toBlobAsync: async () => <responseInBlob>,
+      };
+    },
+    downloadFileAsync: async (options) => {
+      const response = await fetch(options.url);
+
+      return {
+        payload: await response.blob(),
+        isValidResponse: response.ok,
+        responseHeaders: [...response.headers.entries()].map(([name, value]) => ({ name, value })),
+        status: response.status,
+        statusText: response.statusText,
+        url: options.url,
       };
     },
   },
