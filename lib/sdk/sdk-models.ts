@@ -7,11 +7,11 @@ import z from "zod";
 import type {
 	AdapterPayload,
 	AdapterResponse,
+	HttpPayload,
+	HttpRequestBody,
 	HttpResponse,
 	HttpService,
 	PaginationConfig,
-	RequestBody,
-	ResponseData,
 } from "../http/http.models.js";
 import type { KontentSdkError } from "../models/error.models.js";
 import type { Failure, Success } from "../utils/try-catch.utils.js";
@@ -87,7 +87,7 @@ export type NextPageStateWithRequest =
 			readonly nextPageUrl?: never;
 	  };
 
-export type SuccessfulHttpResponse<TResponsePayload extends ResponseData, TRequestBody extends RequestBody> = Extract<
+export type SuccessfulHttpResponse<TResponsePayload extends HttpPayload, TRequestBody extends HttpRequestBody> = Extract<
 	HttpResponse<TResponsePayload, TRequestBody>,
 	{ readonly success: true }
 >["response"];

@@ -30,11 +30,11 @@ export type DefaultHttpServiceConfig = {
 	readonly adapter?: HttpAdapter;
 };
 
-export type ResponseData = JsonValue | Blob;
+export type HttpPayload = JsonValue | Blob;
 
-export type RequestBody = JsonObject | Blob | null;
+export type HttpRequestBody = JsonObject | Blob | null;
 
-export type HttpResponse<TPayload extends AdapterPayload, TRequestBody extends RequestBody> = HttpResult<{
+export type HttpResponse<TPayload extends AdapterPayload, TRequestBody extends HttpRequestBody> = HttpResult<{
 	readonly payload: TPayload;
 	readonly body: TRequestBody;
 	readonly method: HttpMethod;
@@ -42,7 +42,7 @@ export type HttpResponse<TPayload extends AdapterPayload, TRequestBody extends R
 	readonly adapterResponse: AdapterResponse<TPayload>;
 }>;
 
-export type ExecuteRequestOptions<TRequestBody extends RequestBody> = {
+export type ExecuteRequestOptions<TRequestBody extends HttpRequestBody> = {
 	readonly url: string;
 	readonly method: HttpMethod;
 	readonly body: TRequestBody;
@@ -69,7 +69,7 @@ export type HttpService = {
 	/**
 	 * Executes request with the given method and body.
 	 */
-	requestAsync<TResponsePayload extends JsonValue, TRequestBody extends RequestBody>(
+	requestAsync<TResponsePayload extends JsonValue, TRequestBody extends HttpRequestBody>(
 		opts: ExecuteRequestOptions<TRequestBody>,
 	): Promise<HttpResponse<TResponsePayload, TRequestBody>>;
 

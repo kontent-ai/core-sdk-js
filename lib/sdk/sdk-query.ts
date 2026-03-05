@@ -4,7 +4,7 @@
  */
 
 import type { ZodType } from "zod";
-import type { HttpService, RequestBody } from "../http/http.models.js";
+import type { HttpRequestBody, HttpService } from "../http/http.models.js";
 import { getDefaultHttpService } from "../http/http.service.js";
 import type { Header, SDKInfo } from "../models/core.models.js";
 import type { JsonValue } from "../models/json.models.js";
@@ -20,15 +20,15 @@ type MetadataContextData = {
 	readonly continuationToken: string | undefined;
 };
 
-type MetadataMapper<TResponsePayload extends JsonValue, TRequestBody extends RequestBody, TMeta> = (
+type MetadataMapper<TResponsePayload extends JsonValue, TRequestBody extends HttpRequestBody, TMeta> = (
 	response: SuccessfulHttpResponse<TResponsePayload, TRequestBody>,
 	data: MetadataContextData,
 ) => TMeta;
-type MetadataMapperConfig<TResponsePayload extends JsonValue, TRequestBody extends RequestBody, TMeta> = {
+type MetadataMapperConfig<TResponsePayload extends JsonValue, TRequestBody extends HttpRequestBody, TMeta> = {
 	readonly mapMetadata: MetadataMapper<TResponsePayload, TRequestBody, TMeta>;
 };
 
-export type ResolveQueryData<TResponsePayload extends JsonValue, TRequestBody extends RequestBody, TMeta> = {
+export type ResolveQueryData<TResponsePayload extends JsonValue, TRequestBody extends HttpRequestBody, TMeta> = {
 	readonly nextPageState: NextPageStateWithRequest;
 	readonly request: Parameters<HttpService["requestAsync"]>[number] & { readonly body: TRequestBody };
 	readonly config: SdkConfig;
@@ -37,7 +37,7 @@ export type ResolveQueryData<TResponsePayload extends JsonValue, TRequestBody ex
 	readonly authorizationApiKey: string | undefined;
 } & MetadataMapperConfig<TResponsePayload, TRequestBody, TMeta>;
 
-export function createQuery<TResponsePayload extends JsonValue, TRequestBody extends RequestBody, TMeta>(
+export function createQuery<TResponsePayload extends JsonValue, TRequestBody extends HttpRequestBody, TMeta>(
 	data: Omit<ResolveQueryData<TResponsePayload, TRequestBody, TMeta>, "continuationToken" | "nextPageState" | "pageIndex">,
 ): Pick<Query<TResponsePayload, TMeta>, "toPromise" | "schema"> {
 	return {
@@ -81,7 +81,7 @@ function getCombinedRequestHeaders({
 	];
 }
 
-export async function resolveQueryAsync<TResponsePayload extends JsonValue, TRequestBody extends RequestBody, TMeta>({
+export async function resolveQueryAsync<TResponsePayload extends JsonValue, TRequestBody extends HttpRequestBody, TMeta>({
 	config,
 	request,
 	mapMetadata,

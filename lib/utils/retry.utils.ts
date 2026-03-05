@@ -1,5 +1,5 @@
 import { match, P } from "ts-pattern";
-import type { HttpResponse, RequestBody, ResponseData } from "../http/http.models.js";
+import type { HttpPayload, HttpRequestBody, HttpResponse } from "../http/http.models.js";
 import type { ResolvedRetryStrategyOptions, RetryStrategyOptions } from "../models/core.models.js";
 import type { KontentSdkError } from "../models/error.models.js";
 import { sleepAsync } from "./core.utils.js";
@@ -21,7 +21,7 @@ const defaultCanRetryUnhandledError: NonNullable<RetryStrategyOptions["canRetryU
 	return false;
 };
 
-export async function runWithRetryAsync<TResponse extends ResponseData, TRequestBody extends RequestBody>(data: {
+export async function runWithRetryAsync<TResponse extends HttpPayload, TRequestBody extends HttpRequestBody>(data: {
 	readonly funcAsync: (retryAttempt: number) => Promise<HttpResponse<TResponse, TRequestBody>>;
 	readonly retryStrategyOptions: ResolvedRetryStrategyOptions;
 	readonly retryAttempt: number;

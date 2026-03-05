@@ -4,7 +4,7 @@
  */
 
 import { match, P } from "ts-pattern";
-import type { GetNextPageData, PaginationConfig, RequestBody } from "../http/http.models.js";
+import type { GetNextPageData, HttpRequestBody, PaginationConfig } from "../http/http.models.js";
 import type { JsonValue } from "../models/json.models.js";
 import { createSdkError } from "../utils/error.utils.js";
 import type { NextPageStateWithRequest, PagingQuery, QueryResponse, QueryResult } from "./sdk-models.js";
@@ -20,7 +20,7 @@ type NoNextPageState = {
 
 type NextPageState = NextPageStateWithRequest | NoNextPageState;
 
-export function createPagingQuery<TResponsePayload extends JsonValue, TRequestBody extends RequestBody, TMeta>(
+export function createPagingQuery<TResponsePayload extends JsonValue, TRequestBody extends HttpRequestBody, TMeta>(
 	data: Omit<ResolveQueryData<TResponsePayload, TRequestBody, TMeta>, "nextPageState" | "pageIndex"> & {
 		readonly getNextPageData: GetNextPageData<TResponsePayload, TMeta>;
 	},
@@ -47,7 +47,7 @@ export function createPagingQuery<TResponsePayload extends JsonValue, TRequestBo
 	};
 }
 
-async function* createPagingQueryIterator<TResponsePayload extends JsonValue, TRequestBody extends RequestBody, TMeta>(
+async function* createPagingQueryIterator<TResponsePayload extends JsonValue, TRequestBody extends HttpRequestBody, TMeta>(
 	data: Omit<Parameters<typeof fetchAllPagesAsync<TResponsePayload, TRequestBody, TMeta>>[0], "pageIndex">,
 ): AsyncGenerator<QueryResult<QueryResponse<TResponsePayload, TMeta>>> {
 	let nextPageState: NextPageState = { hasNextPage: true, pageSource: "firstRequest" };
@@ -119,7 +119,7 @@ function resolveNextPageState<TResponsePayload extends JsonValue, TMeta>({
 		.exhaustive();
 }
 
-async function fetchAllPagesAsync<TResponsePayload extends JsonValue, TRequestBody extends RequestBody, TMeta>(
+async function fetchAllPagesAsync<TResponsePayload extends JsonValue, TRequestBody extends HttpRequestBody, TMeta>(
 	data: Omit<ResolveQueryData<TResponsePayload, TRequestBody, TMeta>, "nextPageState"> & {
 		readonly getNextPageData: GetNextPageData<TResponsePayload, TMeta>;
 		readonly paginationConfig: PaginationConfig;

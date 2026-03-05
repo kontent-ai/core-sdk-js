@@ -18,10 +18,10 @@ import type {
 	DownloadFileRequestOptions,
 	ExecuteRequestOptions,
 	HttpAdapter,
+	HttpPayload,
+	HttpRequestBody,
 	HttpResponse,
 	HttpService,
-	RequestBody,
-	ResponseData,
 	UploadFileRequestOptions,
 } from "./http.models.js";
 
@@ -29,7 +29,7 @@ export function getDefaultHttpService(config?: DefaultHttpServiceConfig): HttpSe
 	const adapter = getHttpAdapter(config);
 
 	return {
-		requestAsync: async <TPayload extends JsonValue, TRequestBody extends RequestBody>(
+		requestAsync: async <TPayload extends JsonValue, TRequestBody extends HttpRequestBody>(
 			options: ExecuteRequestOptions<TRequestBody>,
 		) => {
 			return await resolveRequestAsync<TPayload, TRequestBody>({
@@ -87,7 +87,7 @@ function getHttpAdapter(config?: DefaultHttpServiceConfig): Required<HttpAdapter
 	};
 }
 
-async function resolveRequestAsync<TPayload extends AdapterPayload, TRequestBody extends RequestBody>({
+async function resolveRequestAsync<TPayload extends AdapterPayload, TRequestBody extends HttpRequestBody>({
 	options,
 	runAdapterFuncAsync,
 	config,
@@ -165,7 +165,7 @@ function createUnknownError(url: string, error: unknown): KontentSdkError {
 	});
 }
 
-function resolveResponse<TPayload extends ResponseData, TRequestBody extends RequestBody>({
+function resolveResponse<TPayload extends HttpPayload, TRequestBody extends HttpRequestBody>({
 	response,
 	method,
 	requestHeaders,
@@ -285,7 +285,7 @@ function parseRequestBody({
 	url,
 	retryStrategyOptions,
 }: {
-	readonly requestBody: RequestBody;
+	readonly requestBody: HttpRequestBody;
 	readonly url: string;
 	readonly retryStrategyOptions: ResolvedRetryStrategyOptions;
 }): TryCatchResult<AdapterRequestBody, KontentSdkError> {
@@ -344,7 +344,7 @@ type ParsedRequest = {
 	readonly parsedBody: AdapterRequestBody;
 };
 
-function parseAndValidateRequest<TRequestBody extends RequestBody>(
+function parseAndValidateRequest<TRequestBody extends HttpRequestBody>(
 	options: ExecuteRequestOptions<TRequestBody>,
 	retryStrategyOptions: ResolvedRetryStrategyOptions,
 ): TryCatchResult<ParsedRequest, KontentSdkError> {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { RequestBody } from "../../../../lib/http/http.models.js";
+import type { HttpRequestBody } from "../../../../lib/http/http.models.js";
 import { getDefaultHttpService } from "../../../../lib/http/http.service.js";
 import { type ErrorReason, KontentSdkError } from "../../../../lib/models/error.models.js";
 
@@ -11,7 +11,7 @@ describe("Invalid body error", async () => {
 	const { error } = await getDefaultHttpService({}).requestAsync({
 		url: "https://domain.com",
 		method: "POST",
-		body: body as unknown as RequestBody,
+		body: body as unknown as HttpRequestBody,
 	});
 
 	it("Retry attempt should be 0 because invalid body should not be retried", () => {
