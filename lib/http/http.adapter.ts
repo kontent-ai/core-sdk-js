@@ -31,7 +31,7 @@ export function getDefaultHttpAdapter(): Required<HttpAdapter> {
 		executeRequestAsync: async (options) => {
 			const response = await getResponseAsync(options);
 			const sdkHeaders = toSdkHeaders(response.headers);
-			const payload = isApplicationJsonResponseType(toSdkHeaders(response.headers)) ? ((await response.json()) as JsonValue) : null;
+			const payload = isApplicationJsonResponseType(sdkHeaders) ? ((await response.json()) as JsonValue) : null;
 
 			return createAdapterResponse(options.url, response, payload, sdkHeaders);
 		},
