@@ -75,3 +75,76 @@ const httpService = getDefaultHttpService({
 ```
 
 This approach gives you fine-grained control over how requests are made, while still benefiting from the core service's additional functionalities.
+
+---
+
+## Error Handling
+
+All operations return a discriminated `success`/`error` result — the SDK never throws. Errors are represented by `KontentSdkError`, which carries a `details` object with a `reason` discriminant that can be narrowed for type-safe handling:
+
+```typescript
+const { success, response, error } = await httpService.requestAsync({
+  url: "https://manage.kontent.ai/v2/projects/...",
+  method: "GET",
+  body: null,
+});
+
+if (!success) {
+  switch (error.details.reason) {
+    case "unauthorized":
+      // error.details includes: status, statusText, responseHeaders, kontentErrorResponse
+      console.error("Check your API key:", error.details.kontentErrorResponse?.message);
+      break;
+    case "notFound":
+      console.error("Resource not found:", error.url);
+      break;
+    case "invalidResponse":
+      // Any non-2xx response that isn't 401 or 404
+      console.error(`HTTP ${error.details.status}:`, error.details.kontentErrorResponse?.message);
+      break;
+    case "adapterError":
+      // Network failure, timeout, or other transport-level issue
+      console.error("Request failed:", error.details.originalError);
+      break;
+    case "invalidUrl":
+    case "invalidBody":
+      // Local validation failure — the request was never sent
+      console.error("Invalid request:", error.details.originalError);
+      break;
+    case "validationFailed":
+      // Zod schema validation failed (when responseValidation is enabled)
+      console.error("Unexpected response shape:", error.details.zodError);
+      break;
+    case "noResponses":
+      // Paging query completed without any responses
+      console.error("No data returned");
+      break;
+  }
+  return;
+}
+
+// response is fully typed here
+console.log(response.payload);
+```
+
+---
+
+## Retry Strategy
+
+The default `HttpService` includes configurable retry logic. HTTP 429 (rate limit) responses are always retried automatically with a delay based on the `Retry-After` header. All other HTTP error responses are not retried.
+
+For transport-level failures (network errors, timeouts), you can control retry behavior via `canRetryAdapterError`:
+
+```typescript
+const httpService = getDefaultHttpService({
+  retryStrategy: {
+    maxRetries: 3,
+    canRetryAdapterError: (error) => {
+      // `error` is typed as KontentSdkError<ErrorDetailsFor<"adapterError">>
+      // Return true to retry, false to stop
+      return true;
+    },
+    logRetryAttempt: "logToConsole",
+  },
+});
+```
