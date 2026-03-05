@@ -1,7 +1,7 @@
 import { match, P } from "ts-pattern";
 import type { HttpPayload, HttpRequestBody, HttpResponse } from "../http/http.models.js";
 import type { ResolvedRetryStrategyOptions, RetryStrategyOptions } from "../models/core.models.js";
-import type { KontentSdkError } from "../models/error.models.js";
+import type { ErrorDetailsFor, ErrorReason, KontentSdkError } from "../models/error.models.js";
 import { sleepAsync } from "./core.utils.js";
 import { createSdkError } from "./error.utils.js";
 import { getRetryAfterHeaderValue } from "./header.utils.js";
@@ -142,27 +142,50 @@ function canRetryError({
 	readonly maxRetries: Required<RetryStrategyOptions>["maxRetries"];
 	readonly canRetryUnhandledError: NonNullable<RetryStrategyOptions["canRetryUnhandledError"]>;
 }): boolean {
-	return (
-		match({ retryAttempt, error })
-			.returnType<boolean>()
-			// Order of the condition matters
-			// First check if the retry attempt is greater than the maximum retries
-			// Then all other cases
-			.with({ retryAttempt: P.when((m) => m >= maxRetries) }, () => false)
-			.with({ error: { details: { status: 429 } } }, () => {
-				// Always retry 429 errors
-				return true;
-			})
-			.with({ error: { details: { kontentErrorResponse: P.nonNullable } } }, () => {
-				// The request is clearly invalid as we got an error response from the API
-				// and we should not retry such requests
-				return false;
-			})
-			.with({ error: { details: { reason: P.union("invalidBody", "invalidUrl", "notFound", "unauthorized") } } }, () => false)
-			.otherwise(() => {
-				return canRetryUnhandledError(error);
-			})
-	);
+	if (hasExceededMaxRetries({ retryAttempt, maxRetries })) {
+		return false;
+	}
+
+	if (isRateLimitError({ error })) {
+		return true;
+	}
+
+	return match(error)
+		.returnType<boolean>()
+		.with({ details: { reason: "invalidResponse" } }, () => {
+			// The request is clearly invalid as we got an error response from the API
+			// and we should not retry such requests
+			return false;
+		})
+		.with(
+			{ details: { reason: P.union("invalidBody", "invalidUrl", "notFound", "unauthorized", "validationFailed", "noResponses") } },
+			() => false,
+		)
+		.with({ details: { reason: "unknown" } }, (m) => {
+			if (isErrorWithReason(m, "unknown")) {
+				return canRetryUnhandledError(m);
+			}
+			throw new Error("Failed to assert unknown error");
+		})
+		.exhaustive();
+}
+
+function isErrorWithReason<TReason extends ErrorReason>(
+	error: KontentSdkError,
+	reason: TReason,
+): error is KontentSdkError<ErrorDetailsFor<TReason>> {
+	return error.details.reason === reason;
+}
+
+function isRateLimitError({ error }: { readonly error: KontentSdkError }): boolean {
+	return match(error)
+		.returnType<boolean>()
+		.with({ details: { status: 429 } }, () => true)
+		.otherwise(() => false);
+}
+
+function hasExceededMaxRetries({ retryAttempt, maxRetries }: { readonly retryAttempt: number; readonly maxRetries: number }): boolean {
+	return retryAttempt >= maxRetries;
 }
 
 function getRetryMsFromHeaders({ error }: { readonly error: KontentSdkError }): number {

@@ -3,13 +3,13 @@ import type { ErrorResponseData, HttpMethod, ValidationError } from "../models/c
 import { type BaseErrorData, type ErrorDetails, KontentSdkError } from "../models/error.models.js";
 import { isDefined } from "./core.utils.js";
 
-export function createSdkError({
+export function createSdkError<TDetails extends ErrorDetails>({
 	baseErrorData,
 	details,
 }: {
 	readonly baseErrorData: BaseErrorData;
-	readonly details: ErrorDetails;
-}): KontentSdkError {
+	readonly details: TDetails;
+}): KontentSdkError<TDetails> {
 	return new KontentSdkError({
 		baseErrorData,
 		details,

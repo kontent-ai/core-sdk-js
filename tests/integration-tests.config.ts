@@ -1,12 +1,18 @@
+import { existsSync } from "node:fs";
+import path from "node:path";
+import { loadEnvFile } from "node:process";
+import { fileURLToPath } from "node:url";
 import { getEnvironmentRequiredValue } from "../lib/devkit_api.js";
 import type { Header } from "../lib/models/core.models.js";
 
-const integrationEnv = {
-	id: getEnvironmentRequiredValue("INTEGRATION_ENVIRONMENT_ID"),
-	apiKey: getEnvironmentRequiredValue("INTEGRATION_MANAGEMENT_API_KEY"),
-} as const;
-
 export function getIntegrationTestConfig() {
+	loadEnvironmentVariables();
+
+	const integrationEnv = {
+		id: getEnvironmentRequiredValue("INTEGRATION_ENVIRONMENT_ID"),
+		apiKey: getEnvironmentRequiredValue("INTEGRATION_MANAGEMENT_API_KEY"),
+	} as const;
+
 	const baseMapiUrl = `https://manage.kontent.ai/v2/projects/${integrationEnv.id}`;
 	const assetsUrl = `${baseMapiUrl}/assets`;
 
@@ -28,4 +34,12 @@ export function getIntegrationTestConfig() {
 			listItemsUrl: `${baseMapiUrl}/items`,
 		},
 	};
+}
+
+function loadEnvironmentVariables(): void {
+	const envFilePath = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", ".env");
+
+	if (existsSync(envFilePath)) {
+		loadEnvFile(envFilePath);
+	}
 }

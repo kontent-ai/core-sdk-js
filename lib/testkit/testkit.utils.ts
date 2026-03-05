@@ -52,34 +52,31 @@ export function getTestHttpServiceWithJsonResponse({
 	jsonResponse,
 	statusCode,
 	continuationToken,
-	url,
 	retryStrategy,
 }: {
 	readonly jsonResponse: JsonValue | (() => Promise<JsonValue>);
 	readonly statusCode: HttpServiceStatus;
 	readonly continuationToken?: string;
-	readonly url?: string;
 	readonly retryStrategy?: RetryStrategyOptions;
 }): HttpService {
-	const getUrl = () => url ?? "https://default-url.com";
 	return getDefaultHttpService({
 		retryStrategy: retryStrategy ?? {},
 		adapter: {
-			executeRequestAsync: async () => {
+			executeRequestAsync: async ({ url }) => {
 				return {
 					responseHeaders: [...(continuationToken ? [createContinuationHeader(continuationToken)] : [])],
 					status: statusCode,
 					statusText: "",
-					url: getUrl(),
+					url,
 					payload: typeof jsonResponse === "function" ? await jsonResponse() : jsonResponse,
 				};
 			},
-			downloadFileAsync: async () => {
+			downloadFileAsync: async ({ url }) => {
 				return {
 					responseHeaders: [],
 					status: 200,
 					statusText: "",
-					url: getUrl(),
+					url,
 					payload: await Promise.resolve(getFakeBlob()),
 				};
 			},

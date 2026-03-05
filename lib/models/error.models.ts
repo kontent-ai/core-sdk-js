@@ -50,8 +50,8 @@ export interface BaseErrorData {
 	readonly retryAttempt: number | undefined;
 }
 
-export class KontentSdkError extends Error implements BaseErrorData {
-	readonly details: ErrorDetails;
+export class KontentSdkError<TDetails extends ErrorDetails = ErrorDetails> extends Error implements BaseErrorData {
+	readonly details: TDetails;
 	readonly url: string;
 	readonly retryStrategyOptions: ResolvedRetryStrategyOptions | undefined;
 	readonly retryAttempt: number | undefined;
@@ -61,7 +61,7 @@ export class KontentSdkError extends Error implements BaseErrorData {
 		details,
 	}: {
 		readonly baseErrorData: BaseErrorData;
-		readonly details: ErrorDetails;
+		readonly details: TDetails;
 	}) {
 		super(toFriendlyMessage(message, details));
 
@@ -72,6 +72,8 @@ export class KontentSdkError extends Error implements BaseErrorData {
 		this.details = details;
 	}
 }
+
+export type ErrorDetailsFor<TReason extends ErrorReason> = Extract<ErrorDetails, { reason: TReason }>;
 
 type ErrorWithKontentResponse = {
 	readonly kontentErrorResponse: ErrorResponseData | undefined;

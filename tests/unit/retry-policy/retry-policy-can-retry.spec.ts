@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
+import { getDefaultHttpService } from "../../../lib/http/http.service.js";
 import type { RetryStrategyOptions } from "../../../lib/models/core.models.js";
 import type { FetchResponse } from "../../../lib/testkit/testkit.models.js";
-import { getTestHttpServiceWithJsonResponse } from "../../../lib/testkit/testkit.utils.js";
 import { resolveDefaultRetryStrategyOptions } from "../../../lib/utils/retry.utils.js";
 
 type TestCase = RetryStrategyOptions & {
@@ -45,10 +45,13 @@ const testCases: readonly TestCase[] = [
 
 for (const testCase of testCases) {
 	describe(testCase.title, async () => {
-		const { success, error } = await getTestHttpServiceWithJsonResponse({
-			jsonResponse: testCase.fetchResponse.json,
-			statusCode: testCase.fetchResponse.statusCode,
+		const { success, error } = await getDefaultHttpService({
 			retryStrategy: testCase,
+			adapter: {
+				executeRequestAsync: () => {
+					throw new Error("Testing unhandled error");
+				},
+			},
 		}).requestAsync({
 			url: "https://domain.com",
 			method: "GET",

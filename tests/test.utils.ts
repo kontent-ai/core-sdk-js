@@ -1,10 +1,4 @@
-import { existsSync } from "node:fs";
-import path from "node:path";
-import { loadEnvFile } from "node:process";
-import { fileURLToPath } from "node:url";
 import type { GetNextPageData } from "../lib/public_api.js";
-
-loadEnvironmentVariables();
 
 export function preventInfinitePaging({
 	responseIndex,
@@ -29,12 +23,4 @@ export function preventInfinitePaging({
 
 export function getNextPageUrl(index: number): string {
 	return `https://page-url.com/${index}`;
-}
-
-function loadEnvironmentVariables(): void {
-	const envFilePath = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", ".env");
-
-	if (existsSync(envFilePath)) {
-		loadEnvFile(envFilePath);
-	}
 }

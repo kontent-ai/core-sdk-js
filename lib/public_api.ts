@@ -31,7 +31,7 @@ export type {
 	SDKInfo,
 	ValidationError,
 } from "./models/core.models.js";
-export { type ErrorDetails, type ErrorReason, KontentSdkError } from "./models/error.models.js";
+export { type ErrorDetails, type ErrorDetailsFor, type ErrorReason, KontentSdkError } from "./models/error.models.js";
 export type { JsonArray, JsonObject, JsonValue } from "./models/json.models.js";
 export type { EmptyObject } from "./models/utility.models.js";
 export { createPagingQuery } from "./sdk/paging-sdk-query.js";

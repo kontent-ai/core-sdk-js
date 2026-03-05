@@ -1,4 +1,4 @@
-import type { KontentSdkError } from "./error.models.js";
+import type { ErrorDetailsFor, KontentSdkError } from "./error.models.js";
 import type { LiteralUnion, PickStringLiteral } from "./utility.models.js";
 
 /**
@@ -72,7 +72,7 @@ export type RetryStrategyOptions = {
 	 *
 	 * For other error types, return `true` to retry or `false` to stop.
 	 */
-	readonly canRetryUnhandledError?: (error: KontentSdkError) => boolean;
+	readonly canRetryUnhandledError?: (error: KontentSdkError<ErrorDetailsFor<"unknown">>) => boolean;
 
 	/**
 	 * Controls logging for retry attempts.
