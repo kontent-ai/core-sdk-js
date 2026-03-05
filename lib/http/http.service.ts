@@ -26,13 +26,13 @@ import type {
 } from "./http.models.js";
 
 export function getDefaultHttpService(config?: DefaultHttpServiceConfig): HttpService {
-	const adapter = getHttpAdapter(config);
+	const adapter = resolveHttpAdapter(config);
 
 	return {
 		requestAsync: async <TPayload extends JsonValue, TRequestBody extends HttpRequestBody>(
 			options: ExecuteRequestOptions<TRequestBody>,
 		) => {
-			return await resolveRequestAsync<TPayload, TRequestBody>({
+			return await processHttpRequestAsync<TPayload, TRequestBody>({
 				config,
 				options,
 				runAdapterFuncAsync: async ({ parsedUrl, method, requestHeaders, parsedBody }) => {
@@ -47,7 +47,7 @@ export function getDefaultHttpService(config?: DefaultHttpServiceConfig): HttpSe
 		},
 
 		downloadFileAsync: async (options: DownloadFileRequestOptions): Promise<HttpResponse<Blob, null>> => {
-			return await resolveRequestAsync<Blob, null>({
+			return await processHttpRequestAsync<Blob, null>({
 				config,
 				options: {
 					...options,
@@ -64,7 +64,7 @@ export function getDefaultHttpService(config?: DefaultHttpServiceConfig): HttpSe
 		},
 
 		uploadFileAsync: async <TPayload extends JsonValue>(options: UploadFileRequestOptions): Promise<HttpResponse<TPayload, Blob>> => {
-			return await resolveRequestAsync<TPayload, Blob>({
+			return await processHttpRequestAsync<TPayload, Blob>({
 				config,
 				options,
 				runAdapterFuncAsync: async ({ parsedUrl, method, requestHeaders, parsedBody }) => {
@@ -80,19 +80,19 @@ export function getDefaultHttpService(config?: DefaultHttpServiceConfig): HttpSe
 	};
 }
 
-function getHttpAdapter(config?: DefaultHttpServiceConfig): Required<HttpAdapter> {
+function resolveHttpAdapter(config?: DefaultHttpServiceConfig): Required<HttpAdapter> {
 	return {
 		downloadFileAsync: config?.adapter?.downloadFileAsync ?? getDefaultHttpAdapter().downloadFileAsync,
 		executeRequestAsync: config?.adapter?.executeRequestAsync ?? getDefaultHttpAdapter().executeRequestAsync,
 	};
 }
 
-async function resolveRequestAsync<TPayload extends AdapterPayload, TRequestBody extends HttpRequestBody>({
+async function processHttpRequestAsync<TPayload extends AdapterPayload, TRequestBody extends HttpRequestBody>({
 	options,
 	runAdapterFuncAsync,
 	config,
 }: {
-	readonly runAdapterFuncAsync: (data: ResolveRequestData) => Promise<AdapterResponse<TPayload>>;
+	readonly runAdapterFuncAsync: (data: AdapterRequestData) => Promise<AdapterResponse<TPayload>>;
 	readonly config: DefaultHttpServiceConfig | undefined;
 	readonly options: ExecuteRequestOptions<TRequestBody>;
 }): Promise<HttpResponse<TPayload, TRequestBody>> {
@@ -120,7 +120,7 @@ async function resolveRequestAsync<TPayload extends AdapterPayload, TRequestBody
 				body: options.body,
 			});
 
-			const responseOrError = await executeRequestAsync({
+			const responseOrError = await runAdapterRequestAsync({
 				adapter: config?.adapter ?? getDefaultHttpAdapter(),
 				parsedUrl: parsedRequest.parsedUrl,
 				method: options.method,
@@ -136,7 +136,7 @@ async function resolveRequestAsync<TPayload extends AdapterPayload, TRequestBody
 				};
 			}
 
-			return resolveResponse({
+			return mapAdapterResponse({
 				retryStrategyOptions,
 				method: options.method,
 				requestBody: options.body,
@@ -165,7 +165,7 @@ function createUnknownError(url: string, error: unknown): KontentSdkError {
 	});
 }
 
-function resolveResponse<TPayload extends HttpPayload, TRequestBody extends HttpRequestBody>({
+function mapAdapterResponse<TPayload extends HttpPayload, TRequestBody extends HttpRequestBody>({
 	response,
 	method,
 	requestHeaders,
@@ -183,7 +183,7 @@ function resolveResponse<TPayload extends HttpPayload, TRequestBody extends Http
 	if (!response.isValidResponse) {
 		return {
 			success: false,
-			error: getErrorForInvalidResponse({ response, method, retryAttempt, retryStrategyOptions }),
+			error: createInvalidResponseError({ response, method, retryAttempt, retryStrategyOptions }),
 		};
 	}
 
@@ -199,21 +199,21 @@ function resolveResponse<TPayload extends HttpPayload, TRequestBody extends Http
 	};
 }
 
-type ResolveRequestData = {
+type AdapterRequestData = {
 	readonly parsedUrl: URL;
 	readonly method: HttpMethod;
 	readonly requestHeaders: readonly Header[];
 	readonly parsedBody: AdapterRequestBody;
 };
 
-async function executeRequestAsync<TPayload extends AdapterPayload>({
+async function runAdapterRequestAsync<TPayload extends AdapterPayload>({
 	parsedUrl,
 	method,
 	requestHeaders,
 	parsedBody,
 	runAdapterFuncAsync,
 }: {
-	readonly runAdapterFuncAsync: (data: ResolveRequestData) => Promise<AdapterResponse<TPayload>>;
+	readonly runAdapterFuncAsync: (data: AdapterRequestData) => Promise<AdapterResponse<TPayload>>;
 	readonly adapter: HttpAdapter;
 	readonly parsedUrl: URL;
 	readonly method: HttpMethod;
@@ -237,7 +237,7 @@ async function executeRequestAsync<TPayload extends AdapterPayload>({
 	return data;
 }
 
-function getErrorForInvalidResponse({
+function createInvalidResponseError({
 	response,
 	method,
 	retryAttempt,
@@ -259,11 +259,11 @@ function getErrorForInvalidResponse({
 			retryAttempt,
 			retryStrategyOptions,
 		},
-		details: getErrorDetailsForInvalidResponse({ response }),
+		details: extractInvalidResponseErrorDetails({ response }),
 	});
 }
 
-function getErrorDetailsForInvalidResponse({ response }: { readonly response: AdapterResponse<AdapterPayload> }): ErrorDetails {
+function extractInvalidResponseErrorDetails({ response }: { readonly response: AdapterResponse<AdapterPayload> }): ErrorDetails {
 	const reason = match(response.status)
 		.returnType<PickStringLiteral<ErrorReason, "unauthorized" | "notFound" | "invalidResponse">>()
 		.with(401, () => "unauthorized")
