@@ -28,6 +28,20 @@ import type {
 export function getDefaultHttpService(config?: DefaultHttpServiceConfig): HttpService {
 	const adapter = resolveHttpAdapter(config);
 
+	const executeWithAdapterAsync = async <TPayload extends AdapterPayload>({
+		parsedUrl,
+		method,
+		requestHeaders,
+		parsedBody,
+	}: AdapterRequestData): Promise<AdapterResponse<TPayload>> => {
+		return (await adapter.executeRequestAsync({
+			url: parsedUrl.toString(),
+			method,
+			requestHeaders,
+			body: parsedBody,
+		})) as AdapterResponse<TPayload>;
+	};
+
 	return {
 		requestAsync: async <TPayload extends JsonValue, TRequestBody extends HttpRequestBody>(
 			options: ExecuteRequestOptions<TRequestBody>,
@@ -35,14 +49,7 @@ export function getDefaultHttpService(config?: DefaultHttpServiceConfig): HttpSe
 			return await processHttpRequestAsync<TPayload, TRequestBody>({
 				config,
 				options,
-				runAdapterFuncAsync: async ({ parsedUrl, method, requestHeaders, parsedBody }) => {
-					return (await adapter.executeRequestAsync({
-						url: parsedUrl.toString(),
-						method,
-						requestHeaders,
-						body: parsedBody,
-					})) as AdapterResponse<TPayload>;
-				},
+				runAdapterFuncAsync: executeWithAdapterAsync,
 			});
 		},
 
@@ -67,23 +74,18 @@ export function getDefaultHttpService(config?: DefaultHttpServiceConfig): HttpSe
 			return await processHttpRequestAsync<TPayload, Blob>({
 				config,
 				options,
-				runAdapterFuncAsync: async ({ parsedUrl, method, requestHeaders, parsedBody }) => {
-					return (await adapter.executeRequestAsync({
-						url: parsedUrl.toString(),
-						method,
-						requestHeaders,
-						body: parsedBody,
-					})) as AdapterResponse<TPayload>;
-				},
+				runAdapterFuncAsync: executeWithAdapterAsync,
 			});
 		},
 	};
 }
 
 function resolveHttpAdapter(config?: DefaultHttpServiceConfig): Required<HttpAdapter> {
+	const defaultAdapter = getDefaultHttpAdapter();
+
 	return {
-		downloadFileAsync: config?.adapter?.downloadFileAsync ?? getDefaultHttpAdapter().downloadFileAsync,
-		executeRequestAsync: config?.adapter?.executeRequestAsync ?? getDefaultHttpAdapter().executeRequestAsync,
+		downloadFileAsync: config?.adapter?.downloadFileAsync ?? defaultAdapter.downloadFileAsync,
+		executeRequestAsync: config?.adapter?.executeRequestAsync ?? defaultAdapter.executeRequestAsync,
 	};
 }
 
@@ -98,35 +100,38 @@ async function processHttpRequestAsync<TPayload extends AdapterPayload, TRequest
 }): Promise<HttpResponse<TPayload, TRequestBody>> {
 	const retryStrategyOptions = resolveDefaultRetryStrategyOptions(config?.retryStrategy);
 
+	const { success: parseSuccess, data: parsedRequest, error: parseError } = parseAndValidateRequest(options, retryStrategyOptions);
+
+	if (!parseSuccess) {
+		return {
+			success: false,
+			error: createSdkError({
+				baseErrorData: {
+					message: parseError.message,
+					url: parseError.url,
+					retryStrategyOptions,
+					retryAttempt: 0,
+				},
+				details: parseError.details,
+			}),
+		};
+	}
+
+	const requestHeaders = buildRequestHeaders({
+		configHeaders: config?.requestHeaders,
+		optionHeaders: options.requestHeaders,
+		body: options.body,
+	});
+
 	return await runWithRetryAsync({
 		retryAttempt: 0,
 		funcAsync: async (retryAttempt) => {
-			const {
-				success: parseSuccess,
-				data: parsedRequest,
-				error: parseError,
-			} = parseAndValidateRequest(options, retryStrategyOptions);
-
-			if (!parseSuccess) {
-				return {
-					success: false,
-					error: parseError,
-				};
-			}
-
-			const requestHeaders = buildRequestHeaders({
-				configHeaders: config?.requestHeaders,
-				optionHeaders: options.requestHeaders,
-				body: options.body,
-			});
-
 			const responseOrError = await runAdapterRequestAsync({
-				adapter: config?.adapter ?? getDefaultHttpAdapter(),
 				parsedUrl: parsedRequest.parsedUrl,
 				method: options.method,
 				requestHeaders,
 				parsedBody: parsedRequest.parsedBody,
-				runAdapterFuncAsync: runAdapterFuncAsync,
+				runAdapterFuncAsync,
 			});
 
 			if (isKontentSdkError(responseOrError)) {
@@ -214,7 +219,6 @@ async function runAdapterRequestAsync<TPayload extends AdapterPayload>({
 	runAdapterFuncAsync,
 }: {
 	readonly runAdapterFuncAsync: (data: AdapterRequestData) => Promise<AdapterResponse<TPayload>>;
-	readonly adapter: HttpAdapter;
 	readonly parsedUrl: URL;
 	readonly method: HttpMethod;
 	readonly requestHeaders: readonly Header[];
@@ -329,11 +333,7 @@ function parseRequestBody({
 
 function tryExtractKontentErrorData(response: AdapterResponse<AdapterPayload>): ErrorResponseData | undefined {
 	if (isApplicationJsonResponseType(response.responseHeaders) && isKontentErrorResponseData(response.payload)) {
-		const json = response.payload;
-
-		if (isKontentErrorResponseData(response.payload)) {
-			return json;
-		}
+		return response.payload;
 	}
 
 	return undefined;
