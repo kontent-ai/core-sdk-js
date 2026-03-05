@@ -4,7 +4,7 @@ import { getDefaultHttpService } from "../http/http.service.js";
 import type { CommonHeaderNames, RetryStrategyOptions, SDKInfo } from "../models/core.models.js";
 import type { JsonValue } from "../models/json.models.js";
 import type { Header } from "../public_api.js";
-import { isNotUndefined } from "../utils/core.utils.js";
+import { isDefined } from "../utils/core.utils.js";
 import { createContinuationHeader, findHeaderByName, toFetchHeaders } from "../utils/header.utils.js";
 
 export function mockGlobalFetchJsonResponse({
@@ -60,7 +60,6 @@ export function getTestHttpServiceWithJsonResponse({
 	readonly continuationToken?: string;
 	readonly url?: string;
 	readonly retryStrategy?: RetryStrategyOptions;
-	readonly isSuccessfulResponse?: boolean;
 }): HttpService {
 	const getUrl = () => url ?? "https://default-url.com";
 	return getDefaultHttpService({
@@ -152,7 +151,7 @@ function getFetchMock<TResponsePayload extends JsonValue | Blob>({
 
 function buildHeadersWithDefaultContentType(headers: readonly Header[]): Headers {
 	const defaultContentTypeHeader = getDefaultContentTypeHeaderIfMissing(headers);
-	const headersWithDefaults: readonly Header[] = [...headers, defaultContentTypeHeader].filter(isNotUndefined);
+	const headersWithDefaults: readonly Header[] = [...headers, defaultContentTypeHeader].filter(isDefined);
 	return toFetchHeaders(headersWithDefaults);
 }
 

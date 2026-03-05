@@ -92,13 +92,13 @@ export type AdapterResponse<TPayload extends AdapterPayload> = {
 	readonly url: string;
 };
 
-export type AdapterRequestBody = string | Blob | null;
+export type AdapterBody = string | Blob | null;
 export type AdapterPayload = JsonValue | Blob | null;
 
 export type AdapterExecuteRequestOptions = {
 	readonly url: string;
 	readonly method: HttpMethod;
-	readonly body: AdapterRequestBody;
+	readonly body: AdapterBody;
 	readonly requestHeaders?: readonly Header[];
 };
 

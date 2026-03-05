@@ -4,15 +4,15 @@ import type { CommonHeaderNames, ErrorResponseData, Header, HttpMethod, Resolved
 import type { ErrorDetails, ErrorReason, KontentSdkError } from "../models/error.models.js";
 import type { JsonValue } from "../models/json.models.js";
 import type { PickStringLiteral } from "../models/utility.models.js";
-import { isBlob, isNotUndefined } from "../utils/core.utils.js";
-import { createSdkError, getErrorMessage, isKontentErrorResponseData, isKontentSdkError } from "../utils/error.utils.js";
+import { isBlob, isDefined } from "../utils/core.utils.js";
+import { createSdkError, isKontentErrorResponseData, isKontentSdkError, toInvalidResponseMessage } from "../utils/error.utils.js";
 import { findHeaderByName, getSdkIdHeader, isApplicationJsonResponseType } from "../utils/header.utils.js";
 import { resolveDefaultRetryStrategyOptions, runWithRetryAsync } from "../utils/retry.utils.js";
 import { type TryCatchResult, tryCatch, tryCatchAsync } from "../utils/try-catch.utils.js";
 import { getDefaultHttpAdapter } from "./http.adapter.js";
 import type {
+	AdapterBody,
 	AdapterPayload,
-	AdapterRequestBody,
 	AdapterResponse,
 	DefaultHttpServiceConfig,
 	DownloadFileRequestOptions,
@@ -105,15 +105,7 @@ async function processHttpRequestAsync<TPayload extends AdapterPayload, TRequest
 	if (!parseSuccess) {
 		return {
 			success: false,
-			error: createSdkError({
-				baseErrorData: {
-					message: parseError.message,
-					url: parseError.url,
-					retryStrategyOptions,
-					retryAttempt: 0,
-				},
-				details: parseError.details,
-			}),
+			error: parseError,
 		};
 	}
 
@@ -208,7 +200,7 @@ type AdapterRequestData = {
 	readonly parsedUrl: URL;
 	readonly method: HttpMethod;
 	readonly requestHeaders: readonly Header[];
-	readonly parsedBody: AdapterRequestBody;
+	readonly parsedBody: AdapterBody;
 };
 
 async function runAdapterRequestAsync<TPayload extends AdapterPayload>({
@@ -222,7 +214,7 @@ async function runAdapterRequestAsync<TPayload extends AdapterPayload>({
 	readonly parsedUrl: URL;
 	readonly method: HttpMethod;
 	readonly requestHeaders: readonly Header[];
-	readonly parsedBody: AdapterRequestBody;
+	readonly parsedBody: AdapterBody;
 }): Promise<AdapterResponse<TPayload> | KontentSdkError> {
 	const { success, error, data } = await tryCatchAsync(
 		async () =>
@@ -258,7 +250,7 @@ function createInvalidResponseError({
 }): KontentSdkError {
 	return createSdkError({
 		baseErrorData: {
-			message: getErrorMessage({
+			message: toInvalidResponseMessage({
 				url: response.url,
 				adapterResponse: response,
 				method: method,
@@ -295,9 +287,9 @@ function parseRequestBody({
 	readonly requestBody: HttpRequestBody;
 	readonly url: string;
 	readonly retryStrategyOptions: ResolvedRetryStrategyOptions;
-}): TryCatchResult<AdapterRequestBody, KontentSdkError> {
+}): TryCatchResult<AdapterBody, KontentSdkError> {
 	return match(requestBody)
-		.returnType<TryCatchResult<AdapterRequestBody, KontentSdkError>>()
+		.returnType<TryCatchResult<AdapterBody, KontentSdkError>>()
 		.with(P.nullish, () => ({
 			success: true,
 			data: null,
@@ -317,7 +309,7 @@ function parseRequestBody({
 							message: "Failed to stringify body of the request.",
 							url: url,
 							retryStrategyOptions,
-							retryAttempt: undefined,
+							retryAttempt: 0,
 						},
 						details: {
 							reason: "invalidBody",
@@ -344,7 +336,7 @@ function tryExtractKontentErrorData(response: AdapterResponse<AdapterPayload>): 
 
 type ParsedRequest = {
 	readonly parsedUrl: URL;
-	readonly parsedBody: AdapterRequestBody;
+	readonly parsedBody: AdapterBody;
 };
 
 function parseAndValidateRequest<TRequestBody extends HttpRequestBody>(
@@ -399,7 +391,7 @@ function parseUrl({
 					message: `Failed to parse url '${url}'.`,
 					url: url,
 					retryStrategyOptions,
-					retryAttempt: undefined,
+					retryAttempt: 0,
 				},
 				details: {
 					reason: "invalidUrl",
@@ -433,7 +425,7 @@ function buildRequestHeaders({
 
 	const contentLengthHeader = isBlob(body) ? createDefaultContentLengthHeader(body) : undefined;
 
-	return [...combinedHeaders, contentTypeHeader, contentLengthHeader, sdkVersionHeader].filter(isNotUndefined);
+	return [...combinedHeaders, contentTypeHeader, contentLengthHeader, sdkVersionHeader].filter(isDefined);
 }
 
 function createDefaultContentTypeHeader(body: Blob | JsonValue): Header {

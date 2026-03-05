@@ -1,6 +1,6 @@
 import { match, P } from "ts-pattern";
 import type { ZodError } from "zod";
-import type { AdapterResponse, HttpPayload, HttpRequestBody, HttpServiceStatus } from "../http/http.models.js";
+import type { AdapterPayload, AdapterResponse, HttpPayload, HttpRequestBody } from "../http/http.models.js";
 import type { SuccessfulHttpResponse } from "../sdk/sdk-models.js";
 import type { ErrorResponseData, ResolvedRetryStrategyOptions } from "./core.models.js";
 
@@ -63,7 +63,7 @@ export class KontentSdkError extends Error implements BaseErrorData {
 		readonly baseErrorData: BaseErrorData;
 		readonly details: ErrorDetails;
 	}) {
-		super(getErrorMessage(message, details));
+		super(toFriendlyMessage(message, details));
 
 		this.message = message;
 		this.url = url;
@@ -75,7 +75,7 @@ export class KontentSdkError extends Error implements BaseErrorData {
 
 type ErrorWithKontentResponse = {
 	readonly kontentErrorResponse: ErrorResponseData | undefined;
-} & Pick<AdapterResponse<HttpServiceStatus>, "responseHeaders" | "status" | "statusText">;
+} & Pick<AdapterResponse<AdapterPayload>, "responseHeaders" | "status" | "statusText">;
 
 type ErrorWithOriginalError = {
 	readonly originalError: unknown;
@@ -85,7 +85,7 @@ type ReasonData<TReason extends ErrorReason, TData> = {
 	readonly reason: TReason;
 } & TData;
 
-function getErrorMessage(message: string, error: ErrorDetails): string {
+function toFriendlyMessage(message: string, error: ErrorDetails): string {
 	return match(error)
 		.returnType<string>()
 		.with(

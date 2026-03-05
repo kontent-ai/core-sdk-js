@@ -97,7 +97,7 @@ function resolveNextPageState<TResponsePayload extends JsonValue, TMeta>({
 		.with({ paginationConfig: { maxPagesCount: pageIndex } }, () => ({
 			hasNextPage: false,
 		}))
-		.with({ response: P.not(undefined) }, (m) => {
+		.otherwise((m) => {
 			const responsePageData = m.getNextPageData(m.response);
 
 			return match(responsePageData)
@@ -115,8 +115,7 @@ function resolveNextPageState<TResponsePayload extends JsonValue, TMeta>({
 				.otherwise(() => ({
 					hasNextPage: false,
 				}));
-		})
-		.exhaustive();
+		});
 }
 
 async function fetchAllPagesAsync<TResponsePayload extends JsonValue, TRequestBody extends HttpRequestBody, TMeta>(

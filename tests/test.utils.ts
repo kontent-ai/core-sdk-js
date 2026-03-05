@@ -2,24 +2,9 @@ import { existsSync } from "node:fs";
 import path from "node:path";
 import { loadEnvFile } from "node:process";
 import { fileURLToPath } from "node:url";
-import chalk from "chalk";
 import type { GetNextPageData } from "../lib/public_api.js";
 
 loadEnvironmentVariables();
-
-export function getEnvironmentRequiredValue(variableName: string): string {
-	const value = getEnvironmentOptionalValue(variableName);
-
-	if (!value) {
-		throw new Error(`Missing environment variable '${chalk.red(variableName)}'`);
-	}
-
-	return value;
-}
-
-export function getEnvironmentOptionalValue(variableName: string): string | undefined {
-	return process.env[variableName];
-}
 
 export function preventInfinitePaging({
 	responseIndex,

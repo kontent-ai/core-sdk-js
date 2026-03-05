@@ -65,8 +65,9 @@ export type RetryStrategyOptions = {
 	 *
 	 * - Not retried automatically:
 	 *   - Invalid request body (`invalidBody`)
-	 *   - Invalid payload (`invalidPayload`)
 	 *   - Invalid URL (`invalidUrl`)
+	 *   - 404 Not Found (`notFound`)
+	 *   - 401 Unauthorized (`unauthorized`)
 	 *   - API business/validation error response (`kontentErrorResponse`)
 	 *
 	 * For other error types, return `true` to retry or `false` to stop.

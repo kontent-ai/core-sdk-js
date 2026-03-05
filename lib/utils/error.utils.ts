@@ -1,7 +1,7 @@
 import type { AdapterPayload, AdapterResponse } from "../http/http.models.js";
 import type { ErrorResponseData, HttpMethod, ValidationError } from "../models/core.models.js";
 import { type BaseErrorData, type ErrorDetails, KontentSdkError } from "../models/error.models.js";
-import { isNotUndefined } from "./core.utils.js";
+import { isDefined } from "./core.utils.js";
 
 export function createSdkError({
 	baseErrorData,
@@ -24,7 +24,7 @@ export function isKontentSdkError(error: unknown): error is KontentSdkError {
 	return error instanceof KontentSdkError;
 }
 
-export function getErrorMessage({
+export function toInvalidResponseMessage({
 	method,
 	url,
 	adapterResponse,
@@ -69,7 +69,7 @@ function getValidationErrorMessage(validationErrors?: readonly ValidationError[]
 				m.path ? `path: ${m.path}` : undefined,
 				m.line ? `line: ${m.line}` : undefined,
 				m.position ? `position: ${m.position}` : undefined,
-			].filter(isNotUndefined);
+			].filter(isDefined);
 			return `${m.message}${details.length ? ` (${details.join(", ")})` : ""}`;
 		})
 		.join(", ");

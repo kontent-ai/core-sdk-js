@@ -1,4 +1,4 @@
-import { match } from "ts-pattern";
+import type { Header } from "../models/core.models.js";
 import type { JsonValue } from "../models/json.models.js";
 import { isApplicationJsonResponseType, toFetchHeaders, toSdkHeaders } from "../utils/header.utils.js";
 import type { AdapterExecuteRequestOptions, AdapterPayload, AdapterResponse, HttpAdapter } from "./http.models.js";
@@ -16,9 +16,10 @@ export function getDefaultHttpAdapter(): Required<HttpAdapter> {
 		url: string,
 		response: Response,
 		payload: TPayload,
+		responseHeaders: readonly Header[],
 	): AdapterResponse<TPayload> => {
 		return {
-			responseHeaders: toSdkHeaders(response.headers),
+			responseHeaders,
 			status: response.status,
 			statusText: response.statusText,
 			url: url,
@@ -29,13 +30,10 @@ export function getDefaultHttpAdapter(): Required<HttpAdapter> {
 	return {
 		executeRequestAsync: async (options) => {
 			const response = await getResponseAsync(options);
-			const payload = await match({ isApplicationJsonResponseType: isApplicationJsonResponseType(toSdkHeaders(response.headers)) })
-				.returnType<Promise<JsonValue>>()
-				.with({ isApplicationJsonResponseType: true }, async () => (await response.json()) as JsonValue)
-				.with({ isApplicationJsonResponseType: false }, async () => null)
-				.exhaustive();
+			const sdkHeaders = toSdkHeaders(response.headers);
+			const payload = isApplicationJsonResponseType(toSdkHeaders(response.headers)) ? ((await response.json()) as JsonValue) : null;
 
-			return createAdapterResponse(options.url, response, payload);
+			return createAdapterResponse(options.url, response, payload, sdkHeaders);
 		},
 		downloadFileAsync: async (options) => {
 			const response = await getResponseAsync({
@@ -43,8 +41,9 @@ export function getDefaultHttpAdapter(): Required<HttpAdapter> {
 				method: "GET",
 				body: null,
 			});
+			const sdkHeaders = toSdkHeaders(response.headers);
 
-			return createAdapterResponse(options.url, response, await response.blob());
+			return createAdapterResponse(options.url, response, await response.blob(), sdkHeaders);
 		},
 	};
 }

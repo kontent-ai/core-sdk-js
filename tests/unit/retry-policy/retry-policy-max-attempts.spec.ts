@@ -22,12 +22,11 @@ const testRetryStrategies: readonly RetryStrategyOptions[] = [
 ];
 
 describe("Retry policy - max retries", async () => {
-	for (const [maxRetries, retryStrategy] of Object.entries(testRetryStrategies)) {
+	for (const [, retryStrategy] of Object.entries(testRetryStrategies)) {
 		const { success, error } = await getTestHttpServiceWithJsonResponse({
 			jsonResponse: {},
 			statusCode: 500,
 			retryStrategy,
-			isSuccessfulResponse: false,
 		}).requestAsync({
 			url: "https://domain.com",
 			method: "GET",
@@ -42,7 +41,7 @@ describe("Retry policy - max retries", async () => {
 			expect(error).toBeDefined();
 		});
 
-		it(`Should retry '${maxRetries}' times`, () => {
+		it(`Should retry '${retryStrategy.maxRetries}' times`, () => {
 			expect(error?.retryAttempt).toStrictEqual(retryStrategy.maxRetries);
 		});
 	}

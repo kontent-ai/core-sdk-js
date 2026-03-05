@@ -1,10 +1,10 @@
 /** biome-ignore-all lint/performance/noBarrelFile: One barrel for exported API is fine */
 export { getDefaultHttpAdapter } from "./http/http.adapter.js";
 export type {
+	AdapterBody,
 	AdapterDownloadFileOptions,
 	AdapterExecuteRequestOptions,
 	AdapterPayload,
-	AdapterRequestBody,
 	AdapterResponse,
 	DefaultHttpServiceConfig,
 	DownloadFileRequestOptions,
