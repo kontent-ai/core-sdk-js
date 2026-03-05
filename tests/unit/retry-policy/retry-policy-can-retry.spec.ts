@@ -11,19 +11,19 @@ type TestCase = RetryStrategyOptions & {
 const testCases: readonly TestCase[] = [
 	{
 		title: "By default unhandled errors are not retried even if max retries is > 0",
-		canRetryUnhandledError: resolveDefaultRetryStrategyOptions({}).canRetryUnhandledError,
+		canRetryUnknownError: resolveDefaultRetryStrategyOptions({}).canRetryUnknownError,
 		maxRetries: 5,
 		expectedRetries: 0,
 	},
 	{
-		title: `Can't retry if canRetryUnhandledError returns false`,
-		canRetryUnhandledError: () => false,
+		title: `Can't retry if canRetryUnknownError returns false`,
+		canRetryUnknownError: () => false,
 		maxRetries: 5,
 		expectedRetries: 0,
 	},
 	{
 		title: "Can retry when unhandled errors are set to be retried via custom callback",
-		canRetryUnhandledError: () => true,
+		canRetryUnknownError: () => true,
 		maxRetries: 1,
 		expectedRetries: 1,
 	},
@@ -31,19 +31,19 @@ const testCases: readonly TestCase[] = [
 		title: "Can retry, but should not retry because max retries is 0",
 		expectedRetries: 0,
 		maxRetries: 0,
-		canRetryUnhandledError: () => true,
+		canRetryUnknownError: () => true,
 	},
 	{
 		title: "Should retry 2 times",
 		expectedRetries: 2,
 		maxRetries: 2,
-		canRetryUnhandledError: () => true,
+		canRetryUnknownError: () => true,
 	},
 	{
 		title: "Should retry 5 times",
 		expectedRetries: 5,
 		maxRetries: 5,
-		canRetryUnhandledError: () => true,
+		canRetryUnknownError: () => true,
 	},
 ];
 

@@ -72,7 +72,7 @@ export type RetryStrategyOptions = {
 	 *
 	 * For other error types, return `true` to retry or `false` to stop.
 	 */
-	readonly canRetryUnhandledError?: (error: KontentSdkError<ErrorDetailsFor<"unknown">>) => boolean;
+	readonly canRetryUnknownError?: (error: KontentSdkError<ErrorDetailsFor<"unknown">>) => boolean;
 
 	/**
 	 * Controls logging for retry attempts.
@@ -84,7 +84,7 @@ export type RetryStrategyOptions = {
 	readonly logRetryAttempt?: "logToConsole" | ((retryAttempt: number, url: string) => void);
 };
 
-export type ResolvedRetryStrategyOptions = Pick<Required<RetryStrategyOptions>, "maxRetries" | "canRetryUnhandledError"> & {
+export type ResolvedRetryStrategyOptions = Pick<Required<RetryStrategyOptions>, "maxRetries" | "canRetryUnknownError"> & {
 	readonly logRetryAttempt: undefined | ((retryAttempt: number, url: string) => void);
 	readonly getDelayBetweenRetriesMs: (error: KontentSdkError) => number;
 };

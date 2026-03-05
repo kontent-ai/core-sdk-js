@@ -17,7 +17,7 @@ type RetryResult =
 
 const defaultMaxRetries: NonNullable<RetryStrategyOptions["maxRetries"]> = 3;
 
-const defaultCanRetryUnhandledError: NonNullable<RetryStrategyOptions["canRetryUnhandledError"]> = (_error) => {
+const defaultcanRetryUnknownError: NonNullable<RetryStrategyOptions["canRetryUnknownError"]> = (_error) => {
 	return false;
 };
 
@@ -78,7 +78,7 @@ export function resolveDefaultRetryStrategyOptions(options?: RetryStrategyOption
 
 	const resolvedOptions: ResolvedRetryStrategyOptions = {
 		maxRetries: maxRetries,
-		canRetryUnhandledError: options?.canRetryUnhandledError ?? defaultCanRetryUnhandledError,
+		canRetryUnknownError: options?.canRetryUnknownError ?? defaultcanRetryUnknownError,
 		getDelayBetweenRetriesMs: (error) => getRetryMsFromHeaders({ error }),
 		logRetryAttempt: match(options?.logRetryAttempt)
 			.returnType<ResolvedRetryStrategyOptions["logRetryAttempt"]>()
@@ -117,7 +117,7 @@ function getRetryResult({
 			retryAttempt,
 			error,
 			maxRetries: retryStrategyOptions.maxRetries,
-			canRetryUnhandledError: retryStrategyOptions.canRetryUnhandledError,
+			canRetryUnknownError: retryStrategyOptions.canRetryUnknownError,
 		})
 	) {
 		return {
@@ -135,12 +135,12 @@ function canRetryError({
 	retryAttempt,
 	error,
 	maxRetries,
-	canRetryUnhandledError,
+	canRetryUnknownError,
 }: {
 	readonly retryAttempt: number;
 	readonly error: KontentSdkError;
 	readonly maxRetries: Required<RetryStrategyOptions>["maxRetries"];
-	readonly canRetryUnhandledError: NonNullable<RetryStrategyOptions["canRetryUnhandledError"]>;
+	readonly canRetryUnknownError: NonNullable<RetryStrategyOptions["canRetryUnknownError"]>;
 }): boolean {
 	if (hasExceededMaxRetries({ retryAttempt, maxRetries })) {
 		return false;
@@ -163,7 +163,7 @@ function canRetryError({
 		)
 		.with({ details: { reason: "unknown" } }, (m) => {
 			if (isErrorWithReason(m, "unknown")) {
-				return canRetryUnhandledError(m);
+				return canRetryUnknownError(m);
 			}
 			throw new Error("Failed to assert unknown error");
 		})
