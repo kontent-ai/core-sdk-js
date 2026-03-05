@@ -17,7 +17,7 @@ type RetryResult =
 
 const defaultMaxRetries: NonNullable<RetryStrategyOptions["maxRetries"]> = 3;
 
-const defaultcanRetryInvalidResponseError: NonNullable<RetryStrategyOptions["canRetryAdapterError"]> = (_error) => {
+const defaultCanRetryAdapterError: NonNullable<RetryStrategyOptions["canRetryAdapterError"]> = (_error) => {
 	return false;
 };
 
@@ -79,7 +79,7 @@ export function resolveDefaultRetryStrategyOptions(options?: RetryStrategyOption
 	const resolvedOptions: ResolvedRetryStrategyOptions = {
 		maxRetries: maxRetries,
 		getDelayBetweenRetriesMs: (error) => getRetryMsFromHeaders({ error }),
-		canRetryAdapterError: options?.canRetryAdapterError ?? defaultcanRetryInvalidResponseError,
+		canRetryAdapterError: options?.canRetryAdapterError ?? defaultCanRetryAdapterError,
 		logRetryAttempt: match(options?.logRetryAttempt)
 			.returnType<ResolvedRetryStrategyOptions["logRetryAttempt"]>()
 			.with("logToConsole", () => (retryAttempt, url) => {
