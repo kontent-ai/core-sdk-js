@@ -116,11 +116,7 @@ function resolveNextPageState<TResponsePayload extends JsonValue, TMeta>({
 					hasNextPage: false,
 				}));
 		})
-		.otherwise(() => {
-			return {
-				hasNextPage: false,
-			};
-		});
+		.exhaustive();
 }
 
 async function fetchAllPagesAsync<TResponsePayload extends JsonValue, TRequestBody extends RequestBody, TMeta>(

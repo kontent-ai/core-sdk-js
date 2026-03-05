@@ -1,8 +1,9 @@
 import { match, P } from "ts-pattern";
 import { coreSdkInfo } from "../core-sdk-info.js";
 import type { CommonHeaderNames, ErrorResponseData, Header, HttpMethod, ResolvedRetryStrategyOptions } from "../models/core.models.js";
-import type { ErrorDetails, KontentSdkError } from "../models/error.models.js";
+import type { ErrorDetails, ErrorReason, KontentSdkError } from "../models/error.models.js";
 import type { JsonValue } from "../models/json.models.js";
+import type { PickStringLiteral } from "../models/utility.models.js";
 import { isBlob, isNotUndefined } from "../utils/core.utils.js";
 import { createSdkError, getErrorMessage, isKontentErrorResponseData, isKontentSdkError } from "../utils/error.utils.js";
 import { findHeaderByName, getSdkIdHeader, isApplicationJsonResponseType } from "../utils/header.utils.js";
@@ -266,24 +267,20 @@ async function getErrorForInvalidResponseAsync({
 }
 
 async function getErrorDetailsForInvalidResponseAsync({ response }: { readonly response: AdapterResponse }): Promise<ErrorDetails> {
-	return await match(response)
-		.returnType<Promise<ErrorDetails>>()
-		.with({ status: P.union(401, 404) }, async (m) => ({
-			reason: m.status === 401 ? "unauthorized" : "notFound",
-			isValidResponse: m.isValidResponse,
-			responseHeaders: m.responseHeaders,
-			status: m.status,
-			statusText: m.statusText,
-			kontentErrorResponse: await getKontentErrorDataAsync(m),
-		}))
-		.otherwise(async () => ({
-			reason: "invalidResponse",
-			isValidResponse: response.isValidResponse,
-			responseHeaders: response.responseHeaders,
-			status: response.status,
-			statusText: response.statusText,
-			kontentErrorResponse: await getKontentErrorDataAsync(response),
-		}));
+	const reason = match(response.status)
+		.returnType<PickStringLiteral<ErrorReason, "unauthorized" | "notFound" | "invalidResponse">>()
+		.with(401, () => "unauthorized")
+		.with(404, () => "notFound")
+		.otherwise(() => "invalidResponse");
+
+	return {
+		reason,
+		isValidResponse: response.isValidResponse,
+		responseHeaders: response.responseHeaders,
+		status: response.status,
+		statusText: response.statusText,
+		kontentErrorResponse: await getKontentErrorDataAsync(response),
+	};
 }
 
 function parseRequestBody({
@@ -432,13 +429,7 @@ function buildRequestHeaders({
 	const existingSdkVersionHeader = findHeaderByName(combinedHeaders, "X-KC-SDKID");
 
 	const contentTypeHeader = existingContentTypeHeader ? undefined : createDefaultContentTypeHeader(body);
-	const sdkVersionHeader = existingSdkVersionHeader
-		? undefined
-		: getSdkIdHeader({
-				host: coreSdkInfo.host,
-				name: coreSdkInfo.name,
-				version: coreSdkInfo.version,
-			});
+	const sdkVersionHeader = existingSdkVersionHeader ? undefined : getSdkIdHeader(coreSdkInfo);
 
 	const contentLengthHeader = isBlob(body) ? createDefaultContentLengthHeader(body) : undefined;
 

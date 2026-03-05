@@ -4,16 +4,7 @@ import type { AdapterResponse, HttpServiceStatus, RequestBody, ResponseData } fr
 import type { SuccessfulHttpResponse } from "../sdk/sdk-models.js";
 import type { ErrorResponseData, ResolvedRetryStrategyOptions } from "./core.models.js";
 
-export type ErrorReason =
-	| "unauthorized"
-	| "invalidResponse"
-	| "invalidUrl"
-	| "unknown"
-	| "invalidBody"
-	| "notFound"
-	| "validationFailed"
-	| "noResponses"
-	| "invalidPayload";
+export type ErrorReason = ErrorDetails["reason"];
 
 export type ErrorDetails =
 	| ReasonData<"unauthorized", ErrorWithKontentResponse>

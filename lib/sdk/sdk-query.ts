@@ -3,7 +3,7 @@
  * to keep common code and behavior consistent.
  */
 
-import type { ZodError, ZodType } from "zod";
+import type { ZodType } from "zod";
 import type { HttpService, RequestBody } from "../http/http.models.js";
 import { getDefaultHttpService } from "../http/http.service.js";
 import type { Header, SDKInfo } from "../models/core.models.js";
@@ -74,11 +74,7 @@ function getCombinedRequestHeaders({
 	readonly sdkInfo: SDKInfo;
 }): readonly Header[] {
 	return [
-		getSdkIdHeader({
-			host: sdkInfo.host,
-			name: sdkInfo.name,
-			version: sdkInfo.version,
-		}),
+		getSdkIdHeader(sdkInfo),
 		...requestHeaders,
 		...(continuationToken ? [createContinuationHeader(continuationToken)] : []),
 		...(authorizationApiKey ? [createAuthorizationHeader(authorizationApiKey)] : []),
@@ -114,8 +110,9 @@ export async function resolveQueryAsync<TResponsePayload extends JsonValue, TReq
 	}
 
 	if (config.responseValidation?.enable) {
-		const { isValid, error: validationError } = await validateResponseSchemaAsync(response.payload, zodSchema);
-		if (!isValid) {
+		const { success: validationSuccess, error: validationError } = await zodSchema.safeParseAsync(response.payload);
+
+		if (!validationSuccess) {
 			return {
 				success: false,
 				error: createSdkError({
@@ -153,31 +150,4 @@ export async function resolveQueryAsync<TResponsePayload extends JsonValue, TReq
 	};
 
 	return result;
-}
-
-async function validateResponseSchemaAsync<TResponsePayload extends JsonValue>(
-	payload: TResponsePayload,
-	zodSchema: ZodType<TResponsePayload>,
-): Promise<
-	| {
-			readonly isValid: true;
-			readonly error?: never;
-	  }
-	| {
-			readonly isValid: false;
-			readonly error: ZodError;
-	  }
-> {
-	const validateResult = await zodSchema.safeParseAsync(payload);
-
-	if (validateResult.success) {
-		return {
-			isValid: true,
-		};
-	}
-
-	return {
-		isValid: false,
-		error: validateResult.error,
-	};
 }
