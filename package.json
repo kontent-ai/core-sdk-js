@@ -43,8 +43,8 @@
 		"biome:check": "biome check",
 		"biome:fix": "biome check --write",
 		"biome:fix:unsafe": "biome check --write --unsafe",
-		"clean": "npx tsx scripts/clean.ts",
-		"update:version": "npx tsx ./scripts/update-version.ts"
+		"clean": "tsx scripts/clean.ts",
+		"update:version": "tsx /scripts/update-version.ts"
 	},
 	"peerDependencies": {
 		"ts-pattern": "^5.9.0",
@@ -55,9 +55,10 @@
 		"@kontent-ai/biome-config": "0.7.0",
 		"@kontent-ai/eslint-config": "2.4.1",
 		"eslint": "10.0.2",
-		"@biomejs/biome": "2.4.5",
-		"@types/node": "25.3.3",
+		"@biomejs/biome": "2.4.6",
+		"@types/node": "25.3.5",
 		"typescript": "6.0.0-beta",
-		"vitest": "4.0.18"
+		"vitest": "4.0.18",
+		"tsx": "4.21.0"
 	}
 }
