@@ -43,8 +43,8 @@
 		"biome:check": "biome check",
 		"biome:fix": "biome check --write",
 		"biome:fix:unsafe": "biome check --write --unsafe",
-		"clean": "tsx scripts/clean.ts",
-		"update:version": "tsx /scripts/update-version.ts"
+		"clean": "tsx ./scripts/clean.ts",
+		"update:version": "tsx ./scripts/update-version.ts"
 	},
 	"peerDependencies": {
 		"ts-pattern": "^5.9.0",
