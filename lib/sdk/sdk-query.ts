@@ -90,9 +90,11 @@ export async function resolveQueryAsync<TResponsePayload extends JsonValue, TReq
 	authorizationApiKey,
 	nextPageState,
 }: ResolveQueryData<TResponsePayload, TRequestBody, TMeta>): QueryPromiseResult<TResponsePayload, TMeta> {
+	const urlToUse = nextPageState?.nextPageUrl ?? request.url;
+
 	const { success, response, error } = await getHttpService(config).requestAsync<TResponsePayload, TRequestBody>({
 		body: request.body,
-		url: nextPageState?.nextPageUrl ?? request.url,
+		url: urlToUse,
 		method: request.method,
 		requestHeaders: getCombinedRequestHeaders({
 			requestHeaders: request.requestHeaders ?? [],
@@ -117,8 +119,8 @@ export async function resolveQueryAsync<TResponsePayload extends JsonValue, TReq
 				success: false,
 				error: createSdkError({
 					baseErrorData: {
-						message: `Failed to validate response schema for url '${request.url}'`,
-						url: request.url,
+						message: `Failed to validate response schema for url '${urlToUse}'`,
+						url: urlToUse,
 						retryStrategyOptions: undefined,
 						retryAttempt: undefined,
 					},
@@ -126,7 +128,7 @@ export async function resolveQueryAsync<TResponsePayload extends JsonValue, TReq
 						reason: "validationFailed",
 						zodError: validationError,
 						response,
-						url: request.url,
+						url: urlToUse,
 					},
 				}),
 			};
