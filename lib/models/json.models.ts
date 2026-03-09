@@ -1,6 +1,4 @@
-import type { EmptyObject } from "./utility.models.js";
-
-export type JsonValue = string | number | null | boolean | JsonObject | JsonArray | EmptyObject;
+export type JsonValue = string | number | null | boolean | JsonObject | JsonArray;
 
 export type JsonObject = {
 	readonly [property: string]: JsonValue;
