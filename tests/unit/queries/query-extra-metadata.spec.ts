@@ -61,7 +61,7 @@ describe("Query extra metadata", async () => {
 			body: {},
 			requestHeaders: [requestHeader],
 		},
-	}).toPromise();
+	}).fetch();
 
 	it("Meta should have proper extra metadata", () => {
 		expect(response?.meta.testExtraMetadata).toStrictEqual(expectedExtraMetadataValue);

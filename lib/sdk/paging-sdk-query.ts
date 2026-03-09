@@ -7,11 +7,11 @@ import { match, P } from "ts-pattern";
 import type { GetNextPageData, HttpRequestBody, PaginationConfig } from "../http/http.models.js";
 import type { JsonValue } from "../models/json.models.js";
 import { createSdkError } from "../utils/error.utils.js";
-import type { NextPageStateWithRequest, PagingQuery, QueryPromiseResult, QueryResponse, QueryResult } from "./sdk-models.js";
+import type { NextPageStateWithRequest, PagedFetchQuery, QueryPromiseResult, QueryResponse, QueryResult } from "./sdk-models.js";
 import { createQuery, type ResolveQueryData, resolveQueryAsync } from "./sdk-query.js";
 
 type PagingQueryPromiseResult<TResponsePayload extends JsonValue, TMeta> = ReturnType<
-	Pick<PagingQuery<TResponsePayload, TMeta>, "toAllPromise">["toAllPromise"]
+	Pick<PagedFetchQuery<TResponsePayload, TMeta>, "fetchAllPages">["fetchAllPages"]
 >;
 
 type NoNextPageState = {
@@ -24,7 +24,7 @@ export function createPagingQuery<TResponsePayload extends JsonValue, TRequestBo
 	data: Omit<ResolveQueryData<TResponsePayload, TRequestBody, TMeta>, "nextPageState" | "pageIndex"> & {
 		readonly getNextPageData: GetNextPageData<TResponsePayload, TMeta>;
 	},
-): PagingQuery<TResponsePayload, TMeta> {
+): PagedFetchQuery<TResponsePayload, TMeta> {
 	const getPagingData: (
 		config: PaginationConfig | undefined,
 	) => Parameters<typeof fetchAllPagesAsync<TResponsePayload, TRequestBody, TMeta>>[0] = (config) => {
@@ -35,12 +35,13 @@ export function createPagingQuery<TResponsePayload extends JsonValue, TRequestBo
 		};
 	};
 
+	const { fetch, schema } = createQuery<TResponsePayload, TRequestBody, TMeta>(data);
+
 	return {
-		toUrl: () => {
-			return data.request.url;
-		},
-		...createQuery<TResponsePayload, TRequestBody, TMeta>(data),
-		toAllPromise: async (config?: PaginationConfig) => {
+		schema,
+		toUrl: () => data.request.url,
+		fetchPage: fetch,
+		fetchAllPages: async (config?: PaginationConfig) => {
 			return await fetchAllPagesAsync<TResponsePayload, TRequestBody, TMeta>(getPagingData(config));
 		},
 		pages: (config?: PaginationConfig) => createPagingQueryIterator<TResponsePayload, TRequestBody, TMeta>(getPagingData(config)),

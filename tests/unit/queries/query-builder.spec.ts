@@ -27,7 +27,7 @@ describe("Query builder", async () => {
 			method: "GET",
 			body: {},
 		},
-	}).toPromise();
+	}).fetch();
 
 	it("Meta should have proper continuation token", () => {
 		expect(response?.meta.continuationToken).toStrictEqual(responseContinuationToken);

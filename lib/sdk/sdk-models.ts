@@ -57,15 +57,23 @@ export type SdkConfig = {
 	};
 };
 
-export type Query<TResponsePayload, TMeta> = {
+export type Query<TResponsePayload> = {
 	schema: z.ZodType<TResponsePayload>;
 	toUrl(): string;
-	toPromise(): Promise<QueryResult<QueryResponse<TResponsePayload, TMeta>>>;
 };
 
-export type PagingQuery<TResponsePayload, TMeta> = Query<TResponsePayload, TMeta> & {
-	toAllPromise(config?: PaginationConfig): Promise<PagingQueryResult<QueryResponse<TResponsePayload, TMeta>>>;
+export type FetchQuery<TResponsePayload, TMeta> = Query<TResponsePayload> & {
+	fetch(): Promise<QueryResult<QueryResponse<TResponsePayload, TMeta>>>;
+};
+
+export type PagedFetchQuery<TResponsePayload, TMeta> = Query<TResponsePayload> & {
+	fetchPage(): Promise<QueryResult<QueryResponse<TResponsePayload, TMeta>>>;
+	fetchAllPages(config?: PaginationConfig): Promise<PagingQueryResult<QueryResponse<TResponsePayload, TMeta>>>;
 	pages(config?: PaginationConfig): AsyncGenerator<QueryResult<QueryResponse<TResponsePayload, TMeta>>>;
+};
+
+export type MutationQuery<TResponsePayload, TMeta> = Query<TResponsePayload> & {
+	execute(): Promise<QueryResult<QueryResponse<TResponsePayload, TMeta>>>;
 };
 
 export type NextPageStateWithRequest =
@@ -118,5 +126,5 @@ export type PagingQueryResult<TResponsePayload> =
 	  >;
 
 export type QueryPromiseResult<TResponsePayload extends JsonValue, TMeta> = ReturnType<
-	Pick<Query<TResponsePayload, TMeta>, "toPromise">["toPromise"]
+	Pick<FetchQuery<TResponsePayload, TMeta>, "fetch">["fetch"]
 >;

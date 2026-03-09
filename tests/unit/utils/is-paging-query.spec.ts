@@ -1,19 +1,19 @@
 import { describe, expect, it } from "vitest";
 import z from "zod";
-import type { PagingQuery, Query } from "../../../lib/sdk/sdk-models.js";
+import type { FetchQuery, PagedFetchQuery } from "../../../lib/sdk/sdk-models.js";
 import { isPagingQuery } from "../../../lib/sdk/sdk-utils.js";
 
 describe("isPagingQuery", () => {
 	it("returns true for object with paging query shape", () => {
-		const pagingQueryLike: PagingQuery<unknown, unknown> = {
+		const pagingQueryLike: PagedFetchQuery<unknown, unknown> = {
 			schema: z.null(),
 			toUrl: () => {
 				return "x";
 			},
-			toPromise: () => {
+			fetchPage: () => {
 				return {} as never;
 			},
-			toAllPromise: () => {
+			fetchAllPages: () => {
 				return {} as never;
 			},
 			pages: () => {
@@ -25,12 +25,12 @@ describe("isPagingQuery", () => {
 	});
 
 	it("returns false when only toPromise is present", () => {
-		const queryLike: Query<unknown, unknown> = {
+		const queryLike: FetchQuery<unknown, unknown> = {
 			schema: z.null(),
 			toUrl: () => {
 				return "x";
 			},
-			toPromise: () => {
+			fetch: () => {
 				return {} as never;
 			},
 		};
@@ -44,25 +44,25 @@ describe("isPagingQuery", () => {
 	});
 
 	it("returns false when one of paging methods is missing", () => {
-		const missingPages: Omit<PagingQuery<unknown, unknown>, "pages"> = {
+		const missingPagesQuery: Omit<PagedFetchQuery<unknown, unknown>, "pages"> = {
 			schema: z.null(),
 			toUrl: () => {
 				return "x";
 			},
-			toPromise: () => {
+			fetchPage: () => {
 				return {} as never;
 			},
-			toAllPromise: () => {
+			fetchAllPages: () => {
 				return {} as never;
 			},
 		};
 
-		const missingToAllPromise: Omit<PagingQuery<unknown, unknown>, "toAllPromise"> = {
+		const missingFetchAllPagesQuery: Omit<PagedFetchQuery<unknown, unknown>, "fetchAllPages"> = {
 			schema: z.null(),
 			toUrl: () => {
 				return "x";
 			},
-			toPromise: () => {
+			fetchPage: () => {
 				return {} as never;
 			},
 			pages: () => {
@@ -70,7 +70,7 @@ describe("isPagingQuery", () => {
 			},
 		};
 
-		expect(isPagingQuery(missingPages)).toBe(false);
-		expect(isPagingQuery(missingToAllPromise)).toBe(false);
+		expect(isPagingQuery(missingPagesQuery)).toBe(false);
+		expect(isPagingQuery(missingFetchAllPagesQuery)).toBe(false);
 	});
 });

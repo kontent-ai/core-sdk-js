@@ -37,7 +37,9 @@ export type { EmptyObject } from "./models/utility.models.js";
 export { createPagingQuery } from "./sdk/paging-sdk-query.js";
 export { kontentUuidSchema, nilUuid } from "./sdk/sdk-config.js";
 export type {
-	PagingQuery,
+	FetchQuery,
+	MutationQuery,
+	PagedFetchQuery,
 	PagingQueryResult,
 	Query,
 	QueryResponse,

@@ -28,7 +28,7 @@ describe("Validation failed error", async () => {
 			method: "GET",
 			body: {},
 		},
-	}).toPromise();
+	}).fetch();
 
 	it("Success should be false", () => {
 		expect(success).toBe(false);

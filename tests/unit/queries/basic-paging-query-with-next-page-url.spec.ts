@@ -49,7 +49,7 @@ describe("Basic paging query with next page url", async () => {
 			method: "GET",
 			body: {},
 		},
-	}).toAllPromise({ maxPagesCount: maxPagesCount });
+	}).fetchAllPages({ maxPagesCount: maxPagesCount });
 
 	it("Error should be undefined", () => {
 		expect(error).toBeUndefined();

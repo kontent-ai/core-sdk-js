@@ -10,7 +10,7 @@ import type { Header, SDKInfo } from "../models/core.models.js";
 import type { JsonValue } from "../models/json.models.js";
 import { createSdkError } from "../utils/error.utils.js";
 import { createAuthorizationHeader, createContinuationHeader, findHeaderByName, getSdkIdHeader } from "../utils/header.utils.js";
-import type { NextPageStateWithRequest, Query, QueryPromiseResult, SdkConfig, SuccessfulHttpResponse } from "./sdk-models.js";
+import type { FetchQuery, NextPageStateWithRequest, QueryPromiseResult, SdkConfig, SuccessfulHttpResponse } from "./sdk-models.js";
 
 type MetadataContextData = {
 	readonly continuationToken: string | undefined;
@@ -35,10 +35,10 @@ export type ResolveQueryData<TResponsePayload extends JsonValue, TRequestBody ex
 
 export function createQuery<TResponsePayload extends JsonValue, TRequestBody extends HttpRequestBody, TMeta>(
 	data: Omit<ResolveQueryData<TResponsePayload, TRequestBody, TMeta>, "continuationToken" | "nextPageState" | "pageIndex">,
-): Pick<Query<TResponsePayload, TMeta>, "toPromise" | "schema"> {
+): Pick<FetchQuery<TResponsePayload, TMeta>, "fetch" | "schema"> {
 	return {
 		schema: data.zodSchema,
-		toPromise: async () => {
+		fetch: async () => {
 			return await resolveQueryAsync<TResponsePayload, TRequestBody, TMeta>({
 				...data,
 				nextPageState: {

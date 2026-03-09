@@ -51,7 +51,7 @@ describe("Basic paging errors", async () => {
 			method: "GET",
 			body: {},
 		},
-	}).toAllPromise();
+	}).fetchAllPages();
 
 	it("Error should be defined & unknown", () => {
 		expect(error).toBeDefined();
