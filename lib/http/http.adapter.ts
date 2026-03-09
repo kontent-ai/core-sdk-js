@@ -41,9 +41,8 @@ export function getDefaultHttpAdapter(): Required<HttpAdapter> {
 				method: "GET",
 				body: null,
 			});
-			const sdkHeaders = toSdkHeaders(response.headers);
 
-			return createAdapterResponse(options.url, response, await response.blob(), sdkHeaders);
+			return createAdapterResponse(options.url, response, await response.blob(), toSdkHeaders(response.headers));
 		},
 	};
 }
