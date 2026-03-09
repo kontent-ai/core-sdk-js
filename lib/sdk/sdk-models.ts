@@ -3,7 +3,7 @@
  * to keep common code and behavior consistent.
  */
 
-import z from "zod";
+import type z from "zod";
 import type {
 	AdapterPayload,
 	AdapterResponse,
@@ -14,6 +14,7 @@ import type {
 	PaginationConfig,
 } from "../http/http.models.js";
 import type { KontentSdkError } from "../models/error.models.js";
+import type { JsonValue } from "../models/json.models.js";
 import type { Failure, Success } from "../utils/try-catch.utils.js";
 
 export type QueryResponseMeta<TMeta = unknown> = Pick<AdapterResponse<AdapterPayload>, "status" | "responseHeaders" | "url"> & {
@@ -116,6 +117,6 @@ export type PagingQueryResult<TResponsePayload> =
 			KontentSdkError
 	  >;
 
-export const nilUuid = "00000000-0000-0000-0000-000000000000";
-
-export const kontentUuidSchema = z.union([z.uuid({ version: "v4" }), z.literal(nilUuid)]);
+export type QueryPromiseResult<TResponsePayload extends JsonValue, TMeta> = ReturnType<
+	Pick<Query<TResponsePayload, TMeta>, "toPromise">["toPromise"]
+>;

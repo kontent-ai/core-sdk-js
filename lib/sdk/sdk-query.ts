@@ -10,11 +10,7 @@ import type { Header, SDKInfo } from "../models/core.models.js";
 import type { JsonValue } from "../models/json.models.js";
 import { createSdkError } from "../utils/error.utils.js";
 import { createAuthorizationHeader, createContinuationHeader, findHeaderByName, getSdkIdHeader } from "../utils/header.utils.js";
-import type { NextPageStateWithRequest, Query, SdkConfig, SuccessfulHttpResponse } from "./sdk-models.js";
-
-export type QueryPromiseResult<TResponsePayload extends JsonValue, TMeta> = ReturnType<
-	Pick<Query<TResponsePayload, TMeta>, "toPromise">["toPromise"]
->;
+import type { NextPageStateWithRequest, Query, QueryPromiseResult, SdkConfig, SuccessfulHttpResponse } from "./sdk-models.js";
 
 type MetadataContextData = {
 	readonly continuationToken: string | undefined;

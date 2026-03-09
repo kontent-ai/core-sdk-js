@@ -35,17 +35,16 @@ export { type ErrorDetails, type ErrorDetailsFor, type ErrorReason, KontentSdkEr
 export type { JsonArray, JsonObject, JsonValue } from "./models/json.models.js";
 export type { EmptyObject } from "./models/utility.models.js";
 export { createPagingQuery } from "./sdk/paging-sdk-query.js";
-export {
-	kontentUuidSchema,
-	nilUuid,
-	type PagingQuery,
-	type PagingQueryResult,
-	type Query,
-	type QueryResponse,
-	type QueryResponseMeta,
-	type QueryResult,
-	type SdkConfig,
-	type SuccessfulHttpResponse,
+export { kontentUuidSchema, nilUuid } from "./sdk/sdk-config.js";
+export type {
+	PagingQuery,
+	PagingQueryResult,
+	Query,
+	QueryResponse,
+	QueryResponseMeta,
+	QueryResult,
+	SdkConfig,
+	SuccessfulHttpResponse,
 } from "./sdk/sdk-models.js";
 export { createQuery, extractContinuationToken } from "./sdk/sdk-query.js";
 export { isPagingQuery } from "./sdk/sdk-utils.js";
