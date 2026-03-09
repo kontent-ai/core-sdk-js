@@ -25,7 +25,7 @@ describe("Custom adapter", () => {
 
 	const httpService = getDefaultHttpService({
 		adapter: {
-			executeRequestAsync: async (options) => {
+			executeRequest: async (options) => {
 				const response: AdapterResponse<JsonValue> = {
 					responseHeaders: responseData.responseHeaders,
 					status: responseData.status,
@@ -36,7 +36,7 @@ describe("Custom adapter", () => {
 
 				return await Promise.resolve(response);
 			},
-			downloadFileAsync: async (options) => {
+			downloadFile: async (options) => {
 				const response: AdapterResponse<Blob> = {
 					responseHeaders: responseData.responseHeaders,
 					status: responseData.status,
@@ -51,7 +51,7 @@ describe("Custom adapter", () => {
 	});
 
 	describe("Json request", async () => {
-		const { success, response, error } = await httpService.requestAsync({
+		const { success, response, error } = await httpService.request({
 			url: "https://domain.com",
 			method: "GET",
 			body: null,
@@ -80,7 +80,7 @@ describe("Custom adapter", () => {
 	});
 
 	describe("Download file request", async () => {
-		const { success, response, error } = await httpService.downloadFileAsync({
+		const { success, response, error } = await httpService.downloadFile({
 			url: "https://domain.com",
 		});
 
@@ -109,7 +109,7 @@ describe("Custom adapter", () => {
 	describe("Upload file request", async () => {
 		const inputBlob = new Blob(["x"], { type: "text/plain" });
 
-		const { success, response, error } = await httpService.uploadFileAsync({
+		const { success, response, error } = await httpService.uploadFile({
 			url: "https://domain.com",
 			method: "POST",
 			body: inputBlob,

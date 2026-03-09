@@ -8,7 +8,7 @@ import type { GetNextPageData, HttpRequestBody, PaginationConfig } from "../http
 import type { JsonValue } from "../models/json.models.js";
 import { createSdkError } from "../utils/error.utils.js";
 import type { NextPageStateWithRequest, PagedFetchQuery, QueryPromiseResult, QueryResponse, QueryResult } from "./sdk-models.js";
-import { createQuery, type ResolveQueryData, resolveQueryAsync } from "./sdk-query.js";
+import { createQuery, type ResolveQueryData, resolveQuery } from "./sdk-query.js";
 
 type PagingQueryPromiseResult<TResponsePayload extends JsonValue, TMeta> = ReturnType<
 	Pick<PagedFetchQuery<TResponsePayload, TMeta>, "fetchAllPages">["fetchAllPages"]
@@ -27,7 +27,7 @@ export function createPagingQuery<TResponsePayload extends JsonValue, TRequestBo
 ): PagedFetchQuery<TResponsePayload, TMeta> {
 	const getPagingData: (
 		config: PaginationConfig | undefined,
-	) => Parameters<typeof fetchAllPagesAsync<TResponsePayload, TRequestBody, TMeta>>[0] = (config) => {
+	) => Parameters<typeof fetchAllPages<TResponsePayload, TRequestBody, TMeta>>[0] = (config) => {
 		return {
 			...data,
 			pageIndex: 0,
@@ -42,25 +42,23 @@ export function createPagingQuery<TResponsePayload extends JsonValue, TRequestBo
 		toUrl: () => data.request.url,
 		fetchPage: fetch,
 		fetchAllPages: async (config?: PaginationConfig) => {
-			return await fetchAllPagesAsync<TResponsePayload, TRequestBody, TMeta>(getPagingData(config));
+			return await fetchAllPages<TResponsePayload, TRequestBody, TMeta>(getPagingData(config));
 		},
 		pages: (config?: PaginationConfig) => createPagingQueryIterator<TResponsePayload, TRequestBody, TMeta>(getPagingData(config)),
 	};
 }
 
 async function* createPagingQueryIterator<TResponsePayload extends JsonValue, TRequestBody extends HttpRequestBody, TMeta>(
-	data: Omit<Parameters<typeof fetchAllPagesAsync<TResponsePayload, TRequestBody, TMeta>>[0], "pageIndex">,
+	data: Omit<Parameters<typeof fetchAllPages<TResponsePayload, TRequestBody, TMeta>>[0], "pageIndex">,
 ): AsyncGenerator<QueryResult<QueryResponse<TResponsePayload, TMeta>>> {
 	let nextPageState: NextPageState = { hasNextPage: true, pageSource: "firstRequest" };
 	let pageIndex: number = 0;
 
 	while (isNextPageAvailable(nextPageState)) {
-		const result: Awaited<QueryPromiseResult<TResponsePayload, TMeta>> = await resolveQueryAsync<TResponsePayload, TRequestBody, TMeta>(
-			{
-				...data,
-				nextPageState: nextPageState,
-			},
-		);
+		const result: Awaited<QueryPromiseResult<TResponsePayload, TMeta>> = await resolveQuery<TResponsePayload, TRequestBody, TMeta>({
+			...data,
+			nextPageState: nextPageState,
+		});
 
 		if (!result.success) {
 			yield { success: false, error: result.error };
@@ -119,7 +117,7 @@ function resolveNextPageState<TResponsePayload extends JsonValue, TMeta>({
 		});
 }
 
-async function fetchAllPagesAsync<TResponsePayload extends JsonValue, TRequestBody extends HttpRequestBody, TMeta>(
+async function fetchAllPages<TResponsePayload extends JsonValue, TRequestBody extends HttpRequestBody, TMeta>(
 	data: Omit<ResolveQueryData<TResponsePayload, TRequestBody, TMeta>, "nextPageState"> & {
 		readonly getNextPageData: GetNextPageData<TResponsePayload, TMeta>;
 		readonly paginationConfig: PaginationConfig;

@@ -62,7 +62,7 @@ export function getTestHttpServiceWithJsonResponse({
 	return getDefaultHttpService({
 		retryStrategy: retryStrategy ?? {},
 		adapter: {
-			executeRequestAsync: async ({ url }) => {
+			executeRequest: async ({ url }) => {
 				return {
 					responseHeaders: [...(continuationToken ? [createContinuationHeader(continuationToken)] : [])],
 					status: statusCode,
@@ -71,7 +71,7 @@ export function getTestHttpServiceWithJsonResponse({
 					payload: typeof jsonResponse === "function" ? await jsonResponse() : jsonResponse,
 				};
 			},
-			downloadFileAsync: async ({ url }) => {
+			downloadFile: async ({ url }) => {
 				return {
 					responseHeaders: [],
 					status: 200,

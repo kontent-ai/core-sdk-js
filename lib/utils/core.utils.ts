@@ -2,7 +2,7 @@ export function isDefined<T>(value: T): value is NonNullable<T> {
 	return value !== undefined && value !== null;
 }
 
-export async function sleepAsync(ms: number): Promise<void> {
+export async function sleep(ms: number): Promise<void> {
 	return await new Promise<void>((resolve) => {
 		setTimeout(resolve, ms);
 	});

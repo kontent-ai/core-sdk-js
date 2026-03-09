@@ -3,7 +3,7 @@ import { getDefaultHttpService } from "../../../../lib/http/http.service.js";
 import { type ErrorReason, KontentSdkError } from "../../../../lib/models/error.models.js";
 
 describe("Adapter error", async () => {
-	const { error } = await getDefaultHttpService({}).requestAsync({
+	const { error } = await getDefaultHttpService({}).request({
 		url: "https://9876543210.invalid",
 		method: "GET",
 		body: null,

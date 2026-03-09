@@ -20,7 +20,7 @@ describe("Upload file - Success", async () => {
 		retryStrategy: {
 			maxRetries: 0,
 		},
-	}).uploadFileAsync<{
+	}).uploadFile<{
 		readonly id: string;
 	}>({
 		url: "https://domain.com",

@@ -2,7 +2,7 @@ import { match, P } from "ts-pattern";
 import type { HttpPayload, HttpRequestBody, HttpResponse } from "../http/http.models.js";
 import type { ResolvedRetryStrategyOptions, RetryStrategyOptions } from "../models/core.models.js";
 import type { ErrorDetailsFor, ErrorReason, KontentSdkError } from "../models/error.models.js";
-import { sleepAsync } from "./core.utils.js";
+import { sleep } from "./core.utils.js";
 import { createSdkError } from "./error.utils.js";
 import { getRetryAfterHeaderValue } from "./header.utils.js";
 
@@ -21,13 +21,13 @@ const defaultCanRetryAdapterError: NonNullable<RetryStrategyOptions["canRetryAda
 	return false;
 };
 
-export async function runWithRetryAsync<TResponse extends HttpPayload, TRequestBody extends HttpRequestBody>(data: {
-	readonly funcAsync: (retryAttempt: number) => Promise<HttpResponse<TResponse, TRequestBody>>;
+export async function runWithRetry<TResponse extends HttpPayload, TRequestBody extends HttpRequestBody>(data: {
+	readonly func: (retryAttempt: number) => Promise<HttpResponse<TResponse, TRequestBody>>;
 	readonly retryStrategyOptions: ResolvedRetryStrategyOptions;
 	readonly retryAttempt: number;
 	readonly url: string;
 }): Promise<HttpResponse<TResponse, TRequestBody>> {
-	const { success, response, error } = await data.funcAsync(data.retryAttempt);
+	const { success, response, error } = await data.func(data.retryAttempt);
 
 	if (success) {
 		return {
@@ -63,10 +63,10 @@ export async function runWithRetryAsync<TResponse extends HttpPayload, TRequestB
 	data.retryStrategyOptions.logRetryAttempt?.(newRetryAttempt, data.url);
 
 	// wait before the next retry
-	await waitBeforeNextRetryAsync({ retryInMs: retryResult.retryInMs });
+	await waitBeforeNextRetry({ retryInMs: retryResult.retryInMs });
 
-	return await runWithRetryAsync({
-		funcAsync: data.funcAsync,
+	return await runWithRetry({
+		func: data.func,
 		retryStrategyOptions: data.retryStrategyOptions,
 		retryAttempt: newRetryAttempt,
 		url: data.url,
@@ -91,12 +91,12 @@ export function resolveDefaultRetryStrategyOptions(options?: RetryStrategyOption
 	return resolvedOptions;
 }
 
-async function waitBeforeNextRetryAsync({ retryInMs }: { readonly retryInMs: number }): Promise<void> {
+async function waitBeforeNextRetry({ retryInMs }: { readonly retryInMs: number }): Promise<void> {
 	if (retryInMs <= 0) {
 		return;
 	}
 
-	await sleepAsync(retryInMs);
+	await sleep(retryInMs);
 }
 
 function getDefaultRetryAttemptLogMessage(retryAttempt: number, maxRetries: number, url: string): string {

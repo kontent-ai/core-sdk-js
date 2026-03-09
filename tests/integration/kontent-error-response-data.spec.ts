@@ -15,7 +15,7 @@ describe("Integration tests - Kontent error response data", async () => {
 		},
 	});
 
-	const { success, error } = await httpService.requestAsync({
+	const { success, error } = await httpService.request({
 		method: "POST",
 		url: config.urls.addAssetUrl,
 		body: {

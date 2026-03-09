@@ -69,19 +69,19 @@ export type HttpService = {
 	/**
 	 * Executes request with the given method and body.
 	 */
-	requestAsync<TResponsePayload extends JsonValue, TRequestBody extends HttpRequestBody>(
+	request<TResponsePayload extends JsonValue, TRequestBody extends HttpRequestBody>(
 		opts: ExecuteRequestOptions<TRequestBody>,
 	): Promise<HttpResponse<TResponsePayload, TRequestBody>>;
 
 	/**
 	 * Downloads a file from the given URL as a blob.
 	 */
-	downloadFileAsync(opts: DownloadFileRequestOptions): Promise<HttpResponse<Blob, null>>;
+	downloadFile(opts: DownloadFileRequestOptions): Promise<HttpResponse<Blob, null>>;
 
 	/**
 	 * This method is used to upload a kontent.ai binary file.
 	 */
-	uploadFileAsync<TResponsePayload extends JsonValue>(opts: UploadFileRequestOptions): Promise<HttpResponse<TResponsePayload, Blob>>;
+	uploadFile<TResponsePayload extends JsonValue>(opts: UploadFileRequestOptions): Promise<HttpResponse<TResponsePayload, Blob>>;
 };
 
 export type AdapterResponse<TPayload extends AdapterPayload> = {
@@ -125,6 +125,6 @@ export type PaginationConfig = {
  * Alternatively, you may implement the entire `HttpService` interface to create a fully customized HTTP service.
  */
 export type HttpAdapter = {
-	readonly executeRequestAsync?: (options: AdapterExecuteRequestOptions) => Promise<AdapterResponse<JsonValue>>;
-	readonly downloadFileAsync?: (options: AdapterDownloadFileOptions) => Promise<AdapterResponse<Blob>>;
+	readonly executeRequest?: (options: AdapterExecuteRequestOptions) => Promise<AdapterResponse<JsonValue>>;
+	readonly downloadFile?: (options: AdapterDownloadFileOptions) => Promise<AdapterResponse<Blob>>;
 };

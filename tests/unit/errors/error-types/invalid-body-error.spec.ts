@@ -8,7 +8,7 @@ const body: Record<string, unknown> = {};
 body.self = body;
 
 describe("Invalid body error", async () => {
-	const { error } = await getDefaultHttpService({}).requestAsync({
+	const { error } = await getDefaultHttpService({}).request({
 		url: "https://domain.com",
 		method: "POST",
 		body: body as unknown as HttpRequestBody,

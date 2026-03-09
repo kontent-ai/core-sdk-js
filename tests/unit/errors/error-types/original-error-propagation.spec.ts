@@ -7,11 +7,11 @@ class CustomError {}
 describe("Original error propagation", async () => {
 	const { success, response, error } = await getDefaultHttpService({
 		adapter: {
-			executeRequestAsync: () => {
+			executeRequest: () => {
 				throw new CustomError();
 			},
 		},
-	}).requestAsync({
+	}).request({
 		url: "https://domain.com",
 		method: "GET",
 		body: null,

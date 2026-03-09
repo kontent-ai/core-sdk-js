@@ -26,7 +26,7 @@ type MetadataMapperConfig<TResponsePayload extends JsonValue, TRequestBody exten
 
 export type ResolveQueryData<TResponsePayload extends JsonValue, TRequestBody extends HttpRequestBody, TMeta> = {
 	readonly nextPageState: NextPageStateWithRequest;
-	readonly request: Parameters<HttpService["requestAsync"]>[number] & { readonly body: TRequestBody };
+	readonly request: Parameters<HttpService["request"]>[number] & { readonly body: TRequestBody };
 	readonly config: SdkConfig;
 	readonly zodSchema: ZodType<TResponsePayload>;
 	readonly sdkInfo: SDKInfo;
@@ -39,7 +39,7 @@ export function createQuery<TResponsePayload extends JsonValue, TRequestBody ext
 	return {
 		schema: data.zodSchema,
 		fetch: async () => {
-			return await resolveQueryAsync<TResponsePayload, TRequestBody, TMeta>({
+			return await resolveQuery<TResponsePayload, TRequestBody, TMeta>({
 				...data,
 				nextPageState: {
 					hasNextPage: true,
@@ -77,7 +77,7 @@ function getCombinedRequestHeaders({
 	];
 }
 
-export async function resolveQueryAsync<TResponsePayload extends JsonValue, TRequestBody extends HttpRequestBody, TMeta>({
+export async function resolveQuery<TResponsePayload extends JsonValue, TRequestBody extends HttpRequestBody, TMeta>({
 	config,
 	request,
 	mapMetadata,
@@ -88,7 +88,7 @@ export async function resolveQueryAsync<TResponsePayload extends JsonValue, TReq
 }: ResolveQueryData<TResponsePayload, TRequestBody, TMeta>): QueryPromiseResult<TResponsePayload, TMeta> {
 	const urlToUse = nextPageState?.nextPageUrl ?? request.url;
 
-	const { success, response, error } = await getHttpService(config).requestAsync<TResponsePayload, TRequestBody>({
+	const { success, response, error } = await getHttpService(config).request<TResponsePayload, TRequestBody>({
 		body: request.body,
 		url: urlToUse,
 		method: request.method,

@@ -22,7 +22,7 @@ describe("Execute request - Success (GET)", async () => {
 		statusCode: 200,
 	});
 
-	const { success, response, error } = await getDefaultHttpService().requestAsync<ResponseData, null>({
+	const { success, response, error } = await getDefaultHttpService().request<ResponseData, null>({
 		url: "https://domain.com",
 		method: "GET",
 		body: null,
@@ -71,7 +71,7 @@ describe("Execute request - Success (POST)", async () => {
 		statusCode: 200,
 	});
 
-	const { success, response, error } = await getDefaultHttpService().requestAsync<
+	const { success, response, error } = await getDefaultHttpService().request<
 		ResponseData,
 		{ readonly id: number; readonly codename: string }
 	>({

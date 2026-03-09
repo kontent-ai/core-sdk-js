@@ -5,7 +5,7 @@ import { type ErrorReason, KontentSdkError } from "../../../../lib/models/error.
 const url = "invalid-url";
 
 describe("Invalid url error", async () => {
-	const { error } = await getDefaultHttpService({}).requestAsync({
+	const { error } = await getDefaultHttpService({}).request({
 		url,
 		method: "GET",
 		body: null,

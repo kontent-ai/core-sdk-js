@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { HttpServiceStatus } from "../../lib/http/http.models.js";
 import { getDefaultHttpService } from "../../lib/http/http.service.js";
-import { sleepAsync } from "../../lib/utils/core.utils.js";
+import { sleep } from "../../lib/utils/core.utils.js";
 import { getIntegrationTestConfig } from "../integration-tests.config.js";
 
 const fileToUpload = new Blob(["core-sdk-integration-test"], { type: "text/plain" });
@@ -25,8 +25,8 @@ describe("Integration tests - Binary file / asset management", async () => {
 		},
 	});
 
-	const uploadBinaryFileAsync = async () => {
-		return await httpService.uploadFileAsync<{
+	const uploadBinaryFile = async () => {
+		return await httpService.uploadFile<{
 			readonly id: string;
 		}>({
 			url: config.urls.getUploadAssetBinaryFileUrl("core-sdk.txt"),
@@ -35,8 +35,8 @@ describe("Integration tests - Binary file / asset management", async () => {
 		});
 	};
 
-	const addAssetAsync = async (binaryFileId: string) => {
-		return await httpService.requestAsync<
+	const addAsset = async (binaryFileId: string) => {
+		return await httpService.request<
 			{
 				readonly id: string;
 				readonly url: string;
@@ -61,16 +61,16 @@ describe("Integration tests - Binary file / asset management", async () => {
 		});
 	};
 
-	const deleteAssetAsync = async (assetId: string) => {
-		return await httpService.requestAsync<null, null>({
+	const deleteAsset = async (assetId: string) => {
+		return await httpService.request<null, null>({
 			url: config.urls.getDeleteAssetUrl(assetId),
 			body: null,
 			method: "DELETE",
 		});
 	};
 
-	const downloadAssetFileAsync = async (fileUrl: string) => {
-		return await httpService.downloadFileAsync({
+	const downloadAssetFile = async (fileUrl: string) => {
+		return await httpService.downloadFile({
 			url: fileUrl,
 			requestHeaders: [
 				{
@@ -85,7 +85,7 @@ describe("Integration tests - Binary file / asset management", async () => {
 		success: uploadedBinaryFileSuccess,
 		response: uploadedBinaryFileResponse,
 		error: uploadedBinaryFileError,
-	} = await uploadBinaryFileAsync();
+	} = await uploadBinaryFile();
 
 	if (!uploadedBinaryFileSuccess) {
 		throw uploadedBinaryFileError;
@@ -103,7 +103,7 @@ describe("Integration tests - Binary file / asset management", async () => {
 		success: addAssetSuccess,
 		response: addAssetResponse,
 		error: addAssetError,
-	} = await addAssetAsync(uploadedBinaryFileResponse.payload.id);
+	} = await addAsset(uploadedBinaryFileResponse.payload.id);
 
 	if (!addAssetSuccess) {
 		throw addAssetError;
@@ -119,13 +119,13 @@ describe("Integration tests - Binary file / asset management", async () => {
 	});
 
 	// It may take a bit of time for the file to be available for download
-	await sleepAsync(10000);
+	await sleep(10000);
 
 	const {
 		success: downloadedFileSuccess,
 		response: downloadedFileResponse,
 		error: downloadedFileError,
-	} = await downloadAssetFileAsync(addAssetResponse.payload.url);
+	} = await downloadAssetFile(addAssetResponse.payload.url);
 
 	if (!downloadedFileSuccess) {
 		throw downloadedFileError;
@@ -145,7 +145,7 @@ describe("Integration tests - Binary file / asset management", async () => {
 		success: deletedFileSuccess,
 		response: deletedFileResponse,
 		error: deletedFileError,
-	} = await deleteAssetAsync(addAssetResponse.payload.id);
+	} = await deleteAsset(addAssetResponse.payload.id);
 
 	if (!deletedFileSuccess) {
 		throw deletedFileError;

@@ -17,7 +17,7 @@ describe("Default headers", async () => {
 		statusCode: 200,
 	});
 
-	const { success, response, error } = await getDefaultHttpService().requestAsync({
+	const { success, response, error } = await getDefaultHttpService().request({
 		url: "https://domain.com",
 		method: "GET",
 		body: null,
@@ -54,7 +54,7 @@ describe(`SDK tracking header '${sdkIdHeader.name}'`, async () => {
 		statusCode: 200,
 	});
 
-	const { success, response, error } = await getDefaultHttpService().requestAsync({
+	const { success, response, error } = await getDefaultHttpService().request({
 		url: "https://domain.com",
 		method: "GET",
 		body: null,
@@ -110,7 +110,7 @@ describe("Custom Http Service & Request headers", async () => {
 
 	const { response } = await getDefaultHttpService({
 		requestHeaders: [headerA],
-	}).requestAsync({
+	}).request({
 		url: "https://domain.com",
 		method: "GET",
 		body: null,

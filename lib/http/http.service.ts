@@ -7,7 +7,7 @@ import type { PickStringLiteral } from "../models/utility.models.js";
 import { isBlob, isDefined } from "../utils/core.utils.js";
 import { createSdkError, isKontentErrorResponseData, isKontentSdkError, toInvalidResponseMessage } from "../utils/error.utils.js";
 import { findHeaderByName, getSdkIdHeader, isApplicationJsonResponseType } from "../utils/header.utils.js";
-import { resolveDefaultRetryStrategyOptions, runWithRetryAsync } from "../utils/retry.utils.js";
+import { resolveDefaultRetryStrategyOptions, runWithRetry } from "../utils/retry.utils.js";
 import { type TryCatchResult, tryCatch, tryCatchAsync } from "../utils/try-catch.utils.js";
 import { getDefaultHttpAdapter } from "./http.adapter.js";
 import type {
@@ -28,13 +28,13 @@ import type {
 export function getDefaultHttpService(config?: DefaultHttpServiceConfig): HttpService {
 	const adapter = resolveHttpAdapter(config);
 
-	const executeWithAdapterAsync = async <TPayload extends AdapterPayload>({
+	const executeWithAdapter = async <TPayload extends AdapterPayload>({
 		parsedUrl,
 		method,
 		requestHeaders,
 		parsedBody,
 	}: AdapterRequestData): Promise<AdapterResponse<TPayload>> => {
-		return (await adapter.executeRequestAsync({
+		return (await adapter.executeRequest({
 			url: parsedUrl.toString(),
 			method,
 			requestHeaders,
@@ -43,26 +43,24 @@ export function getDefaultHttpService(config?: DefaultHttpServiceConfig): HttpSe
 	};
 
 	return {
-		requestAsync: async <TPayload extends JsonValue, TRequestBody extends HttpRequestBody>(
-			options: ExecuteRequestOptions<TRequestBody>,
-		) => {
-			return await processHttpRequestAsync<TPayload, TRequestBody>({
+		request: async <TPayload extends JsonValue, TRequestBody extends HttpRequestBody>(options: ExecuteRequestOptions<TRequestBody>) => {
+			return await processHttpRequest<TPayload, TRequestBody>({
 				config,
 				options,
-				runAdapterFuncAsync: executeWithAdapterAsync,
+				runAdapterFunc: executeWithAdapter,
 			});
 		},
 
-		downloadFileAsync: async (options: DownloadFileRequestOptions): Promise<HttpResponse<Blob, null>> => {
-			return await processHttpRequestAsync<Blob, null>({
+		downloadFile: async (options: DownloadFileRequestOptions): Promise<HttpResponse<Blob, null>> => {
+			return await processHttpRequest<Blob, null>({
 				config,
 				options: {
 					...options,
 					method: "GET",
 					body: null,
 				},
-				runAdapterFuncAsync: async ({ parsedUrl, requestHeaders }) => {
-					return await adapter.downloadFileAsync({
+				runAdapterFunc: async ({ parsedUrl, requestHeaders }) => {
+					return await adapter.downloadFile({
 						url: parsedUrl.toString(),
 						requestHeaders,
 					});
@@ -70,11 +68,11 @@ export function getDefaultHttpService(config?: DefaultHttpServiceConfig): HttpSe
 			});
 		},
 
-		uploadFileAsync: async <TPayload extends JsonValue>(options: UploadFileRequestOptions): Promise<HttpResponse<TPayload, Blob>> => {
-			return await processHttpRequestAsync<TPayload, Blob>({
+		uploadFile: async <TPayload extends JsonValue>(options: UploadFileRequestOptions): Promise<HttpResponse<TPayload, Blob>> => {
+			return await processHttpRequest<TPayload, Blob>({
 				config,
 				options,
-				runAdapterFuncAsync: executeWithAdapterAsync,
+				runAdapterFunc: executeWithAdapter,
 			});
 		},
 	};
@@ -84,17 +82,17 @@ function resolveHttpAdapter(config?: DefaultHttpServiceConfig): Required<HttpAda
 	const defaultAdapter = getDefaultHttpAdapter();
 
 	return {
-		downloadFileAsync: config?.adapter?.downloadFileAsync ?? defaultAdapter.downloadFileAsync,
-		executeRequestAsync: config?.adapter?.executeRequestAsync ?? defaultAdapter.executeRequestAsync,
+		downloadFile: config?.adapter?.downloadFile ?? defaultAdapter.downloadFile,
+		executeRequest: config?.adapter?.executeRequest ?? defaultAdapter.executeRequest,
 	};
 }
 
-async function processHttpRequestAsync<TPayload extends AdapterPayload, TRequestBody extends HttpRequestBody>({
+async function processHttpRequest<TPayload extends AdapterPayload, TRequestBody extends HttpRequestBody>({
 	options,
-	runAdapterFuncAsync,
+	runAdapterFunc,
 	config,
 }: {
-	readonly runAdapterFuncAsync: (data: AdapterRequestData) => Promise<AdapterResponse<TPayload>>;
+	readonly runAdapterFunc: (data: AdapterRequestData) => Promise<AdapterResponse<TPayload>>;
 	readonly config: DefaultHttpServiceConfig | undefined;
 	readonly options: ExecuteRequestOptions<TRequestBody>;
 }): Promise<HttpResponse<TPayload, TRequestBody>> {
@@ -109,15 +107,15 @@ async function processHttpRequestAsync<TPayload extends AdapterPayload, TRequest
 		};
 	}
 
-	return await runWithRetryAsync({
+	return await runWithRetry({
 		retryAttempt: 0,
-		funcAsync: async (retryAttempt) => {
-			const responseOrError = await runAdapterRequestAsync({
+		func: async (retryAttempt) => {
+			const responseOrError = await runAdapterRequest({
 				parsedUrl: parsedRequest.parsedUrl,
 				method: options.method,
 				requestHeaders: parsedRequest.requestHeaders,
 				parsedBody: parsedRequest.parsedBody,
-				runAdapterFuncAsync,
+				runAdapterRequest: runAdapterFunc,
 			});
 
 			if (isKontentSdkError(responseOrError)) {
@@ -197,14 +195,14 @@ type AdapterRequestData = {
 	readonly parsedBody: AdapterBody;
 };
 
-async function runAdapterRequestAsync<TPayload extends AdapterPayload>({
+async function runAdapterRequest<TPayload extends AdapterPayload>({
 	parsedUrl,
 	method,
 	requestHeaders,
 	parsedBody,
-	runAdapterFuncAsync,
+	runAdapterRequest,
 }: {
-	readonly runAdapterFuncAsync: (data: AdapterRequestData) => Promise<AdapterResponse<TPayload>>;
+	readonly runAdapterRequest: (data: AdapterRequestData) => Promise<AdapterResponse<TPayload>>;
 	readonly parsedUrl: URL;
 	readonly method: HttpMethod;
 	readonly requestHeaders: readonly Header[];
@@ -212,7 +210,7 @@ async function runAdapterRequestAsync<TPayload extends AdapterPayload>({
 }): Promise<AdapterResponse<TPayload> | KontentSdkError> {
 	const { success, error, data } = await tryCatchAsync(
 		async () =>
-			await runAdapterFuncAsync({
+			await runAdapterRequest({
 				parsedUrl,
 				method,
 				requestHeaders,

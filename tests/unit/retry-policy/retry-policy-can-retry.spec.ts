@@ -52,11 +52,11 @@ for (const testCase of testCases) {
 		const { success, error } = await getDefaultHttpService({
 			retryStrategy: testCase,
 			adapter: {
-				executeRequestAsync: () => {
+				executeRequest: () => {
 					throw new Error("Testing retry policy");
 				},
 			},
-		}).requestAsync({
+		}).request({
 			url: "https://domain.com",
 			method: "GET",
 			body: null,

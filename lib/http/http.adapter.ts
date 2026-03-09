@@ -4,7 +4,7 @@ import { isApplicationJsonResponseType, toFetchHeaders, toSdkHeaders } from "../
 import type { AdapterExecuteRequestOptions, AdapterPayload, AdapterResponse, HttpAdapter } from "./http.models.js";
 
 export function getDefaultHttpAdapter(): Required<HttpAdapter> {
-	const getResponseAsync = async (options: AdapterExecuteRequestOptions): Promise<Response> => {
+	const getResponse = async (options: AdapterExecuteRequestOptions): Promise<Response> => {
 		return await fetch(options.url, {
 			method: options.method,
 			headers: toFetchHeaders(options.requestHeaders ?? []),
@@ -28,15 +28,15 @@ export function getDefaultHttpAdapter(): Required<HttpAdapter> {
 	};
 
 	return {
-		executeRequestAsync: async (options) => {
-			const response = await getResponseAsync(options);
+		executeRequest: async (options) => {
+			const response = await getResponse(options);
 			const sdkHeaders = toSdkHeaders(response.headers);
 			const payload = isApplicationJsonResponseType(sdkHeaders) ? ((await response.json()) as JsonValue) : null;
 
 			return createAdapterResponse(options.url, response, payload, sdkHeaders);
 		},
-		downloadFileAsync: async (options) => {
-			const response = await getResponseAsync({
+		downloadFile: async (options) => {
+			const response = await getResponse({
 				...options,
 				method: "GET",
 				body: null,

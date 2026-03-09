@@ -16,7 +16,7 @@ describe("Download file - Success", async () => {
 		statusCode: 200,
 	});
 
-	const { success, response, error } = await getDefaultHttpService().downloadFileAsync({
+	const { success, response, error } = await getDefaultHttpService().downloadFile({
 		url: "https://domain.com/image.jpg",
 	});
 
