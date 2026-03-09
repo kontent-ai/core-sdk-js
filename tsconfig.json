@@ -28,8 +28,6 @@
 		"noUncheckedIndexedAccess": true,
 		"noFallthroughCasesInSwitch": true,
 		"useUnknownInCatchVariables": true,
-
-		// Perf / compatibility
 		"skipLibCheck": true,
 
 		// Types

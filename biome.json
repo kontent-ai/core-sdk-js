@@ -23,6 +23,6 @@
 		}
 	},
 	"files": {
-		"includes": ["!dist", "!coverage"]
+		"includes": ["!dist"]
 	}
 }

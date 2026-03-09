@@ -5,7 +5,7 @@ export default defineConfig(
 	// Global ignores must be in their own config entry; otherwise they only apply
 	// to files matched by `files` in the same entry.
 	{
-		ignores: ["**/dist/**", "**/coverage/**"],
+		ignores: ["**/dist/**"],
 	},
 	{
 		extends: [kontentAiConfig],
