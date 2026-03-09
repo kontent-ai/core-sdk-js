@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import z from "zod";
 import { type ErrorReason, KontentSdkError } from "../../../../lib/models/error.models.js";
-import { createQuery } from "../../../../lib/sdk/sdk-query.js";
+import { createFetchQuery } from "../../../../lib/sdk/queries/fetch-sdk-query.js";
 import { getTestHttpServiceWithJsonResponse, getTestSdkInfo } from "../../../../lib/testkit/testkit.utils.js";
 
 const zodSchema = z.object({
@@ -9,8 +9,7 @@ const zodSchema = z.object({
 });
 
 describe("Validation failed error", async () => {
-	const { success, error } = await createQuery({
-		authorizationApiKey: undefined,
+	const { success, error } = await createFetchQuery({
 		mapMetadata: () => ({}),
 		config: {
 			httpService: getTestHttpServiceWithJsonResponse({
@@ -25,7 +24,6 @@ describe("Validation failed error", async () => {
 		zodSchema,
 		request: {
 			url: "https://domain.com",
-			method: "GET",
 			body: {},
 		},
 	}).fetch();

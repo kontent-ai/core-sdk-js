@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import z from "zod";
 import type { GetNextPageData, QueryResponse } from "../../../lib/public_api.js";
-import { createPagingQuery } from "../../../lib/sdk/paging-sdk-query.js";
+import { createPagedFetchQuery } from "../../../lib/sdk/queries/paged-fetch-sdk-query.js";
 import { getTestHttpServiceWithJsonResponse, getTestSdkInfo } from "../../../lib/testkit/testkit.utils.js";
 import { getNextPageUrl } from "../../test.utils.js";
 
@@ -12,8 +12,7 @@ describe("Async pages iterator errors", async () => {
 
 	const expectedResponseUrls: readonly string[] = Array.from({ length: maxPagesCount }, (_, index) => getNextPageUrl(index));
 
-	const pagesIterator = createPagingQuery({
-		authorizationApiKey: undefined,
+	const pagesIterator = createPagedFetchQuery({
 		getNextPageData: () => {
 			responseIndex++;
 
@@ -48,7 +47,6 @@ describe("Async pages iterator errors", async () => {
 		zodSchema: z.null(),
 		request: {
 			url: expectedResponseUrls?.[0] ?? "n/a",
-			method: "GET",
 			body: {},
 		},
 	}).pages();

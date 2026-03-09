@@ -4,6 +4,7 @@
  */
 
 import type z from "zod";
+import type { ZodType } from "zod";
 import type {
 	AdapterPayload,
 	AdapterResponse,
@@ -13,6 +14,7 @@ import type {
 	HttpService,
 	PaginationConfig,
 } from "../http/http.models.js";
+import type { Header, HttpMethod, SDKInfo } from "../models/core.models.js";
 import type { KontentSdkError } from "../models/error.models.js";
 import type { JsonValue } from "../models/json.models.js";
 import type { Failure, Success } from "../utils/try-catch.utils.js";
@@ -128,3 +130,37 @@ export type PagingQueryResult<TResponsePayload> =
 export type QueryPromiseResult<TResponsePayload extends JsonValue, TMeta> = ReturnType<
 	Pick<FetchQuery<TResponsePayload, TMeta>, "fetch">["fetch"]
 >;
+
+export type QueryRequest<TResponsePayload extends JsonValue, TRequestBody extends HttpRequestBody, TMeta> = Pick<
+	ResolveQueryData<TResponsePayload, TRequestBody, TMeta>,
+	"config" | "zodSchema" | "sdkInfo" | "mapMetadata" | "request"
+>;
+
+export type ResolveQueryData<TResponsePayload extends JsonValue, TRequestBody extends HttpRequestBody, TMeta> = {
+	readonly method: HttpMethod;
+	readonly request: RequestData<TRequestBody>;
+	readonly config: SdkConfig;
+	readonly zodSchema: ZodType<TResponsePayload>;
+	readonly sdkInfo: SDKInfo;
+} & MetadataMapperConfig<TResponsePayload, TRequestBody, TMeta>;
+
+type MetadataMapperConfig<TResponsePayload extends JsonValue, TRequestBody extends HttpRequestBody, TMeta> = {
+	readonly mapMetadata: MetadataMapper<TResponsePayload, TRequestBody, TMeta>;
+};
+
+type MetadataMapper<TResponsePayload extends JsonValue, TRequestBody extends HttpRequestBody, TMeta> = (
+	response: SuccessfulHttpResponse<TResponsePayload, TRequestBody>,
+	data: MetadataContextData,
+) => TMeta;
+
+type MetadataContextData = {
+	readonly continuationToken: string | undefined;
+};
+
+type RequestData<TRequestBody extends HttpRequestBody> = {
+	readonly url: string;
+	readonly body: TRequestBody;
+	readonly requestHeaders?: readonly Header[];
+	readonly continuationToken?: string | undefined;
+	readonly authorizationApiKey?: string | undefined;
+};

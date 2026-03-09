@@ -1,7 +1,7 @@
 import { afterAll, describe, expect, it, vi } from "vitest";
 import z from "zod";
 import { type GetNextPageData, getDefaultHttpService } from "../../../lib/public_api.js";
-import { createPagingQuery } from "../../../lib/sdk/paging-sdk-query.js";
+import { createPagedFetchQuery } from "../../../lib/sdk/queries/paged-fetch-sdk-query.js";
 import { getTestSdkInfo, mockGlobalFetchJsonResponse } from "../../../lib/testkit/testkit.utils.js";
 import { getNextPageUrl } from "../../test.utils.js";
 
@@ -21,8 +21,7 @@ describe("Basic paging query with unlimited max count", async () => {
 		statusCode: 200,
 	});
 
-	const { success, error, responses } = await createPagingQuery({
-		authorizationApiKey: undefined,
+	const { success, error, responses } = await createPagedFetchQuery({
 		getNextPageData: () => {
 			responseIndex++;
 
@@ -48,7 +47,6 @@ describe("Basic paging query with unlimited max count", async () => {
 		zodSchema: z.null(),
 		request: {
 			url: expectedResponseUrls?.[0] ?? "n/a",
-			method: "GET",
 			body: {},
 		},
 	}).fetchAllPages();

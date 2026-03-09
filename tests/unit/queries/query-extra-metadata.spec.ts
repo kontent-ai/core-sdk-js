@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import z from "zod";
 import type { CommonHeaderNames, Header, HttpMethod } from "../../../lib/models/core.models.js";
-import { createQuery } from "../../../lib/sdk/sdk-query.js";
+import { createFetchQuery } from "../../../lib/sdk/queries/fetch-sdk-query.js";
 import { getTestHttpServiceWithJsonResponse, getTestSdkInfo } from "../../../lib/testkit/testkit.utils.js";
 import { getSdkIdHeader } from "../../../lib/utils/header.utils.js";
 
@@ -14,8 +14,13 @@ describe("Query extra metadata", async () => {
 		name: "x",
 		value: "y",
 	};
-	const { response } = await createQuery({
-		authorizationApiKey: undefined,
+	const { response } = await createFetchQuery<
+		null,
+		null,
+		{
+			testExtraMetadata: string;
+		}
+	>({
 		mapMetadata: (response, data) => {
 			it("Continuation token should be the same as the one from the response", () => {
 				expect(data.continuationToken).toStrictEqual(responseContinuationToken);
@@ -57,8 +62,7 @@ describe("Query extra metadata", async () => {
 		zodSchema: z.null(),
 		request: {
 			url: "https://domain.com",
-			method: method,
-			body: {},
+			body: null,
 			requestHeaders: [requestHeader],
 		},
 	}).fetch();

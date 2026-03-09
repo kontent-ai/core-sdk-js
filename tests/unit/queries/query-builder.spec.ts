@@ -1,14 +1,13 @@
 import { describe, expect, it } from "vitest";
 import z from "zod";
-import { createQuery } from "../../../lib/sdk/sdk-query.js";
+import { createFetchQuery } from "../../../lib/sdk/queries/fetch-sdk-query.js";
 import { getTestHttpServiceWithJsonResponse, getTestSdkInfo } from "../../../lib/testkit/testkit.utils.js";
 
 describe("Query builder", async () => {
 	const responseContinuationToken = "fake-continuation-token";
 	const responseStatusCode = 200;
 
-	const { success, error, response } = await createQuery({
-		authorizationApiKey: undefined,
+	const { success, error, response } = await createFetchQuery({
 		mapMetadata: () => ({}),
 		config: {
 			httpService: getTestHttpServiceWithJsonResponse({
@@ -24,7 +23,6 @@ describe("Query builder", async () => {
 		zodSchema: z.null(),
 		request: {
 			url: "https://domain.com",
-			method: "GET",
 			body: {},
 		},
 	}).fetch();

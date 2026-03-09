@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import z from "zod";
 import { type ErrorReason, type GetNextPageData, KontentSdkError } from "../../../lib/public_api.js";
-import { createPagingQuery } from "../../../lib/sdk/paging-sdk-query.js";
+import { createPagedFetchQuery } from "../../../lib/sdk/queries/paged-fetch-sdk-query.js";
 import { getTestHttpServiceWithJsonResponse, getTestSdkInfo } from "../../../lib/testkit/testkit.utils.js";
 import { getNextPageUrl } from "../../test.utils.js";
 
@@ -12,8 +12,7 @@ describe("Basic paging errors", async () => {
 
 	const expectedResponseUrls: readonly string[] = Array.from({ length: maxPagesCount }, (_, index) => getNextPageUrl(index));
 
-	const { success, error, responses, partialResponses } = await createPagingQuery({
-		authorizationApiKey: undefined,
+	const { success, error, responses, partialResponses } = await createPagedFetchQuery({
 		getNextPageData: () => {
 			responseIndex++;
 
@@ -48,7 +47,6 @@ describe("Basic paging errors", async () => {
 		zodSchema: z.null(),
 		request: {
 			url: expectedResponseUrls?.[0] ?? "n/a",
-			method: "GET",
 			body: {},
 		},
 	}).fetchAllPages();
