@@ -39,7 +39,7 @@ export function createPagingQuery<TResponsePayload extends JsonValue, TRequestBo
 
 	return {
 		schema,
-		toUrl: () => data.request.url,
+		url: data.request.url,
 		fetchPage: fetch,
 		fetchAllPages: async (config?: PaginationConfig) => {
 			return await fetchAllPages<TResponsePayload, TRequestBody, TMeta>(getPagingData(config));

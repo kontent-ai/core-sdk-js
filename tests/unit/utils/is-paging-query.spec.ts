@@ -7,9 +7,7 @@ describe("isPagingQuery", () => {
 	it("returns true for object with paging query shape", () => {
 		const pagingQueryLike: PagedFetchQuery<unknown, unknown> = {
 			schema: z.null(),
-			toUrl: () => {
-				return "x";
-			},
+			url: "x",
 			fetchPage: () => {
 				return {} as never;
 			},
@@ -27,9 +25,7 @@ describe("isPagingQuery", () => {
 	it("returns false when only toPromise is present", () => {
 		const queryLike: FetchQuery<unknown, unknown> = {
 			schema: z.null(),
-			toUrl: () => {
-				return "x";
-			},
+			url: "x",
 			fetch: () => {
 				return {} as never;
 			},
@@ -46,9 +42,7 @@ describe("isPagingQuery", () => {
 	it("returns false when one of paging methods is missing", () => {
 		const missingPagesQuery: Omit<PagedFetchQuery<unknown, unknown>, "pages"> = {
 			schema: z.null(),
-			toUrl: () => {
-				return "x";
-			},
+			url: "x",
 			fetchPage: () => {
 				return {} as never;
 			},
@@ -59,9 +53,7 @@ describe("isPagingQuery", () => {
 
 		const missingFetchAllPagesQuery: Omit<PagedFetchQuery<unknown, unknown>, "fetchAllPages"> = {
 			schema: z.null(),
-			toUrl: () => {
-				return "x";
-			},
+			url: "x",
 			fetchPage: () => {
 				return {} as never;
 			},

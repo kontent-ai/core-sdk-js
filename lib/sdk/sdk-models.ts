@@ -58,8 +58,8 @@ export type SdkConfig = {
 };
 
 export type Query<TResponsePayload> = {
-	schema: z.ZodType<TResponsePayload>;
-	toUrl(): string;
+	readonly schema: z.ZodType<TResponsePayload>;
+	readonly url: string;
 };
 
 export type FetchQuery<TResponsePayload, TMeta> = Query<TResponsePayload> & {
