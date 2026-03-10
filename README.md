@@ -37,15 +37,15 @@ However, if your goal is to retain the core features (e.g., retry policies, requ
 
 ## Example: Custom `HttpAdapter` Implementation
 
-Below is an example demonstrating how to provide your own HTTP client by implementing a custom `HttpAdapter`. Both `executeRequestAsync` and `downloadFileAsync` are optional — you only need to implement the methods you want to override:
+Below is an example demonstrating how to provide your own HTTP client by implementing a custom `HttpAdapter`. Both `executeRequest` and `downloadFile` are optional, so you only need to implement the methods you want to override:
 
 ```typescript
 const httpService = getDefaultHttpService({
   adapter: {
-    executeRequestAsync: async (options) => {
+    executeRequest: async (options) => {
       const response = await fetch(options.url, {
         method: options.method,
-        headers: options.requestHeaders,
+        headers: Object.fromEntries((options.requestHeaders ?? []).map((header) => [header.name, header.value])),
         body: options.body,
       });
 
@@ -59,8 +59,10 @@ const httpService = getDefaultHttpService({
         url: options.url,
       };
     },
-    downloadFileAsync: async (options) => {
-      const response = await fetch(options.url);
+    downloadFile: async (options) => {
+      const response = await fetch(options.url, {
+        headers: Object.fromEntries((options.requestHeaders ?? []).map((header) => [header.name, header.value])),
+      });
 
       return {
         payload: await response.blob(),
@@ -83,7 +85,7 @@ This approach gives you fine-grained control over how requests are made, while s
 All operations return a discriminated `success`/`error` result — the SDK never throws. Errors are represented by `KontentSdkError`, which carries a `details` object with a `reason` discriminant that can be narrowed for type-safe handling:
 
 ```typescript
-const { success, response, error } = await httpService.requestAsync({
+const { success, response, error } = await httpService.request({
   url: "https://manage.kontent.ai/v2/projects/...",
   method: "GET",
   body: null,
