@@ -64,9 +64,6 @@ export async function runWithRetry<TResponse extends HttpPayload, TRequestBody e
 		};
 	}
 
-	// log retry attempt when available
-	data.retryStrategyOptions.logRetryAttempt?.(newRetryAttempt, data.url);
-
 	// wait before the next retry or if the abort signal is aborted, return the error
 	const { isAborted } = await waitBeforeNextRetry({ retryInMs: retryResult.retryInMs, abortSignal: data.abortSignal });
 	if (isAborted) {
@@ -75,6 +72,9 @@ export async function runWithRetry<TResponse extends HttpPayload, TRequestBody e
 			error: createAbortError({ url: data.url, retryStrategyOptions: data.retryStrategyOptions, retryAttempt: newRetryAttempt }),
 		};
 	}
+
+	// log retry attempt when available
+	data.retryStrategyOptions.logRetryAttempt?.(newRetryAttempt, data.url);
 
 	return await runWithRetry({
 		func: data.func,
