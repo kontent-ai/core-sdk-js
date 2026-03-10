@@ -25,6 +25,19 @@ import type {
 	UploadFileRequestOptions,
 } from "./http.models.js";
 
+type ParsedRequest = {
+	readonly parsedUrl: URL;
+	readonly parsedBody: AdapterBody;
+	readonly requestHeaders: readonly Header[];
+};
+
+type AdapterRequestData = {
+	readonly parsedUrl: URL;
+	readonly method: HttpMethod;
+	readonly requestHeaders: readonly Header[];
+	readonly parsedBody: AdapterBody;
+};
+
 export function getDefaultHttpService(config?: DefaultHttpServiceConfig): HttpService {
 	const adapter = resolveHttpAdapter(config);
 
@@ -188,13 +201,6 @@ function mapAdapterResponse<TPayload extends HttpPayload, TRequestBody extends H
 	};
 }
 
-type AdapterRequestData = {
-	readonly parsedUrl: URL;
-	readonly method: HttpMethod;
-	readonly requestHeaders: readonly Header[];
-	readonly parsedBody: AdapterBody;
-};
-
 async function runAdapterRequest<TPayload extends AdapterPayload>({
 	parsedUrl,
 	method,
@@ -336,12 +342,6 @@ function tryExtractKontentErrorData(response: AdapterResponse<AdapterPayload>): 
 	return undefined;
 }
 
-type ParsedRequest = {
-	readonly parsedUrl: URL;
-	readonly parsedBody: AdapterBody;
-	readonly requestHeaders: readonly Header[];
-};
-
 function parseAndValidateRequest<TRequestBody extends HttpRequestBody>({
 	options,
 	retryStrategyOptions,
@@ -396,27 +396,27 @@ function parseUrl({
 }): TryCatchResult<URL, KontentSdkError> {
 	const { success, data: parsedUrl, error } = tryCatch(() => new URL(url));
 
-	if (!success) {
+	if (success) {
 		return {
-			success: false,
-			error: createSdkError({
-				baseErrorData: {
-					message: `Failed to parse url '${url}'.`,
-					url: url,
-					retryStrategyOptions,
-					retryAttempt: 0,
-				},
-				details: {
-					reason: "invalidUrl",
-					originalError: error,
-				},
-			}),
+			success: true,
+			data: parsedUrl,
 		};
 	}
 
 	return {
-		success: true,
-		data: parsedUrl,
+		success: false,
+		error: createSdkError({
+			baseErrorData: {
+				message: `Failed to parse url '${url}'.`,
+				url: url,
+				retryStrategyOptions,
+				retryAttempt: 0,
+			},
+			details: {
+				reason: "invalidUrl",
+				originalError: error,
+			},
+		}),
 	};
 }
 

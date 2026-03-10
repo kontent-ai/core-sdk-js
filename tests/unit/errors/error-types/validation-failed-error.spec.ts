@@ -42,7 +42,7 @@ describe("Validation failed error", async () => {
 		if (error?.details.reason === "validationFailed") {
 			expect(error.details.zodError).toBeDefined();
 			expect(error.details.response).toBeDefined();
-			expect(error.details.url).toBe("https://domain.com");
+			expect(error.details.url).toBe(new URL("https://domain.com").toString());
 		}
 	});
 

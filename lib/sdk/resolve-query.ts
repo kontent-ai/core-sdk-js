@@ -3,13 +3,16 @@
  * to keep common code and behavior consistent.
  */
 
-import type { HttpRequestBody } from "../http/http.models.js";
+import type { ZodType } from "zod";
+import type { HttpRequestBody, HttpService } from "../http/http.models.js";
 import { getDefaultHttpService } from "../http/http.service.js";
 import type { Header, SDKInfo } from "../models/core.models.js";
+import type { KontentSdkError } from "../models/error.models.js";
 import type { JsonValue } from "../models/json.models.js";
 import { createSdkError } from "../utils/error.utils.js";
 import { createAuthorizationHeader, createContinuationHeader, getSdkIdHeader } from "../utils/header.utils.js";
-import type { QueryPromiseResult, ResolveQueryData, SdkConfig } from "./sdk-models.js";
+import type { Failure } from "../utils/try-catch.utils.js";
+import type { QueryPromiseResult, ResolveQueryData, SdkConfig, SuccessfulHttpResponse } from "./sdk-models.js";
 import { extractContinuationToken } from "./sdk-utils.js";
 
 export async function resolveQuery<TResponsePayload extends JsonValue, TRequestBody extends HttpRequestBody, TMeta>({
@@ -40,26 +43,10 @@ export async function resolveQuery<TResponsePayload extends JsonValue, TRequestB
 	}
 
 	if (config.responseValidation?.enable) {
-		const { success: validationSuccess, error: validationError } = await zodSchema.safeParseAsync(response.payload);
+		const validationError = await validateResponse({ url: response.adapterResponse.url, response, zodSchema });
 
-		if (!validationSuccess) {
-			return {
-				success: false,
-				error: createSdkError({
-					baseErrorData: {
-						message: `Failed to validate response schema for url '${request.url}'`,
-						url: request.url,
-						retryStrategyOptions: undefined,
-						retryAttempt: undefined,
-					},
-					details: {
-						reason: "validationFailed",
-						zodError: validationError,
-						response,
-						url: request.url,
-					},
-				}),
-			};
+		if (validationError) {
+			return validationError;
 		}
 	}
 
@@ -82,7 +69,41 @@ export async function resolveQuery<TResponsePayload extends JsonValue, TRequestB
 	return result;
 }
 
-function getHttpService(config: SdkConfig) {
+async function validateResponse<TResponsePayload extends JsonValue, TRequestBody extends HttpRequestBody>({
+	url,
+	response,
+	zodSchema,
+}: {
+	readonly url: string;
+	readonly response: SuccessfulHttpResponse<TResponsePayload, TRequestBody>;
+	readonly zodSchema: ZodType<TResponsePayload>;
+}): Promise<Failure<{ readonly response?: never }, KontentSdkError> | undefined> {
+	const { success, error } = await zodSchema.safeParseAsync(response.payload);
+
+	if (!success) {
+		return {
+			success: false,
+			error: createSdkError({
+				baseErrorData: {
+					message: `Failed to validate response schema for url '${url}'`,
+					url,
+					retryStrategyOptions: undefined,
+					retryAttempt: undefined,
+				},
+				details: {
+					reason: "validationFailed",
+					zodError: error,
+					response,
+					url,
+				},
+			}),
+		};
+	}
+
+	return undefined;
+}
+
+function getHttpService(config: SdkConfig): HttpService {
 	return config.httpService ?? getDefaultHttpService();
 }
 
