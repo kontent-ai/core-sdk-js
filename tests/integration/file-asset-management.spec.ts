@@ -14,7 +14,7 @@ const fileToUpload = new Blob(["core-sdk-integration-test"], { type: "text/plain
  *
  * Info: The file contents come back as a Blob, but with 0 bytes.
  */
-const compareFileContents: boolean = false;
+const compareFileContents: boolean = true;
 
 describe("Integration tests - Binary file / asset management", async () => {
 	const config = getIntegrationTestConfig();
@@ -119,7 +119,9 @@ describe("Integration tests - Binary file / asset management", async () => {
 	});
 
 	// It may take a bit of time for the file to be available for download
-	await sleep(10000);
+	const sleepTime = 15000;
+	console.log(`Waiting ${sleepTime}ms for file to be available for download...`);
+	await sleep(sleepTime);
 
 	const {
 		success: downloadedFileSuccess,
