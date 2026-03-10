@@ -133,7 +133,7 @@ export type QueryPromiseResult<TResponsePayload extends JsonValue, TMeta> = Retu
 
 export type QueryRequest<TResponsePayload extends JsonValue, TRequestBody extends HttpRequestBody, TMeta> = Pick<
 	ResolveQueryData<TResponsePayload, TRequestBody, TMeta>,
-	"config" | "zodSchema" | "sdkInfo" | "mapMetadata" | "request"
+	"config" | "zodSchema" | "sdkInfo" | "mapMetadata" | "request" | "abortSignal"
 >;
 
 export type ResolveQueryData<TResponsePayload extends JsonValue, TRequestBody extends HttpRequestBody, TMeta> = {
@@ -142,6 +142,7 @@ export type ResolveQueryData<TResponsePayload extends JsonValue, TRequestBody ex
 	readonly config: SdkConfig;
 	readonly zodSchema: ZodType<TResponsePayload>;
 	readonly sdkInfo: SDKInfo;
+	readonly abortSignal?: AbortSignal | undefined;
 } & MetadataMapperConfig<TResponsePayload, TRequestBody, TMeta>;
 
 type MetadataMapperConfig<TResponsePayload extends JsonValue, TRequestBody extends HttpRequestBody, TMeta> = {

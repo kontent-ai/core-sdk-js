@@ -47,13 +47,14 @@ export type ExecuteRequestOptions<TRequestBody extends HttpRequestBody> = {
 	readonly method: HttpMethod;
 	readonly body: TRequestBody;
 	readonly requestHeaders?: readonly Header[];
+	readonly abortSignal?: AbortSignal | undefined;
 };
 
 export type UploadFileRequestOptions = Omit<ExecuteRequestOptions<Blob>, "method"> & {
 	readonly method: Extract<HttpMethod, "POST" | "PUT" | "PATCH">;
 };
 
-export type DownloadFileRequestOptions = Pick<ExecuteRequestOptions<null>, "url" | "requestHeaders">;
+export type DownloadFileRequestOptions = Pick<ExecuteRequestOptions<null>, "url" | "requestHeaders" | "abortSignal">;
 
 /**
  * Represents the HTTP service used for making requests to the Kontent.ai API.
@@ -100,9 +101,10 @@ export type AdapterExecuteRequestOptions = {
 	readonly method: HttpMethod;
 	readonly body: AdapterBody;
 	readonly requestHeaders?: readonly Header[];
+	readonly abortSignal?: AbortSignal | undefined;
 };
 
-export type AdapterDownloadFileOptions = Pick<AdapterExecuteRequestOptions, "url" | "requestHeaders">;
+export type AdapterDownloadFileOptions = Pick<AdapterExecuteRequestOptions, "url" | "requestHeaders" | "abortSignal">;
 
 export type GetNextPageData<TResponsePayload extends JsonValue, TMeta> = (response: QueryResponse<TResponsePayload, TMeta>) => {
 	readonly continuationToken?: string | undefined;

@@ -1,7 +1,13 @@
 import { match, P } from "ts-pattern";
 import { coreSdkInfo } from "../core-sdk-info.js";
 import type { CommonHeaderNames, ErrorResponseData, Header, HttpMethod, ResolvedRetryStrategyOptions } from "../models/core.models.js";
-import type { ErrorDetails, ErrorDetailsFor, ErrorReason, KontentSdkError } from "../models/error.models.js";
+import {
+	AdapterAbortError,
+	type ErrorDetails,
+	type ErrorDetailsFor,
+	type ErrorReason,
+	type KontentSdkError,
+} from "../models/error.models.js";
 import type { JsonObject, JsonValue } from "../models/json.models.js";
 import type { PickStringLiteral } from "../models/utility.models.js";
 import { isBlob, isDefined } from "../utils/core.utils.js";
@@ -36,6 +42,7 @@ type AdapterRequestData = {
 	readonly method: HttpMethod;
 	readonly requestHeaders: readonly Header[];
 	readonly parsedBody: AdapterBody;
+	readonly abortSignal?: AbortSignal | undefined;
 };
 
 export function getDefaultHttpService(config?: DefaultHttpServiceConfig): HttpService {
@@ -46,12 +53,14 @@ export function getDefaultHttpService(config?: DefaultHttpServiceConfig): HttpSe
 		method,
 		requestHeaders,
 		parsedBody,
+		abortSignal,
 	}: AdapterRequestData): Promise<AdapterResponse<TPayload>> => {
 		return (await adapter.executeRequest({
 			url: parsedUrl.toString(),
 			method,
 			requestHeaders,
 			body: parsedBody,
+			abortSignal,
 		})) as AdapterResponse<TPayload>;
 	};
 
@@ -76,6 +85,7 @@ export function getDefaultHttpService(config?: DefaultHttpServiceConfig): HttpSe
 					return await adapter.downloadFile({
 						url: parsedUrl.toString(),
 						requestHeaders,
+						abortSignal: options.abortSignal,
 					});
 				},
 			});
@@ -129,6 +139,7 @@ async function processHttpRequest<TPayload extends AdapterPayload, TRequestBody 
 				requestHeaders: parsedRequest.requestHeaders,
 				parsedBody: parsedRequest.parsedBody,
 				runAdapterRequest: runAdapterFunc,
+				abortSignal: options.abortSignal,
 			});
 
 			if (isKontentSdkError(responseOrError)) {
@@ -152,19 +163,41 @@ async function processHttpRequest<TPayload extends AdapterPayload, TRequestBody 
 	});
 }
 
-function createAdapterError(url: string, error: unknown): KontentSdkError<ErrorDetailsFor<"adapterError">> {
-	return createSdkError({
-		baseErrorData: {
-			message: `Adapter failed to execute the request for url '${url}'. See the error object for more details.`,
-			url: url,
-			retryStrategyOptions: undefined,
-			retryAttempt: undefined,
-		},
-		details: {
-			reason: "adapterError",
-			originalError: error,
-		},
-	});
+function createAdapterError(url: string, error: unknown): KontentSdkError<ErrorDetailsFor<"adapterError" | "aborted">> {
+	return match(error)
+		.returnType<KontentSdkError<ErrorDetailsFor<"adapterError" | "aborted">>>()
+		.when(isAdapterAbortError, (abortError) =>
+			createSdkError({
+				baseErrorData: {
+					message: `Adapter has aborted the request for url '${url}'. See the error object for more details.`,
+					url: url,
+					retryStrategyOptions: undefined,
+					retryAttempt: undefined,
+				},
+				details: {
+					reason: "aborted",
+					originalError: abortError,
+				},
+			}),
+		)
+		.otherwise(() =>
+			createSdkError({
+				baseErrorData: {
+					message: `Adapter failed to execute the request for url '${url}'. See the error object for more details.`,
+					url: url,
+					retryStrategyOptions: undefined,
+					retryAttempt: undefined,
+				},
+				details: {
+					reason: "adapterError",
+					originalError: error,
+				},
+			}),
+		);
+}
+
+function isAdapterAbortError(error: unknown): error is AdapterAbortError {
+	return error instanceof AdapterAbortError;
 }
 
 function mapAdapterResponse<TPayload extends HttpPayload, TRequestBody extends HttpRequestBody>({
@@ -207,28 +240,27 @@ async function runAdapterRequest<TPayload extends AdapterPayload>({
 	requestHeaders,
 	parsedBody,
 	runAdapterRequest,
+	abortSignal,
 }: {
 	readonly runAdapterRequest: (data: AdapterRequestData) => Promise<AdapterResponse<TPayload>>;
 	readonly parsedUrl: URL;
 	readonly method: HttpMethod;
 	readonly requestHeaders: readonly Header[];
 	readonly parsedBody: AdapterBody;
+	readonly abortSignal?: AbortSignal | undefined;
 }): Promise<AdapterResponse<TPayload> | KontentSdkError> {
-	const { success, error, data } = await tryCatchAsync(
+	const { error, data } = await tryCatchAsync(
 		async () =>
 			await runAdapterRequest({
 				parsedUrl,
 				method,
 				requestHeaders,
 				parsedBody,
+				abortSignal,
 			}),
 	);
 
-	if (!success) {
-		return createAdapterError(parsedUrl.toString(), error);
-	}
-
-	return data;
+	return data ?? createAdapterError(parsedUrl.toString(), error);
 }
 
 function isSuccessfulResponse(response: AdapterResponse<AdapterPayload>): boolean {

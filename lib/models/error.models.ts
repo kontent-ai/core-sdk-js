@@ -13,6 +13,7 @@ export type ErrorDetails =
 	| ReasonData<"notFound", ErrorWithKontentResponse>
 	| ReasonData<"invalidBody", ErrorWithOriginalError>
 	| ReasonData<"invalidUrl", ErrorWithOriginalError>
+	| ReasonData<"aborted", ErrorWithOriginalError>
 	| ReasonData<
 			"validationFailed",
 			{
@@ -69,6 +70,17 @@ export class KontentSdkError<TDetails extends ErrorDetails = ErrorDetails> exten
 		this.retryStrategyOptions = retryStrategyOptions;
 		this.retryAttempt = retryAttempt;
 		this.details = details;
+	}
+}
+
+/**
+ * Http adapter should throw this error when the request is aborted.
+ *
+ * The error is then handled by the HttpService and converted to a KontentSdkError with the reason "aborted".
+ */
+export class AdapterAbortError extends Error {
+	constructor(error: unknown) {
+		super(`Adapter has aborted the request. ${error instanceof Error ? error.message : "No details provided"}`, { cause: error });
 	}
 }
 

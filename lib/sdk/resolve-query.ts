@@ -22,11 +22,13 @@ export async function resolveQuery<TResponsePayload extends JsonValue, TRequestB
 	zodSchema,
 	sdkInfo,
 	method,
+	abortSignal,
 }: ResolveQueryData<TResponsePayload, TRequestBody, TMeta>): QueryPromiseResult<TResponsePayload, TMeta> {
 	const { success, response, error } = await getHttpService(config).request<TResponsePayload, TRequestBody>({
 		body: request.body,
 		url: request.url,
 		method,
+		abortSignal,
 		requestHeaders: getCombinedRequestHeaders({
 			requestHeaders: request.requestHeaders ?? [],
 			continuationToken: request.continuationToken,

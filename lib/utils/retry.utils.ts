@@ -168,6 +168,7 @@ function canRetryError({
 						"unauthorized",
 						"validationFailed",
 						"noResponses",
+						"aborted",
 					),
 				},
 			},
