@@ -69,7 +69,7 @@ export async function runWithRetry<TResponse extends HttpPayload, TRequestBody e
 	if (isAborted) {
 		return {
 			success: false,
-			error: createAbortError({ url: data.url, retryStrategyOptions: data.retryStrategyOptions, retryAttempt: newRetryAttempt }),
+			error: createAbortError({ url: data.url, retryStrategyOptions: data.retryStrategyOptions, retryAttempt: data.retryAttempt }),
 		};
 	}
 
