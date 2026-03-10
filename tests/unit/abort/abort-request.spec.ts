@@ -95,7 +95,7 @@ describe("Abort signal cancellation with request call", async () => {
 	const [{ error }] = await Promise.all([
 		getDefaultHttpService({
 			retryStrategy: {
-				maxRetries: 3,
+				maxRetries: 5,
 				canRetryAdapterError: () => true,
 			},
 			adapter: {
