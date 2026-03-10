@@ -65,7 +65,6 @@ export class KontentSdkError<TDetails extends ErrorDetails = ErrorDetails> exten
 	}) {
 		super(toFriendlyMessage(message, details));
 
-		this.message = message;
 		this.url = url;
 		this.retryStrategyOptions = retryStrategyOptions;
 		this.retryAttempt = retryAttempt;
