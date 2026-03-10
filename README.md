@@ -109,17 +109,20 @@ if (!success) {
       console.error("Request failed:", error.details.originalError);
       break;
     case "invalidUrl":
+      // The provided URL could not be parsed before the request was sent
+      console.error("Invalid URL:", error.details.originalError);
+      break;
     case "invalidBody":
-      // Local validation failure — the request was never sent
-      console.error("Invalid request:", error.details.originalError);
+      // The request body could not be serialized before the request was sent
+      console.error("Invalid body:", error.details.originalError);
       break;
     case "validationFailed":
       // Zod schema validation failed (when responseValidation is enabled)
-      console.error("Unexpected response shape:", error.details.zodError);
+      console.error("Unexpected response shape for", error.details.url, error.details.zodError);
       break;
     case "noResponses":
       // Paging query completed without any responses
-      console.error("No data returned");
+      console.error("No data returned for", error.details.url);
       break;
   }
   return;
