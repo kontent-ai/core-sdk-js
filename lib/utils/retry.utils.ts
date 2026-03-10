@@ -15,15 +15,9 @@ type RetryResult =
 			readonly retryInMs: number;
 	  };
 
-type WaitResult =
-	| {
-			readonly isAborted: false;
-			readonly error?: never;
-	  }
-	| {
-			readonly isAborted: true;
-			readonly error: KontentSdkError<ErrorDetailsFor<"aborted">>;
-	  };
+type WaitResult = {
+	readonly isAborted: boolean;
+};
 
 const defaultMaxRetries: NonNullable<RetryStrategyOptions["maxRetries"]> = 3;
 
@@ -36,7 +30,7 @@ export async function runWithRetry<TResponse extends HttpPayload, TRequestBody e
 	readonly retryStrategyOptions: ResolvedRetryStrategyOptions;
 	readonly retryAttempt: number;
 	readonly url: string;
-	readonly abortSignal?: AbortSignal | undefined;
+	readonly abortSignal: AbortSignal | undefined;
 }): Promise<HttpResponse<TResponse, TRequestBody>> {
 	const { success, response, error } = await data.func(data.retryAttempt);
 
@@ -73,14 +67,21 @@ export async function runWithRetry<TResponse extends HttpPayload, TRequestBody e
 	// log retry attempt when available
 	data.retryStrategyOptions.logRetryAttempt?.(newRetryAttempt, data.url);
 
-	// wait before the next retry
-	await waitBeforeNextRetry({ retryInMs: retryResult.retryInMs, abortSignal: data.abortSignal });
+	// wait before the next retry or if the abort signal is aborted, return the error
+	const { isAborted } = await waitBeforeNextRetry({ retryInMs: retryResult.retryInMs, abortSignal: data.abortSignal });
+	if (isAborted) {
+		return {
+			success: false,
+			error: createAbortError({ url: data.url, retryStrategyOptions: data.retryStrategyOptions, retryAttempt: newRetryAttempt }),
+		};
+	}
 
 	return await runWithRetry({
 		func: data.func,
 		retryStrategyOptions: data.retryStrategyOptions,
 		retryAttempt: newRetryAttempt,
 		url: data.url,
+		abortSignal: data.abortSignal,
 	});
 }
 
@@ -109,20 +110,11 @@ export async function waitBeforeNextRetry({
 	readonly retryInMs: number;
 	readonly abortSignal?: AbortSignal | undefined;
 }): Promise<WaitResult> {
-	if (retryInMs <= 0) {
-		return {
-			isAborted: false,
-		};
+	if (abortSignal) {
+		return await waitBeforeNextRetryWithAbortSignal({ retryInMs, abortSignal });
 	}
 
-	if (abortSignal) {
-		const error = await waitBeforeNextRetryWithAbortSignal({ retryInMs, abortSignal });
-		if (error) {
-			return {
-				isAborted: true,
-				error,
-			};
-		}
+	if (retryInMs <= 0) {
 		return {
 			isAborted: false,
 		};
@@ -134,39 +126,53 @@ export async function waitBeforeNextRetry({
 	};
 }
 
+function createAbortError({
+	url,
+	retryStrategyOptions,
+	retryAttempt,
+}: {
+	readonly url: string;
+	readonly retryStrategyOptions: ResolvedRetryStrategyOptions;
+	readonly retryAttempt: number;
+}): KontentSdkError<ErrorDetailsFor<"aborted">> {
+	return createSdkError({
+		baseErrorData: {
+			message: "The request was aborted while waiting before the next retry attempt.",
+			url,
+			retryStrategyOptions,
+			retryAttempt,
+		},
+		details: { reason: "aborted", originalError: undefined },
+	});
+}
+
 async function waitBeforeNextRetryWithAbortSignal({
 	retryInMs,
 	abortSignal,
 }: {
 	readonly retryInMs: number;
 	readonly abortSignal: AbortSignal;
-}): Promise<KontentSdkError<ErrorDetailsFor<"aborted">> | undefined> {
-	abortSignal.throwIfAborted();
+}): Promise<WaitResult> {
+	if (abortSignal.aborted) {
+		return {
+			isAborted: true,
+		};
+	}
+
 	const listenerName = "abort";
 
-	return await new Promise<KontentSdkError<ErrorDetailsFor<"aborted">> | undefined>((resolve) => {
+	return await new Promise<WaitResult>((resolve) => {
 		const timeoutId = setTimeout((): void => {
 			abortSignal?.removeEventListener(listenerName, onAbort);
-			resolve(undefined);
+			resolve({ isAborted: false });
 		}, retryInMs);
 
 		const onAbort = (): void => {
 			clearTimeout(timeoutId);
 			abortSignal?.removeEventListener(listenerName, onAbort);
-			resolve(
-				createSdkError({
-					baseErrorData: {
-						message: "The request was aborted while waiting before the next retry attempt.",
-						url: "",
-						retryStrategyOptions: undefined,
-						retryAttempt: 0,
-					},
-					details: {
-						reason: "aborted",
-						originalError: undefined,
-					},
-				}),
-			);
+			resolve({
+				isAborted: true,
+			});
 		};
 
 		abortSignal?.addEventListener(listenerName, onAbort, { once: true });

@@ -1,5 +1,4 @@
 import { describe, expect, it } from "vitest";
-import type { ErrorReason } from "../../../lib/models/error.models.js";
 import { waitBeforeNextRetry } from "../../../lib/utils/retry.utils.js";
 
 describe("Retry wait", () => {
@@ -25,7 +24,7 @@ describe("Retry wait", () => {
 		// some leeway for the test to pass
 		const expectedDurationMax = abortAfterMs * 2;
 
-		const [{ isAborted, error }] = await Promise.all([
+		const [{ isAborted }] = await Promise.all([
 			waitBeforeNextRetry({ retryInMs, abortSignal: abortController.signal }),
 			new Promise((resolve) => {
 				setTimeout(() => {
@@ -40,6 +39,5 @@ describe("Retry wait", () => {
 		expect(isAborted).toBe(true);
 		expect(duration).toBeGreaterThan(expectedDurationMin);
 		expect(duration).toBeLessThan(expectedDurationMax);
-		expect(error?.details.reason).toBe<ErrorReason>("aborted");
 	});
 });

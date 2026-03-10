@@ -42,7 +42,7 @@ type AdapterRequestData = {
 	readonly method: HttpMethod;
 	readonly requestHeaders: readonly Header[];
 	readonly parsedBody: AdapterBody;
-	readonly abortSignal?: AbortSignal | undefined;
+	readonly abortSignal: AbortSignal | undefined;
 };
 
 export function getDefaultHttpService(config?: DefaultHttpServiceConfig): HttpService {
@@ -132,6 +132,7 @@ async function processHttpRequest<TPayload extends AdapterPayload, TRequestBody 
 
 	return await runWithRetry({
 		retryAttempt: 0,
+		abortSignal: options.abortSignal,
 		func: async (retryAttempt) => {
 			const responseOrError = await runAdapterRequest({
 				parsedUrl: parsedRequest.parsedUrl,
@@ -247,7 +248,7 @@ async function runAdapterRequest<TPayload extends AdapterPayload>({
 	readonly method: HttpMethod;
 	readonly requestHeaders: readonly Header[];
 	readonly parsedBody: AdapterBody;
-	readonly abortSignal?: AbortSignal | undefined;
+	readonly abortSignal: AbortSignal | undefined;
 }): Promise<AdapterResponse<TPayload> | KontentSdkError> {
 	const { error, data } = await tryCatchAsync(
 		async () =>

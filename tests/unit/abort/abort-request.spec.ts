@@ -82,3 +82,49 @@ describe("Abort signal cancellation", async () => {
 		expect(duration).toBeLessThan(expectedDuration);
 	});
 });
+
+describe("Abort signal cancellation with request call", async () => {
+	const abortController = new AbortController();
+	const startTime = performance.now();
+	const sleepBetweenRetriesInMs = 400;
+	const abortAfterMs = 100;
+
+	// some leeway for the test to pass
+	const expectedDuration = abortAfterMs * 2 + sleepBetweenRetriesInMs;
+
+	const [{ error }] = await Promise.all([
+		getDefaultHttpService({
+			retryStrategy: {
+				maxRetries: 3,
+				canRetryAdapterError: () => true,
+			},
+			adapter: {
+				executeRequest: async (_options: AdapterExecuteRequestOptions): Promise<AdapterResponse<JsonValue>> => {
+					await sleep(sleepBetweenRetriesInMs);
+					throw new Error("Test error");
+				},
+			},
+		}).request<null, null>({
+			url: "https://domain.com",
+			method: "GET",
+			body: null,
+			abortSignal: abortController.signal,
+		}),
+		new Promise((resolve) => {
+			setTimeout(() => {
+				abortController.abort();
+				resolve(true);
+			}, abortAfterMs);
+		}),
+	]);
+
+	const duration = performance.now() - startTime;
+
+	it("Error should be set and set to aborted state", () => {
+		expect(error?.details.reason).toBe<ErrorReason>("aborted");
+	});
+
+	it("Duration should be slighly higher than the abort after time", () => {
+		expect(duration).toBeLessThan(expectedDuration);
+	});
+});
