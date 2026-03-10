@@ -64,7 +64,7 @@ describe("Abort signal cancellation", async () => {
 				// abort request
 				abortController.abort();
 				resolve(true);
-			}, 0);
+			}, 100);
 		}),
 	]);
 

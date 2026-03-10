@@ -15,6 +15,16 @@ type RetryResult =
 			readonly retryInMs: number;
 	  };
 
+type WaitResult =
+	| {
+			readonly isAborted: false;
+			readonly error?: never;
+	  }
+	| {
+			readonly isAborted: true;
+			readonly error: KontentSdkError<ErrorDetailsFor<"aborted">>;
+	  };
+
 const defaultMaxRetries: NonNullable<RetryStrategyOptions["maxRetries"]> = 3;
 
 const defaultCanRetryAdapterError: NonNullable<RetryStrategyOptions["canRetryAdapterError"]> = (_error) => {
@@ -26,6 +36,7 @@ export async function runWithRetry<TResponse extends HttpPayload, TRequestBody e
 	readonly retryStrategyOptions: ResolvedRetryStrategyOptions;
 	readonly retryAttempt: number;
 	readonly url: string;
+	readonly abortSignal?: AbortSignal | undefined;
 }): Promise<HttpResponse<TResponse, TRequestBody>> {
 	const { success, response, error } = await data.func(data.retryAttempt);
 
@@ -63,7 +74,7 @@ export async function runWithRetry<TResponse extends HttpPayload, TRequestBody e
 	data.retryStrategyOptions.logRetryAttempt?.(newRetryAttempt, data.url);
 
 	// wait before the next retry
-	await waitBeforeNextRetry({ retryInMs: retryResult.retryInMs });
+	await waitBeforeNextRetry({ retryInMs: retryResult.retryInMs, abortSignal: data.abortSignal });
 
 	return await runWithRetry({
 		func: data.func,
@@ -91,12 +102,75 @@ export function resolveDefaultRetryStrategyOptions(options?: RetryStrategyOption
 	return resolvedOptions;
 }
 
-async function waitBeforeNextRetry({ retryInMs }: { readonly retryInMs: number }): Promise<void> {
+export async function waitBeforeNextRetry({
+	retryInMs,
+	abortSignal,
+}: {
+	readonly retryInMs: number;
+	readonly abortSignal?: AbortSignal | undefined;
+}): Promise<WaitResult> {
 	if (retryInMs <= 0) {
-		return;
+		return {
+			isAborted: false,
+		};
+	}
+
+	if (abortSignal) {
+		const error = await waitBeforeNextRetryWithAbortSignal({ retryInMs, abortSignal });
+		if (error) {
+			return {
+				isAborted: true,
+				error,
+			};
+		}
+		return {
+			isAborted: false,
+		};
 	}
 
 	await sleep(retryInMs);
+	return {
+		isAborted: false,
+	};
+}
+
+async function waitBeforeNextRetryWithAbortSignal({
+	retryInMs,
+	abortSignal,
+}: {
+	readonly retryInMs: number;
+	readonly abortSignal: AbortSignal;
+}): Promise<KontentSdkError<ErrorDetailsFor<"aborted">> | undefined> {
+	abortSignal.throwIfAborted();
+	const listenerName = "abort";
+
+	return await new Promise<KontentSdkError<ErrorDetailsFor<"aborted">> | undefined>((resolve) => {
+		const timeoutId = setTimeout((): void => {
+			abortSignal?.removeEventListener(listenerName, onAbort);
+			resolve(undefined);
+		}, retryInMs);
+
+		const onAbort = (): void => {
+			clearTimeout(timeoutId);
+			abortSignal?.removeEventListener(listenerName, onAbort);
+			resolve(
+				createSdkError({
+					baseErrorData: {
+						message: "The request was aborted while waiting before the next retry attempt.",
+						url: "",
+						retryStrategyOptions: undefined,
+						retryAttempt: 0,
+					},
+					details: {
+						reason: "aborted",
+						originalError: undefined,
+					},
+				}),
+			);
+		};
+
+		abortSignal?.addEventListener(listenerName, onAbort, { once: true });
+	});
 }
 
 function getDefaultRetryAttemptLogMessage(retryAttempt: number, maxRetries: number, url: string): string {
