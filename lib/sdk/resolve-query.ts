@@ -59,11 +59,11 @@ export async function resolveQuery<TResponsePayload extends JsonValue, TRequestB
 		response: {
 			payload: response.payload,
 			meta: {
+				...mapMetadata(response, { continuationToken: continuationTokenFromResponse }),
 				url: response.adapterResponse.url,
 				responseHeaders: response.adapterResponse.responseHeaders,
 				status: response.adapterResponse.status,
 				continuationToken: continuationTokenFromResponse,
-				...mapMetadata(response, { continuationToken: continuationTokenFromResponse }),
 			},
 		},
 	};
