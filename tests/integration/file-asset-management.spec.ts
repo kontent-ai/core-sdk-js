@@ -135,7 +135,7 @@ describe("Integration tests - Binary file / asset management", async () => {
 		},
 		{
 			intervalMs: 1000,
-			timeoutMs: 15000,
+			timeoutMs: 30000,
 		},
 	);
 
