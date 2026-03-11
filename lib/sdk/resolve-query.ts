@@ -10,10 +10,9 @@ import type { CommonHeaderNames, Header, SDKInfo } from "../models/core.models.j
 import type { KontentSdkError } from "../models/error.models.js";
 import type { JsonValue } from "../models/json.models.js";
 import { createSdkError } from "../utils/error.utils.js";
-import { createAuthorizationHeader, createContinuationHeader, getSdkIdHeader } from "../utils/header.utils.js";
+import { createAuthorizationHeader, createContinuationHeader, extractContinuationToken, getSdkIdHeader } from "../utils/header.utils.js";
 import { type Failure, tryCatch } from "../utils/try-catch.utils.js";
 import type { QueryPromiseResult, ResolveQueryData, SdkConfig, SuccessfulHttpResponse } from "./sdk-models.js";
-import { extractContinuationToken } from "./sdk-utils.js";
 
 export async function resolveQuery<TResponsePayload extends JsonValue, TRequestBody extends HttpRequestBody, TMeta>({
 	config,

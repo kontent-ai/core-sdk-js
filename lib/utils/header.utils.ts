@@ -53,6 +53,10 @@ export function isApplicationJsonResponseType(headers: readonly Header[]): boole
 	return findHeaderByName(headers, "Content-Type")?.value.toLowerCase().includes("application/json") ?? false;
 }
 
+export function extractContinuationToken(responseHeaders: readonly Header[]): string | undefined {
+	return findHeaderByName(responseHeaders, "X-Continuation")?.value;
+}
+
 function getNumericRetryAfterHeaderValue(retryAfterValue: string): number | undefined {
 	const parsedNumber = +retryAfterValue;
 

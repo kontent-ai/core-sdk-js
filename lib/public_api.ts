@@ -56,9 +56,9 @@ export type {
 	SdkConfig,
 	SuccessfulHttpResponse,
 } from "./sdk/sdk-models.js";
-export { extractContinuationToken, isPagingQuery } from "./sdk/sdk-utils.js";
+export { isPagingQuery } from "./sdk/sdk-utils.js";
 export { isKontent404Error, isKontentSdkError } from "./utils/error.utils.js";
-export { getSdkIdHeader } from "./utils/header.utils.js";
+export { extractContinuationToken, getSdkIdHeader } from "./utils/header.utils.js";
 export { resolveDefaultRetryStrategyOptions } from "./utils/retry.utils.js";
 export { tryCatch, tryCatchAsync } from "./utils/try-catch.utils.js";
 export { getCodenameSchema } from "./utils/type.utils.js";
