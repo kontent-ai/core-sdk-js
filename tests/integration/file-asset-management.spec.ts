@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { HttpServiceStatus } from "../../lib/http/http.models.js";
 import { getDefaultHttpService } from "../../lib/http/http.service.js";
-import { sleep } from "../../lib/utils/core.utils.js";
+import { poll } from "../../lib/testkit/poll.utils.js";
 import { getIntegrationTestConfig } from "../integration-tests.config.js";
 
 const fileToUpload = new Blob(["core-sdk-integration-test"], { type: "text/plain" });
@@ -119,16 +119,25 @@ describe("Integration tests - Binary file / asset management", async () => {
 		expect(addAssetResponse.payload.url).toBeDefined();
 	});
 
-	// It may take a bit of time for the file to be available for download
-	const sleepTime = 15000;
-	console.log(`Waiting ${sleepTime}ms for file to be available for download...`);
-	await sleep(sleepTime);
-
 	const {
 		success: downloadedFileSuccess,
-		response: downloadedFileResponse,
+		data: downloadedFileResponse,
 		error: downloadedFileError,
-	} = await downloadAssetFile(addAssetResponse.payload.url);
+	} = await poll(
+		async () => {
+			const { success, response, error } = await downloadAssetFile(addAssetResponse.payload.url);
+
+			if (success) {
+				return { success: true, data: response };
+			}
+
+			return { success: false, error };
+		},
+		{
+			intervalMs: 1000,
+			timeoutMs: 15000,
+		},
+	);
 
 	if (!downloadedFileSuccess) {
 		throw downloadedFileError;
