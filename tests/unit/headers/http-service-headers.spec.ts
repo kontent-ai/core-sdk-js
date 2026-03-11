@@ -31,8 +31,8 @@ describe("Default headers", async () => {
 		expect(error).toBeUndefined();
 	});
 
-	it("Response should contain application/json content type header", () => {
-		expect(response?.requestHeaders.find((m) => m.name.toLowerCase() === "content-type")?.value).toStrictEqual("application/json");
+	it("Response should not contain content type header for null body", () => {
+		expect(response?.requestHeaders.find((m) => m.name.toLowerCase() === "content-type")).toBeUndefined();
 	});
 
 	it(`Request should contain '${sdkIdHeader.name}' header`, () => {
@@ -123,5 +123,36 @@ describe("Custom Http Service & Request headers", async () => {
 
 	it(`Request should contain header ${headerB.name} `, () => {
 		expect(response?.requestHeaders.find((m) => m.name === headerB.name)).toStrictEqual(headerB);
+	});
+});
+
+describe("Content-Type header handling", async () => {
+	afterAll(() => {
+		vi.resetAllMocks();
+	});
+
+	const contentTypeHeader: Header = {
+		name: "Content-Type",
+		value: "application/json",
+	};
+
+	mockGlobalFetchJsonResponse({
+		jsonResponse: {},
+		statusCode: 200,
+	});
+
+	const { response } = await getDefaultHttpService().request({
+		url: "https://domain.com",
+		method: "POST",
+		body: {},
+		requestHeaders: [contentTypeHeader],
+	});
+
+	it("Request should contain only a single content type header", () => {
+		expect(response?.requestHeaders.filter((m) => m.name.toLowerCase() === "content-type").length).toStrictEqual(1);
+	});
+
+	it("Request should preserve provided content type header", () => {
+		expect(response?.requestHeaders.find((m) => m.name.toLowerCase() === "content-type")).toStrictEqual(contentTypeHeader);
 	});
 });

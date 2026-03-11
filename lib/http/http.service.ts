@@ -504,7 +504,6 @@ function buildRequestHeaders({
 	const contentTypeHeader = match({ existingContentTypeHeader, body })
 		.returnType<Header | undefined>()
 		.with({ existingContentTypeHeader: P.nullish, body: P.nonNullable }, () => createDefaultContentTypeHeader(body))
-		.with({ existingContentTypeHeader: P.not(P.nullish), body: P.nonNullable }, () => existingContentTypeHeader)
 		.otherwise(() => undefined);
 	const sdkVersionHeader = existingSdkVersionHeader ? undefined : getSdkIdHeader(coreSdkInfo);
 
