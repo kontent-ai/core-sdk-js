@@ -1,7 +1,7 @@
 import type { Header, HttpMethod, RetryStrategyOptions } from "../models/core.models.js";
 import type { KontentSdkError } from "../models/error.models.js";
 import type { JsonObject, JsonValue } from "../models/json.models.js";
-import type { LiteralUnionNumber } from "../models/utility.models.js";
+import type { LiteralUnionNumber } from "../models/utility.types.js";
 import type { QueryResponse } from "../sdk/sdk-models.js";
 import type { Failure, Success } from "../utils/try-catch.utils.js";
 

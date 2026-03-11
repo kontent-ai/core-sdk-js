@@ -1,5 +1,5 @@
 import type { ErrorDetailsFor, KontentSdkError } from "./error.models.js";
-import type { LiteralUnion, PickStringLiteral } from "./utility.models.js";
+import type { LiteralUnion, PickStringLiteral } from "./utility.types.js";
 
 /**
  * SDK info for identification of the SDK

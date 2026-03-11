@@ -1,18 +1,18 @@
 import { match, P } from "ts-pattern";
 import { coreSdkInfo } from "../core-sdk-info.js";
 import type { CommonHeaderNames, ErrorResponseData, Header, HttpMethod, ResolvedRetryStrategyOptions } from "../models/core.models.js";
-import {
-	AdapterAbortError,
-	AdapterParseError,
-	type ErrorDetails,
-	type ErrorDetailsFor,
-	type ErrorReason,
-	type KontentSdkError,
-} from "../models/error.models.js";
+import type { ErrorDetails, ErrorDetailsFor, ErrorReason, KontentSdkError } from "../models/error.models.js";
 import type { JsonObject, JsonValue } from "../models/json.models.js";
-import type { PickStringLiteral } from "../models/utility.models.js";
+import type { PickStringLiteral } from "../models/utility.types.js";
 import { isBlob, isDefined } from "../utils/core.utils.js";
-import { createSdkError, isKontentErrorResponseData, isKontentSdkError, toInvalidResponseMessage } from "../utils/error.utils.js";
+import {
+	createSdkError,
+	isAdapterAbortError,
+	isAdapterParseError,
+	isKontentErrorResponseData,
+	isKontentSdkError,
+	toInvalidResponseMessage,
+} from "../utils/error.utils.js";
 import { findHeaderByName, getSdkIdHeader, isApplicationJsonResponseType } from "../utils/header.utils.js";
 import { resolveDefaultRetryStrategyOptions, runWithRetry } from "../utils/retry.utils.js";
 import { type TryCatchResult, tryCatch, tryCatchAsync } from "../utils/try-catch.utils.js";
@@ -221,14 +221,6 @@ function createAdapterError({
 				},
 			}),
 		);
-}
-
-function isAdapterParseError(error: unknown): error is AdapterParseError {
-	return error instanceof AdapterParseError;
-}
-
-function isAdapterAbortError(error: unknown): error is AdapterAbortError {
-	return error instanceof AdapterAbortError;
 }
 
 function mapAdapterResponse<TPayload extends HttpPayload, TRequestBody extends HttpRequestBody>({

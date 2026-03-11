@@ -1,6 +1,6 @@
 import type { AdapterPayload, AdapterResponse } from "../http/http.models.js";
 import type { ErrorResponseData, HttpMethod, ValidationError } from "../models/core.models.js";
-import { type BaseErrorData, type ErrorDetails, KontentSdkError } from "../models/error.models.js";
+import { AdapterAbortError, AdapterParseError, type BaseErrorData, type ErrorDetails, KontentSdkError } from "../models/error.models.js";
 import { isDefined } from "./core.utils.js";
 
 export function createSdkError<TDetails extends ErrorDetails>({
@@ -22,6 +22,14 @@ export function isKontent404Error(error: unknown): boolean {
 
 export function isKontentSdkError(error: unknown): error is KontentSdkError {
 	return error instanceof KontentSdkError;
+}
+
+export function isAdapterParseError(error: unknown): error is AdapterParseError {
+	return error instanceof AdapterParseError;
+}
+
+export function isAdapterAbortError(error: unknown): error is AdapterAbortError {
+	return error instanceof AdapterAbortError;
 }
 
 export function toInvalidResponseMessage({

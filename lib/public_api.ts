@@ -40,7 +40,7 @@ export {
 	KontentSdkError,
 } from "./models/error.models.js";
 export type { JsonArray, JsonObject, JsonValue } from "./models/json.models.js";
-export type { EmptyObject } from "./models/utility.models.js";
+export type { EmptyObject } from "./models/utility.types.js";
 export { createFetchQuery } from "./sdk/queries/fetch-sdk-query.js";
 export { createPagedFetchQuery } from "./sdk/queries/paged-fetch-sdk-query.js";
 export { kontentUuidSchema, nilUuid } from "./sdk/sdk-config.js";
