@@ -12,6 +12,22 @@ The **Core SDK** provides foundational functionality leveraged by dependent Kont
 
 ---
 
+## Requirements
+
+Before using this package, make sure your environment matches the published package requirements:
+
+- Node.js `>=22`
+- ESM-compatible runtime, because the package is published as an ES module
+- Peer dependencies: `zod` and `ts-pattern`
+
+With modern package managers such as npm, peer dependencies are typically installed automatically, so you usually only need:
+
+```bash
+npm install @kontent-ai/core-sdk
+```
+
+---
+
 ## HTTP Request Infrastructure
 
 The SDK includes a default implementation of the `HttpService` and `HttpAdapter` components, which handle HTTP requests to the Kontent.ai APIs.
@@ -37,22 +53,50 @@ However, if your goal is to retain the core features (e.g., retry policies, requ
 
 ## Example: Custom `HttpAdapter` Implementation
 
-Below is an example demonstrating how to provide your own HTTP client by implementing a custom `HttpAdapter`. Both `executeRequest` and `downloadFile` are optional, so you only need to implement the methods you want to override:
+Below is an example demonstrating how to provide your own HTTP client by implementing a custom `HttpAdapter`. Both `executeRequest` and `downloadFile` are optional, so you only need to implement the methods you want to override.
+
+If you want the SDK to preserve specific `error.details.reason` values for custom adapters, throw:
+
+- `AdapterAbortError` when the request is aborted
+- `AdapterParseError` when the response cannot be parsed as JSON or `Blob`
+
+If you throw some other error, the SDK will classify it as `adapterError`.
 
 ```typescript
+import { AdapterAbortError, AdapterParseError, getDefaultHttpService } from "@kontent-ai/core-sdk";
+
 const httpService = getDefaultHttpService({
   adapter: {
     executeRequest: async (options) => {
-      const response = await fetch(options.url, {
-        method: options.method,
-        headers: Object.fromEntries((options.requestHeaders ?? []).map((header) => [header.name, header.value])),
-        body: options.body,
-      });
+      let response: Response;
+
+      try {
+        response = await fetch(options.url, {
+          method: options.method,
+          headers: Object.fromEntries((options.requestHeaders ?? []).map((header) => [header.name, header.value])),
+          body: options.body,
+          signal: options.abortSignal ?? undefined,
+        });
+      } catch (error) {
+        if (error instanceof DOMException && error.name === "AbortError") {
+          throw new AdapterAbortError(error);
+        }
+
+        throw error;
+      }
+
+      let payload = null;
+
+      if (response.headers.get("content-type")?.includes("application/json")) {
+        try {
+          payload = await response.json();
+        } catch (error) {
+          throw new AdapterParseError(error);
+        }
+      }
 
       return {
-        payload: response.headers.get("content-type")?.includes("application/json")
-          ? await response.json()
-          : null,
+        payload,
         responseHeaders: [...response.headers.entries()].map(([name, value]) => ({ name, value })),
         status: response.status,
         statusText: response.statusText,
@@ -60,12 +104,31 @@ const httpService = getDefaultHttpService({
       };
     },
     downloadFile: async (options) => {
-      const response = await fetch(options.url, {
-        headers: Object.fromEntries((options.requestHeaders ?? []).map((header) => [header.name, header.value])),
-      });
+      let response: Response;
+
+      try {
+        response = await fetch(options.url, {
+          headers: Object.fromEntries((options.requestHeaders ?? []).map((header) => [header.name, header.value])),
+          signal: options.abortSignal ?? undefined,
+        });
+      } catch (error) {
+        if (error instanceof DOMException && error.name === "AbortError") {
+          throw new AdapterAbortError(error);
+        }
+
+        throw error;
+      }
+
+      let payload: Blob;
+
+      try {
+        payload = await response.blob();
+      } catch (error) {
+        throw new AdapterParseError(error);
+      }
 
       return {
-        payload: await response.blob(),
+        payload,
         responseHeaders: [...response.headers.entries()].map(([name, value]) => ({ name, value })),
         status: response.status,
         statusText: response.statusText,
