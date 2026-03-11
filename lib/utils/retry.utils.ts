@@ -249,6 +249,7 @@ function canRetryError({
 						"validationFailed",
 						"noResponses",
 						"aborted",
+						"parseError",
 					),
 				},
 			},

@@ -94,7 +94,7 @@ export type AdapterResponse<TPayload extends AdapterPayload> = {
 };
 
 export type AdapterBody = string | Blob | null;
-export type AdapterPayload = JsonValue | Blob | null;
+export type AdapterPayload = JsonValue | Blob;
 
 export type AdapterExecuteRequestOptions = {
 	readonly url: string;

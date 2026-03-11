@@ -3,6 +3,7 @@ import { coreSdkInfo } from "../core-sdk-info.js";
 import type { CommonHeaderNames, ErrorResponseData, Header, HttpMethod, ResolvedRetryStrategyOptions } from "../models/core.models.js";
 import {
 	AdapterAbortError,
+	AdapterParseError,
 	type ErrorDetails,
 	type ErrorDetailsFor,
 	type ErrorReason,
@@ -141,6 +142,8 @@ async function processHttpRequest<TPayload extends AdapterPayload, TRequestBody 
 				parsedBody: parsedRequest.parsedBody,
 				runAdapterRequest: runAdapterFunc,
 				abortSignal: options.abortSignal,
+				retryAttempt,
+				retryStrategyOptions,
 			});
 
 			if (isKontentSdkError(responseOrError)) {
@@ -164,20 +167,44 @@ async function processHttpRequest<TPayload extends AdapterPayload, TRequestBody 
 	});
 }
 
-function createAdapterError(url: string, error: unknown): KontentSdkError<ErrorDetailsFor<"adapterError" | "aborted">> {
+function createAdapterError({
+	url,
+	error,
+	retryAttempt,
+	retryStrategyOptions,
+}: {
+	readonly url: string;
+	readonly error: unknown;
+	readonly retryAttempt: number;
+	readonly retryStrategyOptions: ResolvedRetryStrategyOptions;
+}): KontentSdkError<ErrorDetailsFor<"adapterError" | "aborted" | "parseError">> {
 	return match(error)
-		.returnType<KontentSdkError<ErrorDetailsFor<"adapterError" | "aborted">>>()
+		.returnType<KontentSdkError<ErrorDetailsFor<"adapterError" | "aborted" | "parseError">>>()
 		.when(isAdapterAbortError, (abortError) =>
 			createSdkError({
 				baseErrorData: {
 					message: `Adapter has aborted the request for url '${url}'. See the error object for more details.`,
 					url: url,
-					retryStrategyOptions: undefined,
-					retryAttempt: undefined,
+					retryStrategyOptions,
+					retryAttempt,
 				},
 				details: {
 					reason: "aborted",
 					originalError: abortError,
+				},
+			}),
+		)
+		.when(isAdapterParseError, (parseError) =>
+			createSdkError({
+				baseErrorData: {
+					message: `Adapter failed to parse the response for url '${url}'. See the error object for more details.`,
+					url: url,
+					retryStrategyOptions,
+					retryAttempt,
+				},
+				details: {
+					reason: "parseError",
+					originalError: parseError,
 				},
 			}),
 		)
@@ -186,8 +213,8 @@ function createAdapterError(url: string, error: unknown): KontentSdkError<ErrorD
 				baseErrorData: {
 					message: `Adapter failed to execute the request for url '${url}'. See the error object for more details.`,
 					url: url,
-					retryStrategyOptions: undefined,
-					retryAttempt: undefined,
+					retryStrategyOptions,
+					retryAttempt,
 				},
 				details: {
 					reason: "adapterError",
@@ -195,6 +222,10 @@ function createAdapterError(url: string, error: unknown): KontentSdkError<ErrorD
 				},
 			}),
 		);
+}
+
+function isAdapterParseError(error: unknown): error is AdapterParseError {
+	return error instanceof AdapterParseError;
 }
 
 function isAdapterAbortError(error: unknown): error is AdapterAbortError {
@@ -242,6 +273,8 @@ async function runAdapterRequest<TPayload extends AdapterPayload>({
 	parsedBody,
 	runAdapterRequest,
 	abortSignal,
+	retryAttempt,
+	retryStrategyOptions,
 }: {
 	readonly runAdapterRequest: (data: AdapterRequestData) => Promise<AdapterResponse<TPayload>>;
 	readonly parsedUrl: URL;
@@ -249,6 +282,8 @@ async function runAdapterRequest<TPayload extends AdapterPayload>({
 	readonly requestHeaders: readonly Header[];
 	readonly parsedBody: AdapterBody;
 	readonly abortSignal: AbortSignal | undefined;
+	readonly retryAttempt: number;
+	readonly retryStrategyOptions: ResolvedRetryStrategyOptions;
 }): Promise<AdapterResponse<TPayload> | KontentSdkError> {
 	const { error, data } = await tryCatchAsync(
 		async () =>
@@ -261,7 +296,7 @@ async function runAdapterRequest<TPayload extends AdapterPayload>({
 			}),
 	);
 
-	return data ?? createAdapterError(parsedUrl.toString(), error);
+	return data ?? createAdapterError({ url: parsedUrl.toString(), error, retryAttempt, retryStrategyOptions });
 }
 
 function isSuccessfulResponse(response: AdapterResponse<AdapterPayload>): boolean {

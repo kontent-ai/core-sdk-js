@@ -10,6 +10,7 @@ export type ErrorDetails =
 	| ReasonData<"adapterError", ErrorWithOriginalError>
 	| ReasonData<"unauthorized", ErrorWithKontentResponse>
 	| ReasonData<"invalidResponse", ErrorWithKontentResponse>
+	| ReasonData<"parseError", ErrorWithOriginalError>
 	| ReasonData<"notFound", ErrorWithKontentResponse>
 	| ReasonData<"invalidBody", ErrorWithOriginalError>
 	| ReasonData<"invalidUrl", ErrorWithOriginalError>
@@ -81,6 +82,17 @@ export class KontentSdkError<TDetails extends ErrorDetails = ErrorDetails> exten
 export class AdapterAbortError extends Error {
 	constructor(error: unknown) {
 		super(`Adapter has aborted the request. ${error instanceof Error ? error.message : "No details provided"}`, { cause: error });
+	}
+}
+
+/**
+ * Http adapter should throw this error when the response is not valid JSON or BLOB.
+ *
+ * The error is then handled by the HttpService and converted to a KontentSdkError with the reason "parseError".
+ */
+export class AdapterParseError extends Error {
+	constructor(error: unknown) {
+		super(`Adapter failed to parse the response. ${error instanceof Error ? error.message : "No details provided"}`, { cause: error });
 	}
 }
 

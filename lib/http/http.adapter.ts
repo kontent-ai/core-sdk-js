@@ -1,5 +1,5 @@
 import type { Header } from "../models/core.models.js";
-import { AdapterAbortError } from "../models/error.models.js";
+import { AdapterAbortError, AdapterParseError } from "../models/error.models.js";
 import type { JsonValue } from "../models/json.models.js";
 import { isApplicationJsonResponseType, toFetchHeaders, toSdkHeaders } from "../utils/header.utils.js";
 import { tryCatchAsync } from "../utils/try-catch.utils.js";
@@ -10,7 +10,9 @@ export function getDefaultHttpAdapter(): Required<HttpAdapter> {
 		executeRequest: async (options) => {
 			const response = await getResponse(options);
 			const sdkHeaders = toSdkHeaders(response.headers);
-			const payload = isApplicationJsonResponseType(sdkHeaders) ? ((await response.json()) as JsonValue) : null;
+			const payload = isApplicationJsonResponseType(sdkHeaders)
+				? await parseResponse<JsonValue>(async () => (await response.json()) as JsonValue)
+				: null;
 
 			return createAdapterResponse(options.url, response, payload, sdkHeaders);
 		},
@@ -21,7 +23,9 @@ export function getDefaultHttpAdapter(): Required<HttpAdapter> {
 				body: null,
 			});
 
-			return createAdapterResponse(options.url, response, await response.blob(), toSdkHeaders(response.headers));
+			const file = await parseResponse(async () => response.blob());
+
+			return createAdapterResponse(options.url, response, file, toSdkHeaders(response.headers));
 		},
 	};
 }
@@ -49,6 +53,20 @@ async function getResponse(options: AdapterExecuteRequestOptions): Promise<Respo
 
 	// re-throw original error
 	throw error;
+}
+
+async function parseResponse<TPayload extends AdapterPayload>(resolve: () => Promise<TPayload>): Promise<TPayload> {
+	const { success, data, error } = await tryCatchAsync(async () => {
+		return await resolve();
+	});
+
+	if (!success) {
+		// this is to notify the HttpService that the response is not valid JSON or BLOB
+		// HttpService will then convert the error to a KontentSdkError with the reason "parseError"
+		throw new AdapterParseError(error);
+	}
+
+	return data;
 }
 
 function isAbortError(error: unknown): boolean {
