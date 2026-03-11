@@ -501,7 +501,11 @@ function buildRequestHeaders({
 	const existingContentTypeHeader = findHeaderByName(combinedHeaders, "Content-Type");
 	const existingSdkVersionHeader = findHeaderByName(combinedHeaders, "X-KC-SDKID");
 
-	const contentTypeHeader = existingContentTypeHeader ? undefined : createDefaultContentTypeHeader(body);
+	const contentTypeHeader = match({ existingContentTypeHeader, body })
+		.returnType<Header | undefined>()
+		.with({ existingContentTypeHeader: P.nullish, body: P.nonNullable }, () => createDefaultContentTypeHeader(body))
+		.with({ existingContentTypeHeader: P.not(P.nullish), body: P.nonNullable }, () => existingContentTypeHeader)
+		.otherwise(() => undefined);
 	const sdkVersionHeader = existingSdkVersionHeader ? undefined : getSdkIdHeader(coreSdkInfo);
 
 	const contentLengthHeader = isBlob(body) ? createDefaultContentLengthHeader(body) : undefined;
