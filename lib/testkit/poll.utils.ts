@@ -18,7 +18,7 @@ export async function poll<TResult, TError = unknown>(
 	let elapsedMs = 0;
 	let latestAttempt: Success<TResult> | Failure<TResult, TError> | undefined;
 
-	while (elapsedMs < timeoutMs) {
+	while (elapsedMs <= timeoutMs) {
 		const result = await func();
 		latestAttempt = result;
 

@@ -6,7 +6,7 @@
 import type { ZodType } from "zod";
 import type { HttpRequestBody, HttpService } from "../http/http.models.js";
 import { getDefaultHttpService } from "../http/http.service.js";
-import type { Header, SDKInfo } from "../models/core.models.js";
+import type { CommonHeaderNames, Header, SDKInfo } from "../models/core.models.js";
 import type { KontentSdkError } from "../models/error.models.js";
 import type { JsonValue } from "../models/json.models.js";
 import { createSdkError } from "../utils/error.utils.js";
@@ -25,7 +25,6 @@ export async function resolveQuery<TResponsePayload extends JsonValue, TRequestB
 	abortSignal,
 }: ResolveQueryData<TResponsePayload, TRequestBody, TMeta>): QueryPromiseResult<TResponsePayload, TMeta> {
 	const urlToUse = config.baseUrl ? setBaseUrl(request.url, config.baseUrl) : request.url;
-	console.log(request.url, config.baseUrl, urlToUse);
 	const { success, response, error } = await getHttpService(config).request<TResponsePayload, TRequestBody>({
 		body: request.body,
 		url: urlToUse,
@@ -152,7 +151,7 @@ function getCombinedRequestHeaders({
 }): readonly Header[] {
 	return [
 		getSdkIdHeader(sdkInfo),
-		...requestHeaders,
+		...requestHeaders.filter((header) => header.name !== ("X-KC-SDKID" satisfies CommonHeaderNames)),
 		...(continuationToken ? [createContinuationHeader(continuationToken)] : []),
 		...(authorizationApiKey ? [createAuthorizationHeader(authorizationApiKey)] : []),
 	];

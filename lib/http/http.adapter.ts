@@ -12,7 +12,10 @@ export function getDefaultHttpAdapter(): Required<HttpAdapter> {
 			const response = await getResponse(options);
 			const sdkHeaders = toSdkHeaders(response.headers);
 			const payload = isApplicationJsonResponseType(sdkHeaders)
-				? await parseResponse<JsonValue>(async () => (await response.json()) as JsonValue)
+				? await parseResponse<JsonValue>({
+						parseFunc: async () => (await response.json()) as JsonValue,
+						abortSignal: options.abortSignal,
+					})
 				: null;
 
 			return createAdapterResponse(options.url, response, payload, sdkHeaders);
@@ -23,7 +26,7 @@ export function getDefaultHttpAdapter(): Required<HttpAdapter> {
 				method: "GET",
 			});
 
-			const file = await parseResponse(async () => response.blob());
+			const file = await parseResponse({ parseFunc: async () => response.blob(), abortSignal: options.abortSignal });
 
 			return createAdapterResponse(options.url, response, file, toSdkHeaders(response.headers));
 		},
@@ -55,10 +58,13 @@ async function getResponse(options: AdapterExecuteRequestOptions): Promise<Respo
 	throw error;
 }
 
-async function parseResponse<TPayload extends AdapterPayload>(
-	parseFunc: () => Promise<TPayload>,
-	abortSignal?: AbortSignal,
-): Promise<TPayload> {
+async function parseResponse<TPayload extends AdapterPayload>({
+	parseFunc,
+	abortSignal,
+}: {
+	readonly parseFunc: () => Promise<TPayload>;
+	readonly abortSignal: AbortSignal | undefined;
+}): Promise<TPayload> {
 	const runParseFunc = async (): Promise<TPayload> => {
 		const { success, data, error } = await tryCatchAsync(async () => {
 			return await parseFunc();
