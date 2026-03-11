@@ -32,13 +32,7 @@ export function getRetryAfterHeaderValue(headers: readonly Header[]): number | u
 		return undefined;
 	}
 
-	const numberValue = +retryAfterHeader.value;
-
-	if (!Number.isSafeInteger(numberValue)) {
-		return undefined;
-	}
-
-	return numberValue;
+	return getNumericRetryAfterHeaderValue(retryAfterHeader.value) ?? getDateRetryAfterHeaderValue(retryAfterHeader.value);
 }
 
 export function toSdkHeaders(headers: Headers): readonly Header[] {
@@ -57,4 +51,24 @@ export function toFetchHeaders(headers: readonly Header[]): Headers {
 
 export function isApplicationJsonResponseType(headers: readonly Header[]): boolean {
 	return findHeaderByName(headers, "Content-Type")?.value.toLowerCase().includes("application/json") ?? false;
+}
+
+function getNumericRetryAfterHeaderValue(retryAfterValue: string): number | undefined {
+	const parsedNumber = +retryAfterValue;
+
+	if (Number.isSafeInteger(parsedNumber)) {
+		return parsedNumber;
+	}
+
+	return undefined;
+}
+
+function getDateRetryAfterHeaderValue(retryAfterValue: string): number | undefined {
+	const retryAfterDate = Date.parse(retryAfterValue);
+
+	if (Number.isNaN(retryAfterDate)) {
+		return undefined;
+	}
+
+	return Math.max(0, Math.ceil((retryAfterDate - Date.now()) / 1000));
 }
