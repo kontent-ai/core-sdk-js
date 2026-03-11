@@ -26,8 +26,8 @@ export async function poll<TResult, TError = unknown>(
 			return result;
 		}
 
-		await sleep(intervalMs);
 		elapsedMs = Date.now() - startTime;
+		await sleep(intervalMs);
 	}
 
 	if (!latestAttempt) {
