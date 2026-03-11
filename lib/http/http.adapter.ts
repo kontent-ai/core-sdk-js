@@ -55,9 +55,9 @@ async function getResponse(options: AdapterExecuteRequestOptions): Promise<Respo
 	throw error;
 }
 
-async function parseResponse<TPayload extends AdapterPayload>(resolve: () => Promise<TPayload>): Promise<TPayload> {
+async function parseResponse<TPayload extends AdapterPayload>(parseFunc: () => Promise<TPayload>): Promise<TPayload> {
 	const { success, data, error } = await tryCatchAsync(async () => {
-		return await resolve();
+		return await parseFunc();
 	});
 
 	if (!success) {
