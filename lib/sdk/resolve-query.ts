@@ -11,7 +11,7 @@ import type { KontentSdkError } from "../models/error.models.js";
 import type { JsonValue } from "../models/json.models.js";
 import { createSdkError } from "../utils/error.utils.js";
 import { createAuthorizationHeader, createContinuationHeader, getSdkIdHeader } from "../utils/header.utils.js";
-import type { Failure } from "../utils/try-catch.utils.js";
+import { type Failure, tryCatch } from "../utils/try-catch.utils.js";
 import type { QueryPromiseResult, ResolveQueryData, SdkConfig, SuccessfulHttpResponse } from "./sdk-models.js";
 import { extractContinuationToken } from "./sdk-utils.js";
 
@@ -24,9 +24,11 @@ export async function resolveQuery<TResponsePayload extends JsonValue, TRequestB
 	method,
 	abortSignal,
 }: ResolveQueryData<TResponsePayload, TRequestBody, TMeta>): QueryPromiseResult<TResponsePayload, TMeta> {
+	const urlToUse = config.baseUrl ? setBaseUrl(request.url, config.baseUrl) : request.url;
+	console.log(request.url, config.baseUrl, urlToUse);
 	const { success, response, error } = await getHttpService(config).request<TResponsePayload, TRequestBody>({
 		body: request.body,
-		url: request.url,
+		url: urlToUse,
 		method,
 		abortSignal,
 		requestHeaders: getCombinedRequestHeaders({
@@ -69,6 +71,34 @@ export async function resolveQuery<TResponsePayload extends JsonValue, TRequestB
 	};
 
 	return result;
+}
+
+/**
+ * We are intentionally not throwing errors here as parsing errors are handled by the HttpService.
+ */
+function setBaseUrl(url: string, baseUrl: string): string {
+	const { success, data: parsedUrl } = tryCatch(() => new URL(url));
+
+	if (!success) {
+		return url;
+	}
+
+	if (baseUrl.startsWith("http")) {
+		const { success, data: parsedBaseUrl } = tryCatch(() => new URL(baseUrl));
+
+		if (!success) {
+			return url;
+		}
+
+		parsedUrl.host = parsedBaseUrl.host;
+		parsedUrl.protocol = parsedBaseUrl.protocol;
+
+		return parsedUrl.toString();
+	}
+
+	parsedUrl.host = baseUrl;
+
+	return parsedUrl.toString();
 }
 
 async function validateResponse<TResponsePayload extends JsonValue, TRequestBody extends HttpRequestBody>({
