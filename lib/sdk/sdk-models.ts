@@ -74,6 +74,11 @@ export type PagedFetchQuery<TResponsePayload, TMeta> = Query<TResponsePayload> &
 	pages(config?: PaginationConfig): AsyncGenerator<QueryResult<QueryResponse<TResponsePayload, TMeta>>>;
 };
 
+/**
+ * Not yet implemented.
+ *
+ * @todo Implement mutation query.
+ */
 export type MutationQuery<TResponsePayload, TMeta> = Query<TResponsePayload> & {
 	execute(): Promise<QueryResult<QueryResponse<TResponsePayload, TMeta>>>;
 };

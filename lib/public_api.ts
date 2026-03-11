@@ -31,7 +31,14 @@ export type {
 	SDKInfo,
 	ValidationError,
 } from "./models/core.models.js";
-export { AdapterAbortError, type ErrorDetails, type ErrorDetailsFor, type ErrorReason, KontentSdkError } from "./models/error.models.js";
+export {
+	AdapterAbortError,
+	AdapterParseError,
+	type ErrorDetails,
+	type ErrorDetailsFor,
+	type ErrorReason,
+	KontentSdkError,
+} from "./models/error.models.js";
 export type { JsonArray, JsonObject, JsonValue } from "./models/json.models.js";
 export type { EmptyObject } from "./models/utility.models.js";
 export { createFetchQuery } from "./sdk/queries/fetch-sdk-query.js";

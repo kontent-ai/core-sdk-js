@@ -104,6 +104,10 @@ if (!success) {
       // Any non-2xx response that isn't 401 or 404
       console.error(`HTTP ${error.details.status}:`, error.details.kontentErrorResponse?.message);
       break;
+    case "parseError":
+      // The response claimed to be JSON, but parsing it failed
+      console.error("Failed to parse response:", error.details.originalError);
+      break;
     case "adapterError":
       // Network failure, timeout, or other transport-level issue
       console.error("Request failed:", error.details.originalError);
@@ -123,6 +127,10 @@ if (!success) {
     case "noResponses":
       // Paging query completed without any responses
       console.error("No data returned for", error.details.url);
+      break;
+    case "aborted":
+      // The request was cancelled before it could complete
+      console.error("Request was aborted:", error.details.originalError);
       break;
   }
   return;

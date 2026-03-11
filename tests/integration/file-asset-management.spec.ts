@@ -7,12 +7,13 @@ import { getIntegrationTestConfig } from "../integration-tests.config.js";
 const fileToUpload = new Blob(["core-sdk-integration-test"], { type: "text/plain" });
 
 /**
- * Currently, the file contents are not being compared in the test because of changes made to Kontent.ai API
- * which causes some files to be not accessible immediately after upload. It's unclear whether this behavior
- * will be fixed in the future, so we're disabling the file content comparison for now and only check the status code.
- * Same applies for the file manually uplaoded to Kontent.ai and using the "Copy URL" feature.
+ * Controls whether the test also verifies the downloaded file contents.
  *
- * Info: The file contents come back as a Blob, but with 0 bytes.
+ * This check can be unreliable because the Kontent.ai API may return a file that is not yet
+ * fully accessible immediately after upload. The same issue can occur for files manually uploaded
+ * to Kontent.ai and retrieved via the "Copy URL" feature.
+ *
+ * Info: The file contents may come back as a Blob with 0 bytes.
  */
 const compareFileContents: boolean = true;
 
