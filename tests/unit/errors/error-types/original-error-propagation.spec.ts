@@ -14,7 +14,6 @@ describe("Original error propagation", async () => {
 	}).request({
 		url: "https://domain.com",
 		method: "GET",
-		body: null,
 	});
 
 	it("Error should be an instance of SdkError", () => {

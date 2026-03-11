@@ -59,7 +59,6 @@ for (const testCase of testCases) {
 		}).request({
 			url: "https://domain.com",
 			method: "GET",
-			body: null,
 		});
 
 		it("Success should be false", () => {

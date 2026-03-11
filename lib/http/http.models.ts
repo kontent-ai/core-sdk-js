@@ -36,7 +36,7 @@ export type HttpRequestBody = JsonObject | Blob | null;
 
 export type HttpResponse<TPayload extends AdapterPayload, TRequestBody extends HttpRequestBody> = HttpResult<{
 	readonly payload: TPayload;
-	readonly body: TRequestBody;
+	readonly body?: TRequestBody;
 	readonly method: HttpMethod;
 	readonly requestHeaders: readonly Header[];
 	readonly adapterResponse: AdapterResponse<TPayload>;
@@ -45,7 +45,7 @@ export type HttpResponse<TPayload extends AdapterPayload, TRequestBody extends H
 export type ExecuteRequestOptions<TRequestBody extends HttpRequestBody> = {
 	readonly url: string;
 	readonly method: HttpMethod;
-	readonly body: TRequestBody;
+	readonly body?: TRequestBody;
 	readonly requestHeaders?: readonly Header[];
 	readonly abortSignal?: AbortSignal | undefined;
 };
@@ -99,7 +99,7 @@ export type AdapterPayload = JsonValue | Blob;
 export type AdapterExecuteRequestOptions = {
 	readonly url: string;
 	readonly method: HttpMethod;
-	readonly body: AdapterBody;
+	readonly body?: AdapterBody;
 	readonly requestHeaders?: readonly Header[];
 	readonly abortSignal?: AbortSignal | undefined;
 };

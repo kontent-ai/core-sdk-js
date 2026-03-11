@@ -8,11 +8,21 @@ type ResponseData = {
 	readonly codename: string;
 };
 
+type RequestBody = {
+	readonly id: string;
+};
+
 const responseData: ResponseData = {
 	codename: "x",
 };
 
-describe("Execute request - Success (GET)", async () => {
+const requestBody: RequestBody = {
+	id: "1",
+};
+
+const method: HttpMethod = "POST";
+
+describe("Execute request - Success (POST)", async () => {
 	afterAll(() => {
 		vi.resetAllMocks();
 	});
@@ -22,10 +32,10 @@ describe("Execute request - Success (GET)", async () => {
 		statusCode: 200,
 	});
 
-	const { success, response, error } = await getDefaultHttpService().request<ResponseData, null>({
+	const { success, response, error } = await getDefaultHttpService().request<ResponseData, RequestBody>({
 		url: "https://domain.com",
-		method: "GET",
-		body: null,
+		method,
+		body: requestBody,
 	});
 
 	it("Success should be true", () => {
@@ -44,12 +54,12 @@ describe("Execute request - Success (GET)", async () => {
 		expect(response?.payload).toStrictEqual(responseData);
 	});
 
-	it("Response body should be null", () => {
-		expect(response?.body).toBeNull();
+	it("Response body should be set", () => {
+		expect(response?.body).toBe(requestBody);
 	});
 
-	it("Response method should be GET", () => {
-		expect(response?.method).toStrictEqual("GET");
+	it(`Response method should be set`, () => {
+		expect(response?.method).toStrictEqual(method);
 	});
 });
 

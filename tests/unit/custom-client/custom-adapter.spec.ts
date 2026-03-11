@@ -54,7 +54,6 @@ describe("Custom adapter", () => {
 		const { success, response, error } = await httpService.request({
 			url: "https://domain.com",
 			method: "GET",
-			body: null,
 		});
 
 		it("Success should be true", () => {

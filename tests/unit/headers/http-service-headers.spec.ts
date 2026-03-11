@@ -20,7 +20,6 @@ describe("Default headers", async () => {
 	const { success, response, error } = await getDefaultHttpService().request({
 		url: "https://domain.com",
 		method: "GET",
-		body: null,
 	});
 
 	it("Success should be true", () => {
@@ -57,7 +56,6 @@ describe(`SDK tracking header '${sdkIdHeader.name}'`, async () => {
 	const { success, response, error } = await getDefaultHttpService().request({
 		url: "https://domain.com",
 		method: "GET",
-		body: null,
 		requestHeaders: [
 			{
 				name: "X-KC-SDKID" satisfies CommonHeaderNames,
@@ -113,7 +111,6 @@ describe("Custom Http Service & Request headers", async () => {
 	}).request({
 		url: "https://domain.com",
 		method: "GET",
-		body: null,
 		requestHeaders: [headerB],
 	});
 

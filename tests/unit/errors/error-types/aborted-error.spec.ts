@@ -14,7 +14,6 @@ describe("Aborted error", async () => {
 	}).request({
 		url: "https://domain.com",
 		method: "GET",
-		body: null,
 	});
 
 	it("Retry attempt should be 0 because aborted request should not be retried", () => {

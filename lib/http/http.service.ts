@@ -42,7 +42,7 @@ type AdapterRequestData = {
 	readonly parsedUrl: URL;
 	readonly method: HttpMethod;
 	readonly requestHeaders: readonly Header[];
-	readonly parsedBody: AdapterBody;
+	readonly parsedBody?: AdapterBody;
 	readonly abortSignal: AbortSignal | undefined;
 };
 
@@ -60,7 +60,7 @@ export function getDefaultHttpService(config?: DefaultHttpServiceConfig): HttpSe
 			url: parsedUrl.toString(),
 			method,
 			requestHeaders,
-			body: parsedBody,
+			body: parsedBody ?? null,
 			abortSignal,
 		})) as AdapterResponse<TPayload>;
 	};
@@ -80,7 +80,6 @@ export function getDefaultHttpService(config?: DefaultHttpServiceConfig): HttpSe
 				options: {
 					...options,
 					method: "GET",
-					body: null,
 				},
 				runAdapterFunc: async ({ parsedUrl, requestHeaders }) => {
 					return await adapter.downloadFile({
@@ -156,10 +155,10 @@ async function processHttpRequest<TPayload extends AdapterPayload, TRequestBody 
 			return mapAdapterResponse({
 				retryStrategyOptions,
 				method: options.method,
-				requestBody: options.body,
 				requestHeaders: parsedRequest.requestHeaders,
 				response: responseOrError,
 				retryAttempt,
+				...(options.body === undefined ? {} : { requestBody: options.body }),
 			});
 		},
 		url: options.url,
@@ -243,7 +242,7 @@ function mapAdapterResponse<TPayload extends HttpPayload, TRequestBody extends H
 	readonly response: AdapterResponse<TPayload>;
 	readonly method: HttpMethod;
 	readonly requestHeaders: readonly Header[];
-	readonly requestBody: TRequestBody;
+	readonly requestBody?: TRequestBody;
 	readonly retryAttempt: number;
 	readonly retryStrategyOptions: ResolvedRetryStrategyOptions;
 }): HttpResponse<TPayload, TRequestBody> {
@@ -258,10 +257,10 @@ function mapAdapterResponse<TPayload extends HttpPayload, TRequestBody extends H
 		success: true,
 		response: {
 			payload: response.payload,
-			body: requestBody,
 			method: method,
 			adapterResponse: response,
 			requestHeaders: requestHeaders,
+			...(requestBody === undefined ? {} : { body: requestBody }),
 		},
 	};
 }
@@ -432,7 +431,7 @@ function parseAndValidateRequest<TRequestBody extends HttpRequestBody>({
 		success: requestBodyParsedSuccess,
 		data: parsedRequestBody,
 		error: requestBodyError,
-	} = parseRequestBody({ requestBody: options.body, url: options.url, retryStrategyOptions });
+	} = parseRequestBody({ requestBody: options.body ?? null, url: options.url, retryStrategyOptions });
 
 	if (!requestBodyParsedSuccess) {
 		return {
@@ -449,7 +448,7 @@ function parseAndValidateRequest<TRequestBody extends HttpRequestBody>({
 			requestHeaders: buildRequestHeaders({
 				configHeaders: config?.requestHeaders,
 				optionHeaders: options.requestHeaders,
-				body: options.body,
+				body: options.body ?? null,
 			}),
 		},
 	};
@@ -495,7 +494,7 @@ function buildRequestHeaders({
 }: {
 	readonly configHeaders: readonly Header[] | undefined;
 	readonly optionHeaders: readonly Header[] | undefined;
-	readonly body: Blob | JsonValue;
+	readonly body: HttpRequestBody;
 }): readonly Header[] {
 	const combinedHeaders: readonly Header[] = [...(configHeaders ?? []), ...(optionHeaders ?? [])];
 	const existingContentTypeHeader = findHeaderByName(combinedHeaders, "Content-Type");
@@ -503,7 +502,7 @@ function buildRequestHeaders({
 
 	const contentTypeHeader = match({ existingContentTypeHeader, body })
 		.returnType<Header | undefined>()
-		.with({ existingContentTypeHeader: P.nullish, body: P.nonNullable }, () => createDefaultContentTypeHeader(body))
+		.with({ existingContentTypeHeader: P.nullish, body: P.nonNullable }, ({ body }) => createDefaultContentTypeHeader(body))
 		.otherwise(() => undefined);
 	const sdkVersionHeader = existingSdkVersionHeader ? undefined : getSdkIdHeader(coreSdkInfo);
 

@@ -14,7 +14,6 @@ describe("Parse error", async () => {
 	}).request({
 		url: "https://domain.com",
 		method: "GET",
-		body: null,
 	});
 
 	it("Retry attempt should be 0 because parse error should not be retried", () => {

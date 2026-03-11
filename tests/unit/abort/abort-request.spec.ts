@@ -25,7 +25,6 @@ describe("Abort signal forwarding", () => {
 		}).request<null, null>({
 			url: "https://domain.com",
 			method: "GET",
-			body: null,
 			abortSignal: abortController.signal,
 		});
 
@@ -59,7 +58,6 @@ describe("Abort signal cancellation", async () => {
 		}).request<null, null>({
 			url: "https://domain.com",
 			method: "GET",
-			body: null,
 			abortSignal: abortController.signal,
 		}),
 		new Promise((resolve) => {

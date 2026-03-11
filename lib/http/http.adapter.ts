@@ -20,7 +20,6 @@ export function getDefaultHttpAdapter(): Required<HttpAdapter> {
 			const response = await getResponse({
 				...options,
 				method: "GET",
-				body: null,
 			});
 
 			const file = await parseResponse(async () => response.blob());
@@ -36,7 +35,7 @@ async function getResponse(options: AdapterExecuteRequestOptions): Promise<Respo
 			await fetch(options.url, {
 				method: options.method,
 				headers: toFetchHeaders(options.requestHeaders ?? []),
-				body: options.body,
+				body: options.body ?? null,
 				signal: options.abortSignal ?? null,
 			}),
 	);

@@ -65,7 +65,6 @@ describe("Integration tests - Binary file / asset management", async () => {
 	const deleteAsset = async (assetId: string) => {
 		return await httpService.request<null, null>({
 			url: config.urls.getDeleteAssetUrl(assetId),
-			body: null,
 			method: "DELETE",
 		});
 	};

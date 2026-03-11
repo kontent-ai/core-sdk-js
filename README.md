@@ -150,8 +150,7 @@ All operations return a discriminated `success`/`error` result — the SDK never
 ```typescript
 const { success, response, error } = await httpService.request({
   url: "https://manage.kontent.ai/v2/projects/...",
-  method: "GET",
-  body: null,
+  method: "GET"
 });
 
 if (!success) {

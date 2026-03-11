@@ -12,7 +12,6 @@ describe("Adapter error", async () => {
 	}).request({
 		url: "https://domain.com",
 		method: "GET",
-		body: null,
 	});
 
 	it("Retry attempt should be 0 because invalid body should not be retried", () => {
