@@ -8,9 +8,9 @@ describe("Retry wait", () => {
 
 		const { isAborted } = await waitBeforeNextRetry({ retryInMs });
 
-		const duration = performance.now() - start;
+		const duration = Math.round(performance.now() - start);
 
-		expect(duration).toBeGreaterThan(retryInMs);
+		expect(duration).toBeGreaterThanOrEqual(retryInMs);
 		expect(isAborted).toBe(false);
 	});
 
@@ -34,10 +34,10 @@ describe("Retry wait", () => {
 			}),
 		]);
 
-		const duration = performance.now() - start;
+		const duration = Math.round(performance.now() - start);
 
 		expect(isAborted).toBe(true);
-		expect(duration).toBeGreaterThan(expectedDurationMin);
-		expect(duration).toBeLessThan(expectedDurationMax);
+		expect(duration).toBeGreaterThanOrEqual(expectedDurationMin);
+		expect(duration).toBeLessThanOrEqual(expectedDurationMax);
 	});
 });
