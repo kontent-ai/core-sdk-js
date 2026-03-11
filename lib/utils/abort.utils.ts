@@ -5,6 +5,7 @@ type AbortResult<TData> =
 	  }
 	| {
 			readonly isAborted: true;
+			readonly data?: never;
 	  };
 
 export async function runWithAbortSignal<T>({

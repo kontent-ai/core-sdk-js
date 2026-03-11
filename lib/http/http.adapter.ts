@@ -1,6 +1,7 @@
 import type { Header } from "../models/core.models.js";
 import { AdapterAbortError, AdapterParseError } from "../models/error.models.js";
 import type { JsonValue } from "../models/json.models.js";
+import { runWithAbortSignal } from "../utils/abort.utils.js";
 import { isApplicationJsonResponseType, toFetchHeaders, toSdkHeaders } from "../utils/header.utils.js";
 import { tryCatchAsync } from "../utils/try-catch.utils.js";
 import type { AdapterExecuteRequestOptions, AdapterPayload, AdapterResponse, HttpAdapter } from "./http.models.js";
@@ -54,15 +55,35 @@ async function getResponse(options: AdapterExecuteRequestOptions): Promise<Respo
 	throw error;
 }
 
-async function parseResponse<TPayload extends AdapterPayload>(parseFunc: () => Promise<TPayload>): Promise<TPayload> {
-	const { success, data, error } = await tryCatchAsync(async () => {
-		return await parseFunc();
+async function parseResponse<TPayload extends AdapterPayload>(
+	parseFunc: () => Promise<TPayload>,
+	abortSignal?: AbortSignal,
+): Promise<TPayload> {
+	const runParseFunc = async (): Promise<TPayload> => {
+		const { success, data, error } = await tryCatchAsync(async () => {
+			return await parseFunc();
+		});
+
+		if (!success) {
+			// this is to notify the HttpService that the response is not valid JSON or BLOB
+			// HttpService will then convert the error to a KontentSdkError with the reason "parseError"
+			throw new AdapterParseError(error);
+		}
+
+		return data;
+	};
+
+	if (!abortSignal) {
+		return await runParseFunc();
+	}
+
+	const { isAborted, data } = await runWithAbortSignal<TPayload>({
+		func: runParseFunc,
+		abortSignal: abortSignal,
 	});
 
-	if (!success) {
-		// this is to notify the HttpService that the response is not valid JSON or BLOB
-		// HttpService will then convert the error to a KontentSdkError with the reason "parseError"
-		throw new AdapterParseError(error);
+	if (isAborted) {
+		throw new AdapterAbortError(new Error("Adapter has aborted the request while parsing the response."));
 	}
 
 	return data;
