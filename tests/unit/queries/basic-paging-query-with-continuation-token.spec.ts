@@ -55,7 +55,6 @@ describe("Basic paging query with continuation token", async () => {
 		zodSchema: z.null(),
 		request: {
 			url: "https://domain.com",
-			body: {},
 		},
 	}).fetchAllPages({ maxPagesCount: maxPagesCount });
 

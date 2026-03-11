@@ -47,7 +47,6 @@ describe("Async pages iterator errors", async () => {
 		zodSchema: z.null(),
 		request: {
 			url: expectedResponseUrls?.[0] ?? "n/a",
-			body: {},
 		},
 	}).pages();
 

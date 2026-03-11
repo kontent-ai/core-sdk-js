@@ -47,7 +47,6 @@ describe("Basic paging errors", async () => {
 		zodSchema: z.null(),
 		request: {
 			url: expectedResponseUrls?.[0] ?? "n/a",
-			body: {},
 		},
 	}).fetchAllPages();
 

@@ -23,7 +23,6 @@ describe("Query builder", async () => {
 		zodSchema: z.null(),
 		request: {
 			url: "https://domain.com",
-			body: {},
 		},
 	}).fetch();
 

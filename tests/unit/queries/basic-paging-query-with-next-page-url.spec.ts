@@ -45,7 +45,6 @@ describe("Basic paging query with next page url", async () => {
 		zodSchema: z.null(),
 		request: {
 			url: expectedResponseUrls?.[0] ?? "n/a",
-			body: {},
 		},
 	}).fetchAllPages({ maxPagesCount: maxPagesCount });
 

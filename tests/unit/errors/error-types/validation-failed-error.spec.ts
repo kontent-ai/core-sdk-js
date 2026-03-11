@@ -24,7 +24,6 @@ describe("Validation failed error", async () => {
 		zodSchema,
 		request: {
 			url: "https://domain.com",
-			body: {},
 		},
 	}).fetch();
 

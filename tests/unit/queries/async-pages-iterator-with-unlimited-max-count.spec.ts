@@ -21,7 +21,7 @@ describe("Async pages iterator with unlimited max count", async () => {
 		statusCode: 200,
 	});
 
-	const pagesIterator = createPagedFetchQuery<null, null, null>({
+	const pagesIterator = createPagedFetchQuery<null, null>({
 		getNextPageData: () => {
 			responseIndex++;
 
@@ -45,7 +45,6 @@ describe("Async pages iterator with unlimited max count", async () => {
 		zodSchema: z.null(),
 		request: {
 			url: expectedResponseUrls?.[0] ?? "n/a",
-			body: null,
 		},
 	}).pages();
 

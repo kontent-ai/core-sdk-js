@@ -131,10 +131,10 @@ export type QueryPromiseResult<TResponsePayload extends JsonValue, TMeta> = Retu
 	Pick<FetchQuery<TResponsePayload, TMeta>, "fetch">["fetch"]
 >;
 
-export type QueryRequest<TResponsePayload extends JsonValue, TRequestBody extends HttpRequestBody, TMeta> = Pick<
-	ResolveQueryData<TResponsePayload, TRequestBody, TMeta>,
-	"config" | "zodSchema" | "sdkInfo" | "mapMetadata" | "request" | "abortSignal"
->;
+export type FetchQueryRequest<TResponsePayload extends JsonValue, TMeta> = Pick<
+	ResolveQueryData<TResponsePayload, null, TMeta>,
+	"config" | "zodSchema" | "sdkInfo" | "mapMetadata" | "abortSignal"
+> & { readonly request: Omit<RequestData<never>, "body"> };
 
 export type ResolveQueryData<TResponsePayload extends JsonValue, TRequestBody extends HttpRequestBody, TMeta> = {
 	readonly method: HttpMethod;

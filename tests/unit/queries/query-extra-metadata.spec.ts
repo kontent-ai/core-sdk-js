@@ -16,7 +16,6 @@ describe("Query extra metadata", async () => {
 	};
 	const { response } = await createFetchQuery<
 		null,
-		null,
 		{
 			testExtraMetadata: string;
 		}
@@ -62,7 +61,6 @@ describe("Query extra metadata", async () => {
 		zodSchema: z.null(),
 		request: {
 			url: "https://domain.com",
-			body: null,
 			requestHeaders: [requestHeader],
 		},
 	}).fetch();
