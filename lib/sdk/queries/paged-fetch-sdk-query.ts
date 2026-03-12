@@ -28,7 +28,7 @@ type NoNextPageState = {
 type NextPageState = NextPageStateWithRequest | NoNextPageState;
 
 export function createPagedFetchQuery<TResponsePayload extends JsonValue, TMeta>(
-	data: Omit<FetchQueryRequest<TResponsePayload, TMeta>, "nextPageState" | "pageIndex"> & {
+	data: FetchQueryRequest<TResponsePayload, TMeta> & {
 		readonly getNextPageData: GetNextPageData<TResponsePayload, TMeta>;
 	},
 ): PagedFetchQuery<TResponsePayload, TMeta> {

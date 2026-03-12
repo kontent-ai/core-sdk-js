@@ -8,7 +8,7 @@ import { resolveQuery } from "../resolve-query.js";
 import type { FetchQuery, FetchQueryRequest } from "../sdk-models.js";
 
 export function createFetchQuery<TResponsePayload extends JsonValue, TMeta>(
-	data: Omit<FetchQueryRequest<TResponsePayload, TMeta>, "continuationToken" | "nextPageState" | "pageIndex">,
+	data: FetchQueryRequest<TResponsePayload, TMeta>,
 ): FetchQuery<TResponsePayload, TMeta> {
 	const fetchSafe = async () =>
 		await resolveQuery<TResponsePayload, null, TMeta>({
