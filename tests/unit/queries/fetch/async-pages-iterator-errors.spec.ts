@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
 import z from "zod";
-import type { GetNextPageData, QueryResponse } from "../../../lib/public_api.js";
-import { createPagedFetchQuery } from "../../../lib/sdk/queries/paged-fetch-sdk-query.js";
-import { getTestHttpServiceWithJsonResponse, getTestSdkInfo } from "../../../lib/testkit/testkit.utils.js";
-import { getNextPageUrl } from "../../test.utils.js";
+import type { GetNextPageData, QueryResponse } from "../../../../lib/public_api.js";
+import { createPagedFetchQuery } from "../../../../lib/sdk/queries/paged-fetch-sdk-query.js";
+import { getTestHttpServiceWithJsonResponse, getTestSdkInfo } from "../../../../lib/testkit/testkit.utils.js";
+import { getNextPageUrl } from "../../../test.utils.js";
 
 describe("Async pages iterator errors", async () => {
 	const throwErrorAtResponseIndex: number = 3;

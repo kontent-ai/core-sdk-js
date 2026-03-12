@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
 import z from "zod";
-import { type ErrorReason, type GetNextPageData, KontentSdkError } from "../../../lib/public_api.js";
-import { createPagedFetchQuery } from "../../../lib/sdk/queries/paged-fetch-sdk-query.js";
-import { getTestHttpServiceWithJsonResponse, getTestSdkInfo } from "../../../lib/testkit/testkit.utils.js";
-import { getNextPageUrl } from "../../test.utils.js";
+import { type ErrorReason, type GetNextPageData, KontentSdkError } from "../../../../lib/public_api.js";
+import { createPagedFetchQuery } from "../../../../lib/sdk/queries/paged-fetch-sdk-query.js";
+import { getTestHttpServiceWithJsonResponse, getTestSdkInfo } from "../../../../lib/testkit/testkit.utils.js";
+import { getNextPageUrl } from "../../../test.utils.js";
 
 describe("Basic paging errors", async () => {
 	const throwErrorAtResponseIndex: number = 3;

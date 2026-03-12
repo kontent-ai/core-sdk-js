@@ -42,12 +42,14 @@ export {
 export type { JsonArray, JsonObject, JsonValue } from "./models/json.models.js";
 export type { EmptyObject } from "./models/utility.types.js";
 export { createFetchQuery } from "./sdk/queries/fetch-sdk-query.js";
+export { createMutationQuery } from "./sdk/queries/mutation-sdk-query.js";
 export { createPagedFetchQuery } from "./sdk/queries/paged-fetch-sdk-query.js";
 export { kontentUuidSchema, nilUuid } from "./sdk/sdk-config.js";
 export type {
 	FetchQuery,
 	FetchQueryRequest,
 	MutationQuery,
+	MutationQueryRequest,
 	PagedFetchQuery,
 	PagingQueryResult,
 	Query,

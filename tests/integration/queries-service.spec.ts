@@ -1,23 +1,13 @@
 import { describe, expect, it } from "vitest";
+import z from "zod";
 import type { HttpServiceStatus } from "../../lib/http/http.models.js";
 import { getDefaultHttpService } from "../../lib/http/http.service.js";
-import { poll } from "../../lib/testkit/poll.utils.js";
+import { createMutationQuery } from "../../lib/sdk/queries/mutation-sdk-query.js";
+import type { MutationQuery } from "../../lib/sdk/sdk-models.js";
+import { getTestSdkInfo, poll } from "../../lib/testkit_api.js";
 import { getIntegrationTestConfig } from "../integration-tests.config.js";
 
-const fileToUpload = new Blob(["core-sdk-integration-test"], { type: "text/plain" });
-
-/**
- * Controls whether the test also verifies the downloaded file contents.
- *
- * This check can be unreliable because the Kontent.ai API may return a file that is not yet
- * fully accessible immediately after upload. The same issue can occur for files manually uploaded
- * to Kontent.ai and retrieved via the "Copy URL" feature.
- *
- * Info: The file contents may come back as a Blob with 0 bytes.
- */
-const compareFileContents: boolean = true;
-
-describe("Integration tests - Binary file / asset management", async () => {
+describe("Integration tests covering Fetch/Mutation queries against the Kontent.ai API", async () => {
 	const config = getIntegrationTestConfig();
 	const httpService = getDefaultHttpService({
 		requestHeaders: config.getMapiAuthorizationHeaders(),
@@ -26,48 +16,59 @@ describe("Integration tests - Binary file / asset management", async () => {
 		},
 	});
 
-	const uploadBinaryFile = async () => {
-		return await httpService.uploadFile<{
-			readonly id: string;
-		}>({
+	const baseMutationConfig = {
+		config: {
+			httpService,
+			responseValidation: {
+				enable: false,
+			},
+		},
+		sdkInfo: getTestSdkInfo(),
+		mapMetadata: () => ({}),
+	} as const;
+
+	const uploadBinaryFileQuery: MutationQuery<{ readonly id: string }, unknown> = createMutationQuery({
+		...baseMutationConfig,
+		zodSchema: z.object({
+			id: z.string(),
+		}),
+		method: "POST",
+		request: {
 			url: config.urls.getUploadAssetBinaryFileUrl("core-sdk.txt"),
-			body: fileToUpload,
-			method: "POST",
-		});
-	};
+			body: config.fileToUpload,
+		},
+	});
 
-	const addAsset = async (binaryFileId: string) => {
-		return await httpService.request<
-			{
-				readonly id: string;
-				readonly url: string;
-			},
-			{
-				readonly file_reference: {
-					readonly id: string;
-					readonly type: "internal";
-				};
-				readonly title: string;
-			}
-		>({
-			url: config.urls.addAssetUrl,
-			body: {
-				file_reference: {
-					id: binaryFileId,
-					type: "internal",
+	const addAssetQueryFactory = (binaryFileId: string): MutationQuery<{ readonly id: string; readonly url: string }, unknown> =>
+		createMutationQuery({
+			...baseMutationConfig,
+			zodSchema: z.object({
+				id: z.string(),
+				url: z.string(),
+			}),
+			method: "POST",
+			request: {
+				url: config.urls.addAssetUrl,
+				body: {
+					file_reference: {
+						id: binaryFileId,
+						type: "internal" as const,
+					},
+					title: "Test file",
 				},
-				title: "Test file",
 			},
-			method: "POST",
 		});
-	};
 
-	const deleteAsset = async (assetId: string) => {
-		return await httpService.request<null, null>({
-			url: config.urls.getDeleteAssetUrl(assetId),
+	const deleteAssetQueryFactory = (assetId: string): MutationQuery<null, unknown> =>
+		createMutationQuery({
+			...baseMutationConfig,
+			zodSchema: z.null(),
 			method: "DELETE",
+			request: {
+				url: config.urls.getDeleteAssetUrl(assetId),
+				body: null,
+			},
 		});
-	};
 
 	const downloadAssetFile = async (fileUrl: string) => {
 		return await httpService.downloadFile({
@@ -85,14 +86,14 @@ describe("Integration tests - Binary file / asset management", async () => {
 		success: uploadedBinaryFileSuccess,
 		response: uploadedBinaryFileResponse,
 		error: uploadedBinaryFileError,
-	} = await uploadBinaryFile();
+	} = await uploadBinaryFileQuery.executeSafe();
 
 	if (!uploadedBinaryFileSuccess) {
 		throw uploadedBinaryFileError;
 	}
 
 	it("Upload response status should be 200", () => {
-		expect(uploadedBinaryFileResponse.adapterResponse.status).toStrictEqual<HttpServiceStatus>(200);
+		expect(uploadedBinaryFileResponse.meta.status).toStrictEqual<HttpServiceStatus>(200);
 	});
 
 	it("Id property should be available", () => {
@@ -103,14 +104,14 @@ describe("Integration tests - Binary file / asset management", async () => {
 		success: addAssetSuccess,
 		response: addAssetResponse,
 		error: addAssetError,
-	} = await addAsset(uploadedBinaryFileResponse.payload.id);
+	} = await addAssetQueryFactory(uploadedBinaryFileResponse.payload.id).executeSafe();
 
 	if (!addAssetSuccess) {
 		throw addAssetError;
 	}
 
 	it("Add asset response status should be 201", () => {
-		expect(addAssetResponse.adapterResponse.status).toStrictEqual<HttpServiceStatus>(201);
+		expect(addAssetResponse.meta.status).toStrictEqual<HttpServiceStatus>(201);
 	});
 
 	it("Url & id property should be available when adding asset", () => {
@@ -146,9 +147,9 @@ describe("Integration tests - Binary file / asset management", async () => {
 		expect(downloadedFileResponse.adapterResponse.status).toStrictEqual<HttpServiceStatus>(200);
 	});
 
-	if (compareFileContents) {
+	if (config.compareFileContents) {
 		it("Content of downloaded file should be identical to original file", async () => {
-			expect(await downloadedFileResponse.payload.text()).toStrictEqual(await fileToUpload.text());
+			expect(await downloadedFileResponse.payload.text()).toStrictEqual(await config.fileToUpload.text());
 		});
 	}
 
@@ -156,14 +157,14 @@ describe("Integration tests - Binary file / asset management", async () => {
 		success: deletedFileSuccess,
 		response: deletedFileResponse,
 		error: deletedFileError,
-	} = await deleteAsset(addAssetResponse.payload.id);
+	} = await deleteAssetQueryFactory(addAssetResponse.payload.id).executeSafe();
 
 	if (!deletedFileSuccess) {
 		throw deletedFileError;
 	}
 
 	it("Delete file response status should be 204", () => {
-		expect(deletedFileResponse.adapterResponse.status).toStrictEqual<HttpServiceStatus>(204);
+		expect(deletedFileResponse.meta.status).toStrictEqual<HttpServiceStatus>(204);
 	});
 
 	it("Delete file response data should be empty", () => {

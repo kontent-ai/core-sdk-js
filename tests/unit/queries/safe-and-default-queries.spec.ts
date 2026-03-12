@@ -3,7 +3,8 @@ import z from "zod";
 import { getDefaultHttpService } from "../../../lib/http/http.service.js";
 import { createPagedFetchQuery, KontentSdkError } from "../../../lib/public_api.js";
 import { createFetchQuery } from "../../../lib/sdk/queries/fetch-sdk-query.js";
-import type { FetchQuery, PagedFetchQuery } from "../../../lib/sdk/sdk-models.js";
+import { createMutationQuery } from "../../../lib/sdk/queries/mutation-sdk-query.js";
+import type { FetchQuery, MutationQuery, PagedFetchQuery } from "../../../lib/sdk/sdk-models.js";
 import { getTestSdkInfo } from "../../../lib/testkit/testkit.utils.js";
 
 type QueryTest = {
@@ -16,7 +17,7 @@ type QueryTest = {
 
 type QueryCallback = {
 	readonly callback: () => Promise<void>;
-	readonly title: keyof FetchQuery<unknown, unknown> | keyof PagedFetchQuery<unknown, unknown>;
+	readonly title: keyof FetchQuery<unknown, unknown> | keyof PagedFetchQuery<unknown, unknown> | keyof MutationQuery<unknown, unknown>;
 };
 
 const baseQueryConfig: Parameters<typeof createFetchQuery>[0] = {
@@ -41,6 +42,38 @@ const baseQueryConfig: Parameters<typeof createFetchQuery>[0] = {
 };
 
 const unsafeQueries: readonly QueryTest[] = [
+	{
+		name: "MutationQuery",
+		getQueries: () => {
+			const baseQuery = createMutationQuery({
+				...baseQueryConfig,
+				method: "POST",
+				request: {
+					url: "https://domain.com",
+					body: null,
+				},
+			});
+
+			return {
+				unsafeQueries: [
+					{
+						callback: async () => {
+							await baseQuery.execute();
+						},
+						title: "execute",
+					},
+				],
+				safeQueries: [
+					{
+						callback: async () => {
+							await baseQuery.executeSafe();
+						},
+						title: "execute",
+					},
+				],
+			};
+		},
+	},
 	{
 		name: "FetchQuery",
 		getQueries: () => {

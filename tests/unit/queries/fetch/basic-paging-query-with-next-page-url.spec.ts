@@ -1,11 +1,11 @@
 import { afterAll, describe, expect, it, vi } from "vitest";
 import z from "zod";
-import { type GetNextPageData, getDefaultHttpService, type QueryResponse } from "../../../lib/public_api.js";
-import { createPagedFetchQuery } from "../../../lib/sdk/queries/paged-fetch-sdk-query.js";
-import { getTestSdkInfo, mockGlobalFetchJsonResponse } from "../../../lib/testkit/testkit.utils.js";
-import { getNextPageUrl, preventInfinitePaging } from "../../test.utils.js";
+import { type GetNextPageData, getDefaultHttpService } from "../../../../lib/public_api.js";
+import { createPagedFetchQuery } from "../../../../lib/sdk/queries/paged-fetch-sdk-query.js";
+import { getTestSdkInfo, mockGlobalFetchJsonResponse } from "../../../../lib/testkit/testkit.utils.js";
+import { getNextPageUrl, preventInfinitePaging } from "../../../test.utils.js";
 
-describe("Async pages iterator with max pages count", async () => {
+describe("Basic paging query with next page url", async () => {
 	afterAll(() => {
 		vi.resetAllMocks();
 	});
@@ -21,7 +21,7 @@ describe("Async pages iterator with max pages count", async () => {
 		statusCode: 200,
 	});
 
-	const pagesIterator = createPagedFetchQuery<null, null>({
+	const { success, error, responses } = await createPagedFetchQuery({
 		getNextPageData: () => {
 			responseIndex++;
 
@@ -34,7 +34,7 @@ describe("Async pages iterator with max pages count", async () => {
 			return data;
 		},
 
-		mapMetadata: () => null,
+		mapMetadata: () => ({}),
 		config: {
 			httpService: getDefaultHttpService(),
 			responseValidation: {
@@ -46,20 +46,14 @@ describe("Async pages iterator with max pages count", async () => {
 		request: {
 			url: expectedResponseUrls?.[0] ?? "n/a",
 		},
-	}).pagesSafe({ maxPagesCount });
+	}).fetchAllPagesSafe({ maxPagesCount: maxPagesCount });
 
-	const responses: QueryResponse<null>[] = [];
+	it("Error should be undefined", () => {
+		expect(error).toBeUndefined();
+	});
 
-	for await (const { success, response } of pagesIterator) {
-		if (success) {
-			responses.push(response);
-		} else {
-			break;
-		}
-	}
-
-	it("All responses should be successful", () => {
-		expect(responses.every((response) => response)).toBeTruthy();
+	it("Success should be true", () => {
+		expect(success).toBeTruthy();
 	});
 
 	it(`Responses should be an array of length "${maxPagesCount}"`, () => {

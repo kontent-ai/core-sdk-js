@@ -17,6 +17,7 @@ import type {
 import type { Header, HttpMethod, SDKInfo } from "../models/core.models.js";
 import type { KontentSdkError } from "../models/error.models.js";
 import type { JsonValue } from "../models/json.models.js";
+import type { PickStringLiteral } from "../models/utility.types.js";
 import type { Failure, Success } from "../utils/try-catch.utils.js";
 
 export type QueryResponseMeta<TMeta = unknown> = Pick<AdapterResponse<AdapterPayload>, "status" | "responseHeaders" | "url"> & {
@@ -84,7 +85,8 @@ export type PagedFetchQuery<TResponsePayload, TMeta> = Query<TResponsePayload> &
  * @todo Implement mutation query.
  */
 export type MutationQuery<TResponsePayload, TMeta> = Query<TResponsePayload> & {
-	execute(): Promise<QueryResult<QueryResponse<TResponsePayload, TMeta>>>;
+	executeSafe(): Promise<QueryResult<QueryResponse<TResponsePayload, TMeta>>>;
+	execute(): Promise<QueryResponse<TResponsePayload, TMeta>>;
 };
 
 export type NextPageStateWithRequest =
@@ -148,7 +150,12 @@ export type QueryPromiseResult<TResponsePayload extends JsonValue, TMeta> = Retu
 export type FetchQueryRequest<TResponsePayload extends JsonValue, TMeta> = Pick<
 	ResolveQueryData<TResponsePayload, null, TMeta>,
 	"config" | "zodSchema" | "sdkInfo" | "mapMetadata" | "abortSignal"
-> & { readonly request: Omit<RequestData<never>, "body"> };
+> & { readonly request: RequestDataWithoutBody };
+
+export type MutationQueryRequest<TResponsePayload extends JsonValue, TRequestBody extends HttpRequestBody, TMeta> = Pick<
+	ResolveQueryData<TResponsePayload, TRequestBody, TMeta>,
+	"config" | "zodSchema" | "sdkInfo" | "mapMetadata" | "abortSignal" | "request"
+> & { readonly method: MutationHttpMethod };
 
 export type ResolveQueryData<TResponsePayload extends JsonValue, TRequestBody extends HttpRequestBody, TMeta> = {
 	readonly method: HttpMethod;
@@ -179,3 +186,7 @@ type RequestData<TRequestBody extends HttpRequestBody> = {
 	readonly continuationToken?: string | undefined;
 	readonly authorizationApiKey?: string | undefined;
 };
+
+type MutationHttpMethod = PickStringLiteral<HttpMethod, "POST" | "PUT" | "PATCH" | "DELETE">;
+
+type RequestDataWithoutBody = Omit<RequestData<never>, "body">;
