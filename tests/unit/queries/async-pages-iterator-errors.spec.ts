@@ -48,7 +48,7 @@ describe("Async pages iterator errors", async () => {
 		request: {
 			url: expectedResponseUrls?.[0] ?? "n/a",
 		},
-	}).pages();
+	}).pagesSafe();
 
 	const responses: QueryResponse<null>[] = [];
 

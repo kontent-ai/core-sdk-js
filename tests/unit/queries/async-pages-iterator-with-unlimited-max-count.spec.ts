@@ -46,7 +46,7 @@ describe("Async pages iterator with unlimited max count", async () => {
 		request: {
 			url: expectedResponseUrls?.[0] ?? "n/a",
 		},
-	}).pages();
+	}).pagesSafe();
 
 	const responses: QueryResponse<null>[] = [];
 

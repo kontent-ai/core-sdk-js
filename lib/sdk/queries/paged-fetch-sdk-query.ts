@@ -18,7 +18,7 @@ import type {
 import { createFetchQuery } from "./fetch-sdk-query.js";
 
 type PagingQueryPromiseResult<TResponsePayload extends JsonValue, TMeta> = ReturnType<
-	Pick<PagedFetchQuery<TResponsePayload, TMeta>, "fetchAllPages">["fetchAllPages"]
+	Pick<PagedFetchQuery<TResponsePayload, TMeta>, "fetchAllPagesSafe">["fetchAllPagesSafe"]
 >;
 
 type NoNextPageState = {
@@ -53,8 +53,31 @@ export function createPagedFetchQuery<TResponsePayload extends JsonValue, TMeta>
 		schema: fetchQuery.schema,
 		url: fetchQuery.url,
 		fetchPage: async () => await fetchQuery.fetch(),
-		fetchAllPages: async (config?: PaginationConfig) => await fetchAllPages<TResponsePayload, TMeta>(getPagingData(config)),
-		pages: (config?: PaginationConfig) => createPagingQueryIterator<TResponsePayload, TMeta>(getPagingData(config)),
+		fetchPageSafe: async () => await fetchQuery.fetchSafe(),
+		fetchAllPages: async (config?: PaginationConfig) => {
+			const { success, error, lastContinuationToken, partialResponses, responses } = await fetchAllPages<TResponsePayload, TMeta>(
+				getPagingData(config),
+			);
+			if (!success) {
+				throw error;
+			}
+			return {
+				lastContinuationToken,
+				responses,
+				partialResponses,
+			};
+		},
+		fetchAllPagesSafe: async (config?: PaginationConfig) => await fetchAllPages<TResponsePayload, TMeta>(getPagingData(config)),
+		pagesSafe: (config?: PaginationConfig) => createPagingQueryIterator<TResponsePayload, TMeta>(getPagingData(config)),
+		pages: async function* (config?: PaginationConfig) {
+			const iterator = createPagingQueryIterator<TResponsePayload, TMeta>(getPagingData(config));
+			for await (const result of iterator) {
+				if (!result.success) {
+					throw result.error;
+				}
+				yield result.response;
+			}
+		},
 	};
 }
 
@@ -74,7 +97,7 @@ async function* createPagingQueryIterator<TResponsePayload extends JsonValue, TM
 				url: urlToUse,
 				continuationToken: nextPageState.continuationToken,
 			},
-		}).fetch();
+		}).fetchSafe();
 
 		if (!success) {
 			yield { success: false, error };

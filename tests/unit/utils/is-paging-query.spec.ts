@@ -8,6 +8,9 @@ describe("isPagingQuery", () => {
 		const pagingQueryLike: PagedFetchQuery<unknown, unknown> = {
 			schema: z.null(),
 			url: "x",
+			fetchPageSafe: () => {
+				return {} as never;
+			},
 			fetchPage: () => {
 				return {} as never;
 			},
@@ -15,6 +18,12 @@ describe("isPagingQuery", () => {
 				return {} as never;
 			},
 			pages: () => {
+				return {} as never;
+			},
+			fetchAllPagesSafe: () => {
+				return {} as never;
+			},
+			pagesSafe: () => {
 				return {} as never;
 			},
 		};
@@ -27,6 +36,9 @@ describe("isPagingQuery", () => {
 			schema: z.null(),
 			url: "x",
 			fetch: () => {
+				return {} as never;
+			},
+			fetchSafe: () => {
 				return {} as never;
 			},
 		};
@@ -43,10 +55,19 @@ describe("isPagingQuery", () => {
 		const missingPagesQuery: Omit<PagedFetchQuery<unknown, unknown>, "pages"> = {
 			schema: z.null(),
 			url: "x",
+			fetchPageSafe: () => {
+				return {} as never;
+			},
+			fetchAllPagesSafe: () => {
+				return {} as never;
+			},
 			fetchPage: () => {
 				return {} as never;
 			},
 			fetchAllPages: () => {
+				return {} as never;
+			},
+			pagesSafe: () => {
 				return {} as never;
 			},
 		};
@@ -54,10 +75,19 @@ describe("isPagingQuery", () => {
 		const missingFetchAllPagesQuery: Omit<PagedFetchQuery<unknown, unknown>, "fetchAllPages"> = {
 			schema: z.null(),
 			url: "x",
-			fetchPage: () => {
+			fetchPageSafe: () => {
+				return {} as never;
+			},
+			pagesSafe: () => {
 				return {} as never;
 			},
 			pages: () => {
+				return {} as never;
+			},
+			fetchAllPagesSafe: () => {
+				return {} as never;
+			},
+			fetchPage: () => {
 				return {} as never;
 			},
 		};

@@ -24,7 +24,7 @@ describe("Query builder", async () => {
 		request: {
 			url: "https://domain.com",
 		},
-	}).fetch();
+	}).fetchSafe();
 
 	it("Meta should have proper continuation token", () => {
 		expect(response?.meta.continuationToken).toStrictEqual(responseContinuationToken);

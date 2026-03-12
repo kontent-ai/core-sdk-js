@@ -48,7 +48,7 @@ describe("Basic paging query with unlimited max count", async () => {
 		request: {
 			url: expectedResponseUrls?.[0] ?? "n/a",
 		},
-	}).fetchAllPages();
+	}).fetchAllPagesSafe();
 
 	it("Error should be undefined", () => {
 		expect(error).toBeUndefined();

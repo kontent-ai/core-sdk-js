@@ -25,7 +25,7 @@ describe("Validation failed error", async () => {
 		request: {
 			url: "https://domain.com",
 		},
-	}).fetch();
+	}).fetchSafe();
 
 	it("Success should be false", () => {
 		expect(success).toBe(false);

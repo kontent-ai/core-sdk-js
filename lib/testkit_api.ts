@@ -5,6 +5,7 @@ export type { FetchResponse } from "./testkit/testkit.models.js";
 export {
 	getFakeBlob,
 	getTestHttpServiceWithJsonResponse,
+	getTestSdkInfo,
 	mockGlobalFetchBlobResponse,
 	mockGlobalFetchJsonResponse,
 } from "./testkit/testkit.utils.js";

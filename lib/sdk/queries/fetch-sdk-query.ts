@@ -10,17 +10,25 @@ import type { FetchQuery, FetchQueryRequest } from "../sdk-models.js";
 export function createFetchQuery<TResponsePayload extends JsonValue, TMeta>(
 	data: Omit<FetchQueryRequest<TResponsePayload, TMeta>, "continuationToken" | "nextPageState" | "pageIndex">,
 ): FetchQuery<TResponsePayload, TMeta> {
+	const fetchSafe = async () =>
+		await resolveQuery<TResponsePayload, null, TMeta>({
+			...data,
+			method: "GET",
+			request: {
+				...data.request,
+				body: null,
+			},
+		});
 	return {
 		schema: data.zodSchema,
 		url: data.request.url,
-		fetch: async () =>
-			await resolveQuery<TResponsePayload, null, TMeta>({
-				...data,
-				method: "GET",
-				request: {
-					...data.request,
-					body: null,
-				},
-			}),
+		fetchSafe,
+		fetch: async () => {
+			const { success, response, error } = await fetchSafe();
+			if (!success) {
+				throw error;
+			}
+			return response;
+		},
 	};
 }

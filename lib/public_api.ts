@@ -46,6 +46,7 @@ export { createPagedFetchQuery } from "./sdk/queries/paged-fetch-sdk-query.js";
 export { kontentUuidSchema, nilUuid } from "./sdk/sdk-config.js";
 export type {
 	FetchQuery,
+	FetchQueryRequest,
 	MutationQuery,
 	PagedFetchQuery,
 	PagingQueryResult,
@@ -53,6 +54,7 @@ export type {
 	QueryResponse,
 	QueryResponseMeta,
 	QueryResult,
+	SafePagingQueryResult,
 	SdkConfig,
 	SuccessfulHttpResponse,
 } from "./sdk/sdk-models.js";

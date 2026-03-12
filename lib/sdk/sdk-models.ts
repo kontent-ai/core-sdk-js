@@ -65,13 +65,17 @@ export type Query<TResponsePayload> = {
 };
 
 export type FetchQuery<TResponsePayload, TMeta> = Query<TResponsePayload> & {
-	fetch(): Promise<QueryResult<QueryResponse<TResponsePayload, TMeta>>>;
+	fetchSafe(): Promise<QueryResult<QueryResponse<TResponsePayload, TMeta>>>;
+	fetch(): Promise<QueryResponse<TResponsePayload, TMeta>>;
 };
 
 export type PagedFetchQuery<TResponsePayload, TMeta> = Query<TResponsePayload> & {
-	fetchPage(): Promise<QueryResult<QueryResponse<TResponsePayload, TMeta>>>;
+	fetchPageSafe(): Promise<QueryResult<QueryResponse<TResponsePayload, TMeta>>>;
+	fetchPage(): Promise<QueryResponse<TResponsePayload, TMeta>>;
+	fetchAllPagesSafe(config?: PaginationConfig): Promise<SafePagingQueryResult<QueryResponse<TResponsePayload, TMeta>>>;
 	fetchAllPages(config?: PaginationConfig): Promise<PagingQueryResult<QueryResponse<TResponsePayload, TMeta>>>;
-	pages(config?: PaginationConfig): AsyncGenerator<QueryResult<QueryResponse<TResponsePayload, TMeta>>>;
+	pagesSafe(config?: PaginationConfig): AsyncGenerator<QueryResult<QueryResponse<TResponsePayload, TMeta>>>;
+	pages(config?: PaginationConfig): AsyncGenerator<QueryResponse<TResponsePayload, TMeta>>;
 };
 
 /**
@@ -117,7 +121,7 @@ export type QueryResult<TResponsePayload> =
 	| Success<{ readonly response: TResponsePayload }>
 	| Failure<{ readonly response?: never }, KontentSdkError>;
 
-export type PagingQueryResult<TResponsePayload> =
+export type SafePagingQueryResult<TResponsePayload> =
 	| Success<{
 			readonly responses: readonly TResponsePayload[];
 			readonly partialResponses?: never;
@@ -132,8 +136,13 @@ export type PagingQueryResult<TResponsePayload> =
 			KontentSdkError
 	  >;
 
+export type PagingQueryResult<TResponsePayload> = {
+	readonly responses: readonly TResponsePayload[];
+	readonly lastContinuationToken: string | undefined;
+};
+
 export type QueryPromiseResult<TResponsePayload extends JsonValue, TMeta> = ReturnType<
-	Pick<FetchQuery<TResponsePayload, TMeta>, "fetch">["fetch"]
+	Pick<FetchQuery<TResponsePayload, TMeta>, "fetchSafe">["fetchSafe"]
 >;
 
 export type FetchQueryRequest<TResponsePayload extends JsonValue, TMeta> = Pick<

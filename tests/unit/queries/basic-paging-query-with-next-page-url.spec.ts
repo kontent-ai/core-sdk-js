@@ -46,7 +46,7 @@ describe("Basic paging query with next page url", async () => {
 		request: {
 			url: expectedResponseUrls?.[0] ?? "n/a",
 		},
-	}).fetchAllPages({ maxPagesCount: maxPagesCount });
+	}).fetchAllPagesSafe({ maxPagesCount: maxPagesCount });
 
 	it("Error should be undefined", () => {
 		expect(error).toBeUndefined();

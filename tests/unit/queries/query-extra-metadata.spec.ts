@@ -52,7 +52,7 @@ describe("Query extra metadata", async () => {
 			url: "https://domain.com",
 			requestHeaders: [requestHeader],
 		},
-	}).fetch();
+	}).fetchSafe();
 
 	it("Meta should have proper extra metadata", () => {
 		expect(response?.meta.testExtraMetadata).toStrictEqual(expectedExtraMetadataValue);
