@@ -39,7 +39,7 @@ export {
 	type ErrorReason,
 	KontentSdkError,
 } from "./models/error.models.js";
-export type { JsonArray, JsonObject, JsonValue } from "./models/json.models.js";
+export type { JsonArray, JsonObject, JsonValue, jsonValueSchema } from "./models/json.models.js";
 export type { EmptyObject, PickStringLiteral } from "./models/utility.types.js";
 export { createFetchQuery } from "./sdk/queries/fetch-sdk-query.js";
 export { createMutationQuery } from "./sdk/queries/mutation-sdk-query.js";
@@ -61,6 +61,7 @@ export type {
 	SuccessfulHttpResponse,
 } from "./sdk/sdk-models.js";
 export { isPagingQuery } from "./sdk/sdk-utils.js";
+export { isDefined } from "./utils/core.utils.js";
 export { isKontent404Error, isKontentSdkError } from "./utils/error.utils.js";
 export { extractContinuationToken, getSdkIdHeader } from "./utils/header.utils.js";
 export { resolveDefaultRetryStrategyOptions } from "./utils/retry.utils.js";
