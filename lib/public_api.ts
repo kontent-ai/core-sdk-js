@@ -39,7 +39,7 @@ export {
 	type ErrorReason,
 	KontentSdkError,
 } from "./models/error.models.js";
-export type { JsonArray, JsonObject, JsonValue, jsonValueSchema } from "./models/json.models.js";
+export { type JsonArray, type JsonObject, type JsonValue, jsonValueSchema } from "./models/json.models.js";
 export type { EmptyObject, PickStringLiteral } from "./models/utility.types.js";
 export { createFetchQuery } from "./sdk/queries/fetch-sdk-query.js";
 export { createMutationQuery } from "./sdk/queries/mutation-sdk-query.js";
