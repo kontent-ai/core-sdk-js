@@ -32,13 +32,14 @@
 		}
 	},
 	"type": "module",
+	"packageManager": "pnpm@10.33.0",
 	"scripts": {
-		"prepublishOnly": "npm run build && npm run test",
-		"build": "npm run lint && npm run clean && tsc --p tsconfig.json && tsc --p tsconfig.build.json && npm run update:version",
-		"test": "npm run test:unit && npm run test:integration",
+		"prepublishOnly": "pnpm run build && pnpm run test",
+		"build": "pnpm run lint && pnpm run clean && tsc --p tsconfig.json && tsc --p tsconfig.build.json && pnpm run update:version",
+		"test": "pnpm run test:unit && pnpm run test:integration",
 		"test:unit": "vitest run --config=vitest-unit.config.ts",
 		"test:integration": "vitest run --config=vitest-integration.config.ts",
-		"lint": "npm run biome:check && npm run eslint",
+		"lint": "pnpm run biome:check && pnpm run eslint",
 		"eslint": "eslint lib tests scripts",
 		"biome:check": "biome check",
 		"biome:fix": "biome check --write",
@@ -51,6 +52,11 @@
 		"zod": "^4"
 	},
 
+	"pnpm": {
+		"onlyBuiltDependencies": [
+			"esbuild"
+		]
+	},
 	"devDependencies": {
 		"@kontent-ai/biome-config": "0.7.0",
 		"@kontent-ai/eslint-config": "2.4.1",
