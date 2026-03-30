@@ -3,10 +3,10 @@ import type { JsonValue } from "../../models/json.models.js";
 import { resolveQuery } from "../resolve-query.js";
 import type { MutationQuery, MutationQueryRequest } from "../sdk-models.js";
 
-export function createMutationQuery<TResponsePayload extends JsonValue, TRequestBody extends HttpRequestBody, TMeta>(
-	data: MutationQueryRequest<TResponsePayload, TRequestBody, TMeta>,
-): MutationQuery<TResponsePayload, TMeta> {
-	const executeSafe = async () => await resolveQuery<TResponsePayload, TRequestBody, TMeta>(data);
+export function createMutationQuery<TResponsePayload extends JsonValue, TRequestBody extends HttpRequestBody, TMeta, TError>(
+	data: MutationQueryRequest<TResponsePayload, TRequestBody, TMeta, TError>,
+): MutationQuery<TResponsePayload, TMeta, TError> {
+	const executeSafe = async () => await resolveQuery<TResponsePayload, TRequestBody, TMeta, TError>(data);
 
 	return {
 		schema: data.zodSchema,

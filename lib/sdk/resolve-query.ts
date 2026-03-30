@@ -14,7 +14,7 @@ import { createAuthorizationHeader, createContinuationHeader, extractContinuatio
 import { type Failure, tryCatch } from "../utils/try-catch.utils.js";
 import type { QueryPromiseResult, ResolveQueryData, SdkConfig, SuccessfulHttpResponse } from "./sdk-models.js";
 
-export async function resolveQuery<TResponsePayload extends JsonValue, TRequestBody extends HttpRequestBody, TMeta>({
+export async function resolveQuery<TResponsePayload extends JsonValue, TRequestBody extends HttpRequestBody, TMeta, TError>({
 	config,
 	request,
 	mapMetadata,
@@ -22,7 +22,8 @@ export async function resolveQuery<TResponsePayload extends JsonValue, TRequestB
 	sdkInfo,
 	method,
 	abortSignal,
-}: ResolveQueryData<TResponsePayload, TRequestBody, TMeta>): QueryPromiseResult<TResponsePayload, TMeta> {
+	mapError,
+}: ResolveQueryData<TResponsePayload, TRequestBody, TMeta, TError>): QueryPromiseResult<TResponsePayload, TMeta, TError> {
 	const urlToUse = config.baseUrl ? setBaseUrl(request.url, config.baseUrl) : request.url;
 	const { success, response, error } = await getHttpService(config).request<TResponsePayload, TRequestBody>({
 		body: request.body,
@@ -40,7 +41,7 @@ export async function resolveQuery<TResponsePayload extends JsonValue, TRequestB
 	if (!success) {
 		return {
 			success: false,
-			error,
+			error: mapError(error),
 		};
 	}
 
@@ -48,13 +49,16 @@ export async function resolveQuery<TResponsePayload extends JsonValue, TRequestB
 		const validationError = await validateResponse({ url: response.adapterResponse.url, response, zodSchema });
 
 		if (validationError) {
-			return validationError;
+			return {
+				success: false,
+				error: mapError(validationError.error),
+			};
 		}
 	}
 
 	const continuationTokenFromResponse = extractContinuationToken(response.adapterResponse.responseHeaders);
 
-	const result: Awaited<QueryPromiseResult<TResponsePayload, TMeta>> = {
+	const result: Awaited<QueryPromiseResult<TResponsePayload, TMeta, TError>> = {
 		success: true,
 		response: {
 			payload: response.payload,

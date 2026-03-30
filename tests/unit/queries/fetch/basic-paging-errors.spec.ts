@@ -48,6 +48,7 @@ describe("Basic paging errors", async () => {
 		request: {
 			url: expectedResponseUrls?.[0] ?? "n/a",
 		},
+		mapError: (error) => error,
 	}).fetchAllPagesSafe();
 
 	it("Error should be defined & unknown", () => {

@@ -1,6 +1,6 @@
 import { afterAll, describe, expect, it, vi } from "vitest";
 import z from "zod";
-import { type GetNextPageData, getDefaultHttpService, type QueryResponse } from "../../../../lib/public_api.js";
+import { type GetNextPageData, getDefaultHttpService, type KontentSdkError, type QueryResponse } from "../../../../lib/public_api.js";
 import { createPagedFetchQuery } from "../../../../lib/sdk/queries/paged-fetch-sdk-query.js";
 import { getTestSdkInfo, mockGlobalFetchJsonResponse } from "../../../../lib/testkit/testkit.utils.js";
 import { getNextPageUrl, preventInfinitePaging } from "../../../test.utils.js";
@@ -21,7 +21,7 @@ describe("Async pages iterator with max pages count", async () => {
 		statusCode: 200,
 	});
 
-	const pagesIterator = createPagedFetchQuery<null, null>({
+	const pagesIterator = createPagedFetchQuery<null, null, KontentSdkError>({
 		getNextPageData: () => {
 			responseIndex++;
 
@@ -46,9 +46,10 @@ describe("Async pages iterator with max pages count", async () => {
 		request: {
 			url: expectedResponseUrls?.[0] ?? "n/a",
 		},
+		mapError: (error) => error,
 	}).pagesSafe({ maxPagesCount });
 
-	const responses: QueryResponse<null>[] = [];
+	const responses: QueryResponse<null, unknown>[] = [];
 
 	for await (const { success, response } of pagesIterator) {
 		if (success) {

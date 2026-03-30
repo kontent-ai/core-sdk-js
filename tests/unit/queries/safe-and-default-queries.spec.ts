@@ -17,7 +17,10 @@ type QueryTest = {
 
 type QueryCallback = {
 	readonly callback: () => Promise<void>;
-	readonly title: keyof FetchQuery<unknown, unknown> | keyof PagedFetchQuery<unknown, unknown> | keyof MutationQuery<unknown, unknown>;
+	readonly title:
+		| keyof FetchQuery<unknown, unknown, unknown>
+		| keyof PagedFetchQuery<unknown, unknown, unknown>
+		| keyof MutationQuery<unknown, unknown, unknown>;
 };
 
 const baseQueryConfig: Parameters<typeof createFetchQuery>[0] = {
@@ -39,6 +42,7 @@ const baseQueryConfig: Parameters<typeof createFetchQuery>[0] = {
 	},
 	sdkInfo: getTestSdkInfo(),
 	mapMetadata: () => ({}),
+	mapError: (error) => error,
 };
 
 const unsafeQueries: readonly QueryTest[] = [

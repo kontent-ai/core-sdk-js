@@ -1,6 +1,8 @@
 import type { PagedFetchQuery, Query } from "./sdk-models.js";
 
-export function isPagingQuery<T, TBody = null>(query: Query<T> | PagedFetchQuery<T, TBody>): query is PagedFetchQuery<T, TBody> {
+export function isPagingQuery<T, TBody = null, TError = unknown>(
+	query: Query<T> | PagedFetchQuery<T, TBody, TError>,
+): query is PagedFetchQuery<T, TBody, TError> {
 	return (
 		"fetchPage" in query &&
 		"fetchPageSafe" in query &&

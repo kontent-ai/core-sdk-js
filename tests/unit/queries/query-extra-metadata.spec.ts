@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import z from "zod";
 import type { CommonHeaderNames, Header, HttpMethod } from "../../../lib/models/core.models.js";
+import type { KontentSdkError } from "../../../lib/public_api.js";
 import { createFetchQuery } from "../../../lib/sdk/queries/fetch-sdk-query.js";
 import { getTestHttpServiceWithJsonResponse, getTestSdkInfo } from "../../../lib/testkit/testkit.utils.js";
 import { getSdkIdHeader } from "../../../lib/utils/header.utils.js";
@@ -24,7 +25,8 @@ describe("Query extra metadata", async () => {
 		null,
 		{
 			testExtraMetadata: string;
-		}
+		},
+		KontentSdkError
 	>({
 		mapMetadata: (response, data) => {
 			mappedContinuationToken = data.continuationToken;
@@ -52,6 +54,7 @@ describe("Query extra metadata", async () => {
 			url: "https://domain.com",
 			requestHeaders: [requestHeader],
 		},
+		mapError: (error) => error,
 	}).fetchSafe();
 
 	it("Meta should have proper extra metadata", () => {

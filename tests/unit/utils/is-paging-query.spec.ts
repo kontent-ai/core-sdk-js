@@ -5,7 +5,7 @@ import { isPagingQuery } from "../../../lib/sdk/sdk-utils.js";
 
 describe("isPagingQuery", () => {
 	it("returns true for object with paging query shape", () => {
-		const pagingQueryLike: PagedFetchQuery<unknown, unknown> = {
+		const pagingQueryLike: PagedFetchQuery<unknown, unknown, unknown> = {
 			schema: z.null(),
 			url: "x",
 			fetchPageSafe: () => {
@@ -32,7 +32,7 @@ describe("isPagingQuery", () => {
 	});
 
 	it("returns false when only toPromise is present", () => {
-		const queryLike: FetchQuery<unknown, unknown> = {
+		const queryLike: FetchQuery<unknown, unknown, unknown> = {
 			schema: z.null(),
 			url: "x",
 			fetch: () => {
@@ -52,7 +52,7 @@ describe("isPagingQuery", () => {
 	});
 
 	it("returns false when one of paging methods is missing", () => {
-		const missingPagesQuery: Omit<PagedFetchQuery<unknown, unknown>, "pages"> = {
+		const missingPagesQuery: Omit<PagedFetchQuery<unknown, unknown, unknown>, "pages"> = {
 			schema: z.null(),
 			url: "x",
 			fetchPageSafe: () => {
@@ -72,7 +72,7 @@ describe("isPagingQuery", () => {
 			},
 		};
 
-		const missingFetchAllPagesQuery: Omit<PagedFetchQuery<unknown, unknown>, "fetchAllPages"> = {
+		const missingFetchAllPagesQuery: Omit<PagedFetchQuery<unknown, unknown, unknown>, "fetchAllPages"> = {
 			schema: z.null(),
 			url: "x",
 			fetchPageSafe: () => {

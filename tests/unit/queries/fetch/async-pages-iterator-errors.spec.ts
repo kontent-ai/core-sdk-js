@@ -48,9 +48,10 @@ describe("Async pages iterator errors", async () => {
 		request: {
 			url: expectedResponseUrls?.[0] ?? "n/a",
 		},
+		mapError: (error) => error,
 	}).pagesSafe();
 
-	const responses: QueryResponse<null>[] = [];
+	const responses: QueryResponse<null, unknown>[] = [];
 
 	for await (const { success, response } of pagesIterator) {
 		if (success) {

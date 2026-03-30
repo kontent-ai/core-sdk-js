@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import z from "zod";
 import type { HttpServiceStatus } from "../../lib/http/http.models.js";
 import { getDefaultHttpService } from "../../lib/http/http.service.js";
+import type { KontentSdkError } from "../../lib/public_api.js";
 import { createMutationQuery } from "../../lib/sdk/queries/mutation-sdk-query.js";
 import type { MutationQuery } from "../../lib/sdk/sdk-models.js";
 import { getTestSdkInfo, poll } from "../../lib/testkit_api.js";
@@ -27,7 +28,7 @@ describe("Integration tests covering Fetch/Mutation queries against the Kontent.
 		mapMetadata: () => ({}),
 	} as const;
 
-	const uploadBinaryFileQuery: MutationQuery<{ readonly id: string }, unknown> = createMutationQuery({
+	const uploadBinaryFileQuery: MutationQuery<{ readonly id: string }, unknown, KontentSdkError> = createMutationQuery({
 		...baseMutationConfig,
 		zodSchema: z.object({
 			id: z.string(),
@@ -37,9 +38,12 @@ describe("Integration tests covering Fetch/Mutation queries against the Kontent.
 			url: config.urls.getUploadAssetBinaryFileUrl("core-sdk.txt"),
 			body: config.fileToUpload,
 		},
+		mapError: (error) => error,
 	});
 
-	const addAssetQueryFactory = (binaryFileId: string): MutationQuery<{ readonly id: string; readonly url: string }, unknown> =>
+	const addAssetQueryFactory = (
+		binaryFileId: string,
+	): MutationQuery<{ readonly id: string; readonly url: string }, unknown, KontentSdkError> =>
 		createMutationQuery({
 			...baseMutationConfig,
 			zodSchema: z.object({
@@ -57,9 +61,10 @@ describe("Integration tests covering Fetch/Mutation queries against the Kontent.
 					title: "Test file",
 				},
 			},
+			mapError: (error) => error,
 		});
 
-	const deleteAssetQueryFactory = (assetId: string): MutationQuery<null, unknown> =>
+	const deleteAssetQueryFactory = (assetId: string): MutationQuery<null, unknown, KontentSdkError> =>
 		createMutationQuery({
 			...baseMutationConfig,
 			zodSchema: z.null(),
@@ -68,6 +73,7 @@ describe("Integration tests covering Fetch/Mutation queries against the Kontent.
 				url: config.urls.getDeleteAssetUrl(assetId),
 				body: null,
 			},
+			mapError: (error) => error,
 		});
 
 	const downloadAssetFile = async (fileUrl: string) => {

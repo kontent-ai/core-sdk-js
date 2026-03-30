@@ -46,6 +46,7 @@ describe("Basic paging query with next page url", async () => {
 		request: {
 			url: expectedResponseUrls?.[0] ?? "n/a",
 		},
+		mapError: (error) => error,
 	}).fetchAllPagesSafe({ maxPagesCount: maxPagesCount });
 
 	it("Error should be undefined", () => {

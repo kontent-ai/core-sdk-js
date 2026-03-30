@@ -24,6 +24,7 @@ describe("Query builder", async () => {
 		request: {
 			url: "https://domain.com",
 		},
+		mapError: (error) => error,
 	}).fetchSafe();
 
 	it("Meta should have proper continuation token", () => {

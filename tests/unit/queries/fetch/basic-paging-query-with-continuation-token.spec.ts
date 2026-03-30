@@ -56,6 +56,7 @@ describe("Basic paging query with continuation token", async () => {
 		request: {
 			url: "https://domain.com",
 		},
+		mapError: (error) => error,
 	}).fetchAllPagesSafe({ maxPagesCount: maxPagesCount });
 
 	it("Error should be undefined", () => {

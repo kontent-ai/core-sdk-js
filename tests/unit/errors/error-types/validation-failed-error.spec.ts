@@ -25,6 +25,7 @@ describe("Validation failed error", async () => {
 		request: {
 			url: "https://domain.com",
 		},
+		mapError: (error) => error,
 	}).fetchSafe();
 
 	it("Success should be false", () => {

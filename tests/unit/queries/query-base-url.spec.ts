@@ -21,6 +21,7 @@ describe("Query base url with absolute base url", async () => {
 		sdkInfo: getTestSdkInfo(),
 		abortSignal: undefined,
 		mapMetadata: () => ({}),
+		mapError: (error) => error,
 	});
 
 	if (!success) {
@@ -50,6 +51,7 @@ describe("Query base url with hostname only", async () => {
 		sdkInfo: getTestSdkInfo(),
 		abortSignal: undefined,
 		mapMetadata: () => ({}),
+		mapError: (error) => error,
 	});
 
 	if (!success) {
@@ -79,6 +81,7 @@ describe("Query base url with http protocol", async () => {
 		sdkInfo: getTestSdkInfo(),
 		abortSignal: undefined,
 		mapMetadata: () => ({}),
+		mapError: (error) => error,
 	});
 
 	if (!success) {

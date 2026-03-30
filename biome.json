@@ -22,7 +22,15 @@
 			}
 		}
 	},
+	"assist": {
+		"enabled": true,
+		"actions": {
+			"source": {
+				"organizeImports": "on"
+			}
+		}
+	},
 	"files": {
-		"includes": ["!dist"]
+		"includes": ["lib/**/*.ts", "tests/**/*.ts", "scripts/**/*.ts", "**/*.json", "!dist/**/*"]
 	}
 }
