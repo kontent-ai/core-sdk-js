@@ -9,7 +9,7 @@ export function preventInfinitePaging({
 	readonly responseIndex: number;
 	readonly maxPagesCount: number;
 	readonly continuationToken?: string;
-	readonly nextPageUrl?: string;
+	readonly nextPageUrl?: string | undefined;
 }): ReturnType<GetNextPageData<null, null>> {
 	if (responseIndex >= maxPagesCount + 100) {
 		throw new Error("Infinite paging detected");

@@ -75,3 +75,69 @@ describe("Async pages iterator with unlimited max count", async () => {
 		expect(responses?.map((response) => response.meta.url)).toEqual(expectedResponseUrls);
 	});
 });
+
+describe("Async pages iterator fetches all pages when maxPagesCount is set to 0", async () => {
+	afterAll(() => {
+		vi.resetAllMocks();
+	});
+
+	const totalPages: number = 5;
+	let responseIndex: number = 0;
+
+	const expectedResponseUrls: readonly string[] = Array.from({ length: totalPages }, (_, index) => getNextPageUrl(index));
+
+	mockGlobalFetchJsonResponse({
+		jsonResponse: null,
+		statusCode: 200,
+	});
+
+	const pagesIterator = createPagedFetchQuery<null, null, KontentSdkError>({
+		getNextPageData: () => {
+			responseIndex++;
+
+			const data: ReturnType<GetNextPageData<null, null>> = preventInfinitePaging({
+				responseIndex,
+				maxPagesCount: totalPages,
+				nextPageUrl: responseIndex < totalPages ? getNextPageUrl(responseIndex) : undefined,
+			});
+
+			return data;
+		},
+
+		mapMetadata: () => null,
+		config: {
+			httpService: getDefaultHttpService(),
+			responseValidation: {
+				enable: false,
+			},
+		},
+		sdkInfo: getTestSdkInfo(),
+		zodSchema: z.null(),
+		request: {
+			url: expectedResponseUrls?.[0] ?? "n/a",
+		},
+		mapError: (error) => error,
+	}).pagesSafe({ maxPagesCount: 0 });
+
+	const responses: QueryResponse<null, unknown>[] = [];
+
+	for await (const { success, response } of pagesIterator) {
+		if (success) {
+			responses.push(response);
+		} else {
+			break;
+		}
+	}
+
+	it("All responses should be successful", () => {
+		expect(responses.every((response) => response)).toBeTruthy();
+	});
+
+	it(`All "${totalPages}" pages should be fetched without hitting a page limit`, () => {
+		expect(responses).toHaveLength(totalPages);
+	});
+
+	it("Response urls should be correct & in the expected order", () => {
+		expect(responses?.map((response) => response.meta.url)).toEqual(expectedResponseUrls);
+	});
+});
