@@ -10,11 +10,12 @@ import type {
 	QueryResponse,
 	QueryResult,
 	ResolveQueryData,
+	SafePagingQueryResult,
 } from "../sdk-models.js";
 import { createFetchQuery } from "./fetch-sdk-query.js";
 
-type PagingQueryPromiseResult<TResponsePayload extends JsonValue, TMeta, TError> = ReturnType<
-	Pick<PagedFetchQuery<TResponsePayload, TMeta, TError>, "fetchAllPagesSafe">["fetchAllPagesSafe"]
+type PagingQueryPromiseResult<TResponsePayload extends JsonValue, TMeta, TError> = Promise<
+	SafePagingQueryResult<QueryResponse<TResponsePayload, TMeta>, TError>
 >;
 
 type NoNextPageState = {
