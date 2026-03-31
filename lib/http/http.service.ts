@@ -1,7 +1,7 @@
 import { match, P } from "ts-pattern";
 import { coreSdkInfo } from "../core-sdk-info.js";
-import type { CommonHeaderNames, ErrorResponseData, Header, HttpMethod, ResolvedRetryStrategyOptions } from "../models/core.models.js";
-import type { ErrorDetails, ErrorDetailsFor, ErrorReason, KontentSdkError } from "../models/error.models.js";
+import type { CommonHeaderNames, Header, HttpMethod, ResolvedRetryStrategyOptions } from "../models/core.models.js";
+import type { ErrorDetails, ErrorDetailsFor, ErrorReason, ErrorResponseData, KontentSdkError } from "../models/error.models.js";
 import type { JsonObject, JsonValue } from "../models/json.models.js";
 import type { PickStringLiteral } from "../models/utility.types.js";
 import { isBlob, isDefined } from "../utils/core.utils.js";

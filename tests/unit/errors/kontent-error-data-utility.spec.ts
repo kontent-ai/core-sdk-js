@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { ErrorResponseData } from "../../../lib/models/core.models.js";
+import type { ErrorResponseData } from "../../../lib/models/error.models.js";
 import { isKontentErrorResponseData } from "../../../lib/utils/error.utils.js";
 
 describe("isKontentErrorResponseData utility function", () => {

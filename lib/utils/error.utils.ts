@@ -1,6 +1,16 @@
 import type { AdapterPayload, AdapterResponse } from "../http/http.models.js";
-import type { ErrorResponseData, HttpMethod, ValidationError } from "../models/core.models.js";
-import { AdapterAbortError, AdapterParseError, type BaseErrorData, type ErrorDetails, KontentSdkError } from "../models/error.models.js";
+import type { HttpMethod } from "../models/core.models.js";
+import {
+	AdapterAbortError,
+	AdapterParseError,
+	type BaseErrorData,
+	type ErrorDetails,
+	type ErrorResponseData,
+	errorResponseDataSchema,
+	KontentSdkError,
+	type ValidationError,
+} from "../models/error.models.js";
+
 import { isDefined } from "./core.utils.js";
 
 export function createSdkError<TDetails extends ErrorDetails>({
@@ -51,20 +61,7 @@ export function toInvalidResponseMessage({
  * Checks if the given JSON value is a Kontent API error response data.
  */
 export function isKontentErrorResponseData(json: unknown): json is ErrorResponseData {
-	if (!json) {
-		return false;
-	}
-
-	if (
-		json instanceof Object &&
-		("message" satisfies keyof ErrorResponseData) in json &&
-		("request_id" satisfies keyof ErrorResponseData) in json &&
-		("error_code" satisfies keyof ErrorResponseData) in json
-	) {
-		return true;
-	}
-
-	return false;
+	return errorResponseDataSchema.safeParse(json).success;
 }
 
 function getValidationErrorMessage(validationErrors?: readonly ValidationError[]): string | undefined {

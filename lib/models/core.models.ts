@@ -32,20 +32,6 @@ export type Header = {
 
 export type HttpMethod = "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
 
-export type ValidationError = {
-	readonly message: string;
-	readonly path?: string;
-	readonly line?: number;
-	readonly position?: number;
-};
-
-export type ErrorResponseData = {
-	readonly message: string;
-	readonly request_id: string;
-	readonly error_code: number;
-	readonly validation_errors?: readonly ValidationError[];
-};
-
 export type RetryStrategyOptions = {
 	/**
 	 * Maximum number of retry attempts.

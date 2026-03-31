@@ -1,8 +1,26 @@
 import { match, P } from "ts-pattern";
-import type { ZodError } from "zod";
+import { type ZodError, z } from "zod";
 import type { AdapterPayload, AdapterResponse, HttpPayload, HttpRequestBody } from "../http/http.models.js";
 import type { SuccessfulHttpResponse } from "../sdk/sdk-models.js";
-import type { ErrorResponseData, ResolvedRetryStrategyOptions } from "./core.models.js";
+import type { ResolvedRetryStrategyOptions } from "./core.models.js";
+
+export const validationErrorSchema = z.object({
+	message: z.string(),
+	path: z.string().optional(),
+	line: z.number().optional(),
+	position: z.number().optional(),
+});
+
+export type ValidationError = z.infer<typeof validationErrorSchema>;
+
+export const errorResponseDataSchema = z.object({
+	message: z.string(),
+	request_id: z.string(),
+	error_code: z.number(),
+	validation_errors: z.array(validationErrorSchema).optional(),
+});
+
+export type ErrorResponseData = z.infer<typeof errorResponseDataSchema>;
 
 export type ErrorReason = ErrorDetails["reason"];
 

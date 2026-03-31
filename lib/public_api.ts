@@ -24,12 +24,10 @@ export { getDefaultHttpService } from "./http/http.service.js";
 export type {
 	CommonHeaderNames,
 	ContinuationHeaderName,
-	ErrorResponseData,
 	Header,
 	HttpMethod,
 	RetryStrategyOptions,
 	SDKInfo,
-	ValidationError,
 } from "./models/core.models.js";
 export {
 	AdapterAbortError,
@@ -37,7 +35,9 @@ export {
 	type ErrorDetails,
 	type ErrorDetailsFor,
 	type ErrorReason,
+	type ErrorResponseData,
 	KontentSdkError,
+	type ValidationError,
 } from "./models/error.models.js";
 export { type JsonArray, type JsonObject, type JsonValue, jsonValueSchema } from "./models/json.models.js";
 export type { EmptyObject, PickStringLiteral } from "./models/utility.types.js";
