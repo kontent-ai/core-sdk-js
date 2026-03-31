@@ -10,6 +10,7 @@ import { getRetryAfterHeaderValue } from "./header.utils.js";
 type RetryResult =
 	| {
 			readonly canRetry: false;
+			readonly error: KontentSdkError;
 	  }
 	| {
 			readonly canRetry: true;
@@ -33,57 +34,47 @@ export async function runWithRetry<TResponse extends HttpPayload, TRequestBody e
 	readonly url: URL;
 	readonly abortSignal: AbortSignal | undefined;
 }): Promise<HttpResponse<TResponse, TRequestBody>> {
-	const { success, response, error } = await data.func(data.retryAttempt);
+	let retryAttempt = data.retryAttempt;
+	let retryResult: RetryResult = { canRetry: true, retryInMs: 0 };
 
-	if (success) {
-		return {
-			success: true,
-			response,
-		};
+	while (retryResult.canRetry) {
+		const { success, response, error } = await data.func(retryAttempt);
+
+		if (success) {
+			return { success: true, response: response };
+		}
+
+		retryResult = getRetryResult({ error, retryAttempt, retryStrategyOptions: data.retryStrategyOptions });
+
+		if (retryResult.canRetry) {
+			// wait before the next retry or if the abort signal is aborted, return the error
+			const { isAborted } = await waitBeforeNextRetry({ retryInMs: retryResult.retryInMs, abortSignal: data.abortSignal });
+			if (isAborted) {
+				return {
+					success: false,
+					error: createAbortError({ url: data.url, retryStrategyOptions: data.retryStrategyOptions, retryAttempt }),
+				};
+			}
+
+			retryAttempt += 1;
+
+			// log retry attempt when available
+			data.retryStrategyOptions.logRetryAttempt?.(retryAttempt, data.url.toString());
+		}
 	}
 
-	const newRetryAttempt = data.retryAttempt + 1;
-
-	const retryResult = getRetryResult({
-		error,
-		retryAttempt: data.retryAttempt,
-		retryStrategyOptions: data.retryStrategyOptions,
-	});
-
-	if (!retryResult.canRetry) {
-		return {
-			success: false,
-			error: createSdkError({
-				baseErrorData: {
-					message: error.message,
-					url: error.url,
-					retryStrategyOptions: data.retryStrategyOptions,
-					retryAttempt: data.retryAttempt,
-				},
-				details: error.details,
-			}),
-		};
-	}
-
-	// wait before the next retry or if the abort signal is aborted, return the error
-	const { isAborted } = await waitBeforeNextRetry({ retryInMs: retryResult.retryInMs, abortSignal: data.abortSignal });
-	if (isAborted) {
-		return {
-			success: false,
-			error: createAbortError({ url: data.url, retryStrategyOptions: data.retryStrategyOptions, retryAttempt: data.retryAttempt }),
-		};
-	}
-
-	// log retry attempt when available
-	data.retryStrategyOptions.logRetryAttempt?.(newRetryAttempt, data.url.toString());
-
-	return await runWithRetry({
-		func: data.func,
-		retryStrategyOptions: data.retryStrategyOptions,
-		retryAttempt: newRetryAttempt,
-		url: data.url,
-		abortSignal: data.abortSignal,
-	});
+	return {
+		success: false,
+		error: createSdkError({
+			baseErrorData: {
+				message: retryResult.error.message,
+				url: retryResult.error.url,
+				retryStrategyOptions: data.retryStrategyOptions,
+				retryAttempt,
+			},
+			details: retryResult.error.details,
+		}),
+	};
 }
 
 export function resolveDefaultRetryStrategyOptions(options?: RetryStrategyOptions): ResolvedRetryStrategyOptions {
@@ -185,6 +176,7 @@ function getRetryResult({
 	) {
 		return {
 			canRetry: false,
+			error,
 		};
 	}
 
