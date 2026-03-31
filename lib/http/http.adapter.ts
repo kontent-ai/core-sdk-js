@@ -2,6 +2,7 @@ import type { Header } from "../models/core.models.js";
 import { AdapterAbortError, AdapterParseError } from "../models/error.models.js";
 import type { JsonValue } from "../models/json.models.js";
 import { runWithAbortSignal } from "../utils/abort.utils.js";
+import { isAbortError } from "../utils/error.utils.js";
 import { isApplicationJsonResponseType, toFetchHeaders, toSdkHeaders } from "../utils/header.utils.js";
 import { tryCatchAsync } from "../utils/try-catch.utils.js";
 import type { AdapterExecuteRequestOptions, AdapterPayload, AdapterResponse, HttpAdapter } from "./http.models.js";
@@ -27,7 +28,7 @@ export function getDefaultHttpAdapter(): Required<HttpAdapter> {
 				body: null,
 			});
 
-			const file = await parseResponse({ parseFunc: async () => response.blob(), abortSignal: options.abortSignal });
+			const file = await parseResponse({ parseFunc: async () => await response.blob(), abortSignal: options.abortSignal });
 
 			return createAdapterResponse(options.url, response, file, toSdkHeaders(response.headers));
 		},
@@ -94,13 +95,6 @@ async function parseResponse<TPayload extends AdapterPayload>({
 	}
 
 	return data;
-}
-
-function isAbortError(error: unknown): boolean {
-	if (!error || typeof error !== "object") {
-		return false;
-	}
-	return "name" in error && error.name === "AbortError";
 }
 
 function createAdapterResponse<TPayload extends AdapterPayload>(

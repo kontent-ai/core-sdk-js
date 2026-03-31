@@ -53,8 +53,8 @@ export function toInvalidResponseMessage({
 	readonly adapterResponse: AdapterResponse<AdapterPayload>;
 	readonly kontentErrorResponse?: ErrorResponseData;
 }): string {
-	const details = kontentErrorResponse ? getKontentErrorResponseMessage(adapterResponse, kontentErrorResponse) : undefined;
-	return `Failed to execute '${method}' request '${url}'.${details ? ` ${details}` : ""}`;
+	const details = kontentErrorResponse ? ` ${getKontentErrorResponseMessage(adapterResponse, kontentErrorResponse)}` : "";
+	return `Failed to execute '${method}' request '${url}'.${details}`;
 }
 
 /**
@@ -62,6 +62,13 @@ export function toInvalidResponseMessage({
  */
 export function isKontentErrorResponseData(json: unknown): json is ErrorResponseData {
 	return errorResponseDataSchema.safeParse(json).success;
+}
+
+export function isAbortError(error: unknown): boolean {
+	if (!error || typeof error !== "object") {
+		return false;
+	}
+	return "name" in error && error.name === "AbortError";
 }
 
 function getValidationErrorMessage(validationErrors?: readonly ValidationError[]): string | undefined {
