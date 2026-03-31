@@ -21,10 +21,6 @@ export function isBlob(value: unknown): value is Blob {
 
 	return (
 		Object.prototype.toString.call(value) === "[object Blob]" ||
-		(typeof record.arrayBuffer === "function" &&
-			typeof record.text === "function" &&
-			typeof record.stream === "function" &&
-			typeof record.size === "number" &&
-			typeof record.type === "string")
+		(typeof record.arrayBuffer === "function" && typeof record.size === "number")
 	);
 }

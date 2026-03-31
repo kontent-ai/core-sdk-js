@@ -14,6 +14,8 @@ import { createAuthorizationHeader, createContinuationHeader, extractContinuatio
 import { type Failure, type TryCatchResult, tryCatch } from "../utils/try-catch.utils.js";
 import type { QueryPromiseResult, ResolveQueryData, SdkConfig, SuccessfulHttpResponse } from "./sdk-models.js";
 
+const defaultHttpService = getDefaultHttpService();
+
 export async function resolveQuery<TResponsePayload extends JsonValue, TRequestBody extends HttpRequestBody, TMeta, TError>({
 	config,
 	request,
@@ -181,7 +183,7 @@ async function validateResponse<TResponsePayload extends JsonValue, TRequestBody
 }
 
 function getHttpService(config: SdkConfig): HttpService {
-	return config.httpService ?? getDefaultHttpService();
+	return config.httpService ?? defaultHttpService;
 }
 
 function getCombinedRequestHeaders({

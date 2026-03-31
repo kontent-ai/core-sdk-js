@@ -22,7 +22,8 @@ export function createAuthorizationHeader(apiKey: string): Header {
 }
 
 export function findHeaderByName(headers: readonly Header[], name: CommonHeaderNames): Header | undefined {
-	return headers.find((header) => header.name.toLowerCase() === name.toLowerCase());
+	const normalizedName = name.toLowerCase();
+	return headers.find((header) => header.name.toLowerCase() === normalizedName);
 }
 
 export function getRetryAfterHeaderValue(headers: readonly Header[]): number | undefined {
@@ -43,10 +44,7 @@ export function toSdkHeaders(headers: Headers): readonly Header[] {
 }
 
 export function toFetchHeaders(headers: readonly Header[]): Headers {
-	return headers.reduce<Headers>((headers, header) => {
-		headers.append(header.name, header.value);
-		return headers;
-	}, new Headers());
+	return new Headers(headers.map((header) => [header.name, header.value]));
 }
 
 export function isApplicationJsonResponseType(headers: readonly Header[]): boolean {
