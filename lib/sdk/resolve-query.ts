@@ -144,9 +144,19 @@ function setBaseUrl(url: URL, baseUrl: string): TryCatchResult<URL, KontentSdkEr
 
 	clonedUrl.host = baseUrl;
 
+	// We need to parse the cloned url again to ensure it is valid
+	const { success, error, data: parsedClonedUrl } = tryCatch(() => new URL(clonedUrl.toString()));
+
+	if (!success) {
+		return {
+			success: false,
+			error: createInvalidUrlError(clonedUrl.toString(), error),
+		};
+	}
+
 	return {
 		success: true,
-		data: clonedUrl,
+		data: parsedClonedUrl,
 	};
 }
 
