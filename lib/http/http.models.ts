@@ -43,7 +43,7 @@ export type HttpResponse<TPayload extends AdapterPayload, TRequestBody extends H
 }>;
 
 export type ExecuteRequestOptions<TRequestBody extends HttpRequestBody> = {
-	readonly url: string;
+	readonly url: URL | string;
 	readonly method: HttpMethod;
 	readonly body?: TRequestBody;
 	readonly requestHeaders?: readonly Header[];

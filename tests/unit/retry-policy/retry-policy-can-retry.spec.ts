@@ -57,7 +57,7 @@ for (const testCase of testCases) {
 				},
 			},
 		}).request({
-			url: "https://domain.com",
+			url: new URL("https://domain.com"),
 			method: "GET",
 		});
 

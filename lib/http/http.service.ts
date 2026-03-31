@@ -161,7 +161,7 @@ async function processHttpRequest<TPayload extends AdapterPayload, TRequestBody 
 				...(options.body === undefined ? {} : { requestBody: options.body }),
 			});
 		},
-		url: options.url,
+		url: parsedRequest.parsedUrl,
 		retryStrategyOptions,
 	});
 }
@@ -342,7 +342,7 @@ function parseRequestBody({
 	retryStrategyOptions,
 }: {
 	readonly requestBody: HttpRequestBody;
-	readonly url: string;
+	readonly url: URL;
 	readonly retryStrategyOptions: ResolvedRetryStrategyOptions;
 }): TryCatchResult<AdapterBody, KontentSdkError> {
 	return match(requestBody)
@@ -355,7 +355,7 @@ function parseRequestBody({
 			success: true,
 			data: blob,
 		}))
-		.otherwise((m) => stringifyJson({ url, retryStrategyOptions, json: m }));
+		.otherwise((m) => stringifyJson({ url: url, retryStrategyOptions, json: m }));
 }
 
 function stringifyJson({
@@ -363,7 +363,7 @@ function stringifyJson({
 	retryStrategyOptions,
 	json,
 }: {
-	readonly url: string;
+	readonly url: URL;
 	readonly retryStrategyOptions: ResolvedRetryStrategyOptions;
 	readonly json: JsonObject;
 }): TryCatchResult<string, KontentSdkError> {
@@ -381,7 +381,7 @@ function stringifyJson({
 		error: createSdkError({
 			baseErrorData: {
 				message: "Failed to stringify body of the request.",
-				url: url,
+				url: url.toString(),
 				retryStrategyOptions,
 				retryAttempt: 0,
 			},
@@ -399,6 +399,10 @@ function tryExtractKontentErrorData(response: AdapterResponse<AdapterPayload>): 
 	}
 
 	return undefined;
+}
+
+function isStringUrl(url: string | URL): url is string {
+	return typeof url === "string";
 }
 
 function parseAndValidateRequest<TRequestBody extends HttpRequestBody>({
@@ -423,7 +427,7 @@ function parseAndValidateRequest<TRequestBody extends HttpRequestBody>({
 		success: requestBodyParsedSuccess,
 		data: parsedRequestBody,
 		error: requestBodyError,
-	} = parseRequestBody({ requestBody: options.body ?? null, url: options.url, retryStrategyOptions });
+	} = parseRequestBody({ requestBody: options.body ?? null, url: parsedUrl, retryStrategyOptions });
 
 	if (!requestBodyParsedSuccess) {
 		return {
@@ -450,9 +454,16 @@ function parseUrl({
 	url,
 	retryStrategyOptions,
 }: {
-	readonly url: string;
+	readonly url: string | URL;
 	readonly retryStrategyOptions: ResolvedRetryStrategyOptions;
 }): TryCatchResult<URL, KontentSdkError> {
+	if (!isStringUrl(url)) {
+		return {
+			success: true,
+			data: url,
+		};
+	}
+
 	const { success, data: parsedUrl, error } = tryCatch(() => new URL(url));
 
 	if (success) {

@@ -30,7 +30,7 @@ export async function runWithRetry<TResponse extends HttpPayload, TRequestBody e
 	readonly func: (retryAttempt: number) => Promise<HttpResponse<TResponse, TRequestBody>>;
 	readonly retryStrategyOptions: ResolvedRetryStrategyOptions;
 	readonly retryAttempt: number;
-	readonly url: string;
+	readonly url: URL;
 	readonly abortSignal: AbortSignal | undefined;
 }): Promise<HttpResponse<TResponse, TRequestBody>> {
 	const { success, response, error } = await data.func(data.retryAttempt);
@@ -75,7 +75,7 @@ export async function runWithRetry<TResponse extends HttpPayload, TRequestBody e
 	}
 
 	// log retry attempt when available
-	data.retryStrategyOptions.logRetryAttempt?.(newRetryAttempt, data.url);
+	data.retryStrategyOptions.logRetryAttempt?.(newRetryAttempt, data.url.toString());
 
 	return await runWithRetry({
 		func: data.func,
@@ -132,14 +132,14 @@ function createAbortError({
 	retryStrategyOptions,
 	retryAttempt,
 }: {
-	readonly url: string;
+	readonly url: URL;
 	readonly retryStrategyOptions: ResolvedRetryStrategyOptions;
 	readonly retryAttempt: number;
 }): KontentSdkError<ErrorDetailsFor<"aborted">> {
 	return createSdkError({
 		baseErrorData: {
 			message: "The request was aborted while waiting before the next retry attempt.",
-			url,
+			url: url.toString(),
 			retryStrategyOptions,
 			retryAttempt,
 		},

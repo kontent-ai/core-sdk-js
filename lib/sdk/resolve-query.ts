@@ -7,11 +7,11 @@ import type { ZodType } from "zod";
 import type { HttpRequestBody, HttpService } from "../http/http.models.js";
 import { getDefaultHttpService } from "../http/http.service.js";
 import type { CommonHeaderNames, Header, SDKInfo } from "../models/core.models.js";
-import type { KontentSdkError } from "../models/error.models.js";
+import type { ErrorDetailsFor, KontentSdkError } from "../models/error.models.js";
 import type { JsonValue } from "../models/json.models.js";
 import { createSdkError } from "../utils/error.utils.js";
 import { createAuthorizationHeader, createContinuationHeader, extractContinuationToken, getSdkIdHeader } from "../utils/header.utils.js";
-import { type Failure, tryCatch } from "../utils/try-catch.utils.js";
+import { type Failure, type TryCatchResult, tryCatch } from "../utils/try-catch.utils.js";
 import type { QueryPromiseResult, ResolveQueryData, SdkConfig, SuccessfulHttpResponse } from "./sdk-models.js";
 
 export async function resolveQuery<TResponsePayload extends JsonValue, TRequestBody extends HttpRequestBody, TMeta, TError>({
@@ -24,7 +24,15 @@ export async function resolveQuery<TResponsePayload extends JsonValue, TRequestB
 	abortSignal,
 	mapError,
 }: ResolveQueryData<TResponsePayload, TRequestBody, TMeta, TError>): QueryPromiseResult<TResponsePayload, TMeta, TError> {
-	const urlToUse = config.baseUrl ? setBaseUrl(request.url, config.baseUrl) : request.url;
+	const { success: urlSuccess, data: urlToUse, error: urlError } = getUrlToUse(request.url, config.baseUrl);
+
+	if (!urlSuccess) {
+		return {
+			success: false,
+			error: mapError(urlError),
+		};
+	}
+
 	const { success, response, error } = await getHttpService(config).request<TResponsePayload, TRequestBody>({
 		body: request.body,
 		url: urlToUse,
@@ -75,32 +83,67 @@ export async function resolveQuery<TResponsePayload extends JsonValue, TRequestB
 	return result;
 }
 
-/**
- * We are intentionally not throwing errors here as parsing errors are handled by the HttpService.
- */
-function setBaseUrl(url: string, baseUrl: string): string {
-	const { success, data: parsedUrl } = tryCatch(() => new URL(url));
+function getUrlToUse(url: string, baseUrl: string | undefined): TryCatchResult<URL, KontentSdkError<ErrorDetailsFor<"invalidUrl">>> {
+	const { success, data: parsedUrl, error } = tryCatch(() => new URL(url));
 
 	if (!success) {
-		return url;
+		return {
+			success: false,
+			error: createInvalidUrlError(url, error),
+		};
 	}
 
+	if (baseUrl) {
+		return setBaseUrl(parsedUrl, baseUrl);
+	}
+
+	return {
+		success: true,
+		data: parsedUrl,
+	};
+}
+
+function createInvalidUrlError(invalidUrl: string, error: unknown): KontentSdkError<ErrorDetailsFor<"invalidUrl">> {
+	return createSdkError({
+		baseErrorData: {
+			message: `Failed to parse url '${invalidUrl}'`,
+			url: invalidUrl,
+			retryStrategyOptions: undefined,
+			retryAttempt: undefined,
+		},
+		details: {
+			reason: "invalidUrl",
+			originalError: error,
+		},
+	});
+}
+
+function setBaseUrl(url: URL, baseUrl: string): TryCatchResult<URL, KontentSdkError<ErrorDetailsFor<"invalidUrl">>> {
 	if (baseUrl.startsWith("http")) {
-		const { success, data: parsedBaseUrl } = tryCatch(() => new URL(baseUrl));
+		const { success, data: parsedBaseUrl, error } = tryCatch(() => new URL(baseUrl));
 
 		if (!success) {
-			return url;
+			return {
+				success: false,
+				error: createInvalidUrlError(baseUrl, error),
+			};
 		}
 
-		parsedUrl.host = parsedBaseUrl.host;
-		parsedUrl.protocol = parsedBaseUrl.protocol;
+		url.host = parsedBaseUrl.host;
+		url.protocol = parsedBaseUrl.protocol;
 
-		return parsedUrl.toString();
+		return {
+			success: true,
+			data: url,
+		};
 	}
 
-	parsedUrl.host = baseUrl;
+	url.host = baseUrl;
 
-	return parsedUrl.toString();
+	return {
+		success: true,
+		data: url,
+	};
 }
 
 async function validateResponse<TResponsePayload extends JsonValue, TRequestBody extends HttpRequestBody>({
