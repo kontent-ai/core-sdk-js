@@ -24,6 +24,7 @@ export function getDefaultHttpAdapter(): Required<HttpAdapter> {
 			const response = await getResponse({
 				...options,
 				method: "GET",
+				body: null,
 			});
 
 			const file = await parseResponse({ parseFunc: async () => response.blob(), abortSignal: options.abortSignal });
