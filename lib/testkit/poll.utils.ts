@@ -15,24 +15,12 @@ export async function poll<TResult, TError = unknown>(
 	const timeoutMs = config?.timeoutMs ?? defaultTimeoutMs;
 	const startTime = Date.now();
 
-	let elapsedMs = 0;
-	let latestAttempt: Success<TResult> | Failure<TResult, TError> | undefined;
+	let result = await func();
 
-	while (elapsedMs <= timeoutMs) {
-		const result = await func();
-		latestAttempt = result;
-
-		if (result.success) {
-			return result;
-		}
-
-		elapsedMs = Date.now() - startTime;
+	while (!result.success && Date.now() - startTime <= timeoutMs) {
 		await sleep(intervalMs);
+		result = await func();
 	}
 
-	if (!latestAttempt) {
-		throw new Error("Invalid latest attempt in poll result");
-	}
-
-	return latestAttempt;
+	return result;
 }
