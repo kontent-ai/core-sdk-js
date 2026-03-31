@@ -23,7 +23,7 @@ export async function runWithAbortSignal<T>({
 
 	const listenerName = "abort";
 
-	return await new Promise<AbortResult<T>>((resolve) => {
+	return await new Promise<AbortResult<T>>((resolve, reject) => {
 		const onAbort = () => {
 			cleanup();
 			resolve({ isAborted: true });
@@ -37,8 +37,9 @@ export async function runWithAbortSignal<T>({
 			.then((result) => {
 				resolve({ isAborted: false, data: result });
 			})
-			.catch(() => {
-				resolve({ isAborted: true });
+			.catch((error) => {
+				// forward any error that occurs during the execution of the function
+				reject(error);
 			})
 			.finally(() => {
 				cleanup();

@@ -51,12 +51,6 @@
 		"ts-pattern": "^5",
 		"zod": "^4"
 	},
-
-	"pnpm": {
-		"onlyBuiltDependencies": [
-			"esbuild"
-		]
-	},
 	"devDependencies": {
 		"@kontent-ai/biome-config": "0.7.0",
 		"@kontent-ai/eslint-config": "2.4.1",
