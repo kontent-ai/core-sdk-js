@@ -112,6 +112,9 @@ export type GetNextPageData<TResponsePayload extends JsonValue, TMeta> = (respon
 };
 
 export type PaginationConfig = {
+	/**
+	 * The maximum number of pages to fetch. If not provided or set to 0, the pagination will continue until the last page is reached.
+	 */
 	readonly maxPagesCount?: number;
 };
 

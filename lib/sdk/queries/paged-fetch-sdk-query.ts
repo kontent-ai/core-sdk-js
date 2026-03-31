@@ -127,9 +127,6 @@ function resolveNextPageState<TResponsePayload extends JsonValue, TMeta>({
 }): NextPageState {
 	return match({ getNextPageData, paginationConfig, pageIndex, response })
 		.returnType<NextPageState>()
-		.with({ paginationConfig: { maxPagesCount: 0 } }, () => ({
-			hasNextPage: false,
-		}))
 		.with({ paginationConfig: { maxPagesCount: pageIndex } }, () => ({
 			hasNextPage: false,
 		}))
