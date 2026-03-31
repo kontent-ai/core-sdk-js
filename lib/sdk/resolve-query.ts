@@ -121,6 +121,8 @@ function createInvalidUrlError(invalidUrl: string, error: unknown): KontentSdkEr
 }
 
 function setBaseUrl(url: URL, baseUrl: string): TryCatchResult<URL, KontentSdkError<ErrorDetailsFor<"invalidUrl">>> {
+	const clonedUrl = new URL(url.toString());
+
 	if (baseUrl.startsWith("http")) {
 		const { success, data: parsedBaseUrl, error } = tryCatch(() => new URL(baseUrl));
 
@@ -131,20 +133,20 @@ function setBaseUrl(url: URL, baseUrl: string): TryCatchResult<URL, KontentSdkEr
 			};
 		}
 
-		url.host = parsedBaseUrl.host;
-		url.protocol = parsedBaseUrl.protocol;
+		clonedUrl.host = parsedBaseUrl.host;
+		clonedUrl.protocol = parsedBaseUrl.protocol;
 
 		return {
 			success: true,
-			data: url,
+			data: clonedUrl,
 		};
 	}
 
-	url.host = baseUrl;
+	clonedUrl.host = baseUrl;
 
 	return {
 		success: true,
-		data: url,
+		data: clonedUrl,
 	};
 }
 
