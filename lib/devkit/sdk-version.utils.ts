@@ -1,5 +1,5 @@
 import { readFileSync, writeFileSync } from "node:fs";
-import { colorize } from "../devkit/console.utils.js";
+import { colorize } from "./console.utils.js";
 
 const sdkVersionPlaceholderMacro = "{{version}}";
 

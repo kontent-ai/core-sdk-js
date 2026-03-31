@@ -1,7 +1,7 @@
-import { match, P } from "ts-pattern";
 import { type ZodError, z } from "zod";
 import type { AdapterPayload, AdapterResponse, HttpPayload, HttpRequestBody } from "../http/http.models.js";
 import type { SuccessfulHttpResponse } from "../sdk/sdk-models.js";
+import { toFriendlyKontentSdkErrorMessage } from "../utils/error.utils.js";
 import type { ResolvedRetryStrategyOptions } from "./core.models.js";
 
 export const validationErrorSchema = z.object({
@@ -83,7 +83,7 @@ export class KontentSdkError<TDetails extends ErrorDetails = ErrorDetails> exten
 		readonly baseErrorData: BaseErrorData;
 		readonly details: TDetails;
 	}) {
-		super(toFriendlyMessage(message, details));
+		super(toFriendlyKontentSdkErrorMessage(message, details));
 
 		this.url = url;
 		this.retryStrategyOptions = retryStrategyOptions;
@@ -127,13 +127,3 @@ type ErrorWithOriginalError = {
 type ReasonData<TReason extends ErrorReason, TData> = {
 	readonly reason: TReason;
 } & TData;
-
-function toFriendlyMessage(message: string, error: ErrorDetails): string {
-	return match(error)
-		.returnType<string>()
-		.with(
-			{ reason: P.union("invalidResponse", "notFound"), kontentErrorResponse: P.nonNullable },
-			(m) => `${message} ${m.kontentErrorResponse.message}`,
-		)
-		.otherwise(() => message);
-}

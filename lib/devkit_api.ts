@@ -3,4 +3,4 @@
 export { type ConsoleColor, colorize } from "./devkit/console.utils.js";
 export { getEnvironmentOptionalValue, getEnvironmentRequiredValue } from "./devkit/environment.utils.js";
 export { deleteFolderRecursive } from "./devkit/script.utils.js";
-export { replaceSdkVersionPlaceholder } from "./utils/sdk-version.utils.js";
+export { replaceSdkVersionPlaceholder } from "./devkit/sdk-version.utils.js";

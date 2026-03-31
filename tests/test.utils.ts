@@ -1,6 +1,6 @@
 import type { GetNextPageData } from "../lib/public_api.js";
 
-const upperBoundLimitForInfinitePaging = 1;
+const upperBoundLimitForInfinitePaging = 10;
 
 export function preventInfinitePaging({
 	responseIndex,

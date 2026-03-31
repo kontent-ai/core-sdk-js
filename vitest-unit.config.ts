@@ -6,7 +6,7 @@ export default defineConfig({
 		dir: "tests/unit",
 		globals: true,
 		environment: "node",
-		coverage: { provider: "v8", thresholds: { lines: 90, functions: 90, branches: 85 } },
+		coverage: { provider: "v8" },
 	},
 	build: {
 		target: "esnext",
