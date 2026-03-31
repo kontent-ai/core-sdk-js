@@ -99,7 +99,7 @@ export type AdapterPayload = JsonValue | Blob;
 export type AdapterExecuteRequestOptions = {
 	readonly url: string;
 	readonly method: HttpMethod;
-	readonly body?: AdapterBody;
+	readonly body: AdapterBody;
 	readonly requestHeaders?: readonly Header[];
 	readonly abortSignal?: AbortSignal | undefined;
 };
