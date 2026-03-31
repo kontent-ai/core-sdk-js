@@ -1,5 +1,7 @@
 import type { GetNextPageData } from "../lib/public_api.js";
 
+const upperBoundLimitForInfinitePaging = 1;
+
 export function preventInfinitePaging({
 	responseIndex,
 	maxPagesCount,
@@ -11,7 +13,7 @@ export function preventInfinitePaging({
 	readonly continuationToken?: string;
 	readonly nextPageUrl?: string | undefined;
 }): ReturnType<GetNextPageData<null, null>> {
-	if (responseIndex >= maxPagesCount + 100) {
+	if (responseIndex >= maxPagesCount + upperBoundLimitForInfinitePaging) {
 		throw new Error("Infinite paging detected");
 	}
 
