@@ -56,9 +56,9 @@ export function extractContinuationToken(responseHeaders: readonly Header[]): st
 }
 
 function getNumericRetryAfterHeaderValue(retryAfterValue: string): number | undefined {
-	const parsedNumber = +retryAfterValue;
+	const parsedNumber = Number(retryAfterValue);
 
-	if (Number.isSafeInteger(parsedNumber)) {
+	if (!Number.isNaN(parsedNumber)) {
 		return parsedNumber;
 	}
 

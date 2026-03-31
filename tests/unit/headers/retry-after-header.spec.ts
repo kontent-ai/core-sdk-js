@@ -95,3 +95,17 @@ describe("Retry-after with unsafe integer value", () => {
 		expect(getRetryAfterHeaderValue(headers)).toBeUndefined();
 	});
 });
+
+describe("Retry-After header extraction with decimal seconds value", () => {
+	const headerValue = "1.5";
+	const headers: readonly Header[] = [
+		{
+			name: "Retry-After" satisfies CommonHeaderNames,
+			value: headerValue,
+		},
+	];
+
+	it(`Should extract retry-after header with decimal value '${headerValue}'`, () => {
+		expect(getRetryAfterHeaderValue(headers)).toStrictEqual(1.5);
+	});
+});
