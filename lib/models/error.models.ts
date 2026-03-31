@@ -48,7 +48,7 @@ export type ErrorDetails =
 			}
 	  >;
 
-export interface BaseErrorData {
+export type BaseErrorData = {
 	/**
 	 * The message of the error
 	 */
@@ -68,7 +68,7 @@ export interface BaseErrorData {
 	 * The number of times the request has been retried.
 	 */
 	readonly retryAttempt: number | undefined;
-}
+};
 
 export class KontentSdkError<TDetails extends ErrorDetails = ErrorDetails> extends Error implements BaseErrorData {
 	readonly details: TDetails;

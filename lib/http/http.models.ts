@@ -127,7 +127,7 @@ export type PaginationConfig = {
  * To extend functionality, you can implement a custom adapter and pass it to the `getDefaultHttpService` function,
  * which handles additional concerns like retries and parsing.
  *
- * Alternatively, you may implement the entire `HttpService` interface to create a fully customized HTTP service.
+ * Alternatively, you may implement the entire `HttpService` to create a fully customized HTTP service.
  */
 export type HttpAdapter = {
 	readonly executeRequest?: (options: AdapterExecuteRequestOptions) => Promise<AdapterResponse<JsonValue>>;
