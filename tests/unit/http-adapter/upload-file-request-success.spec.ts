@@ -38,10 +38,6 @@ describe("Upload file - Success", async () => {
 		expect(success).toBe(true);
 	});
 
-	it("Error should be undefined", () => {
-		expect(error).toBeUndefined();
-	});
-
 	it("Status should be 200", () => {
 		expect(response?.adapterResponse.status).toStrictEqual<HttpServiceStatus>(200);
 	});

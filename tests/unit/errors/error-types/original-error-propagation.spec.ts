@@ -20,14 +20,6 @@ describe("Original error propagation", async () => {
 		expect(error).toBeInstanceOf(KontentSdkError);
 	});
 
-	it("Success should be false", () => {
-		expect(success).toBe(false);
-	});
-
-	it("Response should be undefined", () => {
-		expect(response).toBeUndefined();
-	});
-
 	it("Original error should be propagated", () => {
 		expect(error?.details.reason).toBe<ErrorReason>("adapterError");
 

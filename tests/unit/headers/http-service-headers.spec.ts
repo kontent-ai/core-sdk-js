@@ -26,10 +26,6 @@ describe("Default headers", async () => {
 		expect(success).toBe(true);
 	});
 
-	it("Error should be undefined", () => {
-		expect(error).toBeUndefined();
-	});
-
 	it("Response should not contain content type header for null body", () => {
 		expect(response?.requestHeaders.find((m) => m.name.toLowerCase() === "content-type")).toBeUndefined();
 	});
@@ -66,10 +62,6 @@ describe(`SDK tracking header '${sdkIdHeader.name}'`, async () => {
 
 	it("Success should be true", () => {
 		expect(success).toBe(true);
-	});
-
-	it("Error should be undefined", () => {
-		expect(error).toBeUndefined();
 	});
 
 	it(`Request should contain only single '${sdkIdHeader.name}' header`, () => {

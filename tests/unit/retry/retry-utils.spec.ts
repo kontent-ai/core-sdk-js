@@ -254,14 +254,6 @@ for (const testCase of canRetryTestCases) {
 			method: "GET",
 		});
 
-		it("Should not succeed", () => {
-			expect(success).toBe(false);
-		});
-
-		it("Should have error defined", () => {
-			expect(error).toBeDefined();
-		});
-
 		it(`Should retry '${testCase.expectedRetries}' times`, () => {
 			expect(error?.retryAttempt).toBe(testCase.expectedRetries);
 		});

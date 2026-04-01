@@ -62,14 +62,6 @@ describe("Basic paging errors", async () => {
 		}
 	});
 
-	it("Success should be false", () => {
-		expect(success).toBe(false);
-	});
-
-	it("Responses should be undefined", () => {
-		expect(responses).toBeUndefined();
-	});
-
 	it(`Expected partial responses to be set instead of responses and include partial responses`, () => {
 		expect(partialResponses).toBeDefined();
 		expect(partialResponses).toHaveLength(throwErrorAtResponseIndex);

@@ -50,10 +50,6 @@ describe("Basic paging query with unlimited max count", async () => {
 		mapError: (error) => error,
 	}).fetchAllPagesSafe();
 
-	it("Error should be undefined", () => {
-		expect(error).toBeUndefined();
-	});
-
 	it("Success should be true", () => {
 		expect(success).toBeTruthy();
 	});

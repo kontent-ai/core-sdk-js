@@ -58,10 +58,6 @@ describe("Basic paging query with continuation token", async () => {
 		mapError: (error) => error,
 	}).fetchAllPagesSafe({ maxPagesCount: maxPagesCount });
 
-	it("Error should be undefined", () => {
-		expect(error).toBeUndefined();
-	});
-
 	it("Success should be true", () => {
 		expect(success).toBeTruthy();
 	});

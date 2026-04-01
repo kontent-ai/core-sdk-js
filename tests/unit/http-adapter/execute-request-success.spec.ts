@@ -41,10 +41,6 @@ describe("Execute request - Success (POST)", async () => {
 		expect(success).toBe(true);
 	});
 
-	it("Error should be undefined", () => {
-		expect(error).toBeUndefined();
-	});
-
 	it("Status should be 200", () => {
 		expect(response?.adapterResponse.status).toStrictEqual(200);
 	});

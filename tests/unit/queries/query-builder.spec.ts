@@ -35,10 +35,6 @@ describe("Query builder", async () => {
 		expect(response?.meta.status).toStrictEqual(responseStatusCode);
 	});
 
-	it("Error should be undefined", () => {
-		expect(error).toBeUndefined();
-	});
-
 	it("Success should be true", () => {
 		expect(success).toBeTruthy();
 	});

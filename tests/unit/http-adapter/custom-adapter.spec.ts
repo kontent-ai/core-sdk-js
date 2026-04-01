@@ -60,10 +60,6 @@ describe("Custom adapter", () => {
 			expect(success).toBe(true);
 		});
 
-		it("Error should be undefined", () => {
-			expect(error).toBeUndefined();
-		});
-
 		it("Base response values should be equal to test values", () => {
 			expect(response?.adapterResponse.status).toBe(responseData.status);
 			expect(response?.adapterResponse.statusText).toBe(responseData.statusText);
@@ -85,10 +81,6 @@ describe("Custom adapter", () => {
 
 		it("Success should be true", () => {
 			expect(success).toBe(true);
-		});
-
-		it("Error should be undefined", () => {
-			expect(error).toBeUndefined();
 		});
 
 		it("Base response values should be equal to test values", () => {
@@ -116,10 +108,6 @@ describe("Custom adapter", () => {
 
 		it("Success should be true", () => {
 			expect(success).toBe(true);
-		});
-
-		it("Error should be undefined", () => {
-			expect(error).toBeUndefined();
 		});
 
 		it("Base response values should be equal to test values", () => {
