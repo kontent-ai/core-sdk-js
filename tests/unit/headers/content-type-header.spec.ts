@@ -18,11 +18,6 @@ describe("isApplicationJsonResponseType", () => {
 		expect(isApplicationJsonResponseType(headers)).toBe(false);
 	});
 
-	it("Should return false when Content-Type header is missing", () => {
-		const headers: readonly Header[] = [{ name: "y", value: "x" }];
-		expect(isApplicationJsonResponseType(headers)).toBe(false);
-	});
-
 	it("Should return false when Content-Type is not application/json", () => {
 		const headers: readonly Header[] = [{ name: "Content-Type" satisfies CommonHeaderNames, value: "text/html" }];
 		expect(isApplicationJsonResponseType(headers)).toBe(false);

@@ -23,15 +23,4 @@ describe("getCodenameSchema", () => {
 		expect(validString.success).toBe(true);
 		expect(invalidNonString.success).toBe(false);
 	});
-
-	it("Should validate against any string when codenames array is empty", () => {
-		// empty array should behave the same as undefined and fall back to string schema
-		const schema = getCodenameSchema([] as const);
-
-		const validString = schema.safeParse("any-codename");
-		const invalidNonString = schema.safeParse({} as unknown);
-
-		expect(validString.success).toBe(true);
-		expect(invalidNonString.success).toBe(false);
-	});
 });

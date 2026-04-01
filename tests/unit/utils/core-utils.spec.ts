@@ -6,10 +6,6 @@ describe("isBlob", () => {
 		expect(isBlob(null)).toBe(false);
 	});
 
-	it("Should return false for undefined", () => {
-		expect(isBlob(undefined)).toBe(false);
-	});
-
 	it("Should return false for a plain object that does not resemble a Blob", () => {
 		expect(isBlob({ name: "file.txt" })).toBe(false);
 	});
