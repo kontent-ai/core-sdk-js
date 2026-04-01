@@ -8,7 +8,7 @@ export default defineConfig({
 		environment: "node",
 		coverage: {
 			provider: "v8",
-			thresholds: { lines: 90, functions: 90, branches: 90 },
+			thresholds: { lines: 100, functions: 100, branches: 100 },
 			exclude: ["**/testkit/**", "**/devkit/**", "**/tests/**"],
 		},
 	},
