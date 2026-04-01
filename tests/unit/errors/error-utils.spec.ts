@@ -184,7 +184,7 @@ describe("toInvalidResponseMessage", () => {
 				kontentErrorResponse,
 			}),
 		).toStrictEqual(
-			"Failed to execute 'POST' request 'https://domain.com'. Request failed with status '422' and status text 'Unprocessable Entity'.Item not found.",
+			"Failed to execute 'POST' request 'https://domain.com'. Request failed with status '422' and status text 'Unprocessable Entity'. Item not found.",
 		);
 	});
 
@@ -204,7 +204,7 @@ describe("toInvalidResponseMessage", () => {
 				kontentErrorResponse,
 			}),
 		).toStrictEqual(
-			"Failed to execute 'PUT' request 'https://domain.com'. Request failed with status '422' and status text 'Unprocessable Entity'.Validation failed. Field is required.",
+			"Failed to execute 'PUT' request 'https://domain.com'. Request failed with status '422' and status text 'Unprocessable Entity'. Validation failed. Field is required.",
 		);
 	});
 
@@ -224,7 +224,7 @@ describe("toInvalidResponseMessage", () => {
 				kontentErrorResponse,
 			}),
 		).toStrictEqual(
-			"Failed to execute 'GET' request 'https://domain.com'. Request failed with status '422' and status text 'Unprocessable Entity'.Validation failed. Invalid value. (path: /items/0/name, line: 3, position: 12)",
+			"Failed to execute 'GET' request 'https://domain.com'. Request failed with status '422' and status text 'Unprocessable Entity'. Validation failed. Invalid value. (path: /items/0/name, line: 3, position: 12)",
 		);
 	});
 });

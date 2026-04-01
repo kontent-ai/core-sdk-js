@@ -100,5 +100,5 @@ function getValidationErrorMessage(validationErrors?: readonly ValidationError[]
 
 function getKontentErrorResponseMessage(adapterResponse: AdapterResponse<AdapterPayload>, kontentErrorResponse: ErrorResponseData): string {
 	const validationErrorMessage = getValidationErrorMessage(kontentErrorResponse.validation_errors);
-	return `Request failed with status '${adapterResponse.status}' and status text '${adapterResponse.statusText}'.${kontentErrorResponse.message}${validationErrorMessage ? ` ${validationErrorMessage}` : ""}`;
+	return `Request failed with status '${adapterResponse.status}' and status text '${adapterResponse.statusText}'. ${kontentErrorResponse.message}${validationErrorMessage ? ` ${validationErrorMessage}` : ""}`;
 }
