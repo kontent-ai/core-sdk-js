@@ -16,7 +16,7 @@ describe("Upload file - Success", async () => {
 		statusCode: 200,
 	});
 
-	const { success, response, error } = await getDefaultHttpService({
+	const { success, response } = await getDefaultHttpService({
 		retryStrategy: {
 			maxRetries: 0,
 		},

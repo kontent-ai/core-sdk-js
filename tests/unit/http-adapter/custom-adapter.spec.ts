@@ -51,7 +51,7 @@ describe("Custom adapter", () => {
 	});
 
 	describe("Json request", async () => {
-		const { success, response, error } = await httpService.request({
+		const { success, response } = await httpService.request({
 			url: "https://domain.com",
 			method: "GET",
 		});
@@ -75,7 +75,7 @@ describe("Custom adapter", () => {
 	});
 
 	describe("Download file request", async () => {
-		const { success, response, error } = await httpService.downloadFile({
+		const { success, response } = await httpService.downloadFile({
 			url: "https://domain.com",
 		});
 
@@ -100,7 +100,7 @@ describe("Custom adapter", () => {
 	describe("Upload file request", async () => {
 		const inputBlob = new Blob(["x"], { type: "text/plain" });
 
-		const { success, response, error } = await httpService.uploadFile({
+		const { success, response } = await httpService.uploadFile({
 			url: "https://domain.com",
 			method: "POST",
 			body: inputBlob,

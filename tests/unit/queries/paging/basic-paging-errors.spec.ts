@@ -11,7 +11,7 @@ describe("Basic paging errors", async () => {
 
 	const expectedResponseUrls: readonly string[] = Array.from({ length: maxPagesCount }, (_, index) => getNextPageUrl(index));
 
-	const { success, error, responses, partialResponses } = await createPagedFetchQuery({
+	const { error, partialResponses } = await createPagedFetchQuery({
 		getNextPageData: () => {
 			responseIndex++;
 

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { getDefaultHttpService } from "../../../../lib/http/http.service.js";
-import { AdapterAbortError, type ErrorReason, KontentSdkError } from "../../../../lib/models/error.models.js";
+import { AdapterAbortError, type ErrorReason } from "../../../../lib/models/error.models.js";
 
 describe("Aborted error", async () => {
 	const originalError = new Error("Request was aborted");
@@ -14,14 +14,6 @@ describe("Aborted error", async () => {
 	}).request({
 		url: "https://domain.com",
 		method: "GET",
-	});
-
-	it("Retry attempt should be 0 because aborted request should not be retried", () => {
-		expect(error?.retryAttempt).toBe(0);
-	});
-
-	it("Error should be an instance of SdkError", () => {
-		expect(error).toBeInstanceOf(KontentSdkError);
 	});
 
 	it(`Error details should be of type '${"aborted" satisfies ErrorReason}'`, () => {

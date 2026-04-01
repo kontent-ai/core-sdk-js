@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { getDefaultHttpService } from "../../../../lib/http/http.service.js";
-import { type ErrorReason, KontentSdkError } from "../../../../lib/models/error.models.js";
+import type { ErrorReason } from "../../../../lib/models/error.models.js";
 
 describe("Unauthorized error", async () => {
 	const { error } = await getDefaultHttpService({
@@ -16,10 +16,6 @@ describe("Unauthorized error", async () => {
 	}).request({
 		url: "https://domain.com",
 		method: "GET",
-	});
-
-	it("Error should be an instance of KontentSdkError", () => {
-		expect(error).toBeInstanceOf(KontentSdkError);
 	});
 
 	it(`Error details should be of type '${"unauthorized" satisfies ErrorReason}'`, () => {

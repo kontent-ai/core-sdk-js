@@ -7,7 +7,7 @@ describe("Query builder", async () => {
 	const responseContinuationToken = "fake-continuation-token";
 	const responseStatusCode = 200;
 
-	const { success, error, response } = await createFetchQuery({
+	const { success, response } = await createFetchQuery({
 		mapMetadata: () => ({}),
 		config: {
 			httpService: getTestHttpServiceWithJsonResponse({

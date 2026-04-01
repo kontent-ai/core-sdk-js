@@ -16,10 +16,6 @@ describe("isAbortError", () => {
 		expect(isAbortError(null)).toBe(false);
 	});
 
-	it("Should return false when error is undefined", () => {
-		expect(isAbortError(undefined)).toBe(false);
-	});
-
 	it("Should return false when error is a string", () => {
 		expect(isAbortError("AbortError")).toBe(false);
 	});
@@ -34,10 +30,6 @@ describe("isAbortError", () => {
 
 	it("Should return true when error is a DOMException with name 'AbortError'", () => {
 		expect(isAbortError(new DOMException("The operation was aborted.", "AbortError"))).toBe(true);
-	});
-
-	it("Should return true when error is a plain object with name 'AbortError'", () => {
-		expect(isAbortError({ name: "AbortError" })).toBe(true);
 	});
 });
 

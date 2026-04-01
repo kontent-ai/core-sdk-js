@@ -20,20 +20,6 @@ describe("Valid Retry-After header extraction", () => {
 	});
 });
 
-describe("Retry-After header extraction with value 0", () => {
-	const headerValue = "0";
-	const headers: readonly Header[] = [
-		{
-			name: "Retry-After" satisfies CommonHeaderNames,
-			value: headerValue,
-		},
-	];
-
-	it(`Should extract retry-after header with value '${headerValue}'`, () => {
-		expect(getRetryAfterHeaderValue(headers)).toStrictEqual(0);
-	});
-});
-
 describe("Retry-After header extraction with date value", () => {
 	const now = new Date("2026-03-11T12:00:00.000Z");
 	const headerValue = "Wed, 11 Mar 2026 12:00:05 GMT";

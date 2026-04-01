@@ -31,7 +31,7 @@ describe("Execute request - Success (POST)", async () => {
 		statusCode: 200,
 	});
 
-	const { success, response, error } = await getDefaultHttpService().request<ResponseData, RequestBody>({
+	const { success, response } = await getDefaultHttpService().request<ResponseData, RequestBody>({
 		url: "https://domain.com",
 		method,
 		body: requestBody,

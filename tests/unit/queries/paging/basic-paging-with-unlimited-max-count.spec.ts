@@ -20,7 +20,7 @@ describe("Basic paging query with unlimited max count", async () => {
 		statusCode: 200,
 	});
 
-	const { success, error, responses } = await createPagedFetchQuery({
+	const { success, responses } = await createPagedFetchQuery({
 		getNextPageData: () => {
 			responseIndex++;
 

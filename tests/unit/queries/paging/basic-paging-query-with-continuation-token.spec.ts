@@ -28,7 +28,7 @@ describe("Basic paging query with continuation token", async () => {
 	// mock initial response
 	mockResponseByIndex(0);
 
-	const { success, error, responses, lastContinuationToken } = await createPagedFetchQuery({
+	const { success, responses, lastContinuationToken } = await createPagedFetchQuery({
 		getNextPageData: () => {
 			responseIndex++;
 

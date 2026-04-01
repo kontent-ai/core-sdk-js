@@ -25,7 +25,7 @@ describe("Basic paging query with next page url", async () => {
 		statusCode: 200,
 	});
 
-	const { success, error, responses } = await createPagedFetchQuery({
+	const { success, responses } = await createPagedFetchQuery({
 		getNextPageData: () => {
 			responseIndex++;
 

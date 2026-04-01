@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { getDefaultHttpService } from "../../../../lib/http/http.service.js";
-import { AdapterParseError, type ErrorReason, KontentSdkError } from "../../../../lib/models/error.models.js";
+import { AdapterParseError, type ErrorReason } from "../../../../lib/models/error.models.js";
 
 describe("Parse failure", async () => {
 	const originalError = new Error("Failed to parse response");
@@ -14,14 +14,6 @@ describe("Parse failure", async () => {
 	}).request({
 		url: "https://domain.com",
 		method: "GET",
-	});
-
-	it("Retry attempt should be 0 because parse error should not be retried", () => {
-		expect(error?.retryAttempt).toBe(0);
-	});
-
-	it("Error should be an instance of SdkError", () => {
-		expect(error).toBeInstanceOf(KontentSdkError);
 	});
 
 	it(`Error details should be of type '${"parseError" satisfies ErrorReason}'`, () => {

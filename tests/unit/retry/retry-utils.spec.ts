@@ -230,7 +230,7 @@ const canRetryTestCases: readonly TestCase[] = [
 
 for (const testCase of canRetryTestCases) {
 	describe(testCase.title, async () => {
-		const { success, error } = await getDefaultHttpService({
+		const { error } = await getDefaultHttpService({
 			retryStrategy: testCase,
 			adapter: {
 				executeRequest: () => {

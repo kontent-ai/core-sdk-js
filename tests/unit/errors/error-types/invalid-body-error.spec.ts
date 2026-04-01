@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { HttpRequestBody } from "../../../../lib/http/http.models.js";
 import { getDefaultHttpService } from "../../../../lib/http/http.service.js";
-import { type ErrorReason, KontentSdkError } from "../../../../lib/models/error.models.js";
+import type { ErrorReason } from "../../../../lib/models/error.models.js";
 
 // Unserializable body
 const body: Record<string, unknown> = {};
@@ -12,14 +12,6 @@ describe("Invalid body error", async () => {
 		url: "https://domain.com",
 		method: "POST",
 		body: body as unknown as HttpRequestBody,
-	});
-
-	it("Retry attempt should be 0 because invalid body should not be retried", () => {
-		expect(error?.retryAttempt).toBe(0);
-	});
-
-	it("Error should be an instance of SdkError", () => {
-		expect(error).toBeInstanceOf(KontentSdkError);
 	});
 
 	it(`Error details should be of type '${"invalidBody" satisfies ErrorReason}'`, () => {

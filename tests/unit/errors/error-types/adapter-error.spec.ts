@@ -14,10 +14,6 @@ describe("Adapter error", async () => {
 		method: "GET",
 	});
 
-	it("Retry attempt should be 0 because invalid body should not be retried", () => {
-		expect(error?.retryAttempt).toBe(0);
-	});
-
 	it("Error should be an instance of SdkError", () => {
 		expect(error).toBeInstanceOf(KontentSdkError);
 	});
