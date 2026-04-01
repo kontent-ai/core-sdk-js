@@ -1,8 +1,6 @@
 import { match, P } from "ts-pattern";
 import type { GetNextPageData, PaginationConfig } from "../../http/http.models.js";
 import type { JsonValue } from "../../models/json.models.js";
-import type { KontentSdkError } from "../../public_api.js";
-import { createSdkError } from "../../utils/error.utils.js";
 import type {
 	FetchQueryRequest,
 	NextPageStateWithRequest,
@@ -169,49 +167,12 @@ async function fetchAllPages<TResponsePayload extends JsonValue, TMeta, TError>(
 		responses.push(result.response);
 	}
 
-	return validateAndBuildPagingResult<TResponsePayload, TMeta, TError>({
-		responses,
-		initialUrl: data.request.url,
-		mapError: data.mapError,
-	});
-}
-
-function validateAndBuildPagingResult<TResponsePayload extends JsonValue, TMeta, TError>({
-	responses,
-	initialUrl,
-	mapError,
-}: {
-	readonly responses: readonly QueryResponse<TResponsePayload, TMeta>[];
-	readonly initialUrl: string;
-	readonly mapError: (error: KontentSdkError) => TError;
-}): Awaited<PagingQueryPromiseResult<TResponsePayload, TMeta, TError>> {
 	const lastResponse = responses.at(-1);
-
-	if (!lastResponse) {
-		return {
-			success: false,
-			partialResponses: responses,
-			error: mapError(
-				createSdkError({
-					baseErrorData: {
-						retryStrategyOptions: undefined,
-						retryAttempt: undefined,
-						url: initialUrl,
-						message: "No responses were processed. Expected at least one response to be fetched when using paging queries.",
-					},
-					details: {
-						reason: "noResponses",
-						url: initialUrl,
-					},
-				}),
-			),
-		};
-	}
 
 	return {
 		success: true,
-		responses: responses,
-		lastContinuationToken: lastResponse.meta.continuationToken,
+		lastContinuationToken: lastResponse?.meta.continuationToken,
+		responses,
 	};
 }
 

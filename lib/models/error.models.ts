@@ -40,12 +40,6 @@ export type ErrorDetails =
 				readonly response: SuccessfulHttpResponse<HttpPayload, HttpRequestBody>;
 				readonly url: string;
 			}
-	  >
-	| ReasonData<
-			"noResponses",
-			{
-				readonly url: string;
-			}
 	  >;
 
 export type BaseErrorData = {

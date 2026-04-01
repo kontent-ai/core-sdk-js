@@ -186,10 +186,6 @@ if (!success) {
       // Zod schema validation failed (when responseValidation is enabled)
       console.error("Unexpected response shape for", error.details.url, error.details.zodError);
       break;
-    case "noResponses":
-      // Paging query completed without any responses
-      console.error("No data returned for", error.details.url);
-      break;
     case "aborted":
       // The request was cancelled before it could complete
       console.error("Request was aborted:", error.details.originalError);
