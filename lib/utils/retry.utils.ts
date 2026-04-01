@@ -1,7 +1,7 @@
 import { match, P } from "ts-pattern";
 import type { HttpPayload, HttpRequestBody, HttpResponse } from "../http/http.models.js";
 import type { ResolvedRetryStrategyOptions, RetryStrategyOptions } from "../models/core.models.js";
-import type { ErrorDetailsFor, ErrorReason, KontentSdkError } from "../models/error.models.js";
+import type { ErrorDetailsFor, KontentSdkError } from "../models/error.models.js";
 import { runWithAbortSignal } from "./abort.utils.js";
 import { sleep } from "./core.utils.js";
 import { createSdkError } from "./error.utils.js";
@@ -230,19 +230,9 @@ function canRetryError({
 			() => false,
 		)
 		.with({ details: { reason: "adapterError" } }, (m) => {
-			if (isErrorWithReason(m, m.details.reason)) {
-				return canRetryAdapterError(m);
-			}
-			throw new Error("Failed to assert adapter error");
+			return canRetryAdapterError(m);
 		})
 		.exhaustive();
-}
-
-function isErrorWithReason<TReason extends ErrorReason>(
-	error: KontentSdkError,
-	reason: TReason,
-): error is KontentSdkError<ErrorDetailsFor<TReason>> {
-	return error.details.reason === reason;
 }
 
 function isRateLimitError({ error }: { readonly error: KontentSdkError }): boolean {
