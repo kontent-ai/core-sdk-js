@@ -2,8 +2,12 @@ import { afterAll, describe, expect, it, vi } from "vitest";
 import z from "zod";
 import { type GetNextPageData, getDefaultHttpService } from "../../../../lib/public_api.js";
 import { createPagedFetchQuery } from "../../../../lib/sdk/queries/paged-fetch-sdk-query.js";
-import { getTestSdkInfo, mockGlobalFetchJsonResponse } from "../../../../lib/testkit/testkit.utils.js";
-import { getNextPageUrl, preventInfinitePaging } from "../../../test.utils.js";
+import {
+	getNextPageUrl,
+	getTestSdkInfo,
+	mockGlobalFetchJsonResponse,
+	preventInfinitePaging,
+} from "../../../../lib/testkit/testkit.utils.js";
 
 describe("Basic paging query with next page url", async () => {
 	afterAll(() => {

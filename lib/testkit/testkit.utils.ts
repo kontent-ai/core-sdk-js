@@ -1,11 +1,13 @@
 import { type Mock, vi } from "vitest";
-import type { HttpService, HttpServiceStatus } from "../http/http.models.js";
+import type { GetNextPageData, HttpService, HttpServiceStatus } from "../http/http.models.js";
 import { getDefaultHttpService } from "../http/http.service.js";
 import type { CommonHeaderNames, RetryStrategyOptions, SDKInfo } from "../models/core.models.js";
 import type { JsonValue } from "../models/json.models.js";
 import type { Header } from "../public_api.js";
 import { isDefined } from "../utils/core.utils.js";
 import { createContinuationHeader, findHeaderByName, toFetchHeaders } from "../utils/header.utils.js";
+
+const upperBoundLimitForInfinitePaging = 50;
 
 export function mockGlobalFetchJsonResponse({
 	jsonResponse,
@@ -82,6 +84,31 @@ export function getTestHttpServiceWithJsonResponse({
 			},
 		},
 	});
+}
+
+export function preventInfinitePaging({
+	responseIndex,
+	maxPagesCount,
+	continuationToken,
+	nextPageUrl,
+}: {
+	readonly responseIndex: number;
+	readonly maxPagesCount: number;
+	readonly continuationToken?: string;
+	readonly nextPageUrl?: string | undefined;
+}): ReturnType<GetNextPageData<null, null>> {
+	if (responseIndex >= maxPagesCount + upperBoundLimitForInfinitePaging) {
+		throw new Error("Infinite paging detected");
+	}
+
+	return {
+		continuationToken,
+		nextPageUrl,
+	};
+}
+
+export function getNextPageUrl(index: number): string {
+	return `https://page-url.com/${index}`;
 }
 
 function getFetchBlobMock({
