@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { getDefaultHttpService } from "../../../../lib/http/http.service.js";
 import { AdapterParseError, type ErrorReason, KontentSdkError } from "../../../../lib/models/error.models.js";
 
-describe("Parse error", async () => {
+describe("Parse failure", async () => {
 	const originalError = new Error("Failed to parse response");
 
 	const { error } = await getDefaultHttpService({
