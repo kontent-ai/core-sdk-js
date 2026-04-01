@@ -142,21 +142,22 @@ function setBaseUrl(url: URL, baseUrl: string): TryCatchResult<URL, KontentSdkEr
 		};
 	}
 
-	clonedUrl.host = baseUrl;
-
-	// We need to parse the cloned url again to ensure it is valid
-	const { success, error, data: parsedClonedUrl } = tryCatch(() => new URL(clonedUrl.toString()));
+	// Direct host assignment is a silent no-op for invalid values per the URL spec,
+	// so validate by constructing a full URL first.
+	const { success, data: parsedHostUrl, error } = tryCatch(() => new URL(`https://${baseUrl}`));
 
 	if (!success) {
 		return {
 			success: false,
-			error: createInvalidUrlError(clonedUrl.toString(), error),
+			error: createInvalidUrlError(baseUrl, error),
 		};
 	}
 
+	clonedUrl.host = parsedHostUrl.host;
+
 	return {
 		success: true,
-		data: parsedClonedUrl,
+		data: clonedUrl,
 	};
 }
 
