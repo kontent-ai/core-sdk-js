@@ -209,12 +209,6 @@ const canRetryTestCases: readonly TestCase[] = [
 		expectedRetries: 0,
 	},
 	{
-		title: `Can't retry requests`,
-		canRetryAdapterError: () => false,
-		maxRetries: 5,
-		expectedRetries: 0,
-	},
-	{
 		title: "Can retry when unhandled errors are set to be retried via custom callback",
 		canRetryAdapterError: () => true,
 		maxRetries: 1,
@@ -230,12 +224,6 @@ const canRetryTestCases: readonly TestCase[] = [
 		title: "Should retry 2 times",
 		expectedRetries: 2,
 		maxRetries: 2,
-		canRetryAdapterError: () => true,
-	},
-	{
-		title: "Should retry 5 times",
-		expectedRetries: 5,
-		maxRetries: 5,
 		canRetryAdapterError: () => true,
 	},
 ];

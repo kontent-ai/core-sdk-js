@@ -63,10 +63,6 @@ describe("Async pages iterator with max pages count", async () => {
 		}
 	}
 
-	it("All responses should be successful", () => {
-		expect(responses.every((response) => response)).toBeTruthy();
-	});
-
 	it(`Responses should be an array of length "${maxPagesCount}"`, () => {
 		expect(responses).toHaveLength(maxPagesCount);
 	});

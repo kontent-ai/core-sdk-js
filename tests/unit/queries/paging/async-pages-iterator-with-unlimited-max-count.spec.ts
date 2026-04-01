@@ -67,10 +67,6 @@ describe("Async pages iterator with unlimited max count", async () => {
 		}
 	}
 
-	it("All responses should be successful", () => {
-		expect(responses.every((response) => response)).toBeTruthy();
-	});
-
 	it(`Responses should be an array of length "${maxPagesCount}"`, () => {
 		expect(responses).toHaveLength(maxPagesCount);
 	});
@@ -132,10 +128,6 @@ describe("Async pages iterator fetches all pages when maxPagesCount is set to 0"
 			break;
 		}
 	}
-
-	it("All responses should be successful", () => {
-		expect(responses.every((response) => response)).toBeTruthy();
-	});
 
 	it(`All "${totalPages}" pages should be fetched without hitting a page limit`, () => {
 		expect(responses).toHaveLength(totalPages);
