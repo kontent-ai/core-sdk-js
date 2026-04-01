@@ -74,7 +74,7 @@ describe("Abort signal cancellation", async () => {
 		expect(error?.details.reason).toBe<ErrorReason>("aborted");
 	});
 
-	it("Duration should be slighly higher than the abort after time", () => {
+	it("Duration should be slightly higher than the abort after time", () => {
 		expect(duration).toBeLessThan(expectedDuration);
 	});
 });

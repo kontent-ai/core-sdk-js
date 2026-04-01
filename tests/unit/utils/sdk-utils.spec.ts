@@ -4,7 +4,7 @@ import type { FetchQuery, PagedFetchQuery } from "../../../lib/sdk/sdk-models.js
 import { isPagingQuery } from "../../../lib/sdk/sdk-utils.js";
 
 describe("isPagingQuery", () => {
-	it("returns true for object with paging query shape", () => {
+	it("Should return true for object with paging query shape", () => {
 		const pagingQueryLike: PagedFetchQuery<unknown, unknown, unknown> = {
 			schema: z.null(),
 			url: "x",
@@ -31,7 +31,7 @@ describe("isPagingQuery", () => {
 		expect(isPagingQuery(pagingQueryLike)).toBe(true);
 	});
 
-	it("returns false when only toPromise is present", () => {
+	it("Should return false when only toPromise is present", () => {
 		const queryLike: FetchQuery<unknown, unknown, unknown> = {
 			schema: z.null(),
 			url: "x",
@@ -46,12 +46,12 @@ describe("isPagingQuery", () => {
 		expect(isPagingQuery(queryLike)).toBe(false);
 	});
 
-	it("returns false for plain object without query methods", () => {
+	it("Should return false for plain object without query methods", () => {
 		// @ts-expect-error - notQuery is not a Query or PagingQuery, but we want to verify runtime behavior
 		expect(isPagingQuery({ foo: "bar" })).toBe(false);
 	});
 
-	it("returns false when one of paging methods is missing", () => {
+	it("Should return false when one of paging methods is missing", () => {
 		const missingPagesQuery: Omit<PagedFetchQuery<unknown, unknown, unknown>, "pages"> = {
 			schema: z.null(),
 			url: "x",

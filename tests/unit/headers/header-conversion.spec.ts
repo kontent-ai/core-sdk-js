@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { Header } from "../../../lib/models/core.models.js";
 import { toFetchHeaders, toSdkHeaders } from "../../../lib/utils/header.utils.js";
 
-describe("Validation of toSdkHeaders utility function", () => {
+describe("toSdkHeaders", () => {
 	it("Should convert empty Headers to empty array", () => {
 		const headers = new Headers();
 		expect(toSdkHeaders(headers)).toStrictEqual([]);
@@ -37,7 +37,7 @@ describe("Validation of toSdkHeaders utility function", () => {
 	});
 });
 
-describe("Validation of toFetchHeaders utility function", () => {
+describe("toFetchHeaders", () => {
 	it("Should convert empty Header array to empty Headers", () => {
 		const headers: readonly Header[] = [];
 		const result = toFetchHeaders(headers);

@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { getCodenameSchema } from "../../../lib/utils/type.utils.js";
 
 describe("getCodenameSchema", () => {
-	it("Validates against provided codenames when provided", () => {
+	it("Should validate against provided codenames when provided", () => {
 		const schema = getCodenameSchema(["article", "product"] as const);
 
 		const validArticle = schema.safeParse("article");
@@ -14,7 +14,7 @@ describe("getCodenameSchema", () => {
 		expect(invalidOther.success).toBe(false);
 	});
 
-	it("Validates against any string when codenames are not provided", () => {
+	it("Should validate against any string when codenames are not provided", () => {
 		const schema = getCodenameSchema(undefined);
 
 		const validString = schema.safeParse("any-codename");
@@ -24,7 +24,7 @@ describe("getCodenameSchema", () => {
 		expect(invalidNonString.success).toBe(false);
 	});
 
-	it("Validates against any string when codenames array is empty", () => {
+	it("Should validate against any string when codenames array is empty", () => {
 		// empty array should behave the same as undefined and fall back to string schema
 		const schema = getCodenameSchema([] as const);
 

@@ -254,11 +254,11 @@ for (const testCase of canRetryTestCases) {
 			method: "GET",
 		});
 
-		it("Success should be false", () => {
+		it("Should not succeed", () => {
 			expect(success).toBe(false);
 		});
 
-		it("Error should be defined", () => {
+		it("Should have error defined", () => {
 			expect(error).toBeDefined();
 		});
 
