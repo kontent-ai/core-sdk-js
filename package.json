@@ -36,7 +36,7 @@
 	"scripts": {
 		"prepublishOnly": "pnpm run build && pnpm run test",
 		"build": "pnpm run lint && pnpm run clean && tsc --p tsconfig.json && tsc --p tsconfig.build.json && pnpm run update:version",
-		"test": "vitest run --config=vitest-coverage.config.ts --coverage",
+		"test": "vitest run --config=vitest.config.ts --coverage",
 		"test:unit": "vitest run --config=vitest-unit.config.ts",
 		"test:integration": "vitest run --config=vitest-integration.config.ts",
 		"lint": "pnpm run biome:check && pnpm run eslint",
