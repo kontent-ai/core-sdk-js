@@ -42,6 +42,7 @@ export function getIntegrationTestConfig() {
 		 * to Kontent.ai and retrieved via the "Copy URL" feature.
 		 *
 		 * Info: The file contents may come back as a Blob with 0 bytes.
+		 *
 		 */
 		compareFileContents: true,
 	};

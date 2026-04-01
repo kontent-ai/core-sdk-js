@@ -124,30 +124,25 @@ function resolveNextPageState<TResponsePayload extends JsonValue, TMeta>({
 	readonly pageIndex: number;
 	readonly response: QueryResponse<TResponsePayload, TMeta>;
 }): NextPageState {
-	return match({ getNextPageData, paginationConfig, pageIndex, response })
-		.returnType<NextPageState>()
-		.with({ paginationConfig: { maxPagesCount: pageIndex } }, () => ({
-			hasNextPage: false,
-		}))
-		.otherwise((m) => {
-			const responsePageData = m.getNextPageData(m.response);
+	const { maxPagesCount } = paginationConfig;
 
-			return match(responsePageData)
-				.returnType<NextPageState>()
-				.with({ continuationToken: P.string.minLength(1) }, (m) => ({
-					hasNextPage: true,
-					pageSource: "continuationToken",
-					continuationToken: m.continuationToken,
-				}))
-				.with({ nextPageUrl: P.string.minLength(1) }, (m) => ({
-					hasNextPage: true,
-					pageSource: "nextPageUrl",
-					nextPageUrl: m.nextPageUrl,
-				}))
-				.otherwise(() => ({
-					hasNextPage: false,
-				}));
-		});
+	if (maxPagesCount && maxPagesCount === pageIndex) {
+		return { hasNextPage: false };
+	}
+
+	return match(getNextPageData(response))
+		.returnType<NextPageState>()
+		.with({ continuationToken: P.string.minLength(1) }, (m) => ({
+			hasNextPage: true,
+			pageSource: "continuationToken",
+			continuationToken: m.continuationToken,
+		}))
+		.with({ nextPageUrl: P.string.minLength(1) }, (m) => ({
+			hasNextPage: true,
+			pageSource: "nextPageUrl",
+			nextPageUrl: m.nextPageUrl,
+		}))
+		.otherwise(() => ({ hasNextPage: false }));
 }
 
 async function fetchAllPages<TResponsePayload extends JsonValue, TMeta, TError>(

@@ -185,4 +185,4 @@ type RequestData<TRequestBody extends HttpRequestBody> = {
 
 type MutationHttpMethod = PickStringLiteral<HttpMethod, "POST" | "PUT" | "PATCH" | "DELETE">;
 
-type RequestDataWithoutBody = Omit<RequestData<never>, "body">;
+type RequestDataWithoutBody = Omit<RequestData<null>, "body">;
