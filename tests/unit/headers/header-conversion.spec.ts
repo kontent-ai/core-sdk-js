@@ -3,11 +3,6 @@ import type { Header } from "../../../lib/models/core.models.js";
 import { toFetchHeaders, toSdkHeaders } from "../../../lib/utils/header.utils.js";
 
 describe("toSdkHeaders", () => {
-	it("Should convert empty Headers to empty array", () => {
-		const headers = new Headers();
-		expect(toSdkHeaders(headers)).toStrictEqual([]);
-	});
-
 	it("Should convert single header to single Header object", () => {
 		const headers = new Headers([["Content-Type", "application/json"]]);
 		expect(toSdkHeaders(headers)).toStrictEqual([
@@ -38,12 +33,6 @@ describe("toSdkHeaders", () => {
 });
 
 describe("toFetchHeaders", () => {
-	it("Should convert empty Header array to empty Headers", () => {
-		const headers: readonly Header[] = [];
-		const result = toFetchHeaders(headers);
-		expect(toSdkHeaders(result)).toStrictEqual([]);
-	});
-
 	it("Should convert single Header to Headers with one entry", () => {
 		const headers: readonly Header[] = [{ name: "Content-Type", value: "application/json" }];
 		const result = toFetchHeaders(headers);

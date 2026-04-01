@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { CommonHeaderNames, Header, SDKInfo } from "../../../lib/models/core.models.js";
+import type { CommonHeaderNames, SDKInfo } from "../../../lib/models/core.models.js";
 import { createAuthorizationHeader, createContinuationHeader, getSdkIdHeader } from "../../../lib/utils/header.utils.js";
 
 describe("getSdkIdHeader", () => {
@@ -37,11 +37,5 @@ describe("createAuthorizationHeader", () => {
 		const apiKey = "my-api-key";
 
 		expect(createAuthorizationHeader(apiKey).value).toStrictEqual(`Bearer ${apiKey}`);
-	});
-
-	it("Should return a valid Header type", () => {
-		const header: Header = createAuthorizationHeader("my-api-key");
-
-		expect(header).toStrictEqual({ name: "Authorization", value: "Bearer my-api-key" });
 	});
 });

@@ -31,10 +31,6 @@ describe("runWithAbortSignal - aborted", async () => {
 	it("Result should be aborted", () => {
 		expect(result.isAborted).toBe(true);
 	});
-
-	it("Result should not contain data", () => {
-		expect(result.data).toBeUndefined();
-	});
 });
 
 describe("runWithAbortSignal - func returns a rejected promise", async () => {

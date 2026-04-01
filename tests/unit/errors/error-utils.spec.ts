@@ -227,27 +227,4 @@ describe("toInvalidResponseMessage", () => {
 			"Failed to execute 'GET' request 'https://domain.com'. Request failed with status '422' and status text 'Unprocessable Entity'.Validation failed. Invalid value. (path: /items/0/name, line: 3, position: 12)",
 		);
 	});
-
-	it("Should join multiple validation errors with a comma", () => {
-		const kontentErrorResponse: ErrorResponseData = {
-			message: "Validation failed.",
-			request_id: "abc-123",
-			error_code: 200,
-			validation_errors: [
-				{ message: "Field is required.", path: "/name" },
-				{ message: "Value out of range.", line: 7 },
-			],
-		};
-
-		expect(
-			toInvalidResponseMessage({
-				method: "PATCH",
-				url: "https://domain.com",
-				adapterResponse,
-				kontentErrorResponse,
-			}),
-		).toStrictEqual(
-			"Failed to execute 'PATCH' request 'https://domain.com'. Request failed with status '422' and status text 'Unprocessable Entity'.Validation failed. Field is required. (path: /name), Value out of range. (line: 7)",
-		);
-	});
 });

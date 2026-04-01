@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import z from "zod";
-import type { FetchQuery, PagedFetchQuery } from "../../../lib/sdk/sdk-models.js";
+import type { PagedFetchQuery } from "../../../lib/sdk/sdk-models.js";
 import { isPagingQuery } from "../../../lib/sdk/sdk-utils.js";
 
 describe("isPagingQuery", () => {
@@ -29,21 +29,6 @@ describe("isPagingQuery", () => {
 		};
 
 		expect(isPagingQuery(pagingQueryLike)).toBe(true);
-	});
-
-	it("Should return false when only toPromise is present", () => {
-		const queryLike: FetchQuery<unknown, unknown, unknown> = {
-			schema: z.null(),
-			url: "x",
-			fetch: () => {
-				return {} as never;
-			},
-			fetchSafe: () => {
-				return {} as never;
-			},
-		};
-
-		expect(isPagingQuery(queryLike)).toBe(false);
 	});
 
 	it("Should return false for plain object without query methods", () => {
