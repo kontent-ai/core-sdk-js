@@ -34,17 +34,6 @@ export function getIntegrationTestConfig() {
 			listItemsUrl: `${baseMapiUrl}/items`,
 		},
 		fileToUpload: new Blob(["core-sdk-integration-test"], { type: "text/plain" }),
-		/**
-		 * Controls whether the test also verifies the downloaded file contents.
-		 *
-		 * This check can be unreliable because the Kontent.ai API may return a file that is not yet
-		 * fully accessible immediately after upload. The same issue can occur for files manually uploaded
-		 * to Kontent.ai and retrieved via the "Copy URL" feature.
-		 *
-		 * Info: The file contents may come back as a Blob with 0 bytes.
-		 *
-		 */
-		compareFileContents: true,
 	};
 }
 

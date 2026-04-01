@@ -125,6 +125,8 @@ describe("Integration tests covering Fetch/Mutation queries against the Kontent.
 		expect(addAssetResponse.payload.url).toBeDefined();
 	});
 
+	// The Kontent.ai API may return a file that is not yet fully accessible immediately after upload —
+	// the file contents may come back as a Blob with 0 bytes. Poll until the file has > 0 bytes.
 	const {
 		success: downloadedFileSuccess,
 		data: downloadedFileResponse,
@@ -133,15 +135,19 @@ describe("Integration tests covering Fetch/Mutation queries against the Kontent.
 		async () => {
 			const { success, response, error } = await downloadAssetFile(addAssetResponse.payload.url);
 
-			if (success) {
-				return { success: true, data: response };
+			if (!success) {
+				return { success: false, error };
 			}
 
-			return { success: false, error };
+			if (response.payload.size === 0) {
+				return { success: false, error: new Error("Downloaded file has 0 bytes") };
+			}
+
+			return { success: true, data: response };
 		},
 		{
 			intervalMs: 1000,
-			timeoutMs: 30000,
+			timeoutMs: 60000,
 		},
 	);
 
@@ -153,11 +159,9 @@ describe("Integration tests covering Fetch/Mutation queries against the Kontent.
 		expect(downloadedFileResponse.adapterResponse.status).toStrictEqual<HttpServiceStatus>(200);
 	});
 
-	if (config.compareFileContents) {
-		it("Content of downloaded file should be identical to original file", async () => {
-			expect(await downloadedFileResponse.payload.text()).toStrictEqual(await config.fileToUpload.text());
-		});
-	}
+	it("Content of downloaded file should be identical to original file", async () => {
+		expect(await downloadedFileResponse.payload.text()).toStrictEqual(await config.fileToUpload.text());
+	});
 
 	const {
 		success: deletedFileSuccess,
