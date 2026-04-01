@@ -8,7 +8,7 @@ describe("Aborted error", async () => {
 	const { error } = await getDefaultHttpService({
 		adapter: {
 			executeRequest: () => {
-				throw new AdapterAbortError(originalError);
+				throw new AdapterAbortError({ message: "Request was aborted", error: originalError });
 			},
 		},
 	}).request({
@@ -31,7 +31,11 @@ describe("Aborted error", async () => {
 	it("Original error should be preserved", () => {
 		if (error?.details.reason === "aborted") {
 			expect(error.details.originalError).toBeInstanceOf(AdapterAbortError);
-			expect(error.details.originalError).toHaveProperty("cause", originalError);
+			if (error.details.originalError instanceof AdapterAbortError) {
+				expect(error.details.originalError.details).toBe(originalError);
+			} else {
+				throw new Error("Original error is not an instance of AdapterAbortError");
+			}
 		} else {
 			throw new Error("Error reason is not aborted");
 		}

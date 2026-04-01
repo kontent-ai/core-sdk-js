@@ -8,7 +8,7 @@ describe("Parse error", async () => {
 	const { error } = await getDefaultHttpService({
 		adapter: {
 			executeRequest: () => {
-				throw new AdapterParseError(originalError);
+				throw new AdapterParseError({ message: "Failed to parse response", error: originalError });
 			},
 		},
 	}).request({
@@ -31,7 +31,11 @@ describe("Parse error", async () => {
 	it("Original error should be preserved", () => {
 		if (error?.details.reason === "parseError") {
 			expect(error.details.originalError).toBeInstanceOf(AdapterParseError);
-			expect(error.details.originalError).toHaveProperty("cause", originalError);
+			if (error.details.originalError instanceof AdapterParseError) {
+				expect(error.details.originalError.details).toBe(originalError);
+			} else {
+				throw new Error("Original error is not an instance of AdapterParseError");
+			}
 		} else {
 			throw new Error("Error reason is not parseError");
 		}

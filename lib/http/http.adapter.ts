@@ -53,7 +53,7 @@ async function getResponse(options: AdapterExecuteRequestOptions): Promise<Respo
 	if (isAbortError(error)) {
 		// this is to notify the HttpService that the request was aborted
 		// HttpService will then convert the error to a KontentSdkError with the reason "aborted"
-		throw new AdapterAbortError(error);
+		throw new AdapterAbortError({ message: "Request was aborted.", error });
 	}
 
 	// re-throw original error
@@ -75,7 +75,7 @@ async function parseResponse<TPayload extends AdapterPayload>({
 		if (!success) {
 			// this is to notify the HttpService that the response is not valid JSON or BLOB
 			// HttpService will then convert the error to a KontentSdkError with the reason "parseError"
-			throw new AdapterParseError(error);
+			throw new AdapterParseError({ message: "Failed to parse the response.", error });
 		}
 
 		return data;
@@ -91,7 +91,7 @@ async function parseResponse<TPayload extends AdapterPayload>({
 	});
 
 	if (isAborted) {
-		throw new AdapterAbortError(new Error("Adapter has aborted the request while parsing the response."));
+		throw new AdapterAbortError({ message: "Request was aborted while parsing the response." });
 	}
 
 	return data;

@@ -98,8 +98,10 @@ export class KontentSdkError<TDetails extends ErrorDetails = ErrorDetails> exten
  * The error is then handled by the HttpService and converted to a KontentSdkError with the reason "aborted".
  */
 export class AdapterAbortError extends Error {
-	constructor(error: unknown) {
-		super(`Adapter has aborted the request. ${error instanceof Error ? error.message : "No details provided"}`, { cause: error });
+	readonly details: unknown;
+	constructor({ message, error }: { readonly message: string; readonly error?: unknown }) {
+		super(message, { cause: error });
+		this.details = error;
 	}
 }
 
@@ -109,8 +111,11 @@ export class AdapterAbortError extends Error {
  * The error is then handled by the HttpService and converted to a KontentSdkError with the reason "parseError".
  */
 export class AdapterParseError extends Error {
-	constructor(error: unknown) {
-		super(`Adapter failed to parse the response. ${error instanceof Error ? error.message : "No details provided"}`, { cause: error });
+	readonly details: unknown;
+
+	constructor({ message, error }: { readonly message: string; readonly error?: unknown }) {
+		super(message, { cause: error });
+		this.details = error;
 	}
 }
 
