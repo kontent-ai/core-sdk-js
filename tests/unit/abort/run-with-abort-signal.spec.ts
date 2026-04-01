@@ -37,18 +37,16 @@ describe("runWithAbortSignal - aborted", async () => {
 	});
 });
 
-describe("runWithAbortSignal - exception thrown in func", async () => {
+describe("runWithAbortSignal - func returns a rejected promise", async () => {
 	const abortController = new AbortController();
-	const expectedError = new Error("func error");
+	const expectedError = new Error("async func error");
 
 	const thrownError = await runWithAbortSignal({
-		func: () => {
-			throw expectedError;
-		},
+		func: async () => await Promise.reject(expectedError),
 		abortSignal: abortController.signal,
 	}).catch((error: unknown) => error);
 
-	it("Should reject with the error thrown by func", () => {
+	it("Should reject with the error from the rejected promise", () => {
 		expect(thrownError).toBe(expectedError);
 	});
 });
