@@ -305,22 +305,31 @@ function createInvalidResponseError({
 	readonly retryAttempt: number;
 	readonly retryStrategyOptions: ResolvedRetryStrategyOptions;
 }): KontentSdkError {
+	const kontentErrorData = tryExtractKontentErrorData(response);
+
 	return createSdkError({
 		baseErrorData: {
 			message: toInvalidResponseMessage({
 				url: response.url,
 				adapterResponse: response,
 				method: method,
+				kontentErrorData: kontentErrorData,
 			}),
 			url: response.url,
 			retryAttempt,
 			retryStrategyOptions,
 		},
-		details: extractInvalidResponseErrorDetails({ response }),
+		details: extractInvalidResponseErrorDetails({ response, kontentErrorData }),
 	});
 }
 
-function extractInvalidResponseErrorDetails({ response }: { readonly response: AdapterResponse<AdapterPayload> }): ErrorDetails {
+function extractInvalidResponseErrorDetails({
+	response,
+	kontentErrorData,
+}: {
+	readonly response: AdapterResponse<AdapterPayload>;
+	readonly kontentErrorData: ErrorResponseData | undefined;
+}): ErrorDetails {
 	const reason = match(response.status)
 		.returnType<PickStringLiteral<ErrorReason, "unauthorized" | "notFound" | "invalidResponse">>()
 		.with(401, () => "unauthorized")
@@ -332,7 +341,7 @@ function extractInvalidResponseErrorDetails({ response }: { readonly response: A
 		responseHeaders: response.responseHeaders,
 		status: response.status,
 		statusText: response.statusText,
-		kontentErrorResponse: tryExtractKontentErrorData(response),
+		kontentErrorResponse: kontentErrorData,
 	};
 }
 
@@ -511,7 +520,7 @@ function buildRequestHeaders({
 
 	const contentLengthHeader = isBlob(body) ? createDefaultContentLengthHeader(body) : undefined;
 
-	return [...combinedHeaders, contentTypeHeader, contentLengthHeader, sdkVersionHeader].filter(isDefined);
+	return [...combinedHeaders, ...[contentTypeHeader, contentLengthHeader, sdkVersionHeader].filter(isDefined)];
 }
 
 function createDefaultContentTypeHeader(body: Blob | JsonValue): Header {

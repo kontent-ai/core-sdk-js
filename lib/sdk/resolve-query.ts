@@ -66,7 +66,7 @@ export async function resolveQuery<TResponsePayload extends JsonValue, TRequestB
 
 	const continuationTokenFromResponse = extractContinuationToken(response.adapterResponse.responseHeaders);
 
-	const result: Awaited<QueryPromiseResult<TResponsePayload, TMeta, TError>> = {
+	return {
 		success: true,
 		response: {
 			payload: response.payload,
@@ -79,8 +79,6 @@ export async function resolveQuery<TResponsePayload extends JsonValue, TRequestB
 			},
 		},
 	};
-
-	return result;
 }
 
 function getUrlToUse(url: string, baseUrl: string | undefined): TryCatchResult<URL, KontentSdkError<ErrorDetailsFor<"invalidUrl">>> {

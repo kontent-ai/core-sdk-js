@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
-import type { CommonHeaderNames, SDKInfo } from "../../../lib/models/core.models.js";
-import { createAuthorizationHeader, createContinuationHeader, getSdkIdHeader } from "../../../lib/utils/header.utils.js";
+import type { CommonHeaderNames, Header, SDKInfo } from "../../../lib/models/core.models.js";
+import {
+	createAuthorizationHeader,
+	createContinuationHeader,
+	getRetryAfterHeaderValue,
+	getSdkIdHeader,
+} from "../../../lib/utils/header.utils.js";
 
 describe("getSdkIdHeader", () => {
 	it("Should return a header with name 'X-KC-SDKID'", () => {
@@ -25,6 +30,14 @@ describe("createContinuationHeader", () => {
 		const token = "continuation-token-123";
 
 		expect(createContinuationHeader(token).value).toStrictEqual(token);
+	});
+});
+
+describe("getRetryAfterHeaderValue - empty string", () => {
+	it("Should return undefined for an empty string value", () => {
+		const headers: readonly Header[] = [{ name: "Retry-After" satisfies CommonHeaderNames, value: "" }];
+
+		expect(getRetryAfterHeaderValue(headers)).toBeUndefined();
 	});
 });
 

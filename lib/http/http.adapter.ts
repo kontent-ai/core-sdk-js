@@ -2,7 +2,7 @@ import type { Header } from "../models/core.models.js";
 import { AdapterAbortError, AdapterParseError } from "../models/error.models.js";
 import type { JsonValue } from "../models/json.models.js";
 import { runWithAbortSignal } from "../utils/abort.utils.js";
-import { isAbortError } from "../utils/error.utils.js";
+import { isFetchAbortError } from "../utils/error.utils.js";
 import { isApplicationJsonResponseType, toFetchHeaders, toSdkHeaders } from "../utils/header.utils.js";
 import { tryCatchAsync } from "../utils/try-catch.utils.js";
 import type { AdapterExecuteRequestOptions, AdapterPayload, AdapterResponse, HttpAdapter } from "./http.models.js";
@@ -50,7 +50,7 @@ async function getResponse(options: AdapterExecuteRequestOptions): Promise<Respo
 		return data;
 	}
 
-	if (isAbortError(error)) {
+	if (isFetchAbortError(error)) {
 		// this is to notify the HttpService that the request was aborted
 		// HttpService will then convert the error to a KontentSdkError with the reason "aborted"
 		throw new AdapterAbortError({ message: "Request was aborted.", error });

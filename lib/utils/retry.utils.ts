@@ -65,15 +65,7 @@ export async function runWithRetry<TResponse extends HttpPayload, TRequestBody e
 
 	return {
 		success: false,
-		error: createSdkError({
-			baseErrorData: {
-				message: retryResult.error.message,
-				url: retryResult.error.url,
-				retryStrategyOptions: data.retryStrategyOptions,
-				retryAttempt,
-			},
-			details: retryResult.error.details,
-		}),
+		error: retryResult.error,
 	};
 }
 

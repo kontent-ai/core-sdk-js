@@ -47,12 +47,12 @@ export function toInvalidResponseMessage({
 	method,
 	url,
 	adapterResponse,
-	kontentErrorResponse,
+	kontentErrorData: kontentErrorResponse,
 }: {
 	readonly url: string;
 	readonly method: HttpMethod;
 	readonly adapterResponse: AdapterResponse<AdapterPayload>;
-	readonly kontentErrorResponse?: ErrorResponseData;
+	readonly kontentErrorData: ErrorResponseData | undefined;
 }): string {
 	const details = kontentErrorResponse ? ` ${getKontentErrorResponseMessage(adapterResponse, kontentErrorResponse)}` : "";
 	return `Failed to execute '${method}' request '${url}'.${details}`;
@@ -62,10 +62,16 @@ export function toInvalidResponseMessage({
  * Checks if the given JSON value is a Kontent API error response data.
  */
 export function isKontentErrorResponseData(json: unknown): json is ErrorResponseData {
+	if (!json || typeof json !== "object" || Array.isArray(json)) {
+		return false;
+	}
 	return errorResponseDataSchema.safeParse(json).success;
 }
 
-export function isAbortError(error: unknown): boolean {
+/**
+ * Checks if the given error is a fetch abort error.
+ */
+export function isFetchAbortError(error: unknown): boolean {
 	if (!error || typeof error !== "object") {
 		return false;
 	}

@@ -4,7 +4,7 @@ import type { ErrorResponseData } from "../../../lib/models/error.models.js";
 import type { ErrorDetails } from "../../../lib/public_api.js";
 import {
 	createSdkError,
-	isAbortError,
+	isFetchAbortError,
 	isKontent404Error,
 	isKontentErrorResponseData,
 	toFriendlyKontentSdkErrorMessage,
@@ -13,23 +13,23 @@ import {
 
 describe("isAbortError", () => {
 	it("Should return false when error is null", () => {
-		expect(isAbortError(null)).toBe(false);
+		expect(isFetchAbortError(null)).toBe(false);
 	});
 
 	it("Should return false when error is a string", () => {
-		expect(isAbortError("AbortError")).toBe(false);
+		expect(isFetchAbortError("AbortError")).toBe(false);
 	});
 
 	it("Should return false when error is an object without a name property", () => {
-		expect(isAbortError({ message: "Something went wrong" })).toBe(false);
+		expect(isFetchAbortError({ message: "Something went wrong" })).toBe(false);
 	});
 
 	it("Should return false when error has a name that is not 'AbortError'", () => {
-		expect(isAbortError(new Error("Something went wrong"))).toBe(false);
+		expect(isFetchAbortError(new Error("Something went wrong"))).toBe(false);
 	});
 
 	it("Should return true when error is a DOMException with name 'AbortError'", () => {
-		expect(isAbortError(new DOMException("The operation was aborted.", "AbortError"))).toBe(true);
+		expect(isFetchAbortError(new DOMException("The operation was aborted.", "AbortError"))).toBe(true);
 	});
 });
 
@@ -80,6 +80,18 @@ describe("isKontent404Error", () => {
 });
 
 describe("isKontentErrorResponseData", () => {
+	it("Should return false when JSON is null", () => {
+		expect(isKontentErrorResponseData(null)).toBe(false);
+	});
+
+	it("Should return false when JSON is a string", () => {
+		expect(isKontentErrorResponseData("Not an object")).toBe(false);
+	});
+
+	it("Should return false when JSON is an array", () => {
+		expect(isKontentErrorResponseData([1, 2, 3])).toBe(false);
+	});
+
 	it("Should return true when JSON is a Kontent API error response data", () => {
 		expect(
 			isKontentErrorResponseData({
@@ -165,6 +177,7 @@ describe("toInvalidResponseMessage", () => {
 				method: "GET",
 				url: "https://domain.com",
 				adapterResponse,
+				kontentErrorData: undefined,
 			}),
 		).toStrictEqual("Failed to execute 'GET' request 'https://domain.com'.");
 	});
@@ -181,7 +194,7 @@ describe("toInvalidResponseMessage", () => {
 				method: "POST",
 				url: "https://domain.com",
 				adapterResponse,
-				kontentErrorResponse,
+				kontentErrorData: kontentErrorResponse,
 			}),
 		).toStrictEqual(
 			"Failed to execute 'POST' request 'https://domain.com'. Request failed with status '422' and status text 'Unprocessable Entity'. Item not found.",
@@ -201,7 +214,7 @@ describe("toInvalidResponseMessage", () => {
 				method: "PUT",
 				url: "https://domain.com",
 				adapterResponse,
-				kontentErrorResponse,
+				kontentErrorData: kontentErrorResponse,
 			}),
 		).toStrictEqual(
 			"Failed to execute 'PUT' request 'https://domain.com'. Request failed with status '422' and status text 'Unprocessable Entity'. Validation failed. Field is required.",
@@ -221,7 +234,7 @@ describe("toInvalidResponseMessage", () => {
 				method: "GET",
 				url: "https://domain.com",
 				adapterResponse,
-				kontentErrorResponse,
+				kontentErrorData: kontentErrorResponse,
 			}),
 		).toStrictEqual(
 			"Failed to execute 'GET' request 'https://domain.com'. Request failed with status '422' and status text 'Unprocessable Entity'. Validation failed. Invalid value. (path: /items/0/name, line: 3, position: 12)",

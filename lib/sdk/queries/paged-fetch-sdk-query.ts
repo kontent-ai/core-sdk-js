@@ -12,8 +12,9 @@ import type {
 } from "../sdk-models.js";
 import { createFetchQuery } from "./fetch-sdk-query.js";
 
-type PagingQueryPromiseResult<TResponsePayload extends JsonValue, TMeta, TError> = Promise<
-	SafePagingQueryResult<QueryResponse<TResponsePayload, TMeta>, TError>
+type PagingQueryPromiseResult<TResponsePayload extends JsonValue, TMeta, TError> = SafePagingQueryResult<
+	QueryResponse<TResponsePayload, TMeta>,
+	TError
 >;
 
 type NoNextPageState = {
@@ -126,7 +127,7 @@ function resolveNextPageState<TResponsePayload extends JsonValue, TMeta>({
 }): NextPageState {
 	const { maxPagesCount } = paginationConfig;
 
-	if (maxPagesCount && maxPagesCount === pageIndex) {
+	if (maxPagesCount && maxPagesCount > 0 && maxPagesCount === pageIndex) {
 		return { hasNextPage: false };
 	}
 

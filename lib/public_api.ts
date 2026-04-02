@@ -26,6 +26,7 @@ export type {
 	ContinuationHeaderName,
 	Header,
 	HttpMethod,
+	ResolvedRetryStrategyOptions,
 	RetryStrategyOptions,
 	SDKInfo,
 } from "./models/core.models.js";
