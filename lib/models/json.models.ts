@@ -1,6 +1,6 @@
 import z from "zod";
 
-export type JsonValue = string | number | null | boolean | JsonObject | JsonArray;
+export type JsonValue = undefined | string | number | null | boolean | JsonObject | JsonArray;
 
 export type JsonObject = {
 	readonly [property: string]: JsonValue;
