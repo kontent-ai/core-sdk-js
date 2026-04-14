@@ -8,7 +8,8 @@ import { createAuthorizationHeader } from "../../../lib/utils/header.utils.js";
 describe("resolveQuery - invalid baseUrl", async () => {
 	const { error } = await resolveQuery({
 		method: "GET",
-		request: { url: "https://domain.com", body: null },
+		url: "https://domain.com",
+		body: null,
 		config: { baseUrl: "not a valid base url" },
 		zodSchema: z.null(),
 		sdkInfo: getTestSdkInfo(),
@@ -24,7 +25,8 @@ describe("resolveQuery - invalid baseUrl", async () => {
 describe("resolveQuery - invalid baseUrl starting with https", async () => {
 	const { error } = await resolveQuery({
 		method: "GET",
-		request: { url: "https://domain.com", body: null },
+		url: "https://domain.com",
+		body: null,
 		config: { baseUrl: "https://not a valid base url" },
 		zodSchema: z.null(),
 		sdkInfo: getTestSdkInfo(),
@@ -43,7 +45,8 @@ describe("resolveQuery - valid response matching zod schema", async () => {
 
 	const { success, response } = await resolveQuery({
 		method: "GET",
-		request: { url: "https://domain.com", body: null },
+		url: "https://domain.com",
+		body: null,
 		config: {
 			httpService: getTestHttpServiceWithJsonResponse({ statusCode: 200, jsonResponse }),
 			responseValidation: { enable: true },
@@ -68,7 +71,8 @@ describe("resolveQuery - response not matching zod schema", async () => {
 
 	const { error } = await resolveQuery({
 		method: "GET",
-		request: { url: "https://domain.com", body: null },
+		url: "https://domain.com",
+		body: null,
 		config: {
 			httpService: getTestHttpServiceWithJsonResponse({ statusCode: 200, jsonResponse: { name: 123 } }),
 			responseValidation: { enable: true },
@@ -90,7 +94,8 @@ describe("resolveQuery - custom httpService from config is used", async () => {
 
 	await resolveQuery({
 		method: "GET",
-		request: { url: "https://domain.com", body: null },
+		url: "https://domain.com",
+		body: null,
 		config: { httpService: customHttpService },
 		zodSchema: z.null(),
 		sdkInfo: getTestSdkInfo(),
@@ -110,7 +115,9 @@ describe("resolveQuery - authorization header is applied", async () => {
 
 	await resolveQuery({
 		method: "GET",
-		request: { url: "https://domain.com", body: null, authorizationApiKey: apiKey },
+		url: "https://domain.com",
+		body: null,
+		authorizationApiKey: apiKey,
 		config: { httpService },
 		zodSchema: z.null(),
 		sdkInfo: getTestSdkInfo(),
@@ -141,7 +148,8 @@ describe("resolveQuery - default httpService is used when none provided in confi
 
 		const { success } = await resolveQuery({
 			method: "GET",
-			request: { url: "https://domain.com", body: null },
+			url: "https://domain.com",
+			body: null,
 			config: {},
 			zodSchema: z.null(),
 			sdkInfo: getTestSdkInfo(),
@@ -156,7 +164,8 @@ describe("resolveQuery - default httpService is used when none provided in confi
 describe("resolveQuery - invalid URL", async () => {
 	const { error } = await resolveQuery({
 		method: "GET",
-		request: { url: "not-a-valid-url", body: null },
+		url: "not-a-valid-url",
+		body: null,
 		config: {},
 		zodSchema: z.null(),
 		sdkInfo: getTestSdkInfo(),

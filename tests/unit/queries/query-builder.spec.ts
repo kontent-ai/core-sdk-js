@@ -1,13 +1,14 @@
 import { describe, expect, it } from "vitest";
 import z from "zod";
+import { createMutationQuery, createPagedFetchQuery, type KontentSdkError, type Query } from "../../../lib/public_api.js";
 import { createFetchQuery } from "../../../lib/sdk/queries/fetch-sdk-query.js";
 import { getTestHttpServiceWithJsonResponse, getTestSdkInfo } from "../../../lib/testkit/testkit.utils.js";
 
-describe("Query builder", async () => {
-	const responseContinuationToken = "fake-continuation-token";
-	const responseStatusCode = 200;
+const responseContinuationToken = "fake-continuation-token";
+const responseStatusCode = 200;
 
-	const { success, response } = await createFetchQuery({
+describe("Query builder", async () => {
+	const query = createFetchQuery({
 		mapMetadata: () => ({}),
 		config: {
 			httpService: getTestHttpServiceWithJsonResponse({
@@ -21,11 +22,11 @@ describe("Query builder", async () => {
 		},
 		sdkInfo: getTestSdkInfo(),
 		zodSchema: z.null(),
-		request: {
-			url: "https://domain.com",
-		},
+		url: "https://domain.com",
 		mapError: (error) => error,
-	}).fetchSafe();
+	});
+
+	const { response, success } = await query.fetchSafe();
 
 	it("Meta should have proper continuation token", () => {
 		expect(response?.meta.continuationToken).toStrictEqual(responseContinuationToken);
@@ -42,4 +43,64 @@ describe("Query builder", async () => {
 	it("Response data should be null", () => {
 		expect(response?.payload).toBeNull();
 	});
+});
+
+describe("Query builder url handling without modifications", () => {
+	const sharedData = {
+		config: {},
+		mapMetadata: () => ({}),
+		sdkInfo: getTestSdkInfo(),
+		zodSchema: z.null(),
+		mapError: (error: KontentSdkError) => error,
+		url: "https://domain.com/api/path",
+	};
+	const queries: Query<unknown, KontentSdkError>[] = [
+		createFetchQuery(sharedData),
+		createMutationQuery({
+			...sharedData,
+			method: "POST",
+			body: null,
+		}),
+		createPagedFetchQuery({
+			...sharedData,
+			getNextPageData: () => ({}),
+		}),
+	];
+
+	for (const query of queries) {
+		it("Url should be as is without any modifications", () => {
+			expect(query.getUrl()?.data?.toString()).toBe(new URL("https://domain.com/api/path").toString());
+		});
+	}
+});
+
+describe("Query builder url handling with base url", () => {
+	const sharedData = {
+		config: {
+			baseUrl: "https://kontent.ai",
+		},
+		mapMetadata: () => ({}),
+		sdkInfo: getTestSdkInfo(),
+		zodSchema: z.null(),
+		mapError: (error: KontentSdkError) => error,
+		url: "https://domain.com/api/path",
+	};
+	const queries: Query<unknown, KontentSdkError>[] = [
+		createFetchQuery(sharedData),
+		createMutationQuery({
+			...sharedData,
+			method: "POST",
+			body: null,
+		}),
+		createPagedFetchQuery({
+			...sharedData,
+			getNextPageData: () => ({}),
+		}),
+	];
+
+	for (const query of queries) {
+		it("Url should be modified if baseUrl is provided", () => {
+			expect(query.getUrl()?.data?.toString()).toBe(new URL("https://kontent.ai/api/path").toString());
+		});
+	}
 });

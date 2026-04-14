@@ -27,9 +27,7 @@ type QueryCallback = {
 
 const successfulBaseQueryConfig: Parameters<typeof createFetchQuery>[0] = {
 	zodSchema: z.null(),
-	request: {
-		url: "https://domain.com",
-	},
+	url: "https://domain.com",
 	config: {
 		httpService: getTestHttpServiceWithJsonResponse({
 			statusCode: 200,
@@ -46,9 +44,7 @@ const successfulBaseQueryConfig: Parameters<typeof createFetchQuery>[0] = {
 
 const baseQueryConfig: Parameters<typeof createFetchQuery>[0] = {
 	zodSchema: z.null(),
-	request: {
-		url: "https://domain.com",
-	},
+	url: "https://domain.com",
 	config: {
 		httpService: getDefaultHttpService({
 			adapter: {
@@ -73,19 +69,15 @@ const unsafeQueries: readonly QueryTest[] = [
 			const baseQuery = createMutationQuery({
 				...baseQueryConfig,
 				method: "POST",
-				request: {
-					url: "https://domain.com",
-					body: null,
-				},
+				url: "https://domain.com",
+				body: null,
 			});
 
 			const succeedingBaseQuery = createMutationQuery({
 				...successfulBaseQueryConfig,
 				method: "POST",
-				request: {
-					url: "https://domain.com",
-					body: null,
-				},
+				url: "https://domain.com",
+				body: null,
 			});
 
 			return {

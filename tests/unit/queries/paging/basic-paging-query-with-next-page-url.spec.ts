@@ -47,9 +47,7 @@ describe("Basic paging query with next page url", async () => {
 		},
 		sdkInfo: getTestSdkInfo(),
 		zodSchema: z.null(),
-		request: {
-			url: expectedResponseUrls?.[0] ?? "n/a",
-		},
+		url: expectedResponseUrls?.[0] ?? "n/a",
 		mapError: (error) => error,
 	}).fetchAllPagesSafe({ maxPagesCount: maxPagesCount });
 

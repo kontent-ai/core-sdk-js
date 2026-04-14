@@ -1,6 +1,7 @@
 import { match, P } from "ts-pattern";
 import type { GetNextPageData, PaginationConfig } from "../../http/http.models.js";
 import type { JsonValue } from "../../models/json.models.js";
+import { resolveUrl } from "../resolve-query.js";
 import type {
 	FetchQueryRequest,
 	NextPageStateWithRequest,
@@ -36,10 +37,7 @@ export function createPagedFetchQuery<TResponsePayload extends JsonValue, TMeta,
 			method: "GET",
 			pageIndex: 0,
 			paginationConfig: config ?? {},
-			request: {
-				...data.request,
-				body: null,
-			},
+			body: null,
 		};
 	};
 
@@ -47,7 +45,7 @@ export function createPagedFetchQuery<TResponsePayload extends JsonValue, TMeta,
 
 	return {
 		schema: fetchQuery.schema,
-		url: fetchQuery.url,
+		getUrl: () => resolveUrl<TError>({ url: data.url, baseUrl: data.config.baseUrl, mapError: data.mapError }),
 		fetchPage: async () => await fetchQuery.fetch(),
 		fetchPageSafe: async () => await fetchQuery.fetchSafe(),
 		fetchAllPages: async (config?: PaginationConfig) => {
@@ -86,15 +84,12 @@ async function* createPagingQueryIterator<TResponsePayload extends JsonValue, TM
 	let pageIndex: number = 0;
 
 	while (isNextPageAvailable(nextPageState)) {
-		const urlToUse: string = nextPageState?.nextPageUrl ?? data.request.url;
+		const urlToUse: string | URL = nextPageState?.nextPageUrl ?? data.url;
 
 		const { success, response, error } = await createFetchQuery<TResponsePayload, TMeta, TError>({
 			...data,
-			request: {
-				...data.request,
-				url: urlToUse,
-				continuationToken: nextPageState.continuationToken,
-			},
+			url: urlToUse,
+			continuationToken: nextPageState.continuationToken,
 		}).fetchSafe();
 
 		if (!success) {

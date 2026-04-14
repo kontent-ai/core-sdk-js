@@ -34,10 +34,8 @@ describe("Integration tests covering Fetch/Mutation queries against the Kontent.
 			id: z.string(),
 		}),
 		method: "POST",
-		request: {
-			url: config.urls.getUploadAssetBinaryFileUrl("core-sdk.txt"),
-			body: config.fileToUpload,
-		},
+		url: config.urls.getUploadAssetBinaryFileUrl("core-sdk.txt"),
+		body: config.fileToUpload,
 		mapError: (error) => error,
 	});
 
@@ -51,15 +49,13 @@ describe("Integration tests covering Fetch/Mutation queries against the Kontent.
 				url: z.string(),
 			}),
 			method: "POST",
-			request: {
-				url: config.urls.addAssetUrl,
-				body: {
-					file_reference: {
-						id: binaryFileId,
-						type: "internal" as const,
-					},
-					title: "Test file",
+			url: config.urls.addAssetUrl,
+			body: {
+				file_reference: {
+					id: binaryFileId,
+					type: "internal" as const,
 				},
+				title: "Test file",
 			},
 			mapError: (error) => error,
 		});
@@ -69,10 +65,8 @@ describe("Integration tests covering Fetch/Mutation queries against the Kontent.
 			...baseMutationConfig,
 			zodSchema: z.null(),
 			method: "DELETE",
-			request: {
-				url: config.urls.getDeleteAssetUrl(assetId),
-				body: null,
-			},
+			url: config.urls.getDeleteAssetUrl(assetId),
+			body: null,
 			mapError: (error) => error,
 		});
 

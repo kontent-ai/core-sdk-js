@@ -18,7 +18,7 @@ import type { Header, HttpMethod, SDKInfo } from "../models/core.models.js";
 import type { KontentSdkError } from "../models/error.models.js";
 import type { JsonValue } from "../models/json.models.js";
 import type { PickStringLiteral } from "../models/utility.types.js";
-import type { Failure, Success } from "../utils/try-catch.utils.js";
+import type { Failure, Success, TryCatchResult } from "../utils/try-catch.utils.js";
 
 export type QueryResponseMeta<TMeta> = Pick<AdapterResponse<AdapterPayload>, "status" | "responseHeaders" | "url"> & {
 	readonly continuationToken: string | undefined;
@@ -60,17 +60,17 @@ export type SdkConfig = {
 	};
 };
 
-export type Query<TResponsePayload> = {
+export type Query<TResponsePayload, TError> = {
 	readonly schema: z.ZodType<TResponsePayload>;
-	readonly url: string;
+	readonly getUrl: () => TryCatchResult<URL, TError>;
 };
 
-export type FetchQuery<TResponsePayload, TMeta, TError> = Query<TResponsePayload> & {
+export type FetchQuery<TResponsePayload, TMeta, TError> = Query<TResponsePayload, TError> & {
 	fetchSafe(): Promise<QueryResult<QueryResponse<TResponsePayload, TMeta>, TError>>;
 	fetch(): Promise<QueryResponse<TResponsePayload, TMeta>>;
 };
 
-export type PagedFetchQuery<TResponsePayload, TMeta, TError> = Query<TResponsePayload> & {
+export type PagedFetchQuery<TResponsePayload, TMeta, TError> = Query<TResponsePayload, TError> & {
 	fetchPageSafe(): Promise<QueryResult<QueryResponse<TResponsePayload, TMeta>, TError>>;
 	fetchPage(): Promise<QueryResponse<TResponsePayload, TMeta>>;
 	fetchAllPagesSafe(config?: PaginationConfig): Promise<SafePagingQueryResult<QueryResponse<TResponsePayload, TMeta>, TError>>;
@@ -79,7 +79,7 @@ export type PagedFetchQuery<TResponsePayload, TMeta, TError> = Query<TResponsePa
 	pages(config?: PaginationConfig): AsyncGenerator<QueryResponse<TResponsePayload, TMeta>>;
 };
 
-export type MutationQuery<TResponsePayload, TMeta, TError> = Query<TResponsePayload> & {
+export type MutationQuery<TResponsePayload, TMeta, TError> = Query<TResponsePayload, TError> & {
 	executeSafe(): Promise<QueryResult<QueryResponse<TResponsePayload, TMeta>, TError>>;
 	execute(): Promise<QueryResponse<TResponsePayload, TMeta>>;
 };
@@ -145,20 +145,25 @@ export type QueryPromiseResult<TResponsePayload extends JsonValue, TMeta, TError
 export type FetchQueryRequest<TResponsePayload extends JsonValue, TMeta, TError> = Pick<
 	ResolveQueryData<TResponsePayload, null, TMeta, TError>,
 	"config" | "zodSchema" | "sdkInfo" | "mapMetadata" | "abortSignal" | "mapError"
-> & { readonly request: RequestDataWithoutBody };
+> &
+	RequestDataWithoutBody;
 
 export type MutationQueryRequest<TResponsePayload extends JsonValue, TRequestBody extends HttpRequestBody, TMeta, TError> = Pick<
 	ResolveQueryData<TResponsePayload, TRequestBody, TMeta, TError>,
-	"config" | "zodSchema" | "sdkInfo" | "mapMetadata" | "abortSignal" | "request" | "mapError"
-> & { readonly method: MutationHttpMethod };
+	"config" | "zodSchema" | "sdkInfo" | "mapMetadata" | "abortSignal" | "mapError"
+> & { readonly method: MutationHttpMethod } & RequestData<TRequestBody>;
 
 export type ResolveQueryData<TResponsePayload extends JsonValue, TRequestBody extends HttpRequestBody, TMeta, TError> = {
 	readonly method: HttpMethod;
-	readonly request: RequestData<TRequestBody>;
 	readonly config: SdkConfig;
 	readonly zodSchema: ZodType<TResponsePayload>;
 	readonly sdkInfo: SDKInfo;
 	readonly abortSignal?: AbortSignal | undefined;
+	readonly url: string | URL;
+	readonly body: TRequestBody;
+	readonly requestHeaders?: readonly Header[];
+	readonly continuationToken?: string | undefined;
+	readonly authorizationApiKey?: string | undefined;
 	readonly mapError: (error: KontentSdkError) => TError;
 } & MetadataMapperConfig<TResponsePayload, TRequestBody, TMeta>;
 
@@ -176,7 +181,7 @@ type MetadataContextData = {
 };
 
 type RequestData<TRequestBody extends HttpRequestBody> = {
-	readonly url: string;
+	readonly url: string | URL;
 	readonly body: TRequestBody;
 	readonly requestHeaders?: readonly Header[];
 	readonly continuationToken?: string | undefined;

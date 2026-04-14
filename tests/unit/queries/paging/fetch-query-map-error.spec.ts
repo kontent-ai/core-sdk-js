@@ -17,9 +17,7 @@ class CustomSdkError extends Error {
 describe("createFetchQuery mapError", async () => {
 	const { error } = await createFetchQuery({
 		zodSchema: z.null(),
-		request: {
-			url: "https://domain.com",
-		},
+		url: "https://domain.com",
 		config: {
 			httpService: getDefaultHttpService({
 				adapter: {

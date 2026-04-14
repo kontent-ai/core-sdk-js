@@ -44,9 +44,7 @@ describe("Async pages iterator errors", async () => {
 		},
 		sdkInfo: getTestSdkInfo(),
 		zodSchema: z.null(),
-		request: {
-			url: expectedResponseUrls?.[0] ?? "n/a",
-		},
+		url: expectedResponseUrls?.[0] ?? "n/a",
 		mapError: (error) => error,
 	}).pagesSafe();
 

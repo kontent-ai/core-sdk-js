@@ -52,9 +52,7 @@ describe("Basic paging query with continuation token", async () => {
 		},
 		sdkInfo: getTestSdkInfo(),
 		zodSchema: z.null(),
-		request: {
-			url: "https://domain.com",
-		},
+		url: "https://domain.com",
 		mapError: (error) => error,
 	}).fetchAllPagesSafe({ maxPagesCount: maxPagesCount });
 

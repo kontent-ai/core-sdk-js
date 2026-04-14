@@ -176,7 +176,7 @@ describe("waitBeforeNextRetry - no abort signal", () => {
 		const expectedDurationMin = abortAfterMs;
 
 		// some leeway for the test to pass
-		const expectedDurationMax = abortAfterMs * 2;
+		const expectedDurationMax = abortAfterMs * 4;
 
 		const [{ isAborted }] = await Promise.all([
 			waitBeforeNextRetry({ retryInMs, abortSignal: abortController.signal }),

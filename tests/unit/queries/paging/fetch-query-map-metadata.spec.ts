@@ -30,9 +30,7 @@ describe("createFetchQuery mapMetadata", async () => {
 			id: z.string(),
 			name: z.string(),
 		}),
-		request: {
-			url: "https://domain.com",
-		},
+		url: "https://domain.com",
 		config: {
 			httpService: getTestHttpServiceWithJsonResponse({
 				jsonResponse: responsePayload,

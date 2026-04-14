@@ -47,9 +47,7 @@ describe("Async pages iterator with unlimited max count", async () => {
 		},
 		sdkInfo: getTestSdkInfo(),
 		zodSchema: z.null(),
-		request: {
-			url: expectedResponseUrls?.[0] ?? "n/a",
-		},
+		url: expectedResponseUrls?.[0] ?? "n/a",
 		mapError: (error) => error,
 	}).pagesSafe();
 
@@ -113,9 +111,7 @@ describe("Async pages iterator fetches all pages when maxPagesCount is set to 0"
 		},
 		sdkInfo: getTestSdkInfo(),
 		zodSchema: z.null(),
-		request: {
-			url: expectedResponseUrls?.[0] ?? "n/a",
-		},
+		url: expectedResponseUrls?.[0] ?? "n/a",
 		mapError: (error) => error,
 	}).pagesSafe({ maxPagesCount: 0 });
 

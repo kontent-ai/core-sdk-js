@@ -50,10 +50,8 @@ describe("Query extra metadata", async () => {
 		},
 		sdkInfo: getTestSdkInfo(),
 		zodSchema: z.null(),
-		request: {
-			url: "https://domain.com",
-			requestHeaders: [requestHeader],
-		},
+		url: "https://domain.com",
+		requestHeaders: [requestHeader],
 		mapError: (error) => error,
 	}).fetchSafe();
 

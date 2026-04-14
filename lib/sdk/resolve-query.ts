@@ -16,7 +16,11 @@ import type { QueryPromiseResult, ResolveQueryData, SdkConfig, SuccessfulHttpRes
 
 export async function resolveQuery<TResponsePayload extends JsonValue, TRequestBody extends HttpRequestBody, TMeta, TError>({
 	config,
-	request,
+	url,
+	body,
+	requestHeaders,
+	continuationToken,
+	authorizationApiKey,
 	mapMetadata,
 	zodSchema,
 	sdkInfo,
@@ -24,24 +28,28 @@ export async function resolveQuery<TResponsePayload extends JsonValue, TRequestB
 	abortSignal,
 	mapError,
 }: ResolveQueryData<TResponsePayload, TRequestBody, TMeta, TError>): QueryPromiseResult<TResponsePayload, TMeta, TError> {
-	const { success: urlSuccess, data: urlToUse, error: urlError } = getUrlToUse(request.url, config.baseUrl);
+	const {
+		success: resolvedUrlSuccess,
+		data: resolvedUrl,
+		error: resolvedUrlError,
+	} = resolveUrl({ url, baseUrl: config.baseUrl, mapError });
 
-	if (!urlSuccess) {
+	if (!resolvedUrlSuccess) {
 		return {
 			success: false,
-			error: mapError(urlError),
+			error: resolvedUrlError,
 		};
 	}
 
 	const { success, response, error } = await getHttpService(config).request<TResponsePayload, TRequestBody>({
-		body: request.body,
-		url: urlToUse,
+		body,
+		url: resolvedUrl,
 		method,
 		abortSignal,
 		requestHeaders: getCombinedRequestHeaders({
-			requestHeaders: request.requestHeaders ?? [],
-			continuationToken: request.continuationToken,
-			authorizationApiKey: request.authorizationApiKey,
+			requestHeaders: requestHeaders ?? [],
+			continuationToken,
+			authorizationApiKey,
 			sdkInfo,
 		}),
 	});
@@ -81,24 +89,55 @@ export async function resolveQuery<TResponsePayload extends JsonValue, TRequestB
 	};
 }
 
-function getUrlToUse(url: string, baseUrl: string | undefined): TryCatchResult<URL, KontentSdkError<ErrorDetailsFor<"invalidUrl">>> {
-	const { success, data: parsedUrl, error } = tryCatch(() => new URL(url));
+export function resolveUrl<TError>({
+	url,
+	baseUrl,
+	mapError,
+}: {
+	readonly url: string | URL;
+	readonly baseUrl: string | undefined;
+	readonly mapError: (error: KontentSdkError<ErrorDetailsFor<"invalidUrl">>) => TError;
+}): TryCatchResult<URL, TError> {
+	const { success, data: parsedUrl, error } = getUrlToUse(url, baseUrl);
 
 	if (!success) {
 		return {
 			success: false,
-			error: createInvalidUrlError(url, error),
+			error: mapError(error),
 		};
-	}
-
-	if (baseUrl) {
-		return setBaseUrl(parsedUrl, baseUrl);
 	}
 
 	return {
 		success: true,
 		data: parsedUrl,
 	};
+}
+
+function getUrlToUse(url: string | URL, baseUrl: string | undefined): TryCatchResult<URL, KontentSdkError<ErrorDetailsFor<"invalidUrl">>> {
+	const returnWithBaseUrl = (parsedUrl: URL): TryCatchResult<URL, KontentSdkError<ErrorDetailsFor<"invalidUrl">>> => {
+		if (baseUrl) {
+			return setBaseUrl(parsedUrl, baseUrl);
+		}
+		return {
+			success: true,
+			data: parsedUrl,
+		};
+	};
+
+	if (typeof url === "string") {
+		const { success, data: parsedUrl, error } = tryCatch(() => new URL(url));
+
+		if (!success) {
+			return {
+				success: false,
+				error: createInvalidUrlError(url, error),
+			};
+		}
+
+		return returnWithBaseUrl(parsedUrl);
+	}
+
+	return returnWithBaseUrl(url);
 }
 
 function createInvalidUrlError(invalidUrl: string, error: unknown): KontentSdkError<ErrorDetailsFor<"invalidUrl">> {
