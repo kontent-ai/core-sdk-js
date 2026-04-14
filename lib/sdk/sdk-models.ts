@@ -60,17 +60,17 @@ export type SdkConfig = {
 	};
 };
 
-export type Query<TResponsePayload, TError> = {
+export type Query<TResponsePayload extends JsonValue, TBody extends HttpRequestBody, TMeta, TError> = {
 	readonly schema: z.ZodType<TResponsePayload>;
-	readonly getUrl: () => TryCatchResult<URL, TError>;
+	readonly getQueryData: () => TryCatchResult<ResolvedQueryData<TResponsePayload, TBody, TMeta, TError>, TError>;
 };
 
-export type FetchQuery<TResponsePayload, TMeta, TError> = Query<TResponsePayload, TError> & {
+export type FetchQuery<TResponsePayload extends JsonValue, TMeta, TError> = Query<TResponsePayload, null, TMeta, TError> & {
 	fetchSafe(): Promise<QueryResult<QueryResponse<TResponsePayload, TMeta>, TError>>;
 	fetch(): Promise<QueryResponse<TResponsePayload, TMeta>>;
 };
 
-export type PagedFetchQuery<TResponsePayload, TMeta, TError> = Query<TResponsePayload, TError> & {
+export type PagedFetchQuery<TResponsePayload extends JsonValue, TMeta, TError> = Query<TResponsePayload, null, TMeta, TError> & {
 	fetchPageSafe(): Promise<QueryResult<QueryResponse<TResponsePayload, TMeta>, TError>>;
 	fetchPage(): Promise<QueryResponse<TResponsePayload, TMeta>>;
 	fetchAllPagesSafe(config?: PaginationConfig): Promise<SafePagingQueryResult<QueryResponse<TResponsePayload, TMeta>, TError>>;
@@ -79,7 +79,12 @@ export type PagedFetchQuery<TResponsePayload, TMeta, TError> = Query<TResponsePa
 	pages(config?: PaginationConfig): AsyncGenerator<QueryResponse<TResponsePayload, TMeta>>;
 };
 
-export type MutationQuery<TResponsePayload, TMeta, TError> = Query<TResponsePayload, TError> & {
+export type MutationQuery<TResponsePayload extends JsonValue, TRequestBody extends HttpRequestBody, TMeta, TError> = Query<
+	TResponsePayload,
+	TRequestBody,
+	TMeta,
+	TError
+> & {
 	executeSafe(): Promise<QueryResult<QueryResponse<TResponsePayload, TMeta>, TError>>;
 	execute(): Promise<QueryResponse<TResponsePayload, TMeta>>;
 };
@@ -143,17 +148,17 @@ export type QueryPromiseResult<TResponsePayload extends JsonValue, TMeta, TError
 >;
 
 export type FetchQueryRequest<TResponsePayload extends JsonValue, TMeta, TError> = Pick<
-	ResolveQueryData<TResponsePayload, null, TMeta, TError>,
+	QueryInputData<TResponsePayload, null, TMeta, TError>,
 	"config" | "zodSchema" | "sdkInfo" | "mapMetadata" | "abortSignal" | "mapError"
 > &
 	RequestDataWithoutBody;
 
 export type MutationQueryRequest<TResponsePayload extends JsonValue, TRequestBody extends HttpRequestBody, TMeta, TError> = Pick<
-	ResolveQueryData<TResponsePayload, TRequestBody, TMeta, TError>,
+	QueryInputData<TResponsePayload, TRequestBody, TMeta, TError>,
 	"config" | "zodSchema" | "sdkInfo" | "mapMetadata" | "abortSignal" | "mapError"
 > & { readonly method: MutationHttpMethod } & RequestData<TRequestBody>;
 
-export type ResolveQueryData<TResponsePayload extends JsonValue, TRequestBody extends HttpRequestBody, TMeta, TError> = {
+export type QueryInputData<TResponsePayload extends JsonValue, TRequestBody extends HttpRequestBody, TMeta, TError> = {
 	readonly method: HttpMethod;
 	readonly config: SdkConfig;
 	readonly zodSchema: ZodType<TResponsePayload>;
@@ -164,6 +169,18 @@ export type ResolveQueryData<TResponsePayload extends JsonValue, TRequestBody ex
 	readonly requestHeaders?: readonly Header[];
 	readonly continuationToken?: string | undefined;
 	readonly authorizationApiKey?: string | undefined;
+	readonly mapError: (error: KontentSdkError) => TError;
+} & MetadataMapperConfig<TResponsePayload, TRequestBody, TMeta>;
+
+export type ResolvedQueryData<TResponsePayload extends JsonValue, TRequestBody extends HttpRequestBody, TMeta, TError> = {
+	readonly url: URL;
+	readonly requestHeaders: readonly Header[];
+	readonly httpService: HttpService;
+	readonly body: TRequestBody;
+	readonly method: HttpMethod;
+	readonly abortSignal?: AbortSignal | undefined;
+	readonly zodSchema: ZodType<TResponsePayload>;
+	readonly responseValidation: SdkConfig["responseValidation"];
 	readonly mapError: (error: KontentSdkError) => TError;
 } & MetadataMapperConfig<TResponsePayload, TRequestBody, TMeta>;
 

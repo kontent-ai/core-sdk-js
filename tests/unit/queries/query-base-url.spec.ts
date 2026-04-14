@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
 import z from "zod";
-import { resolveQuery } from "../../../lib/sdk/resolve-query.js";
+import { prepareQuery } from "../../../lib/sdk/resolve-query.js";
 import { getTestHttpServiceWithJsonResponse, getTestSdkInfo } from "../../../lib/testkit/testkit.utils.js";
 
-describe("Query base url with absolute base url", async () => {
-	const { success, response, error } = await resolveQuery({
+describe("Query base url with absolute base url", () => {
+	const { data } = prepareQuery({
 		config: {
 			baseUrl: "https://kontent.ai",
 			httpService: getTestHttpServiceWithJsonResponse({
@@ -22,17 +22,13 @@ describe("Query base url with absolute base url", async () => {
 		mapError: (error) => error,
 	});
 
-	if (!success) {
-		throw error;
-	}
-
 	it("Should override base url of the url", () => {
-		expect(response?.meta.url).toBe("https://kontent.ai/api/path");
+		expect(data?.url).toStrictEqual(new URL("https://kontent.ai/api/path"));
 	});
 });
 
-describe("Query base url with hostname only", async () => {
-	const { success, response, error } = await resolveQuery({
+describe("Query base url with hostname only", () => {
+	const { data } = prepareQuery({
 		config: {
 			baseUrl: "kontent.ai",
 			httpService: getTestHttpServiceWithJsonResponse({
@@ -50,17 +46,13 @@ describe("Query base url with hostname only", async () => {
 		mapError: (error) => error,
 	});
 
-	if (!success) {
-		throw error;
-	}
-
 	it("Should override base url of the url", () => {
-		expect(response?.meta.url).toBe("https://kontent.ai/api/path");
+		expect(data?.url).toStrictEqual(new URL("https://kontent.ai/api/path"));
 	});
 });
 
-describe("Query base url with http protocol", async () => {
-	const { success, response, error } = await resolveQuery({
+describe("Query base url with http protocol", () => {
+	const { data } = prepareQuery({
 		config: {
 			baseUrl: "http://kontent.ai",
 			httpService: getTestHttpServiceWithJsonResponse({
@@ -78,11 +70,7 @@ describe("Query base url with http protocol", async () => {
 		mapError: (error) => error,
 	});
 
-	if (!success) {
-		throw error;
-	}
-
 	it("Should override base url of the url", () => {
-		expect(response?.meta.url).toBe("http://kontent.ai/api/path");
+		expect(data?.url).toStrictEqual(new URL("http://kontent.ai/api/path"));
 	});
 });

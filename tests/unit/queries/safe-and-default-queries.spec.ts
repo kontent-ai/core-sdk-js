@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import z from "zod";
 import { getDefaultHttpService } from "../../../lib/http/http.service.js";
-import { createPagedFetchQuery, KontentSdkError } from "../../../lib/public_api.js";
+import { createPagedFetchQuery, type JsonValue, KontentSdkError } from "../../../lib/public_api.js";
 import { createFetchQuery } from "../../../lib/sdk/queries/fetch-sdk-query.js";
 import { createMutationQuery } from "../../../lib/sdk/queries/mutation-sdk-query.js";
 import type { FetchQuery, MutationQuery, PagedFetchQuery } from "../../../lib/sdk/sdk-models.js";
@@ -20,9 +20,9 @@ type QueryTest = {
 type QueryCallback = {
 	readonly callback: () => Promise<void>;
 	readonly title:
-		| keyof FetchQuery<unknown, unknown, unknown>
-		| keyof PagedFetchQuery<unknown, unknown, unknown>
-		| keyof MutationQuery<unknown, unknown, unknown>;
+		| keyof FetchQuery<JsonValue, unknown, unknown>
+		| keyof PagedFetchQuery<JsonValue, unknown, unknown>
+		| keyof MutationQuery<JsonValue, null, unknown, unknown>;
 };
 
 const successfulBaseQueryConfig: Parameters<typeof createFetchQuery>[0] = {
@@ -264,6 +264,70 @@ const unsafeQueries: readonly QueryTest[] = [
 		},
 	},
 ];
+
+describe("createFetchQuery with invalid URL propagates error through fetchSafe", async () => {
+	const { success, error } = await createFetchQuery({
+		...baseQueryConfig,
+		url: "not-a-valid-url",
+	}).fetchSafe();
+
+	it("Should not succeed", () => {
+		expect(success).toBe(false);
+	});
+
+	it("Error should be defined", () => {
+		expect(error).toBeDefined();
+	});
+});
+
+describe("createMutationQuery with invalid URL propagates error through executeSafe", async () => {
+	const { success, error } = await createMutationQuery({
+		...baseQueryConfig,
+		method: "POST",
+		body: null,
+		url: "not-a-valid-url",
+	}).executeSafe();
+
+	it("Should not succeed", () => {
+		expect(success).toBe(false);
+	});
+
+	it("Error should be defined", () => {
+		expect(error).toBeDefined();
+	});
+});
+
+describe("createFetchQuery with invalid URL propagates error through fetchSafe", async () => {
+	const { success, error } = await createFetchQuery({
+		...baseQueryConfig,
+		url: "not-a-valid-url",
+	}).fetchSafe();
+
+	it("Should not succeed", () => {
+		expect(success).toBe(false);
+	});
+
+	it("Error should be defined", () => {
+		expect(error).toBeDefined();
+	});
+});
+
+describe("createMutationQuery with invalid URL propagates error through executeSafe", async () => {
+	const { success, error } = await createMutationQuery({
+		...baseQueryConfig,
+		method: "POST",
+		body: null,
+		url: "not-a-valid-url",
+	}).executeSafe();
+
+	it("Should not succeed", () => {
+		expect(success).toBe(false);
+	});
+
+	it("Error should be defined", () => {
+		expect(error).toBeDefined();
+	});
+});
 
 for (const unsafeQuery of unsafeQueries) {
 	describe(`Safety testing for ${unsafeQuery.name} query`, () => {

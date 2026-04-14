@@ -1,16 +1,23 @@
 import type { HttpRequestBody } from "../../http/http.models.js";
 import type { JsonValue } from "../../models/json.models.js";
-import { resolveQuery, resolveUrl } from "../resolve-query.js";
+import { prepareQuery, resolveQuery } from "../resolve-query.js";
 import type { MutationQuery, MutationQueryRequest } from "../sdk-models.js";
 
 export function createMutationQuery<TResponsePayload extends JsonValue, TRequestBody extends HttpRequestBody, TMeta, TError>(
 	data: MutationQueryRequest<TResponsePayload, TRequestBody, TMeta, TError>,
-): MutationQuery<TResponsePayload, TMeta, TError> {
-	const executeSafe = async () => await resolveQuery<TResponsePayload, TRequestBody, TMeta, TError>(data);
+): MutationQuery<TResponsePayload, TRequestBody, TMeta, TError> {
+	const getQueryData = () => prepareQuery<TResponsePayload, TRequestBody, TMeta, TError>(data);
+	const executeSafe = async () => {
+		const { success, data: resolvedQueryData, error } = getQueryData();
+		if (!success) {
+			return { success: false as const, error };
+		}
+		return await resolveQuery<TResponsePayload, TRequestBody, TMeta, TError>(resolvedQueryData);
+	};
 
 	return {
 		schema: data.zodSchema,
-		getUrl: () => resolveUrl<TError>({ url: data.url, baseUrl: data.config.baseUrl, mapError: data.mapError }),
+		getQueryData,
 		executeSafe,
 		execute: async () => {
 			const { success, response, error } = await executeSafe();

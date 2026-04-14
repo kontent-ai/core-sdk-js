@@ -2,7 +2,6 @@
  * Shared query models/types intended to be reused across SDKs (e.g. Sync, Delivery, Management)
  * to keep common code and behavior consistent.
  */
-
 import type { ZodType } from "zod";
 import type { HttpRequestBody, HttpService } from "../http/http.models.js";
 import { getDefaultHttpService } from "../http/http.service.js";
@@ -12,63 +11,68 @@ import type { JsonValue } from "../models/json.models.js";
 import { createSdkError } from "../utils/error.utils.js";
 import { createAuthorizationHeader, createContinuationHeader, extractContinuationToken, getSdkIdHeader } from "../utils/header.utils.js";
 import { type Failure, type TryCatchResult, tryCatch } from "../utils/try-catch.utils.js";
-import type { QueryPromiseResult, ResolveQueryData, SdkConfig, SuccessfulHttpResponse } from "./sdk-models.js";
+import type { QueryInputData, QueryPromiseResult, ResolvedQueryData, SdkConfig, SuccessfulHttpResponse } from "./sdk-models.js";
 
-export async function resolveQuery<TResponsePayload extends JsonValue, TRequestBody extends HttpRequestBody, TMeta, TError>({
-	config,
-	url,
-	body,
-	requestHeaders,
-	continuationToken,
-	authorizationApiKey,
-	mapMetadata,
-	zodSchema,
-	sdkInfo,
-	method,
-	abortSignal,
-	mapError,
-}: ResolveQueryData<TResponsePayload, TRequestBody, TMeta, TError>): QueryPromiseResult<TResponsePayload, TMeta, TError> {
-	const {
-		success: resolvedUrlSuccess,
-		data: resolvedUrl,
-		error: resolvedUrlError,
-	} = resolveUrl({ url, baseUrl: config.baseUrl, mapError });
+export function prepareQuery<TResponsePayload extends JsonValue, TRequestBody extends HttpRequestBody, TMeta, TError>(
+	data: QueryInputData<TResponsePayload, TRequestBody, TMeta, TError>,
+): TryCatchResult<ResolvedQueryData<TResponsePayload, TRequestBody, TMeta, TError>, TError> {
+	const { success, data: resolvedUrl, error } = resolveUrl({ url: data.url, baseUrl: data.config.baseUrl, mapError: data.mapError });
 
-	if (!resolvedUrlSuccess) {
-		return {
-			success: false,
-			error: resolvedUrlError,
-		};
+	if (!success) {
+		return { success: false, error };
 	}
 
-	const { success, response, error } = await getHttpService(config).request<TResponsePayload, TRequestBody>({
+	return {
+		success: true,
+		data: {
+			url: resolvedUrl,
+			requestHeaders: getCombinedRequestHeaders({
+				requestHeaders: data.requestHeaders ?? [],
+				continuationToken: data.continuationToken,
+				authorizationApiKey: data.authorizationApiKey,
+				sdkInfo: data.sdkInfo,
+			}),
+			httpService: getHttpService(data.config),
+			body: data.body,
+			method: data.method,
+			abortSignal: data.abortSignal,
+			zodSchema: data.zodSchema,
+			responseValidation: data.config.responseValidation,
+			mapError: data.mapError,
+			mapMetadata: data.mapMetadata,
+		},
+	};
+}
+
+export async function resolveQuery<TResponsePayload extends JsonValue, TRequestBody extends HttpRequestBody, TMeta, TError>({
+	url,
+	requestHeaders,
+	httpService,
+	body,
+	method,
+	abortSignal,
+	zodSchema,
+	responseValidation,
+	mapError,
+	mapMetadata,
+}: ResolvedQueryData<TResponsePayload, TRequestBody, TMeta, TError>): QueryPromiseResult<TResponsePayload, TMeta, TError> {
+	const { success, response, error } = await httpService.request<TResponsePayload, TRequestBody>({
 		body,
-		url: resolvedUrl,
+		url,
 		method,
 		abortSignal,
-		requestHeaders: getCombinedRequestHeaders({
-			requestHeaders: requestHeaders ?? [],
-			continuationToken,
-			authorizationApiKey,
-			sdkInfo,
-		}),
+		requestHeaders,
 	});
 
 	if (!success) {
-		return {
-			success: false,
-			error: mapError(error),
-		};
+		return { success: false, error: mapError(error) };
 	}
 
-	if (config.responseValidation?.enable) {
+	if (responseValidation?.enable) {
 		const validationError = await validateResponse({ url: response.adapterResponse.url, response, zodSchema });
 
 		if (validationError) {
-			return {
-				success: false,
-				error: mapError(validationError.error),
-			};
+			return { success: false, error: mapError(validationError.error) };
 		}
 	}
 

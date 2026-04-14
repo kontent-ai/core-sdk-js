@@ -1,14 +1,13 @@
 import { match, P } from "ts-pattern";
 import type { GetNextPageData, PaginationConfig } from "../../http/http.models.js";
 import type { JsonValue } from "../../models/json.models.js";
-import { resolveUrl } from "../resolve-query.js";
 import type {
 	FetchQueryRequest,
 	NextPageStateWithRequest,
 	PagedFetchQuery,
+	QueryInputData,
 	QueryResponse,
 	QueryResult,
-	ResolveQueryData,
 	SafePagingQueryResult,
 } from "../sdk-models.js";
 import { createFetchQuery } from "./fetch-sdk-query.js";
@@ -45,7 +44,7 @@ export function createPagedFetchQuery<TResponsePayload extends JsonValue, TMeta,
 
 	return {
 		schema: fetchQuery.schema,
-		getUrl: () => resolveUrl<TError>({ url: data.url, baseUrl: data.config.baseUrl, mapError: data.mapError }),
+		getQueryData: () => fetchQuery.getQueryData(),
 		fetchPage: async () => await fetchQuery.fetch(),
 		fetchPageSafe: async () => await fetchQuery.fetchSafe(),
 		fetchAllPages: async (config?: PaginationConfig) => {
@@ -142,7 +141,7 @@ function resolveNextPageState<TResponsePayload extends JsonValue, TMeta>({
 }
 
 async function fetchAllPages<TResponsePayload extends JsonValue, TMeta, TError>(
-	data: Omit<ResolveQueryData<TResponsePayload, null, TMeta, TError>, "nextPageState"> & {
+	data: Omit<QueryInputData<TResponsePayload, null, TMeta, TError>, "nextPageState"> & {
 		readonly getNextPageData: GetNextPageData<TResponsePayload, TMeta>;
 		readonly paginationConfig: PaginationConfig;
 		readonly pageIndex: number;

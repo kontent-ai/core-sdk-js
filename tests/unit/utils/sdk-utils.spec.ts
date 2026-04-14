@@ -1,13 +1,14 @@
 import { describe, expect, it } from "vitest";
 import z from "zod";
+import type { JsonValue } from "../../../lib/public_api.js";
 import type { PagedFetchQuery } from "../../../lib/sdk/sdk-models.js";
 import { isPagingQuery } from "../../../lib/sdk/sdk-utils.js";
 
 describe("isPagingQuery", () => {
 	it("Should return true for object with paging query shape", () => {
-		const pagingQueryLike: PagedFetchQuery<unknown, unknown, unknown> = {
+		const pagingQueryLike: PagedFetchQuery<JsonValue, unknown, unknown> = {
 			schema: z.null(),
-			getUrl: () => {
+			getQueryData: () => {
 				return {} as never;
 			},
 			fetchPageSafe: () => {
@@ -39,9 +40,9 @@ describe("isPagingQuery", () => {
 	});
 
 	it("Should return false when one of paging methods is missing", () => {
-		const missingPagesQuery: Omit<PagedFetchQuery<unknown, unknown, unknown>, "pages"> = {
+		const missingPagesQuery: Omit<PagedFetchQuery<JsonValue, unknown, unknown>, "pages"> = {
 			schema: z.null(),
-			getUrl: () => {
+			getQueryData: () => {
 				return {} as never;
 			},
 			fetchPageSafe: () => {
@@ -61,9 +62,9 @@ describe("isPagingQuery", () => {
 			},
 		};
 
-		const missingFetchAllPagesQuery: Omit<PagedFetchQuery<unknown, unknown, unknown>, "fetchAllPages"> = {
+		const missingFetchAllPagesQuery: Omit<PagedFetchQuery<JsonValue, unknown, unknown>, "fetchAllPages"> = {
 			schema: z.null(),
-			getUrl: () => {
+			getQueryData: () => {
 				return {} as never;
 			},
 			fetchPageSafe: () => {

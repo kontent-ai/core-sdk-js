@@ -1,12 +1,12 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import z from "zod";
 import type { ErrorReason } from "../../../lib/models/error.models.js";
-import { resolveQuery } from "../../../lib/sdk/resolve-query.js";
+import { prepareQuery, resolveQuery } from "../../../lib/sdk/resolve-query.js";
 import { getTestHttpServiceWithJsonResponse, getTestSdkInfo } from "../../../lib/testkit/testkit.utils.js";
 import { createAuthorizationHeader } from "../../../lib/utils/header.utils.js";
 
-describe("resolveQuery - invalid baseUrl", async () => {
-	const { error } = await resolveQuery({
+describe("prepareQuery - invalid baseUrl", () => {
+	const { error } = prepareQuery({
 		method: "GET",
 		url: "https://domain.com",
 		body: null,
@@ -22,8 +22,8 @@ describe("resolveQuery - invalid baseUrl", async () => {
 	});
 });
 
-describe("resolveQuery - invalid baseUrl starting with https", async () => {
-	const { error } = await resolveQuery({
+describe("prepareQuery - invalid baseUrl starting with https", () => {
+	const { error } = prepareQuery({
 		method: "GET",
 		url: "https://domain.com",
 		body: null,
@@ -43,7 +43,7 @@ describe("resolveQuery - valid response matching zod schema", async () => {
 	const zodSchema = z.object({ name: z.string() });
 	const jsonResponse = { name: "test" };
 
-	const { success, response } = await resolveQuery({
+	const prepared = prepareQuery({
 		method: "GET",
 		url: "https://domain.com",
 		body: null,
@@ -57,6 +57,11 @@ describe("resolveQuery - valid response matching zod schema", async () => {
 		mapError: (error) => error,
 	});
 
+	if (!prepared.success) {
+		throw prepared.error;
+	}
+	const { success, response } = await resolveQuery(prepared.data);
+
 	it("Should succeed", () => {
 		expect(success).toBe(true);
 	});
@@ -69,7 +74,7 @@ describe("resolveQuery - valid response matching zod schema", async () => {
 describe("resolveQuery - response not matching zod schema", async () => {
 	const zodSchema = z.object({ name: z.string() });
 
-	const { error } = await resolveQuery({
+	const prepared = prepareQuery({
 		method: "GET",
 		url: "https://domain.com",
 		body: null,
@@ -83,6 +88,11 @@ describe("resolveQuery - response not matching zod schema", async () => {
 		mapError: (error) => error,
 	});
 
+	if (!prepared.success) {
+		throw prepared.error;
+	}
+	const { error } = await resolveQuery(prepared.data);
+
 	it(`Error reason should be '${"validationFailed" satisfies ErrorReason}'`, () => {
 		expect(error?.details.reason).toBe("validationFailed" satisfies ErrorReason);
 	});
@@ -92,7 +102,7 @@ describe("resolveQuery - custom httpService from config is used", async () => {
 	const customHttpService = getTestHttpServiceWithJsonResponse({ statusCode: 200, jsonResponse: null });
 	const requestSpy = vi.spyOn(customHttpService, "request");
 
-	await resolveQuery({
+	const prepared = prepareQuery({
 		method: "GET",
 		url: "https://domain.com",
 		body: null,
@@ -102,6 +112,11 @@ describe("resolveQuery - custom httpService from config is used", async () => {
 		mapMetadata: () => ({}),
 		mapError: (error) => error,
 	});
+
+	if (!prepared.success) {
+		throw prepared.error;
+	}
+	await resolveQuery(prepared.data);
 
 	it("Should call request on the provided httpService", () => {
 		expect(requestSpy).toHaveBeenCalledOnce();
@@ -113,7 +128,7 @@ describe("resolveQuery - authorization header is applied", async () => {
 	const httpService = getTestHttpServiceWithJsonResponse({ statusCode: 200, jsonResponse: null });
 	const requestSpy = vi.spyOn(httpService, "request");
 
-	await resolveQuery({
+	const prepared = prepareQuery({
 		method: "GET",
 		url: "https://domain.com",
 		body: null,
@@ -124,6 +139,11 @@ describe("resolveQuery - authorization header is applied", async () => {
 		mapMetadata: () => ({}),
 		mapError: (error) => error,
 	});
+
+	if (!prepared.success) {
+		throw prepared.error;
+	}
+	await resolveQuery(prepared.data);
 
 	it("Should include the authorization header in the request", () => {
 		const requestHeaders = requestSpy.mock.calls[0]?.[0]?.requestHeaders;
@@ -146,7 +166,7 @@ describe("resolveQuery - default httpService is used when none provided in confi
 			json: async () => await Promise.resolve(null),
 		});
 
-		const { success } = await resolveQuery({
+		const prepared = prepareQuery({
 			method: "GET",
 			url: "https://domain.com",
 			body: null,
@@ -157,12 +177,17 @@ describe("resolveQuery - default httpService is used when none provided in confi
 			mapError: (error) => error,
 		});
 
+		if (!prepared.success) {
+			throw prepared.error;
+		}
+		const { success } = await resolveQuery(prepared.data);
+
 		expect(success).toBe(true);
 	});
 });
 
-describe("resolveQuery - invalid URL", async () => {
-	const { error } = await resolveQuery({
+describe("prepareQuery - invalid URL", () => {
+	const { error } = prepareQuery({
 		method: "GET",
 		url: "not-a-valid-url",
 		body: null,
