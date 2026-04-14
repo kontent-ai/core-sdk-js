@@ -98,29 +98,23 @@ export function resolveUrl<TError>({
 	readonly baseUrl: string | undefined;
 	readonly mapError: (error: KontentSdkError<ErrorDetailsFor<"invalidUrl">>) => TError;
 }): TryCatchResult<URL, TError> {
-	const { success, data: parsedUrl, error } = getUrlToUse(url, baseUrl);
-
-	if (!success) {
-		return {
-			success: false,
-			error: mapError(error),
-		};
-	}
-
-	return {
-		success: true,
-		data: parsedUrl,
-	};
-}
-
-function getUrlToUse(url: string | URL, baseUrl: string | undefined): TryCatchResult<URL, KontentSdkError<ErrorDetailsFor<"invalidUrl">>> {
-	const returnWithBaseUrl = (parsedUrl: URL): TryCatchResult<URL, KontentSdkError<ErrorDetailsFor<"invalidUrl">>> => {
-		if (baseUrl) {
-			return setBaseUrl(parsedUrl, baseUrl);
+	const returnWithBaseUrl = (parsedUrl: URL): TryCatchResult<URL, TError> => {
+		if (!baseUrl) {
+			return {
+				success: true,
+				data: parsedUrl,
+			};
+		}
+		const { success, data: parsedUrlWithBaseUrl, error } = setBaseUrl(parsedUrl, baseUrl);
+		if (!success) {
+			return {
+				success: false,
+				error: mapError(error),
+			};
 		}
 		return {
 			success: true,
-			data: parsedUrl,
+			data: parsedUrlWithBaseUrl,
 		};
 	};
 
@@ -130,7 +124,7 @@ function getUrlToUse(url: string | URL, baseUrl: string | undefined): TryCatchRe
 		if (!success) {
 			return {
 				success: false,
-				error: createInvalidUrlError(url, error),
+				error: mapError(createInvalidUrlError(url, error)),
 			};
 		}
 
