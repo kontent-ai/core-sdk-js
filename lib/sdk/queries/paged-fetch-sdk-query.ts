@@ -7,8 +7,8 @@ import type {
 	PagedFetchQuery,
 	QueryInputData,
 	QueryResponse,
-	QueryResult,
 	SafePagingQueryResult,
+	SafeQueryResponse,
 } from "../sdk-models.js";
 import { createFetchQuery } from "./fetch-sdk-query.js";
 
@@ -44,7 +44,7 @@ export function createPagedFetchQuery<TResponsePayload extends JsonValue, TMeta,
 
 	return {
 		schema: fetchQuery.schema,
-		getQueryData: () => fetchQuery.getQueryData(),
+		inspect: () => fetchQuery.inspect(),
 		fetchPage: async () => await fetchQuery.fetch(),
 		fetchPageSafe: async () => await fetchQuery.fetchSafe(),
 		fetchAllPages: async (config?: PaginationConfig) => {
@@ -78,7 +78,7 @@ export function createPagedFetchQuery<TResponsePayload extends JsonValue, TMeta,
 
 async function* createPagingQueryIterator<TResponsePayload extends JsonValue, TMeta, TError>(
 	data: Omit<Parameters<typeof fetchAllPages<TResponsePayload, TMeta, TError>>[0], "pageIndex">,
-): AsyncGenerator<QueryResult<QueryResponse<TResponsePayload, TMeta>, TError>> {
+): AsyncGenerator<SafeQueryResponse<QueryResponse<TResponsePayload, TMeta>, TError>> {
 	let nextPageState: NextPageState = { hasNextPage: true, pageSource: "firstRequest" };
 	let pageIndex: number = 0;
 

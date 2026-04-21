@@ -38,7 +38,7 @@ export type ErrorDetails =
 			{
 				readonly zodError: ZodError;
 				readonly response: SuccessfulHttpResponse<HttpPayload, HttpRequestBody>;
-				readonly url: string;
+				readonly url: URL;
 			}
 	  >;
 
@@ -51,7 +51,7 @@ export type BaseErrorData = {
 	/**
 	 * The URL of the request.
 	 */
-	readonly url: string;
+	readonly url: string | URL;
 
 	/**
 	 * Used retry strategy.
@@ -66,7 +66,7 @@ export type BaseErrorData = {
 
 export class KontentSdkError<TDetails extends ErrorDetails = ErrorDetails> extends Error implements BaseErrorData {
 	readonly details: TDetails;
-	readonly url: string;
+	readonly url: string | URL;
 	readonly retryStrategyOptions: ResolvedRetryStrategyOptions | undefined;
 	readonly retryAttempt: number | undefined;
 

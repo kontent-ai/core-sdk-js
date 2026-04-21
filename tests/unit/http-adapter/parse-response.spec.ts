@@ -18,7 +18,7 @@ describe("Handling parse errors in default http adapter", () => {
 		});
 
 		const result = await getDefaultHttpAdapter().executeRequest({
-			url: "https://domain.com",
+			url: new URL("https://domain.com"),
 			method: "GET",
 			body: null,
 		});
@@ -41,7 +41,7 @@ describe("Handling parse errors in default http adapter", () => {
 
 		await expect(
 			getDefaultHttpAdapter().executeRequest({
-				url: "https://domain.com",
+				url: new URL("https://domain.com"),
 				method: "GET",
 				requestHeaders: [],
 				body: null,
@@ -64,7 +64,7 @@ describe("Handling parse errors in default http adapter", () => {
 		});
 
 		const result = await getDefaultHttpAdapter().executeRequest({
-			url: "https://domain.com",
+			url: new URL("https://domain.com"),
 			method: "GET",
 			requestHeaders: [],
 			body: null,
@@ -86,7 +86,7 @@ describe("Handling parse errors in default http adapter", () => {
 
 		await expect(
 			getDefaultHttpAdapter().executeRequest({
-				url: "https://domain.com",
+				url: new URL("https://domain.com"),
 				method: "GET",
 				requestHeaders: [],
 				body: null,

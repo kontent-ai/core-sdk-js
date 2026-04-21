@@ -19,7 +19,7 @@ export function getDefaultHttpAdapter(): Required<HttpAdapter> {
 					})
 				: null;
 
-			return createAdapterResponse(options.url, response, payload, sdkHeaders);
+			return createAdapterResponse({ url: options.url, response, payload, responseHeaders: sdkHeaders });
 		},
 		downloadFile: async (options) => {
 			const response = await getResponse({
@@ -30,7 +30,7 @@ export function getDefaultHttpAdapter(): Required<HttpAdapter> {
 
 			const file = await parseResponse({ parseFunc: async () => await response.blob(), abortSignal: options.abortSignal });
 
-			return createAdapterResponse(options.url, response, file, toSdkHeaders(response.headers));
+			return createAdapterResponse({ url: options.url, response, payload: file, responseHeaders: toSdkHeaders(response.headers) });
 		},
 	};
 }
@@ -97,12 +97,17 @@ async function parseResponse<TPayload extends AdapterPayload>({
 	return data;
 }
 
-function createAdapterResponse<TPayload extends AdapterPayload>(
-	url: string,
-	response: Response,
-	payload: TPayload,
-	responseHeaders: readonly Header[],
-): AdapterResponse<TPayload> {
+function createAdapterResponse<TPayload extends AdapterPayload>({
+	url,
+	response,
+	payload,
+	responseHeaders,
+}: {
+	readonly url: URL;
+	readonly response: Response;
+	readonly payload: TPayload;
+	readonly responseHeaders: readonly Header[];
+}): AdapterResponse<TPayload> {
 	return {
 		responseHeaders,
 		status: response.status,

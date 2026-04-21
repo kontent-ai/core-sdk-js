@@ -17,7 +17,7 @@ describe("Basic paging query with next page url", async () => {
 	const maxPagesCount: number = 5;
 	let responseIndex: number = 0;
 
-	const expectedResponseUrls: readonly string[] = Array.from({ length: maxPagesCount }, (_, index) => getNextPageUrl(index));
+	const expectedResponseUrls: readonly URL[] = Array.from({ length: maxPagesCount }, (_, index) => new URL(getNextPageUrl(index)));
 
 	// mock initial response
 	mockGlobalFetchJsonResponse({

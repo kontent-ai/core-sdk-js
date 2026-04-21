@@ -11,11 +11,48 @@ import type { JsonValue } from "../models/json.models.js";
 import { createSdkError } from "../utils/error.utils.js";
 import { createAuthorizationHeader, createContinuationHeader, extractContinuationToken, getSdkIdHeader } from "../utils/header.utils.js";
 import { type Failure, type TryCatchResult, tryCatch } from "../utils/try-catch.utils.js";
-import type { QueryInputData, QueryPromiseResult, ResolvedQueryData, SdkConfig, SuccessfulHttpResponse } from "./sdk-models.js";
+import type {
+	QueryInputData,
+	QueryInspection,
+	QueryResponse,
+	ResolvedQueryData,
+	SafeQueryResponse,
+	SdkConfig,
+	SuccessfulHttpResponse,
+} from "./sdk-models.js";
 
-export function prepareQuery<TResponsePayload extends JsonValue, TRequestBody extends HttpRequestBody, TMeta, TError>(
+export function prepareQueryData<TResponsePayload extends JsonValue, TRequestBody extends HttpRequestBody, TMeta, TError>(
 	data: QueryInputData<TResponsePayload, TRequestBody, TMeta, TError>,
 ): TryCatchResult<ResolvedQueryData<TResponsePayload, TRequestBody, TMeta, TError>, TError> {
+	const { success: inspectionSuccess, data: inspectionData, error: inspectionError } = inspectQuery(data);
+
+	if (!inspectionSuccess) {
+		return { success: false, error: inspectionError };
+	}
+
+	return {
+		success: true,
+		data: {
+			requestHeaders: inspectionData.requestHeaders,
+			url: inspectionData.url,
+			httpService: getHttpService(data.config),
+			body: data.body,
+			method: data.method,
+			abortSignal: data.abortSignal,
+			zodSchema: data.zodSchema,
+			responseValidation: data.config.responseValidation,
+			mapError: data.mapError,
+			mapMetadata: data.mapMetadata,
+		},
+	};
+}
+
+export function inspectQuery<TError>(
+	data: Pick<
+		QueryInputData<JsonValue, HttpRequestBody, unknown, TError>,
+		"url" | "config" | "requestHeaders" | "continuationToken" | "authorizationApiKey" | "sdkInfo" | "body" | "method" | "mapError"
+	>,
+): TryCatchResult<QueryInspection, TError> {
 	const { success, data: resolvedUrl, error } = resolveUrl({ url: data.url, baseUrl: data.config.baseUrl, mapError: data.mapError });
 
 	if (!success) {
@@ -32,14 +69,8 @@ export function prepareQuery<TResponsePayload extends JsonValue, TRequestBody ex
 				authorizationApiKey: data.authorizationApiKey,
 				sdkInfo: data.sdkInfo,
 			}),
-			httpService: getHttpService(data.config),
 			body: data.body,
 			method: data.method,
-			abortSignal: data.abortSignal,
-			zodSchema: data.zodSchema,
-			responseValidation: data.config.responseValidation,
-			mapError: data.mapError,
-			mapMetadata: data.mapMetadata,
 		},
 	};
 }
@@ -55,7 +86,9 @@ export async function resolveQuery<TResponsePayload extends JsonValue, TRequestB
 	responseValidation,
 	mapError,
 	mapMetadata,
-}: ResolvedQueryData<TResponsePayload, TRequestBody, TMeta, TError>): QueryPromiseResult<TResponsePayload, TMeta, TError> {
+}: ResolvedQueryData<TResponsePayload, TRequestBody, TMeta, TError>): Promise<
+	SafeQueryResponse<QueryResponse<TResponsePayload, TMeta>, TError>
+> {
 	const { success, response, error } = await httpService.request<TResponsePayload, TRequestBody>({
 		body,
 		url,
@@ -199,7 +232,7 @@ async function validateResponse<TResponsePayload extends JsonValue, TRequestBody
 	response,
 	zodSchema,
 }: {
-	readonly url: string;
+	readonly url: URL;
 	readonly response: SuccessfulHttpResponse<TResponsePayload, TRequestBody>;
 	readonly zodSchema: ZodType<TResponsePayload>;
 }): Promise<Failure<{ readonly response?: never }, KontentSdkError> | undefined> {
@@ -210,7 +243,7 @@ async function validateResponse<TResponsePayload extends JsonValue, TRequestBody
 			success: false,
 			error: createSdkError({
 				baseErrorData: {
-					message: `Failed to validate response schema for url '${url}'`,
+					message: `Failed to validate response schema for url '${url.toString()}'`,
 					url,
 					retryStrategyOptions: undefined,
 					retryAttempt: undefined,

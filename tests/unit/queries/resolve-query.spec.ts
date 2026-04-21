@@ -1,12 +1,12 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import z from "zod";
 import type { ErrorReason } from "../../../lib/models/error.models.js";
-import { prepareQuery, resolveQuery } from "../../../lib/sdk/resolve-query.js";
+import { prepareQueryData, resolveQuery } from "../../../lib/sdk/resolve-query.js";
 import { getTestHttpServiceWithJsonResponse, getTestSdkInfo } from "../../../lib/testkit/testkit.utils.js";
 import { createAuthorizationHeader } from "../../../lib/utils/header.utils.js";
 
 describe("prepareQuery - invalid baseUrl", () => {
-	const { error } = prepareQuery({
+	const { error } = prepareQueryData({
 		method: "GET",
 		url: "https://domain.com",
 		body: null,
@@ -23,7 +23,7 @@ describe("prepareQuery - invalid baseUrl", () => {
 });
 
 describe("prepareQuery - invalid baseUrl starting with https", () => {
-	const { error } = prepareQuery({
+	const { error } = prepareQueryData({
 		method: "GET",
 		url: "https://domain.com",
 		body: null,
@@ -43,7 +43,7 @@ describe("resolveQuery - valid response matching zod schema", async () => {
 	const zodSchema = z.object({ name: z.string() });
 	const jsonResponse = { name: "test" };
 
-	const prepared = prepareQuery({
+	const prepared = prepareQueryData({
 		method: "GET",
 		url: "https://domain.com",
 		body: null,
@@ -74,7 +74,7 @@ describe("resolveQuery - valid response matching zod schema", async () => {
 describe("resolveQuery - response not matching zod schema", async () => {
 	const zodSchema = z.object({ name: z.string() });
 
-	const prepared = prepareQuery({
+	const prepared = prepareQueryData({
 		method: "GET",
 		url: "https://domain.com",
 		body: null,
@@ -102,7 +102,7 @@ describe("resolveQuery - custom httpService from config is used", async () => {
 	const customHttpService = getTestHttpServiceWithJsonResponse({ statusCode: 200, jsonResponse: null });
 	const requestSpy = vi.spyOn(customHttpService, "request");
 
-	const prepared = prepareQuery({
+	const prepared = prepareQueryData({
 		method: "GET",
 		url: "https://domain.com",
 		body: null,
@@ -128,7 +128,7 @@ describe("resolveQuery - authorization header is applied", async () => {
 	const httpService = getTestHttpServiceWithJsonResponse({ statusCode: 200, jsonResponse: null });
 	const requestSpy = vi.spyOn(httpService, "request");
 
-	const prepared = prepareQuery({
+	const prepared = prepareQueryData({
 		method: "GET",
 		url: "https://domain.com",
 		body: null,
@@ -166,7 +166,7 @@ describe("resolveQuery - default httpService is used when none provided in confi
 			json: async () => await Promise.resolve(null),
 		});
 
-		const prepared = prepareQuery({
+		const prepared = prepareQueryData({
 			method: "GET",
 			url: "https://domain.com",
 			body: null,
@@ -187,7 +187,7 @@ describe("resolveQuery - default httpService is used when none provided in confi
 });
 
 describe("prepareQuery - invalid URL", () => {
-	const { error } = prepareQuery({
+	const { error } = prepareQueryData({
 		method: "GET",
 		url: "not-a-valid-url",
 		body: null,

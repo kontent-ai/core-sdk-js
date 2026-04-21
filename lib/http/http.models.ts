@@ -90,14 +90,14 @@ export type AdapterResponse<TPayload extends AdapterPayload> = {
 	readonly responseHeaders: readonly Header[];
 	readonly status: HttpServiceStatus;
 	readonly statusText: string;
-	readonly url: string;
+	readonly url: URL;
 };
 
 export type AdapterBody = string | Blob | null;
 export type AdapterPayload = JsonValue | Blob;
 
 export type AdapterExecuteRequestOptions = {
-	readonly url: string;
+	readonly url: URL;
 	readonly method: HttpMethod;
 	readonly body: AdapterBody;
 	readonly requestHeaders?: readonly Header[];

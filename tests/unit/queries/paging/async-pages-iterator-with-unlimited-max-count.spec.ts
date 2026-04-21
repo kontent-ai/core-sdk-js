@@ -17,7 +17,7 @@ describe("Async pages iterator with unlimited max count", async () => {
 	const maxPagesCount: number = 5;
 	let responseIndex: number = 0;
 
-	const expectedResponseUrls: readonly string[] = Array.from({ length: maxPagesCount }, (_, index) => getNextPageUrl(index));
+	const expectedResponseUrls: readonly URL[] = Array.from({ length: maxPagesCount }, (_, index) => new URL(getNextPageUrl(index)));
 
 	// mock initial response
 	mockGlobalFetchJsonResponse({
@@ -82,7 +82,7 @@ describe("Async pages iterator fetches all pages when maxPagesCount is set to 0"
 	const totalPages: number = 5;
 	let responseIndex: number = 0;
 
-	const expectedResponseUrls: readonly string[] = Array.from({ length: totalPages }, (_, index) => getNextPageUrl(index));
+	const expectedResponseUrls: readonly URL[] = Array.from({ length: totalPages }, (_, index) => new URL(getNextPageUrl(index)));
 
 	mockGlobalFetchJsonResponse({
 		jsonResponse: null,

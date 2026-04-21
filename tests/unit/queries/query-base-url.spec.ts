@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
 import z from "zod";
-import { prepareQuery } from "../../../lib/sdk/resolve-query.js";
+import { prepareQueryData } from "../../../lib/sdk/resolve-query.js";
 import { getTestHttpServiceWithJsonResponse, getTestSdkInfo } from "../../../lib/testkit/testkit.utils.js";
 
 describe("Query base url with absolute base url", () => {
-	const { data } = prepareQuery({
+	const { data } = prepareQueryData({
 		config: {
 			baseUrl: "https://kontent.ai",
 			httpService: getTestHttpServiceWithJsonResponse({
@@ -28,7 +28,7 @@ describe("Query base url with absolute base url", () => {
 });
 
 describe("Query base url with hostname only", () => {
-	const { data } = prepareQuery({
+	const { data } = prepareQueryData({
 		config: {
 			baseUrl: "kontent.ai",
 			httpService: getTestHttpServiceWithJsonResponse({
@@ -52,7 +52,7 @@ describe("Query base url with hostname only", () => {
 });
 
 describe("Query base url with http protocol", () => {
-	const { data } = prepareQuery({
+	const { data } = prepareQueryData({
 		config: {
 			baseUrl: "http://kontent.ai",
 			httpService: getTestHttpServiceWithJsonResponse({

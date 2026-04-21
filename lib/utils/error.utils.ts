@@ -49,13 +49,13 @@ export function toInvalidResponseMessage({
 	adapterResponse,
 	kontentErrorData: kontentErrorResponse,
 }: {
-	readonly url: string;
+	readonly url: URL;
 	readonly method: HttpMethod;
 	readonly adapterResponse: AdapterResponse<AdapterPayload>;
 	readonly kontentErrorData: ErrorResponseData | undefined;
 }): string {
 	const details = kontentErrorResponse ? ` ${getKontentErrorResponseMessage(adapterResponse, kontentErrorResponse)}` : "";
-	return `Failed to execute '${method}' request '${url}'.${details}`;
+	return `Failed to execute '${method}' request '${url.toString()}'.${details}`;
 }
 
 /**

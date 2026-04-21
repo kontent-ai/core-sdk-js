@@ -60,7 +60,7 @@ describe("Query builder url handling without modifications", () => {
 		mapError: (error: KontentSdkError) => error,
 		url: "https://domain.com/api/path",
 	};
-	const queries: Query<null, null, unknown, KontentSdkError>[] = [
+	const queries: Query<null, unknown>[] = [
 		createFetchQuery(sharedData),
 		createMutationQuery({
 			...sharedData,
@@ -75,7 +75,7 @@ describe("Query builder url handling without modifications", () => {
 
 	for (const query of queries) {
 		it("Url should be as is without any modifications", () => {
-			expect(query.getQueryData()?.data?.url.toString()).toBe(new URL("https://domain.com/api/path").toString());
+			expect(query.inspect()?.data?.url?.toString()).toBe(new URL("https://domain.com/api/path").toString());
 		});
 	}
 });
@@ -91,7 +91,7 @@ describe("Query builder url handling with base url", () => {
 		mapError: (error: KontentSdkError) => error,
 		url: "https://domain.com/api/path",
 	};
-	const queries: Query<null, null, unknown, KontentSdkError>[] = [
+	const queries: Query<null, unknown>[] = [
 		createFetchQuery(sharedData),
 		createMutationQuery({
 			...sharedData,
@@ -106,7 +106,7 @@ describe("Query builder url handling with base url", () => {
 
 	for (const query of queries) {
 		it("Url should be modified if baseUrl is provided", () => {
-			expect(query.getQueryData()?.data?.url.toString()).toBe(new URL("https://kontent.ai/api/path").toString());
+			expect(query.inspect()?.data?.url.toString()).toBe(new URL("https://kontent.ai/api/path").toString());
 		});
 	}
 });

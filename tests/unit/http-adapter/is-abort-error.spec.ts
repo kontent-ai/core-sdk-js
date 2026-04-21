@@ -12,7 +12,7 @@ describe("isAbortError", () => {
 
 		await expect(
 			getDefaultHttpAdapter().executeRequest({
-				url: "https://domain.com",
+				url: new URL("https://domain.com"),
 				method: "GET",
 				requestHeaders: [],
 				body: null,
@@ -28,7 +28,7 @@ describe("isAbortError", () => {
 
 		await expect(
 			getDefaultHttpAdapter().executeRequest({
-				url: "https://domain.com",
+				url: new URL("https://domain.com"),
 				method: "GET",
 				requestHeaders: [],
 				body: null,

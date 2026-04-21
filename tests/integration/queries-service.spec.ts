@@ -28,32 +28,20 @@ describe("Integration tests covering Fetch/Mutation queries against the Kontent.
 		mapMetadata: () => ({}),
 	} as const;
 
-	const uploadBinaryFileQuery: MutationQuery<{ readonly id: string }, typeof config.fileToUpload, unknown, KontentSdkError> =
-		createMutationQuery({
-			...baseMutationConfig,
-			zodSchema: z.object({
-				id: z.string(),
-			}),
-			method: "POST",
-			url: config.urls.getUploadAssetBinaryFileUrl("core-sdk.txt"),
-			body: config.fileToUpload,
-			mapError: (error) => error,
-		});
+	const uploadBinaryFileQuery: MutationQuery<{ readonly id: string }, unknown, KontentSdkError> = createMutationQuery({
+		...baseMutationConfig,
+		zodSchema: z.object({
+			id: z.string(),
+		}),
+		method: "POST",
+		url: config.urls.getUploadAssetBinaryFileUrl("core-sdk.txt"),
+		body: config.fileToUpload,
+		mapError: (error) => error,
+	});
 
 	const addAssetQueryFactory = (
 		binaryFileId: string,
-	): MutationQuery<
-		{ readonly id: string; readonly url: string },
-		{
-			file_reference: {
-				id: string;
-				type: "internal";
-			};
-			title: string;
-		},
-		unknown,
-		KontentSdkError
-	> =>
+	): MutationQuery<{ readonly id: string; readonly url: string }, unknown, KontentSdkError> =>
 		createMutationQuery({
 			...baseMutationConfig,
 			zodSchema: z.object({
@@ -72,7 +60,7 @@ describe("Integration tests covering Fetch/Mutation queries against the Kontent.
 			mapError: (error) => error,
 		});
 
-	const deleteAssetQueryFactory = (assetId: string): MutationQuery<null, null, unknown, KontentSdkError> =>
+	const deleteAssetQueryFactory = (assetId: string): MutationQuery<null, unknown, KontentSdkError> =>
 		createMutationQuery({
 			...baseMutationConfig,
 			zodSchema: z.null(),

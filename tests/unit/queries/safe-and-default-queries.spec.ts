@@ -22,7 +22,7 @@ type QueryCallback = {
 	readonly title:
 		| keyof FetchQuery<JsonValue, unknown, unknown>
 		| keyof PagedFetchQuery<JsonValue, unknown, unknown>
-		| keyof MutationQuery<JsonValue, null, unknown, unknown>;
+		| keyof MutationQuery<JsonValue, null, unknown>;
 };
 
 const successfulBaseQueryConfig: Parameters<typeof createFetchQuery>[0] = {

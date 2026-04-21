@@ -13,7 +13,7 @@ const successResponse: HttpResponse<null, null> = {
 		payload: null,
 		method: "GET",
 		requestHeaders: [],
-		adapterResponse: { status: 200, statusText: "OK", responseHeaders: [], url: url.toString(), payload: null },
+		adapterResponse: { status: 200, statusText: "OK", responseHeaders: [], url, payload: null },
 	},
 };
 

@@ -57,7 +57,7 @@ export function getDefaultHttpService(config?: DefaultHttpServiceConfig): HttpSe
 		abortSignal,
 	}: AdapterRequestData): Promise<AdapterResponse<TPayload>> => {
 		return (await adapter.executeRequest({
-			url: parsedUrl.toString(),
+			url: parsedUrl,
 			method,
 			requestHeaders,
 			body: parsedBody ?? null,
@@ -83,7 +83,7 @@ export function getDefaultHttpService(config?: DefaultHttpServiceConfig): HttpSe
 				},
 				runAdapterFunc: async ({ parsedUrl, requestHeaders }) => {
 					return await adapter.downloadFile({
-						url: parsedUrl.toString(),
+						url: parsedUrl,
 						requestHeaders,
 						abortSignal: options.abortSignal,
 					});
@@ -172,7 +172,7 @@ function createAdapterError({
 	retryAttempt,
 	retryStrategyOptions,
 }: {
-	readonly url: string;
+	readonly url: URL;
 	readonly error: unknown;
 	readonly retryAttempt: number;
 	readonly retryStrategyOptions: ResolvedRetryStrategyOptions;
@@ -182,7 +182,7 @@ function createAdapterError({
 		.when(isAdapterAbortError, (abortError) =>
 			createSdkError({
 				baseErrorData: {
-					message: `Adapter has aborted the request for url '${url}'. See the error object for more details.`,
+					message: `Adapter has aborted the request for url '${url.toString()}'. See the error object for more details.`,
 					url: url,
 					retryStrategyOptions,
 					retryAttempt,
@@ -196,7 +196,7 @@ function createAdapterError({
 		.when(isAdapterParseError, (parseError) =>
 			createSdkError({
 				baseErrorData: {
-					message: `Adapter failed to parse the response for url '${url}'. See the error object for more details.`,
+					message: `Adapter failed to parse the response for url '${url.toString()}'. See the error object for more details.`,
 					url: url,
 					retryStrategyOptions,
 					retryAttempt,
@@ -210,7 +210,7 @@ function createAdapterError({
 		.otherwise(() =>
 			createSdkError({
 				baseErrorData: {
-					message: `Adapter failed to execute the request for url '${url}'. See the error object for more details.`,
+					message: `Adapter failed to execute the request for url '${url.toString()}'. See the error object for more details.`,
 					url: url,
 					retryStrategyOptions,
 					retryAttempt,
@@ -287,7 +287,7 @@ async function runAdapterRequest<TPayload extends AdapterPayload>({
 			}),
 	);
 
-	return data ?? createAdapterError({ url: parsedUrl.toString(), error, retryAttempt, retryStrategyOptions });
+	return data ?? createAdapterError({ url: parsedUrl, error, retryAttempt, retryStrategyOptions });
 }
 
 function isSuccessfulResponse(response: AdapterResponse<AdapterPayload>): boolean {
@@ -390,7 +390,7 @@ function stringifyJson({
 		error: createSdkError({
 			baseErrorData: {
 				message: "Failed to stringify body of the request.",
-				url: url.toString(),
+				url: url,
 				retryStrategyOptions,
 				retryAttempt: 0,
 			},

@@ -166,20 +166,22 @@ const adapterResponse: AdapterResponse<null> = {
 	responseHeaders: [],
 	status: 422,
 	statusText: "Unprocessable Entity",
-	url: "https://domain.com",
+	url: new URL("https://domain.com"),
 	payload: null,
 };
+
+const testUrl = new URL("https://domain.com");
 
 describe("toInvalidResponseMessage", () => {
 	it("Should return base message when no kontentErrorResponse is provided", () => {
 		expect(
 			toInvalidResponseMessage({
 				method: "GET",
-				url: "https://domain.com",
+				url: testUrl,
 				adapterResponse,
 				kontentErrorData: undefined,
 			}),
-		).toStrictEqual("Failed to execute 'GET' request 'https://domain.com'.");
+		).toStrictEqual(`Failed to execute 'GET' request '${testUrl.toString()}'.`);
 	});
 
 	it("Should include status, statusText and API message when kontentErrorResponse is provided", () => {
@@ -192,12 +194,12 @@ describe("toInvalidResponseMessage", () => {
 		expect(
 			toInvalidResponseMessage({
 				method: "POST",
-				url: "https://domain.com",
+				url: testUrl,
 				adapterResponse,
 				kontentErrorData: kontentErrorResponse,
 			}),
 		).toStrictEqual(
-			"Failed to execute 'POST' request 'https://domain.com'. Request failed with status '422' and status text 'Unprocessable Entity'. Item not found.",
+			`Failed to execute 'POST' request '${testUrl.toString()}'. Request failed with status '422' and status text 'Unprocessable Entity'. Item not found.`,
 		);
 	});
 
@@ -212,12 +214,12 @@ describe("toInvalidResponseMessage", () => {
 		expect(
 			toInvalidResponseMessage({
 				method: "PUT",
-				url: "https://domain.com",
+				url: testUrl,
 				adapterResponse,
 				kontentErrorData: kontentErrorResponse,
 			}),
 		).toStrictEqual(
-			"Failed to execute 'PUT' request 'https://domain.com'. Request failed with status '422' and status text 'Unprocessable Entity'. Validation failed. Field is required.",
+			`Failed to execute 'PUT' request '${testUrl.toString()}'. Request failed with status '422' and status text 'Unprocessable Entity'. Validation failed. Field is required.`,
 		);
 	});
 
@@ -232,12 +234,12 @@ describe("toInvalidResponseMessage", () => {
 		expect(
 			toInvalidResponseMessage({
 				method: "GET",
-				url: "https://domain.com",
+				url: testUrl,
 				adapterResponse,
 				kontentErrorData: kontentErrorResponse,
 			}),
 		).toStrictEqual(
-			"Failed to execute 'GET' request 'https://domain.com'. Request failed with status '422' and status text 'Unprocessable Entity'. Validation failed. Invalid value. (path: /items/0/name, line: 3, position: 12)",
+			`Failed to execute 'GET' request '${testUrl.toString()}'. Request failed with status '422' and status text 'Unprocessable Entity'. Validation failed. Invalid value. (path: /items/0/name, line: 3, position: 12)`,
 		);
 	});
 });

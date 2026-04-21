@@ -8,7 +8,7 @@ describe("isPagingQuery", () => {
 	it("Should return true for object with paging query shape", () => {
 		const pagingQueryLike: PagedFetchQuery<JsonValue, unknown, unknown> = {
 			schema: z.null(),
-			getQueryData: () => {
+			inspect: () => {
 				return {} as never;
 			},
 			fetchPageSafe: () => {
@@ -42,7 +42,7 @@ describe("isPagingQuery", () => {
 	it("Should return false when one of paging methods is missing", () => {
 		const missingPagesQuery: Omit<PagedFetchQuery<JsonValue, unknown, unknown>, "pages"> = {
 			schema: z.null(),
-			getQueryData: () => {
+			inspect: () => {
 				return {} as never;
 			},
 			fetchPageSafe: () => {
@@ -64,7 +64,7 @@ describe("isPagingQuery", () => {
 
 		const missingFetchAllPagesQuery: Omit<PagedFetchQuery<JsonValue, unknown, unknown>, "fetchAllPages"> = {
 			schema: z.null(),
-			getQueryData: () => {
+			inspect: () => {
 				return {} as never;
 			},
 			fetchPageSafe: () => {
