@@ -63,76 +63,20 @@ If you want the SDK to preserve specific `error.details.reason` values for custo
 If you throw some other error, the SDK will classify it as `adapterError`.
 
 ```typescript
-import { AdapterAbortError, AdapterParseError, getDefaultHttpService } from "@kontent-ai/core-sdk";
+import { getDefaultHttpService } from "@kontent-ai/core-sdk";
 
 const httpService = getDefaultHttpService({
   adapter: {
-    executeRequest: async (options) => {
-      let response: Response;
-
-      try {
-        response = await fetch(options.url, {
-          method: options.method,
-          headers: Object.fromEntries((options.requestHeaders ?? []).map((header) => [header.name, header.value])),
-          body: options.body,
-          signal: options.abortSignal ?? undefined,
-        });
-      } catch (error) {
-        if (error instanceof DOMException && error.name === "AbortError") {
-          throw new AdapterAbortError(error);
-        }
-
-        throw error;
-      }
-
-      let payload = null;
-
-      if (response.headers.get("content-type")?.includes("application/json")) {
-        try {
-          payload = await response.json();
-        } catch (error) {
-          throw new AdapterParseError(error);
-        }
-      }
+    executeRequest: async ({ url, method, body, requestHeaders, abortSignal }) => {
+      // use any HTTP client here
+      const { payload, responseHeaders, status, statusText } = await yourHttpClient.request(...);
 
       return {
         payload,
-        responseHeaders: [...response.headers.entries()].map(([name, value]) => ({ name, value })),
-        status: response.status,
-        statusText: response.statusText,
-        url: options.url,
-      };
-    },
-    downloadFile: async (options) => {
-      let response: Response;
-
-      try {
-        response = await fetch(options.url, {
-          headers: Object.fromEntries((options.requestHeaders ?? []).map((header) => [header.name, header.value])),
-          signal: options.abortSignal ?? undefined,
-        });
-      } catch (error) {
-        if (error instanceof DOMException && error.name === "AbortError") {
-          throw new AdapterAbortError(error);
-        }
-
-        throw error;
-      }
-
-      let payload: Blob;
-
-      try {
-        payload = await response.blob();
-      } catch (error) {
-        throw new AdapterParseError(error);
-      }
-
-      return {
-        payload,
-        responseHeaders: [...response.headers.entries()].map(([name, value]) => ({ name, value })),
-        status: response.status,
-        statusText: response.statusText,
-        url: options.url,
+        responseHeaders,
+        status,
+        statusText,
+        url,
       };
     },
   },
@@ -145,7 +89,7 @@ This approach gives you fine-grained control over how requests are made, while s
 
 ## Error Handling
 
-All operations return a discriminated `success`/`error` result — the SDK never throws. Errors are represented by `KontentSdkError`, which carries a `details` object with a `reason` discriminant that can be narrowed for type-safe handling:
+Each query exposes two variants: a safe variant (e.g. `fetchSafe`, `executeSafe`) that returns a discriminated `success`/`error` result and never throws, and an unsafe variant (e.g. `fetch`, `execute`) that unwraps the response directly but throws on failure. Errors are represented by `KontentSdkError`, which carries a `details` object with a `reason` discriminant that can be narrowed for type-safe handling:
 
 ```typescript
 const { success, response, error } = await httpService.request({
