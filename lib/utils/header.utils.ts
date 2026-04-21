@@ -1,27 +1,27 @@
-import type { CommonHeaderNames, Header, SDKInfo } from "../models/core.models.js";
+import type { Header, KnownHeaderName, SdkInfo } from "../models/core.models.js";
 
-export function getSdkIdHeader(info: SDKInfo): Header {
+export function getSdkIdHeader(info: SdkInfo): Header {
 	return {
-		name: "X-KC-SDKID" satisfies CommonHeaderNames,
+		name: "X-KC-SDKID" satisfies KnownHeaderName,
 		value: `${info.host};${info.name};${info.version}`,
 	};
 }
 
 export function createContinuationHeader(token: string): Header {
 	return {
-		name: "X-Continuation" satisfies CommonHeaderNames,
+		name: "X-Continuation" satisfies KnownHeaderName,
 		value: token,
 	};
 }
 
 export function createAuthorizationHeader(apiKey: string): Header {
 	return {
-		name: "Authorization" satisfies CommonHeaderNames,
+		name: "Authorization" satisfies KnownHeaderName,
 		value: `Bearer ${apiKey}`,
 	};
 }
 
-export function findHeaderByName(headers: readonly Header[], name: CommonHeaderNames): Header | undefined {
+export function findHeaderByName(headers: readonly Header[], name: KnownHeaderName): Header | undefined {
 	const normalizedName = name.toLowerCase();
 	return headers.find((header) => header.name.toLowerCase() === normalizedName);
 }

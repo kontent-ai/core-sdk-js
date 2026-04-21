@@ -1,7 +1,7 @@
 import { type Mock, vi } from "vitest";
-import type { GetNextPageData, HttpService, HttpServiceStatus } from "../http/http.models.js";
+import type { ExtractNextPageDataFn, HttpService, HttpStatusCode } from "../http/http.models.js";
 import { getDefaultHttpService } from "../http/http.service.js";
-import type { CommonHeaderNames, RetryStrategyOptions, SDKInfo } from "../models/core.models.js";
+import type { KnownHeaderName, RetryStrategyOptions, SdkInfo } from "../models/core.models.js";
 import type { JsonValue } from "../models/json.models.js";
 import type { Header } from "../public_api.js";
 import { isDefined } from "../utils/core.utils.js";
@@ -15,7 +15,7 @@ export function mockGlobalFetchJsonResponse({
 	continuationToken,
 }: {
 	readonly jsonResponse: JsonValue;
-	readonly statusCode: HttpServiceStatus;
+	readonly statusCode: HttpStatusCode;
 	readonly continuationToken?: string;
 }): void {
 	global.fetch = getFetchJsonMock({
@@ -30,7 +30,7 @@ export function mockGlobalFetchBlobResponse({
 	statusCode,
 }: {
 	readonly blobResponse: Blob;
-	readonly statusCode: HttpServiceStatus;
+	readonly statusCode: HttpStatusCode;
 }): void {
 	global.fetch = getFetchBlobMock({
 		blob: blobResponse,
@@ -42,7 +42,7 @@ export function getFakeBlob(): Blob {
 	return new Blob(["x"], { type: "text/plain" });
 }
 
-export function getTestSdkInfo(): SDKInfo {
+export function getTestSdkInfo(): SdkInfo {
 	return {
 		name: "test",
 		version: "0.0.0",
@@ -57,7 +57,7 @@ export function getTestHttpServiceWithJsonResponse({
 	retryStrategy,
 }: {
 	readonly jsonResponse: JsonValue | (() => Promise<JsonValue>);
-	readonly statusCode: HttpServiceStatus;
+	readonly statusCode: HttpStatusCode;
 	readonly continuationToken?: string;
 	readonly retryStrategy?: RetryStrategyOptions;
 }): HttpService {
@@ -96,7 +96,7 @@ export function preventInfinitePaging({
 	readonly maxPagesCount: number;
 	readonly continuationToken?: string;
 	readonly nextPageUrl?: string | undefined;
-}): ReturnType<GetNextPageData<null, null>> {
+}): ReturnType<ExtractNextPageDataFn<null, null>> {
 	if (responseIndex >= maxPagesCount + upperBoundLimitForInfinitePaging) {
 		throw new Error("Infinite paging detected");
 	}
@@ -117,7 +117,7 @@ function getFetchBlobMock({
 	responseHeaders,
 }: {
 	readonly blob: Blob;
-	readonly status: HttpServiceStatus;
+	readonly status: HttpStatusCode;
 	readonly responseHeaders?: readonly Header[];
 }): Mock<() => Promise<Response>> {
 	return getFetchMock<Blob>({
@@ -134,7 +134,7 @@ function getFetchJsonMock<TResponsePayload extends JsonValue>({
 	responseHeaders,
 }: {
 	readonly json: TResponsePayload;
-	readonly status: HttpServiceStatus;
+	readonly status: HttpStatusCode;
 	readonly responseHeaders?: readonly Header[];
 }): Mock<() => Promise<Response>> {
 	return getFetchMock<JsonValue>({
@@ -153,7 +153,7 @@ function getFetchMock<TResponsePayload extends JsonValue | Blob>({
 }: {
 	readonly json: TResponsePayload extends JsonValue ? JsonValue : undefined;
 	readonly blob: TResponsePayload extends Blob ? Blob : undefined;
-	readonly status: HttpServiceStatus;
+	readonly status: HttpStatusCode;
 	readonly responseHeaders: readonly Header[];
 }): Mock<() => Promise<Response>> {
 	return vi.fn(async () => {
@@ -187,7 +187,7 @@ function getDefaultContentTypeHeaderIfMissing(headers: readonly Header[]): Heade
 	}
 
 	return {
-		name: "Content-Type" satisfies CommonHeaderNames,
+		name: "Content-Type" satisfies KnownHeaderName,
 		value: "application/json",
 	};
 }

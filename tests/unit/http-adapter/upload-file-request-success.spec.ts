@@ -1,5 +1,5 @@
 import { afterAll, describe, expect, it, vi } from "vitest";
-import type { HttpServiceStatus } from "../../../lib/http/http.models.js";
+import type { HttpStatusCode } from "../../../lib/http/http.models.js";
 import { getDefaultHttpService } from "../../../lib/http/http.service.js";
 import type { HttpMethod } from "../../../lib/models/core.models.js";
 import { getFakeBlob, mockGlobalFetchBlobResponse } from "../../../lib/testkit/testkit.utils.js";
@@ -39,7 +39,7 @@ describe("Upload file - Success", async () => {
 	});
 
 	it("Status should be 200", () => {
-		expect(response?.adapterResponse.status).toStrictEqual<HttpServiceStatus>(200);
+		expect(response?.adapterResponse.status).toStrictEqual<HttpStatusCode>(200);
 	});
 
 	it("Method should be POST", () => {

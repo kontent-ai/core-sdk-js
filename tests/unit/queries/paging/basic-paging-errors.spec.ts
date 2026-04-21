@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import z from "zod";
-import { type ErrorReason, type GetNextPageData, KontentSdkError } from "../../../../lib/public_api.js";
+import { type ErrorReason, KontentSdkError } from "../../../../lib/models/error.models.js";
 import { createPagedFetchQuery } from "../../../../lib/sdk/queries/paged-fetch-sdk-query.js";
 import { getNextPageUrl, getTestHttpServiceWithJsonResponse, getTestSdkInfo } from "../../../../lib/testkit/testkit.utils.js";
 
@@ -20,11 +20,9 @@ describe("Basic paging errors", async () => {
 				return {};
 			}
 
-			const data: ReturnType<GetNextPageData<null, null>> = {
+			return {
 				nextPageUrl: getNextPageUrl(responseIndex),
 			};
-
-			return data;
 		},
 		mapMetadata: () => ({}),
 		config: {

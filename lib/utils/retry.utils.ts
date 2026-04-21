@@ -1,5 +1,5 @@
 import { match, P } from "ts-pattern";
-import type { HttpPayload, HttpRequestBody, HttpResponse } from "../http/http.models.js";
+import type { AdapterPayload, HttpRequestBody, HttpResponse } from "../http/http.models.js";
 import type { ResolvedRetryStrategyOptions, RetryStrategyOptions } from "../models/core.models.js";
 import type { ErrorDetailsFor, KontentSdkError } from "../models/error.models.js";
 import { runWithAbortSignal } from "./abort.utils.js";
@@ -27,7 +27,7 @@ const defaultCanRetryAdapterError: NonNullable<RetryStrategyOptions["canRetryAda
 	return false;
 };
 
-export async function runWithRetry<TResponse extends HttpPayload, TRequestBody extends HttpRequestBody>(data: {
+export async function runWithRetry<TResponse extends AdapterPayload, TRequestBody extends HttpRequestBody>(data: {
 	readonly func: (retryAttempt: number) => Promise<HttpResponse<TResponse, TRequestBody>>;
 	readonly retryStrategyOptions: ResolvedRetryStrategyOptions;
 	readonly retryAttempt: number;

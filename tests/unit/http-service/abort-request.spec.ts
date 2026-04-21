@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import type { AdapterExecuteRequestOptions, AdapterResponse } from "../../../lib/http/http.models.js";
+import type { AdapterRequestOptions, AdapterResponse } from "../../../lib/http/http.models.js";
 import { getDefaultHttpService } from "../../../lib/http/http.service.js";
 import type { JsonValue } from "../../../lib/models/json.models.js";
 import type { ErrorReason } from "../../../lib/public_api.js";
@@ -8,7 +8,7 @@ import { sleep } from "../../../lib/utils/core.utils.js";
 describe("Abort signal forwarding", () => {
 	it("Request should forward abort signal", async () => {
 		const abortController = new AbortController();
-		const executeRequest = vi.fn(async (options: AdapterExecuteRequestOptions): Promise<AdapterResponse<JsonValue>> => {
+		const executeRequest = vi.fn(async (options: AdapterRequestOptions): Promise<AdapterResponse<JsonValue>> => {
 			return await Promise.resolve({
 				responseHeaders: [],
 				status: 200,
@@ -50,7 +50,7 @@ describe("Abort signal cancellation", async () => {
 				canRetryAdapterError: () => true,
 			},
 			adapter: {
-				executeRequest: async (_options: AdapterExecuteRequestOptions): Promise<AdapterResponse<JsonValue>> => {
+				executeRequest: async (_options: AdapterRequestOptions): Promise<AdapterResponse<JsonValue>> => {
 					await sleep(executeRequestSleepMs);
 					throw new Error("Test error");
 				},

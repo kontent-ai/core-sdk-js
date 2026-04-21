@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { CommonHeaderNames, Header, SDKInfo } from "../../../lib/models/core.models.js";
+import type { Header, KnownHeaderName, SdkInfo } from "../../../lib/models/core.models.js";
 import {
 	createAuthorizationHeader,
 	createContinuationHeader,
@@ -9,13 +9,13 @@ import {
 
 describe("getSdkIdHeader", () => {
 	it("Should return a header with name 'X-KC-SDKID'", () => {
-		const info: SDKInfo = { host: "sdk", name: "test-sdk", version: "1.0.0" };
+		const info: SdkInfo = { host: "sdk", name: "test-sdk", version: "1.0.0" };
 
-		expect(getSdkIdHeader(info).name).toStrictEqual("X-KC-SDKID" satisfies CommonHeaderNames);
+		expect(getSdkIdHeader(info).name).toStrictEqual("X-KC-SDKID" satisfies KnownHeaderName);
 	});
 
 	it("Should format the value as 'host;name;version'", () => {
-		const info: SDKInfo = { host: "sdk", name: "test-sdk", version: "1.0.0" };
+		const info: SdkInfo = { host: "sdk", name: "test-sdk", version: "1.0.0" };
 
 		expect(getSdkIdHeader(info).value).toStrictEqual("sdk;test-sdk;1.0.0");
 	});
@@ -23,7 +23,7 @@ describe("getSdkIdHeader", () => {
 
 describe("createContinuationHeader", () => {
 	it("Should return a header with name 'X-Continuation'", () => {
-		expect(createContinuationHeader("token").name).toStrictEqual("X-Continuation" satisfies CommonHeaderNames);
+		expect(createContinuationHeader("token").name).toStrictEqual("X-Continuation" satisfies KnownHeaderName);
 	});
 
 	it("Should set the token as the header value", () => {
@@ -35,7 +35,7 @@ describe("createContinuationHeader", () => {
 
 describe("getRetryAfterHeaderValue - empty string", () => {
 	it("Should return undefined for an empty string value", () => {
-		const headers: readonly Header[] = [{ name: "Retry-After" satisfies CommonHeaderNames, value: "" }];
+		const headers: readonly Header[] = [{ name: "Retry-After" satisfies KnownHeaderName, value: "" }];
 
 		expect(getRetryAfterHeaderValue(headers)).toBeUndefined();
 	});
@@ -43,7 +43,7 @@ describe("getRetryAfterHeaderValue - empty string", () => {
 
 describe("createAuthorizationHeader", () => {
 	it("Should return a header with name 'Authorization'", () => {
-		expect(createAuthorizationHeader("api-key").name).toStrictEqual("Authorization" satisfies CommonHeaderNames);
+		expect(createAuthorizationHeader("api-key").name).toStrictEqual("Authorization" satisfies KnownHeaderName);
 	});
 
 	it("Should prefix the api key with 'Bearer '", () => {

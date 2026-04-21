@@ -11,9 +11,9 @@ export type HttpResult<TResponse> = Success<{ readonly response: TResponse }> | 
  * Helper status codes for the HTTP service.
  * It can be any valid number status code as this type only serves as a helper.
  */
-export type HttpServiceStatus = LiteralUnionNumber<200 | 201 | 204 | 500 | 429 | 404 | 403 | 401 | 400>;
+export type HttpStatusCode = LiteralUnionNumber<200 | 201 | 204 | 500 | 429 | 404 | 403 | 401 | 400>;
 
-export type DefaultHttpServiceConfig = {
+export type DefaultHttpServiceOptions = {
 	/**
 	 * The retry strategy to be used. If not provided, the default retry strategy will be used.
 	 */
@@ -30,8 +30,6 @@ export type DefaultHttpServiceConfig = {
 	readonly adapter?: HttpAdapter;
 };
 
-export type HttpPayload = JsonValue | Blob;
-
 export type HttpRequestBody = JsonObject | Blob | null;
 
 export type HttpResponse<TPayload extends AdapterPayload, TRequestBody extends HttpRequestBody> = HttpResult<{
@@ -42,7 +40,7 @@ export type HttpResponse<TPayload extends AdapterPayload, TRequestBody extends H
 	readonly adapterResponse: AdapterResponse<TPayload>;
 }>;
 
-export type ExecuteRequestOptions<TRequestBody extends HttpRequestBody> = {
+export type HttpServiceRequestOptions<TRequestBody extends HttpRequestBody> = {
 	readonly url: string | URL;
 	readonly method: HttpMethod;
 	readonly body?: TRequestBody;
@@ -50,11 +48,11 @@ export type ExecuteRequestOptions<TRequestBody extends HttpRequestBody> = {
 	readonly abortSignal?: AbortSignal | undefined;
 };
 
-export type UploadFileRequestOptions = Omit<ExecuteRequestOptions<Blob>, "method"> & {
+export type UploadFileRequestOptions = Omit<HttpServiceRequestOptions<Blob>, "method"> & {
 	readonly method: Extract<HttpMethod, "POST" | "PUT" | "PATCH">;
 };
 
-export type DownloadFileRequestOptions = Pick<ExecuteRequestOptions<null>, "url" | "requestHeaders" | "abortSignal">;
+export type DownloadFileRequestOptions = Pick<HttpServiceRequestOptions<null>, "url" | "requestHeaders" | "abortSignal">;
 
 /**
  * Represents the HTTP service used for making requests to the Kontent.ai API.
@@ -71,7 +69,7 @@ export type HttpService = {
 	 * Executes request with the given method and body.
 	 */
 	request<TResponsePayload extends JsonValue, TRequestBody extends HttpRequestBody>(
-		opts: ExecuteRequestOptions<TRequestBody>,
+		opts: HttpServiceRequestOptions<TRequestBody>,
 	): Promise<HttpResponse<TResponsePayload, TRequestBody>>;
 
 	/**
@@ -88,25 +86,25 @@ export type HttpService = {
 export type AdapterResponse<TPayload extends AdapterPayload> = {
 	readonly payload: TPayload;
 	readonly responseHeaders: readonly Header[];
-	readonly status: HttpServiceStatus;
+	readonly status: HttpStatusCode;
 	readonly statusText: string;
 	readonly url: URL;
 };
 
-export type AdapterBody = string | Blob | null;
+export type AdapterRequestBody = string | Blob | null;
 export type AdapterPayload = JsonValue | Blob;
 
-export type AdapterExecuteRequestOptions = {
+export type AdapterRequestOptions = {
 	readonly url: URL;
 	readonly method: HttpMethod;
-	readonly body: AdapterBody;
+	readonly body: AdapterRequestBody;
 	readonly requestHeaders?: readonly Header[];
 	readonly abortSignal?: AbortSignal | undefined;
 };
 
-export type AdapterDownloadFileOptions = Pick<AdapterExecuteRequestOptions, "url" | "requestHeaders" | "abortSignal">;
+export type AdapterDownloadOptions = Pick<AdapterRequestOptions, "url" | "requestHeaders" | "abortSignal">;
 
-export type GetNextPageData<TResponsePayload extends JsonValue, TMeta> = (response: QueryResponse<TResponsePayload, TMeta>) => {
+export type ExtractNextPageDataFn<TResponsePayload extends JsonValue, TMeta> = (response: QueryResponse<TResponsePayload, TMeta>) => {
 	readonly continuationToken?: string | undefined;
 	readonly nextPageUrl?: string | undefined;
 };
@@ -130,6 +128,6 @@ export type PaginationConfig = {
  * Alternatively, you may implement the entire `HttpService` to create a fully customized HTTP service.
  */
 export type HttpAdapter = {
-	readonly executeRequest?: (options: AdapterExecuteRequestOptions) => Promise<AdapterResponse<JsonValue>>;
-	readonly downloadFile?: (options: AdapterDownloadFileOptions) => Promise<AdapterResponse<Blob>>;
+	readonly executeRequest?: (options: AdapterRequestOptions) => Promise<AdapterResponse<JsonValue>>;
+	readonly downloadFile?: (options: AdapterDownloadOptions) => Promise<AdapterResponse<Blob>>;
 };

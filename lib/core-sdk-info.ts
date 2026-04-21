@@ -1,6 +1,6 @@
-import type { SDKInfo } from "./models/core.models.js";
+import type { SdkInfo } from "./models/core.models.js";
 
-export const coreSdkInfo: SDKInfo = {
+export const coreSdkInfo: SdkInfo = {
 	host: "npmjs.com",
 	version: "{{version}}",
 	name: "@kontent-ai/core-sdk",

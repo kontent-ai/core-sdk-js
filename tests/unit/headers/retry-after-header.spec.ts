@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import type { CommonHeaderNames, Header } from "../../../lib/models/core.models.js";
+import type { Header, KnownHeaderName } from "../../../lib/models/core.models.js";
 import { getRetryAfterHeaderValue } from "../../../lib/utils/header.utils.js";
 
 afterEach(() => {
@@ -10,7 +10,7 @@ describe("Valid Retry-After header extraction", () => {
 	const headerValue = "9";
 	const headers: readonly Header[] = [
 		{
-			name: "Retry-After" satisfies CommonHeaderNames,
+			name: "Retry-After" satisfies KnownHeaderName,
 			value: headerValue,
 		},
 	];
@@ -25,7 +25,7 @@ describe("Retry-After header extraction with date value", () => {
 	const headerValue = "Wed, 11 Mar 2026 12:00:05 GMT";
 	const headers: readonly Header[] = [
 		{
-			name: "Retry-After" satisfies CommonHeaderNames,
+			name: "Retry-After" satisfies KnownHeaderName,
 			value: headerValue,
 		},
 	];
@@ -43,7 +43,7 @@ describe("Retry-After header extraction with past date value", () => {
 	const headerValue = "Wed, 11 Mar 2026 12:00:00 GMT";
 	const headers: readonly Header[] = [
 		{
-			name: "Retry-After" satisfies CommonHeaderNames,
+			name: "Retry-After" satisfies KnownHeaderName,
 			value: headerValue,
 		},
 	];
@@ -72,7 +72,7 @@ describe("Missing Retry-After header extraction", () => {
 describe("Retry-after with unsafe integer value", () => {
 	const headers: readonly Header[] = [
 		{
-			name: "Retry-After" satisfies CommonHeaderNames,
+			name: "Retry-After" satisfies KnownHeaderName,
 			value: "hello",
 		},
 	];

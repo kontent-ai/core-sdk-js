@@ -1,7 +1,7 @@
 import { afterAll, describe, expect, it, vi } from "vitest";
 import { coreSdkInfo } from "../../../lib/core-sdk-info.js";
 import { getDefaultHttpService } from "../../../lib/http/http.service.js";
-import type { CommonHeaderNames, Header } from "../../../lib/models/core.models.js";
+import type { Header, KnownHeaderName } from "../../../lib/models/core.models.js";
 import { mockGlobalFetchJsonResponse } from "../../../lib/testkit/testkit.utils.js";
 import { getSdkIdHeader } from "../../../lib/utils/header.utils.js";
 
@@ -31,7 +31,7 @@ describe("Default headers", async () => {
 	});
 
 	it(`Request should contain '${sdkIdHeader.name}' header`, () => {
-		expect(response?.requestHeaders.find((m) => m.name === ("X-KC-SDKID" satisfies CommonHeaderNames))?.value).toStrictEqual(
+		expect(response?.requestHeaders.find((m) => m.name === ("X-KC-SDKID" satisfies KnownHeaderName))?.value).toStrictEqual(
 			sdkIdHeader.value,
 		);
 	});
@@ -54,7 +54,7 @@ describe(`SDK tracking header '${sdkIdHeader.name}'`, async () => {
 		method: "GET",
 		requestHeaders: [
 			{
-				name: "X-KC-SDKID" satisfies CommonHeaderNames,
+				name: "X-KC-SDKID" satisfies KnownHeaderName,
 				value: customSdkId,
 			},
 		],
@@ -66,14 +66,13 @@ describe(`SDK tracking header '${sdkIdHeader.name}'`, async () => {
 
 	it(`Request should contain only single '${sdkIdHeader.name}' header`, () => {
 		expect(
-			response?.requestHeaders.filter((m) => m.name.toLowerCase() === ("X-KC-SDKID" satisfies CommonHeaderNames).toLowerCase())
-				.length,
+			response?.requestHeaders.filter((m) => m.name.toLowerCase() === ("X-KC-SDKID" satisfies KnownHeaderName).toLowerCase()).length,
 		).toStrictEqual(1);
 	});
 
 	it(`Request should contain '${sdkIdHeader.name}' header`, () => {
 		expect(
-			response?.requestHeaders.find((m) => m.name.toLowerCase() === ("X-KC-SDKID" satisfies CommonHeaderNames).toLowerCase())?.value,
+			response?.requestHeaders.find((m) => m.name.toLowerCase() === ("X-KC-SDKID" satisfies KnownHeaderName).toLowerCase())?.value,
 		).toStrictEqual(customSdkId);
 	});
 });

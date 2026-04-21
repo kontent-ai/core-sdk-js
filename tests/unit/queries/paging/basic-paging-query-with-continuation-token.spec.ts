@@ -1,6 +1,7 @@
 import { afterAll, describe, expect, it, vi } from "vitest";
 import z from "zod";
-import { type GetNextPageData, getDefaultHttpService } from "../../../../lib/public_api.js";
+import type { ExtractNextPageDataFn } from "../../../../lib/http/http.models.js";
+import { getDefaultHttpService } from "../../../../lib/http/http.service.js";
 import { createPagedFetchQuery } from "../../../../lib/sdk/queries/paged-fetch-sdk-query.js";
 import { getTestSdkInfo, mockGlobalFetchJsonResponse, preventInfinitePaging } from "../../../../lib/testkit/testkit.utils.js";
 
@@ -32,7 +33,7 @@ describe("Basic paging query with continuation token", async () => {
 		getNextPageData: () => {
 			responseIndex++;
 
-			const data: ReturnType<GetNextPageData<null, null>> = preventInfinitePaging({
+			const data: ReturnType<ExtractNextPageDataFn<null, null>> = preventInfinitePaging({
 				responseIndex,
 				maxPagesCount,
 				continuationToken: getResponseContinuationToken(responseIndex),

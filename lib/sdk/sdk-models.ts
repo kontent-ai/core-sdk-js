@@ -5,16 +5,8 @@
 
 import type z from "zod";
 import type { ZodType } from "zod";
-import type {
-	AdapterPayload,
-	AdapterResponse,
-	HttpPayload,
-	HttpRequestBody,
-	HttpResponse,
-	HttpService,
-	PaginationConfig,
-} from "../http/http.models.js";
-import type { Header, HttpMethod, SDKInfo } from "../models/core.models.js";
+import type { AdapterPayload, AdapterResponse, HttpRequestBody, HttpResponse, HttpService, PaginationConfig } from "../http/http.models.js";
+import type { Header, HttpMethod, SdkInfo } from "../models/core.models.js";
 import type { KontentSdkError } from "../models/error.models.js";
 import type { JsonValue } from "../models/json.models.js";
 import type { PickStringLiteral } from "../models/utility.types.js";
@@ -106,7 +98,7 @@ export type NextPageStateWithRequest =
 			readonly nextPageUrl?: never;
 	  };
 
-export type SuccessfulHttpResponse<TResponsePayload extends HttpPayload, TRequestBody extends HttpRequestBody> = Extract<
+export type SuccessfulHttpResponse<TResponsePayload extends AdapterPayload, TRequestBody extends HttpRequestBody> = Extract<
 	HttpResponse<TResponsePayload, TRequestBody>,
 	{ readonly success: true }
 >["response"];
@@ -159,7 +151,7 @@ export type QueryInputData<TResponsePayload extends JsonValue, TRequestBody exte
 	readonly method: HttpMethod;
 	readonly config: SdkConfig;
 	readonly zodSchema: ZodType<TResponsePayload>;
-	readonly sdkInfo: SDKInfo;
+	readonly sdkInfo: SdkInfo;
 	readonly abortSignal?: AbortSignal | undefined;
 	readonly url: string | URL;
 	readonly body: TRequestBody;

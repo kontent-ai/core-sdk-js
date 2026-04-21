@@ -1,6 +1,6 @@
 import { afterAll, describe, expect, it, vi } from "vitest";
 import z from "zod";
-import { type GetNextPageData, getDefaultHttpService } from "../../../../lib/public_api.js";
+import { getDefaultHttpService } from "../../../../lib/http/http.service.js";
 import { createPagedFetchQuery } from "../../../../lib/sdk/queries/paged-fetch-sdk-query.js";
 import {
 	getNextPageUrl,
@@ -29,13 +29,11 @@ describe("Basic paging query with next page url", async () => {
 		getNextPageData: () => {
 			responseIndex++;
 
-			const data: ReturnType<GetNextPageData<null, null>> = preventInfinitePaging({
+			return preventInfinitePaging({
 				responseIndex,
 				maxPagesCount,
 				nextPageUrl: getNextPageUrl(responseIndex),
 			});
-
-			return data;
 		},
 
 		mapMetadata: () => ({}),

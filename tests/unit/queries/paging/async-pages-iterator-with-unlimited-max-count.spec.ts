@@ -1,7 +1,10 @@
 import { afterAll, describe, expect, it, vi } from "vitest";
 import z from "zod";
-import { type GetNextPageData, getDefaultHttpService, type KontentSdkError, type QueryResponse } from "../../../../lib/public_api.js";
+import type { ExtractNextPageDataFn } from "../../../../lib/http/http.models.js";
+import { getDefaultHttpService } from "../../../../lib/http/http.service.js";
+import type { KontentSdkError } from "../../../../lib/models/error.models.js";
 import { createPagedFetchQuery } from "../../../../lib/sdk/queries/paged-fetch-sdk-query.js";
+import type { QueryResponse } from "../../../../lib/sdk/sdk-models.js";
 import {
 	getNextPageUrl,
 	getTestSdkInfo,
@@ -29,7 +32,7 @@ describe("Async pages iterator with unlimited max count", async () => {
 		getNextPageData: () => {
 			responseIndex++;
 
-			const data: ReturnType<GetNextPageData<null, null>> = preventInfinitePaging({
+			const data: ReturnType<ExtractNextPageDataFn<null, null>> = preventInfinitePaging({
 				responseIndex,
 				maxPagesCount,
 				nextPageUrl: getNextPageUrl(responseIndex),
@@ -93,13 +96,11 @@ describe("Async pages iterator fetches all pages when maxPagesCount is set to 0"
 		getNextPageData: () => {
 			responseIndex++;
 
-			const data: ReturnType<GetNextPageData<null, null>> = preventInfinitePaging({
+			return preventInfinitePaging({
 				responseIndex,
 				maxPagesCount: totalPages,
 				nextPageUrl: responseIndex < totalPages ? getNextPageUrl(responseIndex) : undefined,
 			});
-
-			return data;
 		},
 
 		mapMetadata: () => null,

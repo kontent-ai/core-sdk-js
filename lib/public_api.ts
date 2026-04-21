@@ -1,34 +1,33 @@
 /** biome-ignore-all lint/performance/noBarrelFile: One barrel for exported API is fine */
 export { getDefaultHttpAdapter } from "./http/http.adapter.js";
 export type {
-	AdapterBody,
-	AdapterDownloadFileOptions,
-	AdapterExecuteRequestOptions,
+	AdapterDownloadOptions,
 	AdapterPayload,
+	AdapterRequestBody as AdapterBody,
+	AdapterRequestOptions,
 	AdapterResponse,
-	DefaultHttpServiceConfig,
+	DefaultHttpServiceOptions,
 	DownloadFileRequestOptions,
-	ExecuteRequestOptions,
-	GetNextPageData,
+	ExtractNextPageDataFn as GetNextPageDataFn,
 	HttpAdapter,
-	HttpPayload,
 	HttpRequestBody,
 	HttpResponse,
 	HttpResult,
 	HttpService,
-	HttpServiceStatus,
+	HttpServiceRequestOptions,
+	HttpStatusCode,
 	PaginationConfig,
 	UploadFileRequestOptions,
 } from "./http/http.models.js";
 export { getDefaultHttpService } from "./http/http.service.js";
 export type {
-	CommonHeaderNames,
-	ContinuationHeaderName,
+	ContinuationTokenHeaderName,
 	Header,
 	HttpMethod,
+	KnownHeaderName,
 	ResolvedRetryStrategyOptions,
 	RetryStrategyOptions,
-	SDKInfo,
+	SdkInfo,
 } from "./models/core.models.js";
 export {
 	AdapterAbortError,

@@ -5,7 +5,7 @@
 import type { ZodType } from "zod";
 import type { HttpRequestBody, HttpService } from "../http/http.models.js";
 import { getDefaultHttpService } from "../http/http.service.js";
-import type { CommonHeaderNames, Header, SDKInfo } from "../models/core.models.js";
+import type { Header, KnownHeaderName, SdkInfo } from "../models/core.models.js";
 import type { ErrorDetailsFor, KontentSdkError } from "../models/error.models.js";
 import type { JsonValue } from "../models/json.models.js";
 import { createSdkError } from "../utils/error.utils.js";
@@ -275,11 +275,11 @@ function getCombinedRequestHeaders({
 	readonly requestHeaders: readonly Header[];
 	readonly continuationToken: string | undefined;
 	readonly authorizationApiKey: string | undefined;
-	readonly sdkInfo: SDKInfo;
+	readonly sdkInfo: SdkInfo;
 }): readonly Header[] {
 	return [
 		getSdkIdHeader(sdkInfo),
-		...requestHeaders.filter((header) => header.name !== ("X-KC-SDKID" satisfies CommonHeaderNames)),
+		...requestHeaders.filter((header) => header.name !== ("X-KC-SDKID" satisfies KnownHeaderName)),
 		...(continuationToken ? [createContinuationHeader(continuationToken)] : []),
 		...(authorizationApiKey ? [createAuthorizationHeader(authorizationApiKey)] : []),
 	];

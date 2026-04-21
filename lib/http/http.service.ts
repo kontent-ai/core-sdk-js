@@ -1,6 +1,6 @@
 import { match, P } from "ts-pattern";
 import { coreSdkInfo } from "../core-sdk-info.js";
-import type { CommonHeaderNames, Header, HttpMethod, ResolvedRetryStrategyOptions } from "../models/core.models.js";
+import type { Header, HttpMethod, KnownHeaderName, ResolvedRetryStrategyOptions } from "../models/core.models.js";
 import type { ErrorDetails, ErrorDetailsFor, ErrorReason, ErrorResponseData, KontentSdkError } from "../models/error.models.js";
 import type { JsonObject, JsonValue } from "../models/json.models.js";
 import type { PickStringLiteral } from "../models/utility.types.js";
@@ -18,23 +18,22 @@ import { resolveDefaultRetryStrategyOptions, runWithRetry } from "../utils/retry
 import { type TryCatchResult, tryCatch, tryCatchAsync } from "../utils/try-catch.utils.js";
 import { getDefaultHttpAdapter } from "./http.adapter.js";
 import type {
-	AdapterBody,
 	AdapterPayload,
+	AdapterRequestBody,
 	AdapterResponse,
-	DefaultHttpServiceConfig,
+	DefaultHttpServiceOptions,
 	DownloadFileRequestOptions,
-	ExecuteRequestOptions,
 	HttpAdapter,
-	HttpPayload,
 	HttpRequestBody,
 	HttpResponse,
 	HttpService,
+	HttpServiceRequestOptions,
 	UploadFileRequestOptions,
 } from "./http.models.js";
 
 type ParsedRequest = {
 	readonly parsedUrl: URL;
-	readonly parsedBody: AdapterBody;
+	readonly parsedBody: AdapterRequestBody;
 	readonly requestHeaders: readonly Header[];
 };
 
@@ -42,11 +41,11 @@ type AdapterRequestData = {
 	readonly parsedUrl: URL;
 	readonly method: HttpMethod;
 	readonly requestHeaders: readonly Header[];
-	readonly parsedBody?: AdapterBody;
+	readonly parsedBody?: AdapterRequestBody;
 	readonly abortSignal: AbortSignal | undefined;
 };
 
-export function getDefaultHttpService(config?: DefaultHttpServiceConfig): HttpService {
+export function getDefaultHttpService(config?: DefaultHttpServiceOptions): HttpService {
 	const adapter = resolveHttpAdapter(config);
 
 	const executeWithAdapter = async <TPayload extends AdapterPayload>({
@@ -66,7 +65,9 @@ export function getDefaultHttpService(config?: DefaultHttpServiceConfig): HttpSe
 	};
 
 	return {
-		request: async <TPayload extends JsonValue, TRequestBody extends HttpRequestBody>(options: ExecuteRequestOptions<TRequestBody>) => {
+		request: async <TPayload extends JsonValue, TRequestBody extends HttpRequestBody>(
+			options: HttpServiceRequestOptions<TRequestBody>,
+		) => {
 			return await processHttpRequest<TPayload, TRequestBody>({
 				config,
 				options,
@@ -101,7 +102,7 @@ export function getDefaultHttpService(config?: DefaultHttpServiceConfig): HttpSe
 	};
 }
 
-function resolveHttpAdapter(config?: DefaultHttpServiceConfig): Required<HttpAdapter> {
+function resolveHttpAdapter(config?: DefaultHttpServiceOptions): Required<HttpAdapter> {
 	const defaultAdapter = getDefaultHttpAdapter();
 
 	return {
@@ -116,8 +117,8 @@ async function processHttpRequest<TPayload extends AdapterPayload, TRequestBody 
 	config,
 }: {
 	readonly runAdapterFunc: (data: AdapterRequestData) => Promise<AdapterResponse<TPayload>>;
-	readonly config: DefaultHttpServiceConfig | undefined;
-	readonly options: ExecuteRequestOptions<TRequestBody>;
+	readonly config: DefaultHttpServiceOptions | undefined;
+	readonly options: HttpServiceRequestOptions<TRequestBody>;
 }): Promise<HttpResponse<TPayload, TRequestBody>> {
 	const retryStrategyOptions = resolveDefaultRetryStrategyOptions(config?.retryStrategy);
 
@@ -223,7 +224,7 @@ function createAdapterError({
 		);
 }
 
-function mapAdapterResponse<TPayload extends HttpPayload, TRequestBody extends HttpRequestBody>({
+function mapAdapterResponse<TPayload extends AdapterPayload, TRequestBody extends HttpRequestBody>({
 	response,
 	method,
 	requestHeaders,
@@ -271,7 +272,7 @@ async function runAdapterRequest<TPayload extends AdapterPayload>({
 	readonly parsedUrl: URL;
 	readonly method: HttpMethod;
 	readonly requestHeaders: readonly Header[];
-	readonly parsedBody: AdapterBody;
+	readonly parsedBody: AdapterRequestBody;
 	readonly abortSignal: AbortSignal | undefined;
 	readonly retryAttempt: number;
 	readonly retryStrategyOptions: ResolvedRetryStrategyOptions;
@@ -353,9 +354,9 @@ function parseRequestBody({
 	readonly requestBody: HttpRequestBody;
 	readonly url: URL;
 	readonly retryStrategyOptions: ResolvedRetryStrategyOptions;
-}): TryCatchResult<AdapterBody, KontentSdkError> {
+}): TryCatchResult<AdapterRequestBody, KontentSdkError> {
 	return match(requestBody)
-		.returnType<TryCatchResult<AdapterBody, KontentSdkError>>()
+		.returnType<TryCatchResult<AdapterRequestBody, KontentSdkError>>()
 		.with(P.nullish, () => ({
 			success: true,
 			data: null,
@@ -419,9 +420,9 @@ function parseAndValidateRequest<TRequestBody extends HttpRequestBody>({
 	retryStrategyOptions,
 	config,
 }: {
-	readonly options: ExecuteRequestOptions<TRequestBody>;
+	readonly options: HttpServiceRequestOptions<TRequestBody>;
 	readonly retryStrategyOptions: ResolvedRetryStrategyOptions;
-	readonly config: DefaultHttpServiceConfig | undefined;
+	readonly config: DefaultHttpServiceOptions | undefined;
 }): TryCatchResult<ParsedRequest, KontentSdkError> {
 	const { success: urlParsedSuccess, data: parsedUrl, error: urlError } = parseUrl({ url: options.url, retryStrategyOptions });
 
@@ -525,14 +526,14 @@ function buildRequestHeaders({
 
 function createDefaultContentTypeHeader(body: Blob | JsonValue): Header {
 	return {
-		name: "Content-Type" satisfies CommonHeaderNames,
+		name: "Content-Type" satisfies KnownHeaderName,
 		value: isBlob(body) ? body.type : "application/json",
 	};
 }
 
 function createDefaultContentLengthHeader(body: Blob): Header {
 	return {
-		name: "Content-Length" satisfies CommonHeaderNames,
+		name: "Content-Length" satisfies KnownHeaderName,
 		value: body.size.toString(),
 	};
 }

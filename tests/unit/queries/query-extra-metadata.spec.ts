@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import z from "zod";
-import type { CommonHeaderNames, Header, HttpMethod } from "../../../lib/models/core.models.js";
+import type { Header, HttpMethod, KnownHeaderName } from "../../../lib/models/core.models.js";
 import type { KontentSdkError } from "../../../lib/public_api.js";
 import { createFetchQuery } from "../../../lib/sdk/queries/fetch-sdk-query.js";
 import { getTestHttpServiceWithJsonResponse, getTestSdkInfo } from "../../../lib/testkit/testkit.utils.js";
@@ -76,7 +76,7 @@ describe("Query extra metadata", async () => {
 	});
 
 	it("Request headers should contain sdk id header", () => {
-		expect(mappedRequestHeaders?.find((m) => m.name === ("X-KC-SDKID" satisfies CommonHeaderNames))).toStrictEqual(
+		expect(mappedRequestHeaders?.find((m) => m.name === ("X-KC-SDKID" satisfies KnownHeaderName))).toStrictEqual(
 			getSdkIdHeader(getTestSdkInfo()),
 		);
 	});

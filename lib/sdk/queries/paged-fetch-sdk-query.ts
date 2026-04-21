@@ -1,5 +1,5 @@
 import { match, P } from "ts-pattern";
-import type { GetNextPageData, PaginationConfig } from "../../http/http.models.js";
+import type { ExtractNextPageDataFn, PaginationConfig } from "../../http/http.models.js";
 import type { JsonValue } from "../../models/json.models.js";
 import type {
 	FetchQueryRequest,
@@ -25,7 +25,7 @@ type NextPageState = NextPageStateWithRequest | NoNextPageState;
 
 export function createPagedFetchQuery<TResponsePayload extends JsonValue, TMeta, TError>(
 	data: FetchQueryRequest<TResponsePayload, TMeta, TError> & {
-		readonly getNextPageData: GetNextPageData<TResponsePayload, TMeta>;
+		readonly getNextPageData: ExtractNextPageDataFn<TResponsePayload, TMeta>;
 	},
 ): PagedFetchQuery<TResponsePayload, TMeta, TError> {
 	const getPagingData: (config: PaginationConfig | undefined) => Parameters<typeof fetchAllPages<TResponsePayload, TMeta, TError>>[0] = (
@@ -114,7 +114,7 @@ function resolveNextPageState<TResponsePayload extends JsonValue, TMeta>({
 	pageIndex,
 	response,
 }: {
-	readonly getNextPageData: GetNextPageData<TResponsePayload, TMeta>;
+	readonly getNextPageData: ExtractNextPageDataFn<TResponsePayload, TMeta>;
 	readonly paginationConfig: PaginationConfig;
 	readonly pageIndex: number;
 	readonly response: QueryResponse<TResponsePayload, TMeta>;
@@ -142,7 +142,7 @@ function resolveNextPageState<TResponsePayload extends JsonValue, TMeta>({
 
 async function fetchAllPages<TResponsePayload extends JsonValue, TMeta, TError>(
 	data: Omit<QueryInputData<TResponsePayload, null, TMeta, TError>, "nextPageState"> & {
-		readonly getNextPageData: GetNextPageData<TResponsePayload, TMeta>;
+		readonly getNextPageData: ExtractNextPageDataFn<TResponsePayload, TMeta>;
 		readonly paginationConfig: PaginationConfig;
 		readonly pageIndex: number;
 	},

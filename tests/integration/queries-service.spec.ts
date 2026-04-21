@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import z from "zod";
-import type { HttpServiceStatus } from "../../lib/http/http.models.js";
+import type { HttpStatusCode } from "../../lib/http/http.models.js";
 import { getDefaultHttpService } from "../../lib/http/http.service.js";
 import type { KontentSdkError } from "../../lib/public_api.js";
 import { createMutationQuery } from "../../lib/sdk/queries/mutation-sdk-query.js";
@@ -93,7 +93,7 @@ describe("Integration tests covering Fetch/Mutation queries against the Kontent.
 	}
 
 	it("Upload response status should be 200", () => {
-		expect(uploadedBinaryFileResponse.meta.status).toStrictEqual<HttpServiceStatus>(200);
+		expect(uploadedBinaryFileResponse.meta.status).toStrictEqual<HttpStatusCode>(200);
 	});
 
 	it("Id property should be available", () => {
@@ -111,7 +111,7 @@ describe("Integration tests covering Fetch/Mutation queries against the Kontent.
 	}
 
 	it("Add asset response status should be 201", () => {
-		expect(addAssetResponse.meta.status).toStrictEqual<HttpServiceStatus>(201);
+		expect(addAssetResponse.meta.status).toStrictEqual<HttpStatusCode>(201);
 	});
 
 	it("Url & id property should be available when adding asset", () => {
@@ -150,7 +150,7 @@ describe("Integration tests covering Fetch/Mutation queries against the Kontent.
 	}
 
 	it("Download file response status should be 200", () => {
-		expect(downloadedFileResponse.adapterResponse.status).toStrictEqual<HttpServiceStatus>(200);
+		expect(downloadedFileResponse.adapterResponse.status).toStrictEqual<HttpStatusCode>(200);
 	});
 
 	it("Content of downloaded file should be identical to original file", async () => {
@@ -168,7 +168,7 @@ describe("Integration tests covering Fetch/Mutation queries against the Kontent.
 	}
 
 	it("Delete file response status should be 204", () => {
-		expect(deletedFileResponse.meta.status).toStrictEqual<HttpServiceStatus>(204);
+		expect(deletedFileResponse.meta.status).toStrictEqual<HttpStatusCode>(204);
 	});
 
 	it("Delete file response data should be empty", () => {

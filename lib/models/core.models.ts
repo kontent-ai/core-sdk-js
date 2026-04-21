@@ -4,7 +4,7 @@ import type { LiteralUnion, PickStringLiteral } from "./utility.types.js";
 /**
  * SDK info for identification of the SDK
  */
-export type SDKInfo = {
+export type SdkInfo = {
 	/**
 	 * The name of the SDK.
 	 */
@@ -21,9 +21,9 @@ export type SDKInfo = {
 	readonly host: LiteralUnion<"npmjs.com">;
 };
 
-export type CommonHeaderNames = "Retry-After" | "X-KC-SDKID" | "Authorization" | "Content-Type" | "Content-Length" | "X-Continuation";
+export type KnownHeaderName = "Retry-After" | "X-KC-SDKID" | "Authorization" | "Content-Type" | "Content-Length" | "X-Continuation";
 
-export type ContinuationHeaderName = PickStringLiteral<CommonHeaderNames, "X-Continuation">;
+export type ContinuationTokenHeaderName = PickStringLiteral<KnownHeaderName, "X-Continuation">;
 
 export type Header = {
 	readonly name: string;

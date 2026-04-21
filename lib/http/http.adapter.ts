@@ -5,7 +5,7 @@ import { runWithAbortSignal } from "../utils/abort.utils.js";
 import { isFetchAbortError } from "../utils/error.utils.js";
 import { isApplicationJsonResponseType, toFetchHeaders, toSdkHeaders } from "../utils/header.utils.js";
 import { tryCatchAsync } from "../utils/try-catch.utils.js";
-import type { AdapterExecuteRequestOptions, AdapterPayload, AdapterResponse, HttpAdapter } from "./http.models.js";
+import type { AdapterPayload, AdapterRequestOptions, AdapterResponse, HttpAdapter } from "./http.models.js";
 
 export function getDefaultHttpAdapter(): Required<HttpAdapter> {
 	return {
@@ -35,7 +35,7 @@ export function getDefaultHttpAdapter(): Required<HttpAdapter> {
 	};
 }
 
-async function getResponse(options: AdapterExecuteRequestOptions): Promise<Response> {
+async function getResponse(options: AdapterRequestOptions): Promise<Response> {
 	const { error, data, success } = await tryCatchAsync(
 		async () =>
 			await fetch(options.url, {

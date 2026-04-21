@@ -1,7 +1,9 @@
 import { afterAll, describe, expect, it, vi } from "vitest";
 import z from "zod";
-import { type GetNextPageData, getDefaultHttpService, type KontentSdkError, type QueryResponse } from "../../../../lib/public_api.js";
+import { getDefaultHttpService } from "../../../../lib/http/http.service.js";
+import type { KontentSdkError } from "../../../../lib/models/error.models.js";
 import { createPagedFetchQuery } from "../../../../lib/sdk/queries/paged-fetch-sdk-query.js";
+import type { QueryResponse } from "../../../../lib/sdk/sdk-models.js";
 import {
 	getNextPageUrl,
 	getTestSdkInfo,
@@ -29,13 +31,11 @@ describe("Async pages iterator with max pages count", async () => {
 		getNextPageData: () => {
 			responseIndex++;
 
-			const data: ReturnType<GetNextPageData<null, null>> = preventInfinitePaging({
+			return preventInfinitePaging({
 				responseIndex,
 				maxPagesCount,
 				nextPageUrl: getNextPageUrl(responseIndex),
 			});
-
-			return data;
 		},
 
 		mapMetadata: () => null,

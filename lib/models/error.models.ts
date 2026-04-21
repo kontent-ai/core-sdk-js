@@ -1,5 +1,5 @@
 import { type ZodError, z } from "zod";
-import type { AdapterPayload, AdapterResponse, HttpPayload, HttpRequestBody } from "../http/http.models.js";
+import type { AdapterPayload, AdapterResponse, HttpRequestBody } from "../http/http.models.js";
 import type { SuccessfulHttpResponse } from "../sdk/sdk-models.js";
 import { toFriendlyKontentSdkErrorMessage } from "../utils/error.utils.js";
 import type { ResolvedRetryStrategyOptions } from "./core.models.js";
@@ -37,7 +37,7 @@ export type ErrorDetails =
 			"validationFailed",
 			{
 				readonly zodError: ZodError;
-				readonly response: SuccessfulHttpResponse<HttpPayload, HttpRequestBody>;
+				readonly response: SuccessfulHttpResponse<AdapterPayload, HttpRequestBody>;
 				readonly url: URL;
 			}
 	  >;
