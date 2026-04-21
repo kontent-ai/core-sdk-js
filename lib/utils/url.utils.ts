@@ -1,3 +1,5 @@
+import type { BaseUrl } from "../sdk/sdk-models.js";
+
 export function getEndpointUrl({
 	environmentId,
 	path,
@@ -5,7 +7,7 @@ export function getEndpointUrl({
 }: {
 	readonly environmentId: string;
 	readonly path: string;
-	readonly baseUrl: string;
+	readonly baseUrl: BaseUrl;
 }): string {
 	return `${removeTrailingSlashes(baseUrl)}${removeDuplicateSlashes(`/${environmentId}/${path}`)}`;
 }

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import z from "zod";
 import { prepareQueryData } from "../../../lib/sdk/resolve-query.js";
+import type { BaseUrl } from "../../../lib/sdk/sdk-models.js";
 import { getTestHttpServiceWithJsonResponse, getTestSdkInfo } from "../../../lib/testkit/testkit.utils.js";
 
 describe("Query base url with absolute base url", () => {
@@ -30,7 +31,7 @@ describe("Query base url with absolute base url", () => {
 describe("Query base url with hostname only", () => {
 	const { data } = prepareQueryData({
 		config: {
-			baseUrl: "kontent.ai",
+			baseUrl: "kontent.ai" as unknown as BaseUrl,
 			httpService: getTestHttpServiceWithJsonResponse({
 				jsonResponse: null,
 				statusCode: 200,

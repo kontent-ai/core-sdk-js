@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import z from "zod";
 import type { ErrorReason } from "../../../lib/models/error.models.js";
 import { prepareQueryData, resolveQuery } from "../../../lib/sdk/resolve-query.js";
+import type { BaseUrl } from "../../../lib/sdk/sdk-models.js";
 import { getTestHttpServiceWithJsonResponse, getTestSdkInfo } from "../../../lib/testkit/testkit.utils.js";
 import { createAuthorizationHeader } from "../../../lib/utils/header.utils.js";
 
@@ -10,7 +11,7 @@ describe("prepareQuery - invalid baseUrl", () => {
 		method: "GET",
 		url: "https://domain.com",
 		body: null,
-		config: { baseUrl: "not a valid base url" },
+		config: { baseUrl: "not a valid base url" as unknown as BaseUrl },
 		zodSchema: z.null(),
 		sdkInfo: getTestSdkInfo(),
 		mapMetadata: () => ({}),

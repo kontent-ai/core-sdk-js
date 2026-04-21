@@ -47,6 +47,7 @@ export { createMutationQuery } from "./sdk/queries/mutation-sdk-query.js";
 export { createPagedFetchQuery } from "./sdk/queries/paged-fetch-sdk-query.js";
 export { kontentUuidSchema, nilUuid } from "./sdk/sdk-config.js";
 export type {
+	BaseUrl,
 	FetchQuery,
 	FetchQueryRequest,
 	MutationQuery,

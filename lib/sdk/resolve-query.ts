@@ -12,6 +12,7 @@ import { createSdkError } from "../utils/error.utils.js";
 import { createAuthorizationHeader, createContinuationHeader, extractContinuationToken, getSdkIdHeader } from "../utils/header.utils.js";
 import { type Failure, type TryCatchResult, tryCatch } from "../utils/try-catch.utils.js";
 import type {
+	BaseUrl,
 	QueryInputData,
 	QueryInspection,
 	QueryResponse,
@@ -132,7 +133,7 @@ export function resolveUrl<TError>({
 	mapError,
 }: {
 	readonly url: string | URL;
-	readonly baseUrl: string | undefined;
+	readonly baseUrl: BaseUrl | undefined;
 	readonly mapError: (error: KontentSdkError<ErrorDetailsFor<"invalidUrl">>) => TError;
 }): TryCatchResult<URL, TError> {
 	const returnWithBaseUrl = (parsedUrl: URL): TryCatchResult<URL, TError> => {
@@ -186,7 +187,7 @@ function createInvalidUrlError(invalidUrl: string, error: unknown): KontentSdkEr
 	});
 }
 
-function setBaseUrl(url: URL, baseUrl: string): TryCatchResult<URL, KontentSdkError<ErrorDetailsFor<"invalidUrl">>> {
+function setBaseUrl(url: URL, baseUrl: BaseUrl): TryCatchResult<URL, KontentSdkError<ErrorDetailsFor<"invalidUrl">>> {
 	const clonedUrl = new URL(url.toString());
 
 	if (baseUrl.startsWith("http")) {

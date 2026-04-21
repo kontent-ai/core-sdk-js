@@ -29,6 +29,8 @@ export type QueryResponse<TResponsePayload extends JsonValue, TMeta> = {
 	readonly meta: QueryResponseMeta<TMeta>;
 };
 
+export type BaseUrl = `${"https" | "http"}://${string}`;
+
 export type SdkConfig = {
 	/**
 	 * The HTTP service to use for the request. If not provided, the default HTTP service will be used.
@@ -44,7 +46,7 @@ export type SdkConfig = {
 	 *
 	 * If provided, it will override the default base URL based on selected API mode.
 	 */
-	readonly baseUrl?: string;
+	readonly baseUrl?: BaseUrl;
 
 	/**
 	 * Configuration for response validation.
