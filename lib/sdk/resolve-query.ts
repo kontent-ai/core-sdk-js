@@ -189,38 +189,21 @@ function createInvalidUrlError(invalidUrl: string, error: unknown): KontentSdkEr
 
 function setBaseUrl(url: URL, baseUrl: BaseUrl): TryCatchResult<URL, KontentSdkError<ErrorDetailsFor<"invalidUrl">>> {
 	const clonedUrl = new URL(url.toString());
-
-	if (baseUrl.startsWith("http")) {
-		const { success, data: parsedBaseUrl, error } = tryCatch(() => new URL(baseUrl));
-
-		if (!success) {
-			return {
-				success: false,
-				error: createInvalidUrlError(baseUrl, error),
-			};
-		}
-
-		clonedUrl.host = parsedBaseUrl.host;
-		clonedUrl.protocol = parsedBaseUrl.protocol;
-
-		return {
-			success: true,
-			data: clonedUrl,
-		};
-	}
+	const baseUrlString = `${baseUrl.protocol}://${baseUrl.host}`;
 
 	// Direct host assignment is a silent no-op for invalid values per the URL spec,
 	// so validate by constructing a full URL first.
-	const { success, data: parsedHostUrl, error } = tryCatch(() => new URL(`https://${baseUrl}`));
+	const { success, data: parsedBaseUrl, error } = tryCatch(() => new URL(baseUrlString));
 
 	if (!success) {
 		return {
 			success: false,
-			error: createInvalidUrlError(baseUrl, error),
+			error: createInvalidUrlError(baseUrlString, error),
 		};
 	}
 
-	clonedUrl.host = parsedHostUrl.host;
+	clonedUrl.protocol = parsedBaseUrl.protocol;
+	clonedUrl.host = parsedBaseUrl.host;
 
 	return {
 		success: true,

@@ -9,7 +9,7 @@ export function getEndpointUrl({
 	readonly path: string;
 	readonly baseUrl: BaseUrl;
 }): string {
-	return `${removeTrailingSlashes(baseUrl)}${removeDuplicateSlashes(`/${environmentId}/${path}`)}`;
+	return `${baseUrl.protocol}://${removeTrailingSlashes(baseUrl.host)}${removeDuplicateSlashes(`/${environmentId}/${path}`)}`;
 }
 
 function removeDuplicateSlashes(path: string): string {

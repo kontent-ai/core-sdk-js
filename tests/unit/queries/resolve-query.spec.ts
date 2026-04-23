@@ -2,33 +2,15 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import z from "zod";
 import type { ErrorReason } from "../../../lib/models/error.models.js";
 import { prepareQueryData, resolveQuery } from "../../../lib/sdk/resolve-query.js";
-import type { BaseUrl } from "../../../lib/sdk/sdk-models.js";
 import { getTestHttpServiceWithJsonResponse, getTestSdkInfo } from "../../../lib/testkit/testkit.utils.js";
 import { createAuthorizationHeader } from "../../../lib/utils/header.utils.js";
 
-describe("prepareQuery - invalid baseUrl", () => {
+describe("prepareQuery - invalid baseUrl host", () => {
 	const { error } = prepareQueryData({
 		method: "GET",
 		url: "https://domain.com",
 		body: null,
-		config: { baseUrl: "not a valid base url" as unknown as BaseUrl },
-		zodSchema: z.null(),
-		sdkInfo: getTestSdkInfo(),
-		mapMetadata: () => ({}),
-		mapError: (error) => error,
-	});
-
-	it(`Error reason should be '${"invalidUrl" satisfies ErrorReason}'`, () => {
-		expect(error?.details.reason).toBe("invalidUrl" satisfies ErrorReason);
-	});
-});
-
-describe("prepareQuery - invalid baseUrl starting with https", () => {
-	const { error } = prepareQueryData({
-		method: "GET",
-		url: "https://domain.com",
-		body: null,
-		config: { baseUrl: "https://not a valid base url" },
+		config: { baseUrl: { protocol: "https", host: "not a valid host" } },
 		zodSchema: z.null(),
 		sdkInfo: getTestSdkInfo(),
 		mapMetadata: () => ({}),

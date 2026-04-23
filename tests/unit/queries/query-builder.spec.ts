@@ -83,7 +83,7 @@ describe("Query builder url handling without modifications", () => {
 describe("Query builder url handling with base url", () => {
 	const sharedData: SharedQueryData = {
 		config: {
-			baseUrl: "https://kontent.ai",
+			baseUrl: { protocol: "https", host: "kontent.ai" },
 		},
 		mapMetadata: () => ({}),
 		sdkInfo: getTestSdkInfo(),

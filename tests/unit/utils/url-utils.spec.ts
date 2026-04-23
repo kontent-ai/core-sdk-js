@@ -4,7 +4,7 @@ import { getEndpointUrl } from "../../../lib/utils/url.utils.js";
 describe("getEndpointUrl", () => {
 	it("Should combine baseUrl, environmentId and path with single slashes", () => {
 		const url = getEndpointUrl({
-			baseUrl: "https://deliver.kontent.ai",
+			baseUrl: { protocol: "https", host: "deliver.kontent.ai" },
 			environmentId: "env-id",
 			path: "items",
 		});
@@ -14,7 +14,7 @@ describe("getEndpointUrl", () => {
 
 	it("Should normalize duplicate slashes between segments", () => {
 		const url = getEndpointUrl({
-			baseUrl: "https://deliver.kontent.ai/",
+			baseUrl: { protocol: "https", host: "deliver.kontent.ai" },
 			environmentId: "/env-id/",
 			path: "/items/",
 		});
@@ -22,9 +22,9 @@ describe("getEndpointUrl", () => {
 		expect(url).toBe("https://deliver.kontent.ai/env-id/items/");
 	});
 
-	it("Should remove trailing slashes from baseUrl", () => {
+	it("Should remove trailing slashes from host", () => {
 		const url = getEndpointUrl({
-			baseUrl: "https://deliver.kontent.ai///",
+			baseUrl: { protocol: "https", host: "deliver.kontent.ai///" },
 			environmentId: "env-id",
 			path: "items/123",
 		});

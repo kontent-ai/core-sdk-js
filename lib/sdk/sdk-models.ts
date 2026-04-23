@@ -21,7 +21,10 @@ export type QueryResponse<TResponsePayload extends JsonValue, TMeta> = {
 	readonly meta: QueryResponseMeta<TMeta>;
 };
 
-export type BaseUrl = `${"https" | "http"}://${string}`;
+export type BaseUrl = {
+	readonly protocol: "https" | "http";
+	readonly host: string;
+};
 
 export type SdkConfig<TExtendedConfig = unknown> = {
 	/**
