@@ -35,7 +35,8 @@
 	"packageManager": "pnpm@10.33.0",
 	"scripts": {
 		"prepublishOnly": "pnpm run build && pnpm run test",
-		"build": "pnpm run lint && pnpm run clean && tsc --p tsconfig.json && tsc --p tsconfig.build.json && pnpm run update:version",
+		"build": "pnpm run lint && pnpm run clean && pnpm run build:ts && pnpm run update:version",
+		"build:ts": "tsgo -p tsconfig.build.json",
 		"test": "vitest run --config=vitest.config.ts --coverage",
 		"test:unit": "vitest run --config=vitest-unit.config.ts",
 		"test:integration": "vitest run --config=vitest-integration.config.ts",
@@ -59,7 +60,7 @@
 		"@vitest/coverage-v8": "4.1.5",
 		"eslint": "10.2.1",
 		"tsx": "4.21.0",
-		"typescript": "6.0.3",
-		"vitest": "4.1.5"
+		"vitest": "4.1.5",
+		"@typescript/native-preview": "7.0.0-dev.20260423.1"
 	}
 }

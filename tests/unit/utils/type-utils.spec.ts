@@ -18,7 +18,7 @@ describe("getCodenameSchema", () => {
 		const schema = getCodenameSchema(undefined);
 
 		const validString = schema.safeParse("any-codename");
-		const invalidNonString = schema.safeParse(123 as unknown);
+		const invalidNonString = schema.safeParse(123);
 
 		expect(validString.success).toBe(true);
 		expect(invalidNonString.success).toBe(false);
