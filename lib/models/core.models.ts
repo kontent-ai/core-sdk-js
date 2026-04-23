@@ -26,7 +26,7 @@ export type KnownHeaderName = "Retry-After" | "X-KC-SDKID" | "Authorization" | "
 export type ContinuationTokenHeaderName = PickStringLiteral<KnownHeaderName, "X-Continuation">;
 
 export type Header = {
-	readonly name: string;
+	readonly name: LiteralUnion<KnownHeaderName>;
 	readonly value: string;
 };
 

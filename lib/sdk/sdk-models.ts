@@ -23,7 +23,7 @@ export type QueryResponse<TResponsePayload extends JsonValue, TMeta> = {
 
 export type BaseUrl = `${"https" | "http"}://${string}`;
 
-export type SdkConfig = {
+export type SdkConfig<TExtendedConfig = unknown> = {
 	/**
 	 * The HTTP service to use for the request. If not provided, the default HTTP service will be used.
 	 *
@@ -52,7 +52,7 @@ export type SdkConfig = {
 		 */
 		readonly enable: boolean;
 	};
-};
+} & TExtendedConfig;
 
 export type Query<TResponsePayload extends JsonValue, TError> = {
 	readonly schema: z.ZodType<TResponsePayload>;
