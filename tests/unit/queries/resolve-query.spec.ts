@@ -1,12 +1,12 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import z from "zod";
 import type { ErrorReason } from "../../../lib/models/error.models.js";
-import { prepareQueryData, resolveQuery } from "../../../lib/sdk/resolve-query.js";
+import { resolveQuery } from "../../../lib/sdk/resolve-query.js";
 import { getTestHttpServiceWithJsonResponse, getTestSdkInfo } from "../../../lib/testkit/testkit.utils.js";
 import { createAuthorizationHeader } from "../../../lib/utils/header.utils.js";
 
-describe("prepareQuery - invalid baseUrl host", () => {
-	const { error } = prepareQueryData({
+describe("resolveQuery - invalid baseUrl host", async () => {
+	const { error } = await resolveQuery({
 		method: "GET",
 		url: "https://domain.com",
 		body: null,
@@ -144,8 +144,8 @@ describe("resolveQuery - default httpService is used when none provided in confi
 	});
 });
 
-describe("prepareQuery - invalid URL", () => {
-	const { error } = prepareQueryData({
+describe("resolveQuery - invalid URL", async () => {
+	const { error } = await resolveQuery({
 		method: "GET",
 		url: "not-a-valid-url",
 		body: null,

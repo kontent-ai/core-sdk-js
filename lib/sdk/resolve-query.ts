@@ -22,32 +22,6 @@ import type {
 	SuccessfulHttpResponse,
 } from "./sdk-models.js";
 
-export function prepareQueryData<TResponsePayload extends JsonValue, TRequestBody extends HttpRequestBody, TMeta, TError>(
-	data: QueryInputData<TResponsePayload, TRequestBody, TMeta, TError>,
-): TryCatchResult<ResolvedQueryData<TResponsePayload, TRequestBody, TMeta, TError>, TError> {
-	const { success: inspectionSuccess, data: inspectionData, error: inspectionError } = inspectQuery(data);
-
-	if (!inspectionSuccess) {
-		return { success: false, error: inspectionError };
-	}
-
-	return {
-		success: true,
-		data: {
-			requestHeaders: inspectionData.requestHeaders,
-			url: inspectionData.url,
-			httpService: getHttpService(data.config),
-			body: data.body,
-			method: data.method,
-			abortSignal: data.abortSignal,
-			zodSchema: data.zodSchema,
-			responseValidation: data.config.responseValidation,
-			mapError: data.mapError,
-			mapMetadata: data.mapMetadata,
-		},
-	};
-}
-
 export function inspectQuery<TError>(
 	data: Pick<
 		QueryInputData<JsonValue, HttpRequestBody, unknown, TError>,
@@ -84,6 +58,32 @@ export async function resolveQuery<TResponsePayload extends JsonValue, TRequestB
 		return { success: false, error };
 	}
 	return await executeQuery(resolvedQueryData);
+}
+
+function prepareQueryData<TResponsePayload extends JsonValue, TRequestBody extends HttpRequestBody, TMeta, TError>(
+	data: QueryInputData<TResponsePayload, TRequestBody, TMeta, TError>,
+): TryCatchResult<ResolvedQueryData<TResponsePayload, TRequestBody, TMeta, TError>, TError> {
+	const { success: inspectionSuccess, data: inspectionData, error: inspectionError } = inspectQuery(data);
+
+	if (!inspectionSuccess) {
+		return { success: false, error: inspectionError };
+	}
+
+	return {
+		success: true,
+		data: {
+			requestHeaders: inspectionData.requestHeaders,
+			url: inspectionData.url,
+			httpService: getHttpService(data.config),
+			body: data.body,
+			method: data.method,
+			abortSignal: data.abortSignal,
+			zodSchema: data.zodSchema,
+			responseValidation: data.config.responseValidation,
+			mapError: data.mapError,
+			mapMetadata: data.mapMetadata,
+		},
+	};
 }
 
 async function executeQuery<TResponsePayload extends JsonValue, TRequestBody extends HttpRequestBody, TMeta, TError>({
