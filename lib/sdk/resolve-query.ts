@@ -76,7 +76,17 @@ export function inspectQuery<TError>(
 	};
 }
 
-export async function resolveQuery<TResponsePayload extends JsonValue, TRequestBody extends HttpRequestBody, TMeta, TError>({
+export async function resolveQuery<TResponsePayload extends JsonValue, TRequestBody extends HttpRequestBody, TMeta, TError>(
+	data: QueryInputData<TResponsePayload, TRequestBody, TMeta, TError>,
+): Promise<SafeQueryResponse<QueryResponse<TResponsePayload, TMeta>, TError>> {
+	const { success, data: resolvedQueryData, error } = prepareQueryData(data);
+	if (!success) {
+		return { success: false, error };
+	}
+	return await executeQuery(resolvedQueryData);
+}
+
+async function executeQuery<TResponsePayload extends JsonValue, TRequestBody extends HttpRequestBody, TMeta, TError>({
 	url,
 	requestHeaders,
 	httpService,
