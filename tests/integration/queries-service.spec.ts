@@ -28,7 +28,7 @@ describe("Integration tests covering Fetch/Mutation queries against the Kontent.
 		mapMetadata: () => ({}),
 	} as const;
 
-	const uploadBinaryFileQuery: MutationQuery<{ readonly id: string }, unknown, unknown, KontentSdkError> = createMutationQuery({
+	const uploadBinaryFileQuery: MutationQuery<{ readonly id: string }, KontentSdkError> = createMutationQuery({
 		...baseMutationConfig,
 		zodSchema: z.object({
 			id: z.string(),
@@ -40,9 +40,7 @@ describe("Integration tests covering Fetch/Mutation queries against the Kontent.
 		mapExtraResponseProps: () => ({}),
 	});
 
-	const addAssetQueryFactory = (
-		binaryFileId: string,
-	): MutationQuery<{ readonly id: string; readonly url: string }, unknown, unknown, KontentSdkError> =>
+	const addAssetQueryFactory = (binaryFileId: string): MutationQuery<{ readonly id: string; readonly url: string }, KontentSdkError> =>
 		createMutationQuery({
 			...baseMutationConfig,
 			zodSchema: z.object({
@@ -62,7 +60,7 @@ describe("Integration tests covering Fetch/Mutation queries against the Kontent.
 			mapExtraResponseProps: () => ({}),
 		});
 
-	const deleteAssetQueryFactory = (assetId: string): MutationQuery<null, unknown, unknown, KontentSdkError> =>
+	const deleteAssetQueryFactory = (assetId: string): MutationQuery<null, KontentSdkError> =>
 		createMutationQuery({
 			...baseMutationConfig,
 			zodSchema: z.null(),

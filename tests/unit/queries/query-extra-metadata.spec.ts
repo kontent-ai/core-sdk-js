@@ -23,11 +23,10 @@ describe("Query extra metadata", async () => {
 
 	const { response } = await createFetchQuery<
 		null,
+		KontentSdkError,
 		{
 			testExtraMetadata: string;
-		},
-		unknown,
-		KontentSdkError
+		}
 	>({
 		mapMetadata: (response, data) => {
 			mappedContinuationToken = data.continuationToken;

@@ -32,18 +32,18 @@ export type DefaultHttpServiceOptions = {
 
 export type HttpRequestBody = JsonObject | Blob | null;
 
-export type HttpResponse<TPayload extends AdapterPayload, TRequestBody extends HttpRequestBody> = HttpResult<{
+export type HttpResponse<TPayload extends AdapterPayload, TBody extends HttpRequestBody> = HttpResult<{
 	readonly payload: TPayload;
-	readonly body?: TRequestBody;
+	readonly body?: TBody;
 	readonly method: HttpMethod;
 	readonly requestHeaders: readonly Header[];
 	readonly adapterResponse: AdapterResponse<TPayload>;
 }>;
 
-export type HttpServiceRequestOptions<TRequestBody extends HttpRequestBody> = {
+export type HttpServiceRequestOptions<TBody extends HttpRequestBody> = {
 	readonly url: string | URL;
 	readonly method: HttpMethod;
-	readonly body?: TRequestBody;
+	readonly body?: TBody;
 	readonly requestHeaders?: readonly Header[];
 	readonly abortSignal?: AbortSignal | undefined;
 };
@@ -68,9 +68,9 @@ export type HttpService = {
 	/**
 	 * Executes request with the given method and body.
 	 */
-	request<TResponsePayload extends JsonValue, TRequestBody extends HttpRequestBody>(
-		opts: HttpServiceRequestOptions<TRequestBody>,
-	): Promise<HttpResponse<TResponsePayload, TRequestBody>>;
+	request<TPayload extends JsonValue, TBody extends HttpRequestBody>(
+		opts: HttpServiceRequestOptions<TBody>,
+	): Promise<HttpResponse<TPayload, TBody>>;
 
 	/**
 	 * Downloads a file from the given URL as a blob.
@@ -80,7 +80,7 @@ export type HttpService = {
 	/**
 	 * This method is used to upload a kontent.ai binary file.
 	 */
-	uploadFile<TResponsePayload extends JsonValue>(opts: UploadFileRequestOptions): Promise<HttpResponse<TResponsePayload, Blob>>;
+	uploadFile<TPayload extends JsonValue>(opts: UploadFileRequestOptions): Promise<HttpResponse<TPayload, Blob>>;
 };
 
 export type AdapterResponse<TPayload extends AdapterPayload> = {
@@ -104,8 +104,8 @@ export type AdapterRequestOptions = {
 
 export type AdapterDownloadOptions = Pick<AdapterRequestOptions, "url" | "requestHeaders" | "abortSignal">;
 
-export type GetNextPageData<TResponsePayload extends JsonValue, TMeta, TExtraProps> = (
-	response: QueryResponse<TResponsePayload, TMeta, TExtraProps>,
+export type GetNextPageData<TPayload extends JsonValue, TMeta = unknown, TExtra = unknown> = (
+	response: QueryResponse<TPayload, TMeta, TExtra>,
 ) => {
 	readonly continuationToken?: string | undefined;
 	readonly nextPageUrl?: string | undefined;

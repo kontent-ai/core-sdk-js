@@ -65,10 +65,8 @@ export function getDefaultHttpService(config?: DefaultHttpServiceOptions): HttpS
 	};
 
 	return {
-		request: async <TPayload extends JsonValue, TRequestBody extends HttpRequestBody>(
-			options: HttpServiceRequestOptions<TRequestBody>,
-		) => {
-			return await processHttpRequest<TPayload, TRequestBody>({
+		request: async <TPayload extends JsonValue, TBody extends HttpRequestBody>(options: HttpServiceRequestOptions<TBody>) => {
+			return await processHttpRequest<TPayload, TBody>({
 				config,
 				options,
 				runAdapterFunc: executeWithAdapter,
@@ -111,15 +109,15 @@ function resolveHttpAdapter(config?: DefaultHttpServiceOptions): Required<HttpAd
 	};
 }
 
-async function processHttpRequest<TPayload extends AdapterPayload, TRequestBody extends HttpRequestBody>({
+async function processHttpRequest<TPayload extends AdapterPayload, TBody extends HttpRequestBody>({
 	options,
 	runAdapterFunc,
 	config,
 }: {
 	readonly runAdapterFunc: (data: AdapterRequestData) => Promise<AdapterResponse<TPayload>>;
 	readonly config: DefaultHttpServiceOptions | undefined;
-	readonly options: HttpServiceRequestOptions<TRequestBody>;
-}): Promise<HttpResponse<TPayload, TRequestBody>> {
+	readonly options: HttpServiceRequestOptions<TBody>;
+}): Promise<HttpResponse<TPayload, TBody>> {
 	const retryStrategyOptions = resolveDefaultRetryStrategyOptions(config?.retryStrategy);
 
 	const { success, data: parsedRequest, error } = parseAndValidateRequest({ options, retryStrategyOptions, config });
@@ -224,7 +222,7 @@ function createAdapterError({
 		);
 }
 
-function mapAdapterResponse<TPayload extends AdapterPayload, TRequestBody extends HttpRequestBody>({
+function mapAdapterResponse<TPayload extends AdapterPayload, TBody extends HttpRequestBody>({
 	response,
 	method,
 	requestHeaders,
@@ -235,10 +233,10 @@ function mapAdapterResponse<TPayload extends AdapterPayload, TRequestBody extend
 	readonly response: AdapterResponse<TPayload>;
 	readonly method: HttpMethod;
 	readonly requestHeaders: readonly Header[];
-	readonly requestBody?: TRequestBody;
+	readonly requestBody?: TBody;
 	readonly retryAttempt: number;
 	readonly retryStrategyOptions: ResolvedRetryStrategyOptions;
-}): HttpResponse<TPayload, TRequestBody> {
+}): HttpResponse<TPayload, TBody> {
 	if (!isSuccessfulResponse(response)) {
 		return {
 			success: false,
@@ -415,12 +413,12 @@ function isStringUrl(url: string | URL): url is string {
 	return typeof url === "string";
 }
 
-function parseAndValidateRequest<TRequestBody extends HttpRequestBody>({
+function parseAndValidateRequest<TBody extends HttpRequestBody>({
 	options,
 	retryStrategyOptions,
 	config,
 }: {
-	readonly options: HttpServiceRequestOptions<TRequestBody>;
+	readonly options: HttpServiceRequestOptions<TBody>;
 	readonly retryStrategyOptions: ResolvedRetryStrategyOptions;
 	readonly config: DefaultHttpServiceOptions | undefined;
 }): TryCatchResult<ParsedRequest, KontentSdkError> {

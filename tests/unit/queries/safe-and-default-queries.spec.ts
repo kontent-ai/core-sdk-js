@@ -19,10 +19,7 @@ type QueryTest = {
 
 type QueryCallback = {
 	readonly callback: () => Promise<void>;
-	readonly title:
-		| keyof FetchQuery<JsonValue, unknown, unknown, unknown>
-		| keyof PagedFetchQuery<JsonValue, unknown, unknown, unknown, unknown>
-		| keyof MutationQuery<JsonValue, null, unknown, unknown>;
+	readonly title: keyof FetchQuery<JsonValue> | keyof PagedFetchQuery<JsonValue> | keyof MutationQuery<JsonValue>;
 };
 
 const successfulBaseQueryConfig: Parameters<typeof createFetchQuery>[0] = {

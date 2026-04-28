@@ -27,7 +27,7 @@ describe("Async pages iterator with max pages count", async () => {
 		statusCode: 200,
 	});
 
-	const pagesIterator = createPagedFetchQuery<null, unknown, unknown, unknown, KontentSdkError>({
+	const pagesIterator = createPagedFetchQuery<null, KontentSdkError>({
 		getNextPageData: () => {
 			responseIndex++;
 
@@ -53,7 +53,7 @@ describe("Async pages iterator with max pages count", async () => {
 		mapPagingExtraResponseProps: () => ({}),
 	}).pagesSafe({ maxPagesCount });
 
-	const responses: QueryResponse<null, unknown, unknown>[] = [];
+	const responses: QueryResponse<null>[] = [];
 
 	for await (const { success, response } of pagesIterator) {
 		if (success) {

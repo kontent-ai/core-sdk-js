@@ -25,7 +25,7 @@ const expectedMetadata: Metadata = {
 };
 
 describe("createFetchQuery mapMetadata", async () => {
-	const { response } = await createFetchQuery<ResponsePayload, Metadata, unknown, KontentSdkError>({
+	const { response } = await createFetchQuery<ResponsePayload, KontentSdkError, Metadata>({
 		zodSchema: z.object({
 			id: z.string(),
 			name: z.string(),

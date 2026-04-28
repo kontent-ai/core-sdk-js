@@ -50,9 +50,9 @@ export function inspectQuery<TError>(
 	};
 }
 
-export async function resolveQuery<TResponsePayload extends JsonValue, TRequestBody extends HttpRequestBody, TMeta, TExtraProps, TError>(
-	data: QueryInputData<TResponsePayload, TRequestBody, TMeta, TExtraProps, TError>,
-): Promise<SafeQueryResult<QueryResponse<TResponsePayload, TMeta, TExtraProps>, TError>> {
+export async function resolveQuery<TPayload extends JsonValue, TBody extends HttpRequestBody, TMeta, TExtra, TError>(
+	data: QueryInputData<TPayload, TBody, TMeta, TExtra, TError>,
+): Promise<SafeQueryResult<QueryResponse<TPayload, TMeta, TExtra>, TError>> {
 	const { success, data: resolvedQueryData, error } = prepareQueryData(data);
 	if (!success) {
 		return { success: false, error };
@@ -60,9 +60,9 @@ export async function resolveQuery<TResponsePayload extends JsonValue, TRequestB
 	return await executeQuery(resolvedQueryData);
 }
 
-function prepareQueryData<TResponsePayload extends JsonValue, TRequestBody extends HttpRequestBody, TMeta, TExtraProps, TError>(
-	data: QueryInputData<TResponsePayload, TRequestBody, TMeta, TExtraProps, TError>,
-): TryCatchResult<ResolvedQueryData<TResponsePayload, TRequestBody, TMeta, TExtraProps, TError>, TError> {
+function prepareQueryData<TPayload extends JsonValue, TBody extends HttpRequestBody, TMeta, TExtra, TError>(
+	data: QueryInputData<TPayload, TBody, TMeta, TExtra, TError>,
+): TryCatchResult<ResolvedQueryData<TPayload, TBody, TMeta, TExtra, TError>, TError> {
 	const { success: inspectionSuccess, data: inspectionData, error: inspectionError } = inspectQuery(data);
 
 	if (!inspectionSuccess) {
@@ -87,7 +87,7 @@ function prepareQueryData<TResponsePayload extends JsonValue, TRequestBody exten
 	};
 }
 
-async function executeQuery<TResponsePayload extends JsonValue, TRequestBody extends HttpRequestBody, TMeta, TExtraProps, TError>({
+async function executeQuery<TPayload extends JsonValue, TBody extends HttpRequestBody, TMeta, TExtra, TError>({
 	url,
 	requestHeaders,
 	httpService,
@@ -99,10 +99,8 @@ async function executeQuery<TResponsePayload extends JsonValue, TRequestBody ext
 	mapError,
 	mapMetadata,
 	mapExtraResponseProps,
-}: ResolvedQueryData<TResponsePayload, TRequestBody, TMeta, TExtraProps, TError>): Promise<
-	SafeQueryResult<QueryResponse<TResponsePayload, TMeta, TExtraProps>, TError>
-> {
-	const { success, response, error } = await httpService.request<TResponsePayload, TRequestBody>({
+}: ResolvedQueryData<TPayload, TBody, TMeta, TExtra, TError>): Promise<SafeQueryResult<QueryResponse<TPayload, TMeta, TExtra>, TError>> {
+	const { success, response, error } = await httpService.request<TPayload, TBody>({
 		body,
 		url,
 		method,
@@ -223,14 +221,14 @@ function setBaseUrl(url: URL, baseUrl: BaseUrl): TryCatchResult<URL, KontentSdkE
 	};
 }
 
-async function validateResponse<TResponsePayload extends JsonValue, TRequestBody extends HttpRequestBody>({
+async function validateResponse<TPayload extends JsonValue, TBody extends HttpRequestBody>({
 	url,
 	response,
 	zodSchema,
 }: {
 	readonly url: URL;
-	readonly response: SuccessfulHttpResponse<TResponsePayload, TRequestBody>;
-	readonly zodSchema: ZodType<TResponsePayload>;
+	readonly response: SuccessfulHttpResponse<TPayload, TBody>;
+	readonly zodSchema: ZodType<TPayload>;
 }): Promise<Failure<{ readonly response?: never }, KontentSdkError> | undefined> {
 	const { success, error } = await zodSchema.safeParseAsync(response.payload);
 
