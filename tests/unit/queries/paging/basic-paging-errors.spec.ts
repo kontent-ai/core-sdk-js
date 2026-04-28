@@ -44,6 +44,8 @@ describe("Basic paging errors", async () => {
 		zodSchema: z.null(),
 		url: expectedResponseUrls?.[0] ?? "n/a",
 		mapError: (error) => error,
+		mapExtraResponseProps: () => ({}),
+		mapPagingExtraResponseProps: () => ({}),
 	}).fetchAllPagesSafe();
 
 	it("Error should be defined & unknown", () => {

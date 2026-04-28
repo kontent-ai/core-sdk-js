@@ -33,6 +33,7 @@ describe("createFetchQuery mapError", async () => {
 		sdkInfo: getTestSdkInfo(),
 		mapMetadata: () => ({}),
 		mapError: (error) => new CustomSdkError(error),
+		mapExtraResponseProps: () => ({}),
 	}).fetchSafe();
 
 	it("Error should be an instance of CustomSdkError", () => {

@@ -28,11 +28,11 @@ describe("Async pages iterator with unlimited max count", async () => {
 		statusCode: 200,
 	});
 
-	const pagesIterator = createPagedFetchQuery<null, null, KontentSdkError>({
+	const pagesIterator = createPagedFetchQuery<null, unknown, unknown, unknown, KontentSdkError>({
 		getNextPageData: () => {
 			responseIndex++;
 
-			const data: ReturnType<ExtractNextPageDataFn<null, null>> = preventInfinitePaging({
+			const data: ReturnType<ExtractNextPageDataFn<null, unknown, unknown>> = preventInfinitePaging({
 				responseIndex,
 				maxPagesCount,
 				nextPageUrl: getNextPageUrl(responseIndex),
@@ -52,9 +52,11 @@ describe("Async pages iterator with unlimited max count", async () => {
 		zodSchema: z.null(),
 		url: expectedResponseUrls?.[0] ?? "n/a",
 		mapError: (error) => error,
+		mapExtraResponseProps: () => ({}),
+		mapPagingExtraResponseProps: () => ({}),
 	}).pagesSafe();
 
-	const responses: QueryResponse<null, unknown>[] = [];
+	const responses: QueryResponse<null, unknown, unknown>[] = [];
 
 	for await (const { success, response } of pagesIterator) {
 		if (success) {
@@ -92,7 +94,7 @@ describe("Async pages iterator fetches all pages when maxPagesCount is set to 0"
 		statusCode: 200,
 	});
 
-	const pagesIterator = createPagedFetchQuery<null, null, KontentSdkError>({
+	const pagesIterator = createPagedFetchQuery<null, unknown, unknown, unknown, KontentSdkError>({
 		getNextPageData: () => {
 			responseIndex++;
 
@@ -102,7 +104,6 @@ describe("Async pages iterator fetches all pages when maxPagesCount is set to 0"
 				nextPageUrl: responseIndex < totalPages ? getNextPageUrl(responseIndex) : undefined,
 			});
 		},
-
 		mapMetadata: () => null,
 		config: {
 			httpService: getDefaultHttpService(),
@@ -114,9 +115,11 @@ describe("Async pages iterator fetches all pages when maxPagesCount is set to 0"
 		zodSchema: z.null(),
 		url: expectedResponseUrls?.[0] ?? "n/a",
 		mapError: (error) => error,
+		mapExtraResponseProps: () => ({}),
+		mapPagingExtraResponseProps: () => ({}),
 	}).pagesSafe({ maxPagesCount: 0 });
 
-	const responses: QueryResponse<null, unknown>[] = [];
+	const responses: QueryResponse<null, unknown, unknown>[] = [];
 
 	for await (const { success, response } of pagesIterator) {
 		if (success) {

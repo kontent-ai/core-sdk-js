@@ -104,7 +104,9 @@ export type AdapterRequestOptions = {
 
 export type AdapterDownloadOptions = Pick<AdapterRequestOptions, "url" | "requestHeaders" | "abortSignal">;
 
-export type ExtractNextPageDataFn<TResponsePayload extends JsonValue, TMeta> = (response: QueryResponse<TResponsePayload, TMeta>) => {
+export type ExtractNextPageDataFn<TResponsePayload extends JsonValue, TMeta, TExtraProps> = (
+	response: QueryResponse<TResponsePayload, TMeta, TExtraProps>,
+) => {
 	readonly continuationToken?: string | undefined;
 	readonly nextPageUrl?: string | undefined;
 };

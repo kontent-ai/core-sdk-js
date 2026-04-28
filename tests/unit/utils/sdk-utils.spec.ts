@@ -6,7 +6,7 @@ import { isPagingQuery } from "../../../lib/sdk/sdk-utils.js";
 
 describe("isPagingQuery", () => {
 	it("Should return true for object with paging query shape", () => {
-		const pagingQueryLike: PagedFetchQuery<JsonValue, unknown, unknown> = {
+		const pagingQueryLike: PagedFetchQuery<JsonValue, unknown, unknown, unknown, unknown> = {
 			schema: z.null(),
 			inspect: () => {
 				return {} as never;
@@ -40,7 +40,7 @@ describe("isPagingQuery", () => {
 	});
 
 	it("Should return false when one of paging methods is missing", () => {
-		const missingPagesQuery: Omit<PagedFetchQuery<JsonValue, unknown, unknown>, "pages"> = {
+		const missingPagesQuery: Omit<PagedFetchQuery<JsonValue, unknown, unknown, unknown, unknown>, "pages"> = {
 			schema: z.null(),
 			inspect: () => {
 				return {} as never;
@@ -62,7 +62,7 @@ describe("isPagingQuery", () => {
 			},
 		};
 
-		const missingFetchAllPagesQuery: Omit<PagedFetchQuery<JsonValue, unknown, unknown>, "fetchAllPages"> = {
+		const missingFetchAllPagesQuery: Omit<PagedFetchQuery<JsonValue, unknown, unknown, unknown, unknown>, "fetchAllPages"> = {
 			schema: z.null(),
 			inspect: () => {
 				return {} as never;

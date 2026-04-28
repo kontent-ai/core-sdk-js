@@ -6,8 +6,8 @@ import type { PagedFetchQuery, Query } from "./sdk-models.js";
  *
  */
 export function isPagingQuery<TResponsePayload extends JsonValue, TMeta, TError>(
-	query: Query<TResponsePayload, TError> | PagedFetchQuery<TResponsePayload, TMeta, TError>,
-): query is PagedFetchQuery<TResponsePayload, TMeta, TError> {
+	query: Query<TResponsePayload, TError> | PagedFetchQuery<TResponsePayload, TMeta, unknown, unknown, TError>,
+): query is PagedFetchQuery<TResponsePayload, TMeta, unknown, unknown, TError> {
 	return (
 		"fetchPage" in query &&
 		"fetchPageSafe" in query &&

@@ -44,9 +44,11 @@ describe("Async pages iterator errors", async () => {
 		zodSchema: z.null(),
 		url: expectedResponseUrls?.[0] ?? "n/a",
 		mapError: (error) => error,
+		mapExtraResponseProps: () => ({}),
+		mapPagingExtraResponseProps: () => ({}),
 	}).pagesSafe();
 
-	const responses: QueryResponse<null, unknown>[] = [];
+	const responses: QueryResponse<null, unknown, unknown>[] = [];
 
 	for await (const { success, response } of pagesIterator) {
 		if (success) {

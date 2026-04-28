@@ -9,11 +9,19 @@ const responseContinuationToken = "fake-continuation-token";
 const responseStatusCode = 200;
 
 type SharedQueryData = Pick<
-	QueryInputData<null, null, unknown, KontentSdkError>,
-	"config" | "mapMetadata" | "sdkInfo" | "zodSchema" | "mapError" | "url"
+	QueryInputData<
+		null,
+		null,
+		unknown,
+		{
+			readonly continuationToken?: string | undefined;
+		},
+		KontentSdkError
+	>,
+	"config" | "mapMetadata" | "sdkInfo" | "zodSchema" | "mapError" | "url" | "mapExtraResponseProps"
 >;
 
-describe("Query builder", async () => {
+describe("Query builder with mapExtraProps", async () => {
 	const query = createFetchQuery({
 		mapMetadata: () => ({}),
 		config: {
@@ -30,12 +38,15 @@ describe("Query builder", async () => {
 		zodSchema: z.null(),
 		url: "https://domain.com",
 		mapError: (error) => error,
+		mapExtraResponseProps: (_response) => ({
+			continuationToken: responseContinuationToken,
+		}),
 	});
 
 	const { response, success } = await query.fetchSafe();
 
-	it("Meta should have proper continuation token", () => {
-		expect(response?.meta.continuationToken).toStrictEqual(responseContinuationToken);
+	it("Continuation token should be mapped as extra prop", () => {
+		expect(response?.continuationToken).toStrictEqual(responseContinuationToken);
 	});
 
 	it("Meta should have proper status code", () => {
@@ -59,6 +70,7 @@ describe("Query builder url handling without modifications", () => {
 		zodSchema: z.null(),
 		mapError: (error: KontentSdkError) => error,
 		url: "https://domain.com/api/path",
+		mapExtraResponseProps: () => ({}),
 	};
 	const queries: Query<null, unknown>[] = [
 		createFetchQuery(sharedData),
@@ -70,6 +82,7 @@ describe("Query builder url handling without modifications", () => {
 		createPagedFetchQuery({
 			...sharedData,
 			getNextPageData: () => ({}),
+			mapPagingExtraResponseProps: () => ({}),
 		}),
 	];
 
@@ -90,6 +103,7 @@ describe("Query builder url handling with base url", () => {
 		zodSchema: z.null(),
 		mapError: (error: KontentSdkError) => error,
 		url: "https://domain.com/api/path",
+		mapExtraResponseProps: () => ({}),
 	};
 	const queries: Query<null, unknown>[] = [
 		createFetchQuery(sharedData),
@@ -101,6 +115,7 @@ describe("Query builder url handling with base url", () => {
 		createPagedFetchQuery({
 			...sharedData,
 			getNextPageData: () => ({}),
+			mapPagingExtraResponseProps: () => ({}),
 		}),
 	];
 

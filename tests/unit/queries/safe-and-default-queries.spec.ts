@@ -20,9 +20,9 @@ type QueryTest = {
 type QueryCallback = {
 	readonly callback: () => Promise<void>;
 	readonly title:
-		| keyof FetchQuery<JsonValue, unknown, unknown>
-		| keyof PagedFetchQuery<JsonValue, unknown, unknown>
-		| keyof MutationQuery<JsonValue, null, unknown>;
+		| keyof FetchQuery<JsonValue, unknown, unknown, unknown>
+		| keyof PagedFetchQuery<JsonValue, unknown, unknown, unknown, unknown>
+		| keyof MutationQuery<JsonValue, null, unknown, unknown>;
 };
 
 const successfulBaseQueryConfig: Parameters<typeof createFetchQuery>[0] = {
@@ -37,6 +37,7 @@ const successfulBaseQueryConfig: Parameters<typeof createFetchQuery>[0] = {
 			enable: false,
 		},
 	},
+	mapExtraResponseProps: () => ({}),
 	sdkInfo: getTestSdkInfo(),
 	mapMetadata: () => ({}),
 	mapError: (error) => error,
@@ -57,6 +58,7 @@ const baseQueryConfig: Parameters<typeof createFetchQuery>[0] = {
 			enable: false,
 		},
 	},
+	mapExtraResponseProps: () => ({}),
 	sdkInfo: getTestSdkInfo(),
 	mapMetadata: () => ({}),
 	mapError: (error) => error,
@@ -163,6 +165,7 @@ const unsafeQueries: readonly QueryTest[] = [
 		getQueries: () => {
 			const baseQuery = createPagedFetchQuery({
 				...baseQueryConfig,
+				mapPagingExtraResponseProps: () => ({}),
 				getNextPageData: () => {
 					return {};
 				},
@@ -170,6 +173,7 @@ const unsafeQueries: readonly QueryTest[] = [
 
 			const succeedingBaseQuery = createPagedFetchQuery({
 				...successfulBaseQueryConfig,
+				mapPagingExtraResponseProps: () => ({}),
 				getNextPageData: () => {
 					return {};
 				},

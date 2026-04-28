@@ -44,6 +44,8 @@ describe("Basic paging query with unlimited max count", async () => {
 		zodSchema: z.null(),
 		url: expectedResponseUrls?.[0] ?? "n/a",
 		mapError: (error) => error,
+		mapExtraResponseProps: () => ({}),
+		mapPagingExtraResponseProps: () => ({}),
 	}).fetchAllPagesSafe();
 
 	it("Success should be true", () => {

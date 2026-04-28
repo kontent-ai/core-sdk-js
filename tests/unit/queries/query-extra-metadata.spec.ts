@@ -26,6 +26,7 @@ describe("Query extra metadata", async () => {
 		{
 			testExtraMetadata: string;
 		},
+		unknown,
 		KontentSdkError
 	>({
 		mapMetadata: (response, data) => {
@@ -53,6 +54,7 @@ describe("Query extra metadata", async () => {
 		url: "https://domain.com",
 		requestHeaders: [requestHeader],
 		mapError: (error) => error,
+		mapExtraResponseProps: () => ({}),
 	}).fetchSafe();
 
 	it("Meta should have proper extra metadata", () => {

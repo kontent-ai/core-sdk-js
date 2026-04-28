@@ -2,6 +2,7 @@ import { afterAll, describe, expect, it, vi } from "vitest";
 import z from "zod";
 import type { ExtractNextPageDataFn } from "../../../../lib/http/http.models.js";
 import { getDefaultHttpService } from "../../../../lib/http/http.service.js";
+import { extractContinuationToken } from "../../../../lib/public_api.js";
 import { createPagedFetchQuery } from "../../../../lib/sdk/queries/paged-fetch-sdk-query.js";
 import { getTestSdkInfo, mockGlobalFetchJsonResponse, preventInfinitePaging } from "../../../../lib/testkit/testkit.utils.js";
 
@@ -33,7 +34,7 @@ describe("Basic paging query with continuation token", async () => {
 		getNextPageData: () => {
 			responseIndex++;
 
-			const data: ReturnType<ExtractNextPageDataFn<null, null>> = preventInfinitePaging({
+			const data: ReturnType<ExtractNextPageDataFn<null, unknown, unknown>> = preventInfinitePaging({
 				responseIndex,
 				maxPagesCount,
 				continuationToken: getResponseContinuationToken(responseIndex),
@@ -55,17 +56,29 @@ describe("Basic paging query with continuation token", async () => {
 		zodSchema: z.null(),
 		url: "https://domain.com",
 		mapError: (error) => error,
+		mapExtraResponseProps: (response) => ({
+			continuationToken: extractContinuationToken(response?.adapterResponse.responseHeaders ?? []),
+		}),
+		mapPagingExtraResponseProps: (responses) => ({
+			lastContinuationToken: extractContinuationToken(responses.at(-1)?.meta.responseHeaders ?? []),
+		}),
 	}).fetchAllPagesSafe({ maxPagesCount: maxPagesCount });
 
 	it("Success should be true", () => {
 		expect(success).toBeTruthy();
 	});
 
+	it(`Last continuation token should be set`, () => {
+		expect(lastContinuationToken).toBe(getResponseContinuationToken(maxPagesCount - 1));
+	});
+
 	it(`Responses should be an array of length "${maxPagesCount}"`, () => {
 		expect(responses).toHaveLength(maxPagesCount);
 	});
 
-	it("Last continuation token should be taken from the last response", () => {
-		expect(lastContinuationToken).toEqual(getResponseContinuationToken(maxPagesCount - 1));
+	it(`Responses should have correct continuation tokens`, () => {
+		for (let index = 0; index < (responses ?? []).length; index++) {
+			expect(responses?.[index]?.continuationToken).toBe(getResponseContinuationToken(index));
+		}
 	});
 });

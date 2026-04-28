@@ -15,6 +15,7 @@ describe("resolveQuery - invalid baseUrl host", async () => {
 		sdkInfo: getTestSdkInfo(),
 		mapMetadata: () => ({}),
 		mapError: (error) => error,
+		mapExtraResponseProps: () => ({}),
 	});
 
 	it(`Error reason should be '${"invalidUrl" satisfies ErrorReason}'`, () => {
@@ -38,6 +39,7 @@ describe("resolveQuery - valid response matching zod schema", async () => {
 		sdkInfo: getTestSdkInfo(),
 		mapMetadata: () => ({}),
 		mapError: (error) => error,
+		mapExtraResponseProps: () => ({}),
 	});
 
 	it("Should succeed", () => {
@@ -64,6 +66,7 @@ describe("resolveQuery - response not matching zod schema", async () => {
 		sdkInfo: getTestSdkInfo(),
 		mapMetadata: () => ({}),
 		mapError: (error) => error,
+		mapExtraResponseProps: () => ({}),
 	});
 
 	it(`Error reason should be '${"validationFailed" satisfies ErrorReason}'`, () => {
@@ -84,6 +87,7 @@ describe("resolveQuery - custom httpService from config is used", async () => {
 		sdkInfo: getTestSdkInfo(),
 		mapMetadata: () => ({}),
 		mapError: (error) => error,
+		mapExtraResponseProps: () => ({}),
 	});
 
 	it("Should call request on the provided httpService", () => {
@@ -106,6 +110,7 @@ describe("resolveQuery - authorization header is applied", async () => {
 		sdkInfo: getTestSdkInfo(),
 		mapMetadata: () => ({}),
 		mapError: (error) => error,
+		mapExtraResponseProps: () => ({}),
 	});
 
 	it("Should include the authorization header in the request", () => {
@@ -138,6 +143,7 @@ describe("resolveQuery - default httpService is used when none provided in confi
 			sdkInfo: getTestSdkInfo(),
 			mapMetadata: () => ({}),
 			mapError: (error) => error,
+			mapExtraResponseProps: () => ({}),
 		});
 
 		expect(success).toBe(true);
@@ -154,6 +160,7 @@ describe("resolveQuery - invalid URL", async () => {
 		sdkInfo: getTestSdkInfo(),
 		mapMetadata: () => ({}),
 		mapError: (error) => error,
+		mapExtraResponseProps: () => ({}),
 	});
 
 	it(`Error reason should be '${"invalidUrl" satisfies ErrorReason}'`, () => {
