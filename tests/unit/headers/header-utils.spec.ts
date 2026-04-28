@@ -7,7 +7,7 @@ import {
 	getRetryAfterHeaderValue,
 } from "../../../lib/utils/header.utils.js";
 
-describe("getSdkIdHeader", () => {
+describe("createSdkIdHeader", () => {
 	it("Should return a header with name 'X-KC-SDKID'", () => {
 		const info: SdkInfo = { host: "sdk", name: "test-sdk", version: "1.0.0" };
 
