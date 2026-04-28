@@ -32,7 +32,7 @@
 		}
 	},
 	"type": "module",
-	"packageManager": "pnpm@10.33.0",
+	"packageManager": "pnpm@10.33.2",
 	"scripts": {
 		"prepublishOnly": "pnpm run build && pnpm run test",
 		"build": "pnpm run lint && pnpm run clean && pnpm run build:ts && pnpm run update:version",
@@ -53,7 +53,7 @@
 		"zod": "^4"
 	},
 	"devDependencies": {
-		"@biomejs/biome": "2.4.12",
+		"@biomejs/biome": "2.4.13",
 		"@kontent-ai/biome-config": "0.7.0",
 		"@kontent-ai/eslint-config": "2.4.1",
 		"@types/node": "25.6.0",
@@ -61,6 +61,6 @@
 		"eslint": "10.2.1",
 		"tsx": "4.21.0",
 		"vitest": "4.1.5",
-		"@typescript/native-preview": "7.0.0-dev.20260423.1"
+		"@typescript/native-preview": "7.0.0-dev.20260428.1"
 	}
 }
