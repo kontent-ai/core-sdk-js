@@ -3,9 +3,9 @@ import { coreSdkInfo } from "../../../lib/core-sdk-info.js";
 import { getDefaultHttpService } from "../../../lib/http/http.service.js";
 import type { Header, KnownHeaderName } from "../../../lib/models/core.models.js";
 import { mockGlobalFetchJsonResponse } from "../../../lib/testkit/testkit.utils.js";
-import { getSdkIdHeader } from "../../../lib/utils/header.utils.js";
+import { createSdkIdHeader } from "../../../lib/utils/header.utils.js";
 
-const sdkIdHeader = getSdkIdHeader(coreSdkInfo);
+const sdkIdHeader = createSdkIdHeader(coreSdkInfo);
 
 describe("Default headers", async () => {
 	afterAll(() => {

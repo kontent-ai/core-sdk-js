@@ -4,7 +4,7 @@ import type { Header, HttpMethod, KnownHeaderName } from "../../../lib/models/co
 import type { KontentSdkError } from "../../../lib/public_api.js";
 import { createFetchQuery } from "../../../lib/sdk/queries/fetch-sdk-query.js";
 import { getTestHttpServiceWithJsonResponse, getTestSdkInfo } from "../../../lib/testkit/testkit.utils.js";
-import { getSdkIdHeader } from "../../../lib/utils/header.utils.js";
+import { createSdkIdHeader } from "../../../lib/utils/header.utils.js";
 
 describe("Query extra metadata", async () => {
 	const responseContinuationToken = "fake-continuation-token";
@@ -79,7 +79,7 @@ describe("Query extra metadata", async () => {
 
 	it("Request headers should contain sdk id header", () => {
 		expect(mappedRequestHeaders?.find((m) => m.name === ("X-KC-SDKID" satisfies KnownHeaderName))).toStrictEqual(
-			getSdkIdHeader(getTestSdkInfo()),
+			createSdkIdHeader(getTestSdkInfo()),
 		);
 	});
 });

@@ -13,7 +13,7 @@ import {
 	isKontentSdkError,
 	toInvalidResponseMessage,
 } from "../utils/error.utils.js";
-import { findHeaderByName, getSdkIdHeader, isApplicationJsonResponseType } from "../utils/header.utils.js";
+import { createSdkIdHeader, findHeaderByName, isApplicationJsonResponseType } from "../utils/header.utils.js";
 import { resolveDefaultRetryStrategyOptions, runWithRetry } from "../utils/retry.utils.js";
 import { type TryCatchResult, tryCatch, tryCatchAsync } from "../utils/try-catch.utils.js";
 import { getDefaultHttpAdapter } from "./http.adapter.js";
@@ -517,7 +517,7 @@ function buildRequestHeaders({
 		.returnType<Header | undefined>()
 		.with({ existingContentTypeHeader: P.nullish, body: P.nonNullable }, ({ body }) => createDefaultContentTypeHeader(body))
 		.otherwise(() => undefined);
-	const sdkVersionHeader = existingSdkVersionHeader ? undefined : getSdkIdHeader(coreSdkInfo);
+	const sdkVersionHeader = existingSdkVersionHeader ? undefined : createSdkIdHeader(coreSdkInfo);
 
 	const contentLengthHeader = isBlob(body) ? createDefaultContentLengthHeader(body) : undefined;
 

@@ -1,6 +1,6 @@
 import type { Header, KnownHeaderName, SdkInfo } from "../models/core.models.js";
 
-export function getSdkIdHeader(info: SdkInfo): Header {
+export function createSdkIdHeader(info: SdkInfo): Header {
 	return {
 		name: "X-KC-SDKID" satisfies KnownHeaderName,
 		value: `${info.host};${info.name};${info.version}`,

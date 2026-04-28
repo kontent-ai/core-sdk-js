@@ -1,5 +1,5 @@
 import { type Mock, vi } from "vitest";
-import type { ExtractNextPageDataFn, HttpService, HttpStatusCode } from "../http/http.models.js";
+import type { GetNextPageData, HttpService, HttpStatusCode } from "../http/http.models.js";
 import { getDefaultHttpService } from "../http/http.service.js";
 import type { KnownHeaderName, RetryStrategyOptions, SdkInfo } from "../models/core.models.js";
 import type { JsonValue } from "../models/json.models.js";
@@ -96,7 +96,7 @@ export function preventInfinitePaging({
 	readonly maxPagesCount: number;
 	readonly continuationToken?: string;
 	readonly nextPageUrl?: string | undefined;
-}): ReturnType<ExtractNextPageDataFn<null, null, unknown>> {
+}): ReturnType<GetNextPageData<null, null, unknown>> {
 	if (responseIndex >= maxPagesCount + upperBoundLimitForInfinitePaging) {
 		throw new Error("Infinite paging detected");
 	}

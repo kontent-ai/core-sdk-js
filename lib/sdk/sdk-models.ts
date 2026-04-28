@@ -5,7 +5,7 @@
 
 import type z from "zod";
 import type { ZodType } from "zod";
-import type { AdapterPayload, AdapterResponse, HttpRequestBody, HttpResponse, HttpService, PaginationConfig } from "../http/http.models.js";
+import type { AdapterPayload, AdapterResponse, HttpRequestBody, HttpResponse, HttpService, PagingConfig } from "../http/http.models.js";
 import type { Header, HttpMethod, SdkInfo } from "../models/core.models.js";
 import type { KontentSdkError } from "../models/error.models.js";
 import type { JsonValue } from "../models/json.models.js";
@@ -61,7 +61,7 @@ export type Query<TResponsePayload extends JsonValue, TError> = {
 };
 
 export type FetchQuery<TResponsePayload extends JsonValue, TMeta, TExtraProps, TError> = Query<TResponsePayload, TError> & {
-	fetchSafe(): Promise<SafeQueryResponse<QueryResponse<TResponsePayload, TMeta, TExtraProps>, TError>>;
+	fetchSafe(): Promise<SafeQueryResult<QueryResponse<TResponsePayload, TMeta, TExtraProps>, TError>>;
 	fetch(): Promise<QueryResponse<TResponsePayload, TMeta, TExtraProps>>;
 };
 
@@ -69,24 +69,24 @@ export type PagedFetchQuery<TResponsePayload extends JsonValue, TMeta, TExtraPro
 	TResponsePayload,
 	TError
 > & {
-	fetchPageSafe(): Promise<SafeQueryResponse<QueryResponse<TResponsePayload, TMeta, TExtraProps>, TError>>;
+	fetchPageSafe(): Promise<SafeQueryResult<QueryResponse<TResponsePayload, TMeta, TExtraProps>, TError>>;
 	fetchPage(): Promise<QueryResponse<TResponsePayload, TMeta, TExtraProps>>;
 	fetchAllPagesSafe(
-		config?: PaginationConfig,
+		config?: PagingConfig,
 	): Promise<SafePagingQueryResult<QueryResponse<TResponsePayload, TMeta, TExtraProps>, TPagingExtraProps, TError>>;
 	fetchAllPages(
-		config?: PaginationConfig,
+		config?: PagingConfig,
 	): Promise<PagingQueryResponse<QueryResponse<TResponsePayload, TMeta, TExtraProps>, TPagingExtraProps>>;
-	pagesSafe(config?: PaginationConfig): AsyncGenerator<SafeQueryResponse<QueryResponse<TResponsePayload, TMeta, TExtraProps>, TError>>;
-	pages(config?: PaginationConfig): AsyncGenerator<QueryResponse<TResponsePayload, TMeta, TExtraProps>>;
+	pagesSafe(config?: PagingConfig): AsyncGenerator<SafeQueryResult<QueryResponse<TResponsePayload, TMeta, TExtraProps>, TError>>;
+	pages(config?: PagingConfig): AsyncGenerator<QueryResponse<TResponsePayload, TMeta, TExtraProps>>;
 };
 
 export type MutationQuery<TResponsePayload extends JsonValue, TMeta, TExtraProps, TError> = Query<TResponsePayload, TError> & {
-	executeSafe(): Promise<SafeQueryResponse<QueryResponse<TResponsePayload, TMeta, TExtraProps>, TError>>;
+	executeSafe(): Promise<SafeQueryResult<QueryResponse<TResponsePayload, TMeta, TExtraProps>, TError>>;
 	execute(): Promise<QueryResponse<TResponsePayload, TMeta, TExtraProps>>;
 };
 
-export type NextPageStateWithRequest =
+export type PendingNextPageState =
 	| {
 			readonly pageSource: "continuationToken";
 			readonly hasNextPage: true;
@@ -116,7 +116,7 @@ export type SuccessfulHttpResponse<TResponsePayload extends AdapterPayload, TReq
  *
  * Ensures that consumers of this library handle both success and failure cases.
  */
-export type SafeQueryResponse<TResponsePayload, TError> =
+export type SafeQueryResult<TResponsePayload, TError> =
 	| Success<{ readonly response: TResponsePayload }>
 	| Failure<{ readonly response?: never }, TError>;
 
@@ -137,11 +137,10 @@ export type SafePagingQueryResult<TResponsePayload, TExtraProps, TError> =
 
 export type PagingQueryResponse<TResponsePayload, TExtraProps> = {
 	readonly responses: readonly TResponsePayload[];
-	readonly test?: unknown;
 } & TExtraProps;
 
 export type ResolveQueryResult<TResponsePayload extends JsonValue, TMeta, TExtraProps, TError> = Promise<
-	SafeQueryResponse<QueryResponse<TResponsePayload, TMeta, TExtraProps>, TError>
+	SafeQueryResult<QueryResponse<TResponsePayload, TMeta, TExtraProps>, TError>
 >;
 
 export type FetchQueryRequest<TResponsePayload extends JsonValue, TMeta, TExtraProps, TError> = Pick<
@@ -219,10 +218,10 @@ type ErrorMapper<TError> = {
 
 type MetadataMapper<TResponsePayload extends JsonValue, TRequestBody extends HttpRequestBody, TMeta> = (
 	response: SuccessfulHttpResponse<TResponsePayload, TRequestBody>,
-	data: MetadataContextData,
+	data: MetadataContext,
 ) => TMeta;
 
-type MetadataContextData = {
+type MetadataContext = {
 	readonly continuationToken: string | undefined;
 };
 

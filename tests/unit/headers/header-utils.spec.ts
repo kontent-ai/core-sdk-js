@@ -3,21 +3,21 @@ import type { Header, KnownHeaderName, SdkInfo } from "../../../lib/models/core.
 import {
 	createAuthorizationHeader,
 	createContinuationHeader,
+	createSdkIdHeader,
 	getRetryAfterHeaderValue,
-	getSdkIdHeader,
 } from "../../../lib/utils/header.utils.js";
 
 describe("getSdkIdHeader", () => {
 	it("Should return a header with name 'X-KC-SDKID'", () => {
 		const info: SdkInfo = { host: "sdk", name: "test-sdk", version: "1.0.0" };
 
-		expect(getSdkIdHeader(info).name).toStrictEqual("X-KC-SDKID" satisfies KnownHeaderName);
+		expect(createSdkIdHeader(info).name).toStrictEqual("X-KC-SDKID" satisfies KnownHeaderName);
 	});
 
 	it("Should format the value as 'host;name;version'", () => {
 		const info: SdkInfo = { host: "sdk", name: "test-sdk", version: "1.0.0" };
 
-		expect(getSdkIdHeader(info).value).toStrictEqual("sdk;test-sdk;1.0.0");
+		expect(createSdkIdHeader(info).value).toStrictEqual("sdk;test-sdk;1.0.0");
 	});
 });
 

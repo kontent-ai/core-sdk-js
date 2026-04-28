@@ -104,14 +104,14 @@ export type AdapterRequestOptions = {
 
 export type AdapterDownloadOptions = Pick<AdapterRequestOptions, "url" | "requestHeaders" | "abortSignal">;
 
-export type ExtractNextPageDataFn<TResponsePayload extends JsonValue, TMeta, TExtraProps> = (
+export type GetNextPageData<TResponsePayload extends JsonValue, TMeta, TExtraProps> = (
 	response: QueryResponse<TResponsePayload, TMeta, TExtraProps>,
 ) => {
 	readonly continuationToken?: string | undefined;
 	readonly nextPageUrl?: string | undefined;
 };
 
-export type PaginationConfig = {
+export type PagingConfig = {
 	/**
 	 * The maximum number of pages to fetch. If not provided or set to 0, the pagination will continue until the last page is reached.
 	 */

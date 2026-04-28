@@ -9,7 +9,7 @@ import type { Header, KnownHeaderName, SdkInfo } from "../models/core.models.js"
 import type { ErrorDetailsFor, KontentSdkError } from "../models/error.models.js";
 import type { JsonValue } from "../models/json.models.js";
 import { createSdkError } from "../utils/error.utils.js";
-import { createAuthorizationHeader, createContinuationHeader, extractContinuationToken, getSdkIdHeader } from "../utils/header.utils.js";
+import { createAuthorizationHeader, createContinuationHeader, createSdkIdHeader, extractContinuationToken } from "../utils/header.utils.js";
 import { type Failure, type TryCatchResult, tryCatch } from "../utils/try-catch.utils.js";
 import type {
 	BaseUrl,
@@ -17,7 +17,7 @@ import type {
 	QueryInspection,
 	QueryResponse,
 	ResolvedQueryData,
-	SafeQueryResponse,
+	SafeQueryResult,
 	SdkConfig,
 	SuccessfulHttpResponse,
 } from "./sdk-models.js";
@@ -52,7 +52,7 @@ export function inspectQuery<TError>(
 
 export async function resolveQuery<TResponsePayload extends JsonValue, TRequestBody extends HttpRequestBody, TMeta, TExtraProps, TError>(
 	data: QueryInputData<TResponsePayload, TRequestBody, TMeta, TExtraProps, TError>,
-): Promise<SafeQueryResponse<QueryResponse<TResponsePayload, TMeta, TExtraProps>, TError>> {
+): Promise<SafeQueryResult<QueryResponse<TResponsePayload, TMeta, TExtraProps>, TError>> {
 	const { success, data: resolvedQueryData, error } = prepareQueryData(data);
 	if (!success) {
 		return { success: false, error };
@@ -98,9 +98,9 @@ async function executeQuery<TResponsePayload extends JsonValue, TRequestBody ext
 	responseValidation,
 	mapError,
 	mapMetadata,
-	mapExtraResponseProps: mapExtraProps,
+	mapExtraResponseProps,
 }: ResolvedQueryData<TResponsePayload, TRequestBody, TMeta, TExtraProps, TError>): Promise<
-	SafeQueryResponse<QueryResponse<TResponsePayload, TMeta, TExtraProps>, TError>
+	SafeQueryResult<QueryResponse<TResponsePayload, TMeta, TExtraProps>, TError>
 > {
 	const { success, response, error } = await httpService.request<TResponsePayload, TRequestBody>({
 		body,
@@ -126,7 +126,7 @@ async function executeQuery<TResponsePayload extends JsonValue, TRequestBody ext
 	return {
 		success: true,
 		response: {
-			...mapExtraProps(response),
+			...mapExtraResponseProps(response),
 			payload: response.payload,
 			meta: {
 				...mapMetadata(response, { continuationToken: continuationTokenFromResponse }),
@@ -273,7 +273,7 @@ function getCombinedRequestHeaders({
 	readonly sdkInfo: SdkInfo;
 }): readonly Header[] {
 	return [
-		getSdkIdHeader(sdkInfo),
+		createSdkIdHeader(sdkInfo),
 		...requestHeaders.filter((header) => header.name !== ("X-KC-SDKID" satisfies KnownHeaderName)),
 		...(continuationToken ? [createContinuationHeader(continuationToken)] : []),
 		...(authorizationApiKey ? [createAuthorizationHeader(authorizationApiKey)] : []),

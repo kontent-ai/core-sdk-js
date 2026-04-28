@@ -8,7 +8,7 @@ export type {
 	AdapterResponse,
 	DefaultHttpServiceOptions,
 	DownloadFileRequestOptions,
-	ExtractNextPageDataFn,
+	GetNextPageData,
 	HttpAdapter,
 	HttpRequestBody,
 	HttpResponse,
@@ -16,7 +16,7 @@ export type {
 	HttpService,
 	HttpServiceRequestOptions,
 	HttpStatusCode,
-	PaginationConfig,
+	PagingConfig,
 	UploadFileRequestOptions,
 } from "./http/http.models.js";
 export { getDefaultHttpService } from "./http/http.service.js";
@@ -57,14 +57,14 @@ export type {
 	QueryResponse,
 	QueryResponseMeta,
 	SafePagingQueryResult,
-	SafeQueryResponse,
+	SafeQueryResult,
 	SdkConfig,
 	SuccessfulHttpResponse,
 } from "./sdk/sdk-models.js";
 export { isPagingQuery } from "./sdk/sdk-utils.js";
 export { isDefined } from "./utils/core.utils.js";
 export { isKontent404Error, isKontentSdkError } from "./utils/error.utils.js";
-export { extractContinuationToken, getSdkIdHeader } from "./utils/header.utils.js";
+export { createSdkIdHeader, extractContinuationToken } from "./utils/header.utils.js";
 export { resolveDefaultRetryStrategyOptions } from "./utils/retry.utils.js";
 export { tryCatch, tryCatchAsync } from "./utils/try-catch.utils.js";
 export { getCodenameSchema } from "./utils/type.utils.js";
