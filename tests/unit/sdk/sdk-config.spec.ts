@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { codenameOf, codenameSchema } from "../../../lib/sdk/sdk-config.js";
+import { codenameOf, codenameOfWithStringFallback, codenameSchema } from "../../../lib/sdk/sdk-config.js";
 
 describe("getCodenameSchema", () => {
 	it("Should validate against provided codenames when provided", () => {
@@ -22,6 +22,22 @@ describe("getCodenameSchema", () => {
 
 		expect(validString.success).toBe(true);
 		expect(invalidNonString.success).toBe(false);
+	});
+});
+
+describe("codenameOfWithStringFallback", () => {
+	it("Should validate against provided codenames when provided", () => {
+		const schema = codenameOfWithStringFallback(["article", "product"] as const);
+
+		expect(schema.safeParse("article").success).toBe(true);
+		expect(schema.safeParse("product").success).toBe(true);
+		expect(schema.safeParse("other").success).toBe(false);
+	});
+
+	it("Should accept any string including invalid codename format when codenames are not provided", () => {
+		const schema = codenameOfWithStringFallback(undefined);
+
+		expect(schema.safeParse("any-codename").success).toBe(true);
 	});
 });
 

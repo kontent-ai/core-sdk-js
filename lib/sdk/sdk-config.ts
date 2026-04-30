@@ -13,3 +13,9 @@ export function codenameOf<const TCodenames extends z.infer<typeof codenameSchem
 ): z.ZodType<TCodenames> {
 	return (codenames && codenames.length > 0 ? z.literal(codenames) : codenameSchema) as z.ZodType<TCodenames>;
 }
+
+export function codenameOfWithStringFallback<const TCodenames extends z.infer<typeof codenameSchema>>(
+	codenames: readonly TCodenames[] | undefined,
+): z.ZodType<TCodenames> {
+	return (codenames && codenames.length > 0 ? z.literal(codenames) : z.string()) as z.ZodType<TCodenames>;
+}
