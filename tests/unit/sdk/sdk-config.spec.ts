@@ -17,7 +17,7 @@ describe("getCodenameSchema", () => {
 	it("Should validate against any string when codenames are not provided", () => {
 		const schema = codenameOf(undefined);
 
-		const validString = schema.safeParse("any-codename");
+		const validString = schema.safeParse("any_codename");
 		const invalidNonString = schema.safeParse(123);
 
 		expect(validString.success).toBe(true);
