@@ -36,8 +36,8 @@ describe("Async pages iterator errors", async () => {
 					return await Promise.resolve(null);
 				},
 			}),
-			responseValidation: {
-				enable: false,
+			runtimeValidation: {
+				validateResponses: false,
 			},
 		},
 		sdkInfo: getTestSdkInfo(),

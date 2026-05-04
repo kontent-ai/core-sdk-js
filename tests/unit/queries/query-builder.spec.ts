@@ -30,8 +30,8 @@ describe("Query builder with mapExtraProps", async () => {
 				statusCode: responseStatusCode,
 				continuationToken: responseContinuationToken,
 			}),
-			responseValidation: {
-				enable: false,
+			runtimeValidation: {
+				validateResponses: false,
 			},
 		},
 		sdkInfo: getTestSdkInfo(),

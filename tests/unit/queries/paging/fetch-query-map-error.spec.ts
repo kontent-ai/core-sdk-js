@@ -26,8 +26,8 @@ describe("createFetchQuery mapError", async () => {
 					},
 				},
 			}),
-			responseValidation: {
-				enable: false,
+			runtimeValidation: {
+				validateResponses: false,
 			},
 		},
 		sdkInfo: getTestSdkInfo(),

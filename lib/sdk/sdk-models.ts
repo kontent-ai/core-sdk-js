@@ -42,16 +42,16 @@ export type SdkConfig<TExtendedConfig = unknown> = {
 	readonly baseUrl?: BaseUrl;
 
 	/**
-	 * Configuration for response validation.
+	 * Configuration for runtime validation against expected schema.
 	 */
-	readonly responseValidation?: {
+	readonly runtimeValidation?: {
 		/**
 		 * When enabled, the response data will be validated against the expected Zod schema from which the types
 		 * this library are based on. This ensures that you are working with the correct data types.
 		 *
 		 * @default false
 		 */
-		readonly enable: boolean;
+		readonly validateResponses: boolean;
 	};
 } & TExtendedConfig;
 
@@ -204,7 +204,7 @@ export type ResolvedQueryData<TPayload extends JsonValue, TBody extends HttpRequ
 	readonly method: HttpMethod;
 	readonly abortSignal?: AbortSignal | undefined;
 	readonly zodSchema: ZodType<TPayload>;
-	readonly responseValidation: SdkConfig["responseValidation"];
+	readonly responseValidation: SdkConfig["runtimeValidation"];
 } & MetadataMapperConfig<TPayload, TBody, TMeta> &
 	ExtraResponsePropsMapper<TPayload, TBody, TExtra> &
 	ErrorMapper<TError>;

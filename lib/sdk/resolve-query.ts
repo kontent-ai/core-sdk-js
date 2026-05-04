@@ -79,7 +79,7 @@ function prepareQueryData<TPayload extends JsonValue, TBody extends HttpRequestB
 			method: data.method,
 			abortSignal: data.abortSignal,
 			zodSchema: data.zodSchema,
-			responseValidation: data.config.responseValidation,
+			responseValidation: data.config.runtimeValidation,
 			mapError: data.mapError,
 			mapMetadata: data.mapMetadata,
 			mapExtraResponseProps: data.mapExtraResponseProps,
@@ -112,8 +112,8 @@ async function executeQuery<TPayload extends JsonValue, TBody extends HttpReques
 		return { success: false, error: mapError(error) };
 	}
 
-	if (responseValidation?.enable) {
-		const validationError = await validateResponse({ url: response.adapterResponse.url, response, zodSchema });
+	if (responseValidation?.validateResponses) {
+		const validationError = await parseResponse({ url: response.adapterResponse.url, response, zodSchema });
 
 		if (validationError) {
 			return { success: false, error: mapError(validationError.error) };
@@ -221,7 +221,7 @@ function setBaseUrl(url: URL, baseUrl: BaseUrl): TryCatchResult<URL, KontentSdkE
 	};
 }
 
-async function validateResponse<TPayload extends JsonValue, TBody extends HttpRequestBody>({
+async function parseResponse<TPayload extends JsonValue, TBody extends HttpRequestBody>({
 	url,
 	response,
 	zodSchema,
@@ -237,13 +237,13 @@ async function validateResponse<TPayload extends JsonValue, TBody extends HttpRe
 			success: false,
 			error: createSdkError({
 				baseErrorData: {
-					message: `Failed to validate response schema for url '${url.toString()}'`,
+					message: `Failed to parse response payload for '${url.toString()}'`,
 					url,
 					retryStrategyOptions: undefined,
 					retryAttempt: undefined,
 				},
 				details: {
-					reason: "validationFailed",
+					reason: "parsingFailed",
 					zodError: error,
 					response,
 					url,

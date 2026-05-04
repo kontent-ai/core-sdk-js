@@ -30,8 +30,8 @@ const successfulBaseQueryConfig: Parameters<typeof createFetchQuery>[0] = {
 			statusCode: 200,
 			jsonResponse: null,
 		}),
-		responseValidation: {
-			enable: false,
+		runtimeValidation: {
+			validateResponses: false,
 		},
 	},
 	mapExtraResponseProps: () => ({}),
@@ -51,8 +51,8 @@ const baseQueryConfig: Parameters<typeof createFetchQuery>[0] = {
 				},
 			},
 		}),
-		responseValidation: {
-			enable: false,
+		runtimeValidation: {
+			validateResponses: false,
 		},
 	},
 	mapExtraResponseProps: () => ({}),

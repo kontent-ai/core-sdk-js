@@ -33,7 +33,7 @@ describe("resolveQuery - valid response matching zod schema", async () => {
 		body: null,
 		config: {
 			httpService: getTestHttpServiceWithJsonResponse({ statusCode: 200, jsonResponse }),
-			responseValidation: { enable: true },
+			runtimeValidation: { validateResponses: true },
 		},
 		zodSchema,
 		sdkInfo: getTestSdkInfo(),
@@ -60,7 +60,7 @@ describe("resolveQuery - response not matching zod schema", async () => {
 		body: null,
 		config: {
 			httpService: getTestHttpServiceWithJsonResponse({ statusCode: 200, jsonResponse: { name: 123 } }),
-			responseValidation: { enable: true },
+			runtimeValidation: { validateResponses: true },
 		},
 		zodSchema,
 		sdkInfo: getTestSdkInfo(),
@@ -69,8 +69,8 @@ describe("resolveQuery - response not matching zod schema", async () => {
 		mapExtraResponseProps: () => ({}),
 	});
 
-	it(`Error reason should be '${"validationFailed" satisfies ErrorReason}'`, () => {
-		expect(error?.details.reason).toBe("validationFailed" satisfies ErrorReason);
+	it(`Error reason should be '${"parsingFailed" satisfies ErrorReason}'`, () => {
+		expect(error?.details.reason).toBe("parsingFailed" satisfies ErrorReason);
 	});
 });
 
