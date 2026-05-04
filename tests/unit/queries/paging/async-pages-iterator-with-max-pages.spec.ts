@@ -41,6 +41,9 @@ describe("Async pages iterator with max pages count", async () => {
 		mapMetadata: () => null,
 		config: {
 			httpService: getDefaultHttpService(),
+			responseValidation: {
+				enable: false,
+			},
 		},
 		sdkInfo: getTestSdkInfo(),
 		zodSchema: z.null(),

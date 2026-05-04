@@ -34,7 +34,7 @@ export type ErrorDetails =
 	| ReasonData<"invalidUrl", ErrorWithOriginalError>
 	| ReasonData<"aborted", ErrorWithOriginalError>
 	| ReasonData<
-			"parsingFailed",
+			"validationFailed",
 			{
 				readonly zodError: ZodError;
 				readonly response: SuccessfulHttpResponse<AdapterPayload, HttpRequestBody>;

@@ -126,8 +126,8 @@ if (!success) {
       // The request body could not be serialized before the request was sent
       console.error("Invalid body:", error.details.originalError);
       break;
-    case "parsingFailed":
-      // Zod schema validation failed 
+    case "validationFailed":
+      // Zod schema validation failed (when responseValidation is enabled)
       console.error("Unexpected response shape for", error.details.url, error.details.zodError);
       break;
     case "aborted":

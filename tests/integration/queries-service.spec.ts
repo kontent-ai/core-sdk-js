@@ -20,6 +20,9 @@ describe("Integration tests covering Fetch/Mutation queries against the Kontent.
 	const baseMutationConfig = {
 		config: {
 			httpService,
+			responseValidation: {
+				enable: false,
+			},
 		},
 		sdkInfo: getTestSdkInfo(),
 		mapMetadata: () => ({}),

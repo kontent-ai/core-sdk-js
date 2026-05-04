@@ -10,7 +10,7 @@ import type { ErrorDetailsFor, KontentSdkError } from "../models/error.models.js
 import type { JsonValue } from "../models/json.models.js";
 import { createSdkError } from "../utils/error.utils.js";
 import { createAuthorizationHeader, createContinuationHeader, createSdkIdHeader, extractContinuationToken } from "../utils/header.utils.js";
-import { type TryCatchResult, tryCatch } from "../utils/try-catch.utils.js";
+import { type Failure, type TryCatchResult, tryCatch } from "../utils/try-catch.utils.js";
 import type {
 	BaseUrl,
 	QueryInputData,
@@ -79,6 +79,7 @@ function prepareQueryData<TPayload extends JsonValue, TBody extends HttpRequestB
 			method: data.method,
 			abortSignal: data.abortSignal,
 			zodSchema: data.zodSchema,
+			responseValidation: data.config.responseValidation,
 			mapError: data.mapError,
 			mapMetadata: data.mapMetadata,
 			mapExtraResponseProps: data.mapExtraResponseProps,
@@ -94,15 +95,12 @@ async function executeQuery<TPayload extends JsonValue, TBody extends HttpReques
 	method,
 	abortSignal,
 	zodSchema,
+	responseValidation,
 	mapError,
 	mapMetadata,
 	mapExtraResponseProps,
 }: ResolvedQueryData<TPayload, TBody, TMeta, TExtra, TError>): Promise<SafeQueryResult<QueryResponse<TPayload, TMeta, TExtra>, TError>> {
-	const {
-		success: requestSuccess,
-		response,
-		error: requestError,
-	} = await httpService.request<TPayload, TBody>({
+	const { success, response, error } = await httpService.request<TPayload, TBody>({
 		body,
 		url,
 		method,
@@ -110,18 +108,16 @@ async function executeQuery<TPayload extends JsonValue, TBody extends HttpReques
 		requestHeaders,
 	});
 
-	if (!requestSuccess) {
-		return { success: false, error: mapError(requestError) };
+	if (!success) {
+		return { success: false, error: mapError(error) };
 	}
 
-	const {
-		success: parseSuccess,
-		data: parsedPayload,
-		error: parseError,
-	} = await parseResponse({ url: response.adapterResponse.url, response, zodSchema });
+	if (responseValidation?.enable) {
+		const validationError = await validateResponse({ url: response.adapterResponse.url, response, zodSchema });
 
-	if (!parseSuccess) {
-		return { success: false, error: mapError(parseError) };
+		if (validationError) {
+			return { success: false, error: mapError(validationError.error) };
+		}
 	}
 
 	const continuationTokenFromResponse = extractContinuationToken(response.adapterResponse.responseHeaders);
@@ -129,7 +125,7 @@ async function executeQuery<TPayload extends JsonValue, TBody extends HttpReques
 		success: true,
 		response: {
 			...mapExtraResponseProps(response),
-			payload: parsedPayload,
+			payload: response.payload,
 			meta: {
 				...mapMetadata(response, { continuationToken: continuationTokenFromResponse }),
 				url: response.adapterResponse.url,
@@ -225,7 +221,7 @@ function setBaseUrl(url: URL, baseUrl: BaseUrl): TryCatchResult<URL, KontentSdkE
 	};
 }
 
-async function parseResponse<TPayload extends JsonValue, TBody extends HttpRequestBody>({
+async function validateResponse<TPayload extends JsonValue, TBody extends HttpRequestBody>({
 	url,
 	response,
 	zodSchema,
@@ -233,21 +229,21 @@ async function parseResponse<TPayload extends JsonValue, TBody extends HttpReque
 	readonly url: URL;
 	readonly response: SuccessfulHttpResponse<TPayload, TBody>;
 	readonly zodSchema: ZodType<TPayload>;
-}): Promise<TryCatchResult<TPayload, KontentSdkError>> {
-	const { success, error, data } = await zodSchema.safeParseAsync(response.payload);
+}): Promise<Failure<{ readonly response?: never }, KontentSdkError> | undefined> {
+	const { success, error } = await zodSchema.safeParseAsync(response.payload);
 
 	if (!success) {
 		return {
 			success: false,
 			error: createSdkError({
 				baseErrorData: {
-					message: `Failed to parse response schema for url '${url.toString()}'`,
+					message: `Failed to validate response schema for url '${url.toString()}'`,
 					url,
 					retryStrategyOptions: undefined,
 					retryAttempt: undefined,
 				},
 				details: {
-					reason: "parsingFailed",
+					reason: "validationFailed",
 					zodError: error,
 					response,
 					url,
@@ -256,7 +252,7 @@ async function parseResponse<TPayload extends JsonValue, TBody extends HttpReque
 		};
 	}
 
-	return { success: true, data };
+	return undefined;
 }
 
 function getHttpService(config: SdkConfig): HttpService {
