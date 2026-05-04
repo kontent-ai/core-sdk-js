@@ -30,9 +30,6 @@ describe("Query builder with mapExtraProps", async () => {
 				statusCode: responseStatusCode,
 				continuationToken: responseContinuationToken,
 			}),
-			responseValidation: {
-				enable: false,
-			},
 		},
 		sdkInfo: getTestSdkInfo(),
 		zodSchema: z.null(),

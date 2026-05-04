@@ -213,7 +213,7 @@ function canRetryError({
 						"invalidUrl",
 						"notFound",
 						"unauthorized",
-						"validationFailed",
+						"parsingFailed",
 						"aborted",
 						"parseError",
 					),

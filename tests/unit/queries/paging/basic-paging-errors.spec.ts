@@ -36,9 +36,6 @@ describe("Basic paging errors", async () => {
 					return await Promise.resolve(null);
 				},
 			}),
-			responseValidation: {
-				enable: false,
-			},
 		},
 		sdkInfo: getTestSdkInfo(),
 		zodSchema: z.null(),

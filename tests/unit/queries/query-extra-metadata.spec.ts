@@ -44,9 +44,6 @@ describe("Query extra metadata", async () => {
 				statusCode: responseStatusCode,
 				continuationToken: responseContinuationToken,
 			}),
-			responseValidation: {
-				enable: false,
-			},
 		},
 		sdkInfo: getTestSdkInfo(),
 		zodSchema: z.null(),
