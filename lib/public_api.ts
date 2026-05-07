@@ -44,7 +44,12 @@ export type { EmptyObject, PickStringLiteral } from "./models/utility.types.js";
 export { createFetchQuery } from "./sdk/queries/fetch-sdk-query.js";
 export { createMutationQuery } from "./sdk/queries/mutation-sdk-query.js";
 export { createPagedFetchQuery } from "./sdk/queries/paged-fetch-sdk-query.js";
-export { codenameOf, codenameOfWithStringFallback, codenameSchema, kontentUuidSchema, nilUuid } from "./sdk/sdk-config.js";
+export {
+	codenameOf,
+	kontentUuidSchema,
+	nilUuid,
+	strictCodenameSchema,
+} from "./sdk/sdk-config.js";
 export type {
 	BaseUrl,
 	FetchQuery,
