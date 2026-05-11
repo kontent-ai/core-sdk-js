@@ -16,7 +16,7 @@ class CustomSdkError extends Error {
 
 describe("createFetchQuery mapError", async () => {
 	const { error } = await createFetchQuery({
-		zodSchema: z.null(),
+		zodSchema: async () => Promise.resolve(z.null()),
 		url: "https://domain.com",
 		config: {
 			httpService: getDefaultHttpService({

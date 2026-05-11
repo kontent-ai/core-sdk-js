@@ -46,7 +46,7 @@ describe("Async pages iterator with max pages count", async () => {
 			},
 		},
 		sdkInfo: getTestSdkInfo(),
-		zodSchema: z.null(),
+		zodSchema: async () => Promise.resolve(z.null()),
 		url: expectedResponseUrls?.[0] ?? "n/a",
 		mapError: (error) => error,
 		mapExtraResponseProps: () => ({}),

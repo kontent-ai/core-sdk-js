@@ -49,7 +49,7 @@ describe("Query extra metadata", async () => {
 			},
 		},
 		sdkInfo: getTestSdkInfo(),
-		zodSchema: z.null(),
+		zodSchema: async () => Promise.resolve(z.null()),
 		url: "https://domain.com",
 		requestHeaders: [requestHeader],
 		mapError: (error) => error,

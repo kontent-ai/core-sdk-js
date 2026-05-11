@@ -26,10 +26,13 @@ const expectedMetadata: Metadata = {
 
 describe("createFetchQuery mapMetadata", async () => {
 	const { response } = await createFetchQuery<ResponsePayload, KontentSdkError, Metadata>({
-		zodSchema: z.object({
-			id: z.string(),
-			name: z.string(),
-		}),
+		zodSchema: async () =>
+			Promise.resolve(
+				z.object({
+					id: z.string(),
+					name: z.string(),
+				}),
+			),
 		url: "https://domain.com",
 		config: {
 			httpService: getTestHttpServiceWithJsonResponse({

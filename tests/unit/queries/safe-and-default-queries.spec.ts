@@ -23,7 +23,7 @@ type QueryCallback = {
 };
 
 const successfulBaseQueryConfig: Parameters<typeof createFetchQuery>[0] = {
-	zodSchema: z.null(),
+	zodSchema: async () => Promise.resolve(z.null()),
 	url: "https://domain.com",
 	config: {
 		httpService: getTestHttpServiceWithJsonResponse({
@@ -41,7 +41,7 @@ const successfulBaseQueryConfig: Parameters<typeof createFetchQuery>[0] = {
 };
 
 const baseQueryConfig: Parameters<typeof createFetchQuery>[0] = {
-	zodSchema: z.null(),
+	zodSchema: async () => Promise.resolve(z.null()),
 	url: "https://domain.com",
 	config: {
 		httpService: getDefaultHttpService({

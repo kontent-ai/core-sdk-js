@@ -30,9 +30,12 @@ describe("Integration tests covering Fetch/Mutation queries against the Kontent.
 
 	const uploadBinaryFileQuery: MutationQuery<{ readonly id: string }, KontentSdkError> = createMutationQuery({
 		...baseMutationConfig,
-		zodSchema: z.object({
-			id: z.string(),
-		}),
+		zodSchema: async () =>
+			Promise.resolve(
+				z.object({
+					id: z.string(),
+				}),
+			),
 		method: "POST",
 		url: config.urls.getUploadAssetBinaryFileUrl("core-sdk.txt"),
 		body: config.fileToUpload,
@@ -43,10 +46,13 @@ describe("Integration tests covering Fetch/Mutation queries against the Kontent.
 	const addAssetQueryFactory = (binaryFileId: string): MutationQuery<{ readonly id: string; readonly url: string }, KontentSdkError> =>
 		createMutationQuery({
 			...baseMutationConfig,
-			zodSchema: z.object({
-				id: z.string(),
-				url: z.string(),
-			}),
+			zodSchema: async () =>
+				Promise.resolve(
+					z.object({
+						id: z.string(),
+						url: z.string(),
+					}),
+				),
 			method: "POST",
 			url: config.urls.addAssetUrl,
 			body: {
@@ -63,7 +69,7 @@ describe("Integration tests covering Fetch/Mutation queries against the Kontent.
 	const deleteAssetQueryFactory = (assetId: string): MutationQuery<null, KontentSdkError> =>
 		createMutationQuery({
 			...baseMutationConfig,
-			zodSchema: z.null(),
+			zodSchema: async () => Promise.resolve(z.null()),
 			method: "DELETE",
 			url: config.urls.getDeleteAssetUrl(assetId),
 			body: null,

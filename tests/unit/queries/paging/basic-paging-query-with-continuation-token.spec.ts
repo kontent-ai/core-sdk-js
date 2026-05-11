@@ -53,7 +53,7 @@ describe("Basic paging query with continuation token", async () => {
 			},
 		},
 		sdkInfo: getTestSdkInfo(),
-		zodSchema: z.null(),
+		zodSchema: async () => Promise.resolve(z.null()),
 		url: "https://domain.com",
 		mapError: (error) => error,
 		mapExtraResponseProps: (response) => ({

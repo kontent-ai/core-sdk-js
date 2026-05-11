@@ -113,7 +113,11 @@ async function executeQuery<TPayload extends JsonValue, TBody extends HttpReques
 	}
 
 	if (responseValidation?.validateResponses) {
-		const validationError = await parseResponse({ url: response.adapterResponse.url, response, zodSchema });
+		const validationError = await parseResponse({
+			url: response.adapterResponse.url,
+			response,
+			zodSchema: await zodSchema(),
+		});
 
 		if (validationError) {
 			return { success: false, error: mapError(validationError.error) };
