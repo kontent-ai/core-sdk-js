@@ -33,6 +33,7 @@
 	},
 	"type": "module",
 	"packageManager": "pnpm@10.33.2",
+	"sideEffects": false,
 	"scripts": {
 		"prepublishOnly": "pnpm run build && pnpm run test",
 		"build": "pnpm run lint && pnpm run clean && pnpm run build:ts && pnpm run update:version",
