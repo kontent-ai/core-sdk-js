@@ -53,7 +53,6 @@ describe("Async pages iterator with unlimited max count", async () => {
 		mapError: (error) => error,
 		mapExtraResponseProps: () => ({}),
 		mapPagingExtraResponseProps: () => ({}),
-		transformPayload: (payload) => payload,
 	}).pagesSafe();
 
 	const responses: QueryResponse<null>[] = [];
@@ -117,7 +116,6 @@ describe("Async pages iterator fetches all pages when maxPagesCount is set to 0"
 		mapError: (error) => error,
 		mapExtraResponseProps: () => ({}),
 		mapPagingExtraResponseProps: () => ({}),
-		transformPayload: (payload) => payload,
 	}).pagesSafe({ maxPagesCount: 0 });
 
 	const responses: QueryResponse<null>[] = [];

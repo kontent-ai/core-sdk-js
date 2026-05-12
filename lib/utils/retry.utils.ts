@@ -211,6 +211,7 @@ function canRetryError({
 						"invalidBody",
 						"invalidResponse",
 						"invalidUrl",
+						"transformError",
 						"notFound",
 						"unauthorized",
 						"parsingFailed",

@@ -46,7 +46,6 @@ describe("Basic paging errors", async () => {
 		mapError: (error) => error,
 		mapExtraResponseProps: () => ({}),
 		mapPagingExtraResponseProps: () => ({}),
-		transformPayload: (payload) => payload,
 	}).fetchAllPagesSafe();
 
 	it("Error should be defined & unknown", () => {

@@ -55,7 +55,6 @@ describe("Query extra metadata", async () => {
 		requestHeaders: [requestHeader],
 		mapError: (error) => error,
 		mapExtraResponseProps: () => ({}),
-		transformPayload: (payload) => payload,
 	}).fetchSafe();
 
 	it("Meta should have proper extra metadata", () => {

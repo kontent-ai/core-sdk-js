@@ -41,7 +41,6 @@ describe("Integration tests covering Fetch/Mutation queries against the Kontent.
 		body: config.fileToUpload,
 		mapError: (error) => error,
 		mapExtraResponseProps: () => ({}),
-		transformPayload: (payload) => payload,
 	});
 
 	const addAssetQueryFactory = (binaryFileId: string): MutationQuery<{ readonly id: string; readonly url: string }, KontentSdkError> =>
@@ -65,7 +64,6 @@ describe("Integration tests covering Fetch/Mutation queries against the Kontent.
 			},
 			mapError: (error) => error,
 			mapExtraResponseProps: () => ({}),
-			transformPayload: (payload) => payload,
 		});
 
 	const deleteAssetQueryFactory = (assetId: string): MutationQuery<null, KontentSdkError> =>
@@ -77,7 +75,6 @@ describe("Integration tests covering Fetch/Mutation queries against the Kontent.
 			body: null,
 			mapError: (error) => error,
 			mapExtraResponseProps: () => ({}),
-			transformPayload: (payload) => payload,
 		});
 
 	const downloadAssetFile = async (fileUrl: string) => {

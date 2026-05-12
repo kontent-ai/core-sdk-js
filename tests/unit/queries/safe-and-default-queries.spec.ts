@@ -38,7 +38,6 @@ const successfulBaseQueryConfig: Parameters<typeof createFetchQuery>[0] = {
 	sdkInfo: getTestSdkInfo(),
 	mapMetadata: () => ({}),
 	mapError: (error) => error,
-	transformPayload: (payload) => payload,
 };
 
 const baseQueryConfig: Parameters<typeof createFetchQuery>[0] = {
@@ -60,7 +59,6 @@ const baseQueryConfig: Parameters<typeof createFetchQuery>[0] = {
 	sdkInfo: getTestSdkInfo(),
 	mapMetadata: () => ({}),
 	mapError: (error) => error,
-	transformPayload: (payload) => payload,
 };
 
 const unsafeQueries: readonly QueryTest[] = [

@@ -10,14 +10,10 @@ export function createMutationQuery<
 	TError extends KontentSdkError,
 	TMeta,
 	TExtra,
-	TTransformedPayload extends TPayload = TPayload,
->(
-	data: MutationQueryRequest<TPayload, TBody, TError, TMeta, TExtra, TTransformedPayload>,
-): MutationQuery<TPayload, TError, TMeta, TExtra, TTransformedPayload> {
-	const executeSafe = async () => await resolveQuery<TPayload, TBody, TMeta, TExtra, TError, TTransformedPayload>(data);
+>(data: MutationQueryRequest<TPayload, TBody, TError, TMeta, TExtra>): MutationQuery<TPayload, TError, TMeta, TExtra> {
+	const executeSafe = async () => await resolveQuery(data);
 
 	return {
-		schema: data.zodSchema,
 		inspect: () => inspectQuery(data),
 		executeSafe,
 		execute: async () => {

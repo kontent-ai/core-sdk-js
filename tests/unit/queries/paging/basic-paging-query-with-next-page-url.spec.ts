@@ -49,7 +49,6 @@ describe("Basic paging query with next page url", async () => {
 		mapError: (error) => error,
 		mapExtraResponseProps: () => ({}),
 		mapPagingExtraResponseProps: () => ({}),
-		transformPayload: (payload) => payload,
 	}).fetchAllPagesSafe({ maxPagesCount: maxPagesCount });
 
 	it("Success should be true", () => {

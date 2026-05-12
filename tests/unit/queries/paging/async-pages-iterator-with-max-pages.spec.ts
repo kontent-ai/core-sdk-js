@@ -50,7 +50,6 @@ describe("Async pages iterator with max pages count", async () => {
 		mapError: (error) => error,
 		mapExtraResponseProps: () => ({}),
 		mapPagingExtraResponseProps: () => ({}),
-		transformPayload: (payload) => payload,
 	}).pagesSafe({ maxPagesCount });
 
 	const responses: QueryResponse<null>[] = [];

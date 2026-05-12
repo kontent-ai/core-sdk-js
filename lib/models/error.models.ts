@@ -1,8 +1,8 @@
 import { type ZodError, z } from "zod";
-import type { AdapterPayload, AdapterResponse, HttpRequestBody } from "../http/http.models.js";
-import type { SuccessfulHttpResponse } from "../sdk/sdk-models.js";
+import type { AdapterPayload, AdapterResponse } from "../http/http.models.js";
 import { toFriendlyKontentSdkErrorMessage } from "../utils/error.utils.js";
 import type { ResolvedRetryStrategyOptions } from "./core.models.js";
+import type { JsonValue } from "./json.models.js";
 
 export const validationErrorSchema = z.object({
 	message: z.string(),
@@ -26,6 +26,7 @@ export type ErrorReason = ErrorDetails["reason"];
 
 export type ErrorDetails =
 	| ReasonData<"adapterError", ErrorWithOriginalError>
+	| ReasonData<"transformError", ErrorWithOriginalError>
 	| ReasonData<"unauthorized", ErrorWithKontentResponse>
 	| ReasonData<"invalidResponse", ErrorWithKontentResponse>
 	| ReasonData<"parseError", ErrorWithOriginalError>
@@ -37,7 +38,7 @@ export type ErrorDetails =
 			"parsingFailed",
 			{
 				readonly zodError: ZodError;
-				readonly response: SuccessfulHttpResponse<AdapterPayload, HttpRequestBody>;
+				readonly payload: JsonValue;
 				readonly url: URL;
 			}
 	  >;

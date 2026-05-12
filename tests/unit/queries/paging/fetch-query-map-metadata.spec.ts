@@ -47,7 +47,6 @@ describe("createFetchQuery mapMetadata", async () => {
 		mapMetadata: () => expectedMetadata,
 		mapError: (error) => error,
 		mapExtraResponseProps: () => ({}),
-		transformPayload: (payload) => payload,
 	}).fetchSafe();
 
 	it("Response should contain the payload", () => {

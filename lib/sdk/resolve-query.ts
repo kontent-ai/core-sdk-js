@@ -1,8 +1,3 @@
-/**
- * Shared query models/types intended to be reused across SDKs (e.g. Sync, Delivery, Management)
- * to keep common code and behavior consistent.
- */
-import type { ZodType } from "zod";
 import type { HttpRequestBody, HttpService } from "../http/http.models.js";
 import { getDefaultHttpService } from "../http/http.service.js";
 import type { Header, KnownHeaderName, SdkInfo } from "../models/core.models.js";
@@ -10,7 +5,7 @@ import type { ErrorDetailsFor, KontentSdkError } from "../models/error.models.js
 import type { JsonValue } from "../models/json.models.js";
 import { createSdkError } from "../utils/error.utils.js";
 import { createAuthorizationHeader, createContinuationHeader, createSdkIdHeader, extractContinuationToken } from "../utils/header.utils.js";
-import { type Failure, type TryCatchResult, tryCatch } from "../utils/try-catch.utils.js";
+import { type TryCatchResult, tryCatch } from "../utils/try-catch.utils.js";
 import type {
 	BaseUrl,
 	QueryInputData,
@@ -19,12 +14,12 @@ import type {
 	ResolvedQueryData,
 	SafeQueryResult,
 	SdkConfig,
-	SuccessfulHttpResponse,
 } from "./sdk-models.js";
+import { parseResponse } from "./sdk-utils.js";
 
 export function inspectQuery<TError>(
 	data: Pick<
-		QueryInputData<JsonValue, HttpRequestBody, unknown, unknown, TError, JsonValue>,
+		QueryInputData<JsonValue, HttpRequestBody, unknown, unknown, TError>,
 		"url" | "config" | "requestHeaders" | "continuationToken" | "authorizationApiKey" | "sdkInfo" | "body" | "method" | "mapError"
 	>,
 ): TryCatchResult<QueryInspection, TError> {
@@ -50,16 +45,9 @@ export function inspectQuery<TError>(
 	};
 }
 
-export async function resolveQuery<
-	TPayload extends JsonValue,
-	TBody extends HttpRequestBody,
-	TMeta,
-	TExtra,
-	TError,
-	TTransformedPayload extends TPayload,
->(
-	data: QueryInputData<TPayload, TBody, TMeta, TExtra, TError, TTransformedPayload>,
-): Promise<SafeQueryResult<QueryResponse<TTransformedPayload, TMeta, TExtra>, TError>> {
+export async function resolveQuery<TPayload extends JsonValue, TBody extends HttpRequestBody, TMeta, TExtra, TError>(
+	data: QueryInputData<TPayload, TBody, TMeta, TExtra, TError>,
+): Promise<SafeQueryResult<QueryResponse<TPayload, TMeta, TExtra>, TError>> {
 	const { success, data: resolvedQueryData, error } = prepareQueryData(data);
 	if (!success) {
 		return { success: false, error };
@@ -67,16 +55,9 @@ export async function resolveQuery<
 	return await executeQuery(resolvedQueryData);
 }
 
-function prepareQueryData<
-	TPayload extends JsonValue,
-	TBody extends HttpRequestBody,
-	TMeta,
-	TExtra,
-	TError,
-	TTransformedPayload extends TPayload,
->(
-	data: QueryInputData<TPayload, TBody, TMeta, TExtra, TError, TTransformedPayload>,
-): TryCatchResult<ResolvedQueryData<TPayload, TBody, TMeta, TExtra, TError, TTransformedPayload>, TError> {
+function prepareQueryData<TPayload extends JsonValue, TBody extends HttpRequestBody, TMeta, TExtra, TError>(
+	data: QueryInputData<TPayload, TBody, TMeta, TExtra, TError>,
+): TryCatchResult<ResolvedQueryData<TPayload, TBody, TMeta, TExtra, TError>, TError> {
 	const { success: inspectionSuccess, data: inspectionData, error: inspectionError } = inspectQuery(data);
 
 	if (!inspectionSuccess) {
@@ -97,19 +78,11 @@ function prepareQueryData<
 			mapError: data.mapError,
 			mapMetadata: data.mapMetadata,
 			mapExtraResponseProps: data.mapExtraResponseProps,
-			transformPayload: data.transformPayload,
 		},
 	};
 }
 
-async function executeQuery<
-	TPayload extends JsonValue,
-	TBody extends HttpRequestBody,
-	TMeta,
-	TExtra,
-	TError,
-	TTransformedPayload extends TPayload,
->({
+async function executeQuery<TPayload extends JsonValue, TBody extends HttpRequestBody, TMeta, TExtra, TError>({
 	url,
 	requestHeaders,
 	httpService,
@@ -121,10 +94,7 @@ async function executeQuery<
 	mapError,
 	mapMetadata,
 	mapExtraResponseProps,
-	transformPayload,
-}: ResolvedQueryData<TPayload, TBody, TMeta, TExtra, TError, TTransformedPayload>): Promise<
-	SafeQueryResult<QueryResponse<TTransformedPayload, TMeta, TExtra>, TError>
-> {
+}: ResolvedQueryData<TPayload, TBody, TMeta, TExtra, TError>): Promise<SafeQueryResult<QueryResponse<TPayload, TMeta, TExtra>, TError>> {
 	const { success, response, error } = await httpService.request<TPayload, TBody>({
 		body,
 		url,
@@ -140,7 +110,7 @@ async function executeQuery<
 	if (responseValidation?.validateResponses) {
 		const validationError = await parseResponse({
 			url: response.adapterResponse.url,
-			response,
+			payload: response.payload,
 			zodSchema: await zodSchema(),
 		});
 
@@ -155,7 +125,7 @@ async function executeQuery<
 		success: true,
 		response: {
 			...mapExtraResponseProps(response),
-			payload: transformPayload(response.payload),
+			payload: response.payload,
 			meta: {
 				...mapMetadata(response, { continuationToken: continuationTokenFromResponse }),
 				url: response.adapterResponse.url,
@@ -249,40 +219,6 @@ function setBaseUrl(url: URL, baseUrl: BaseUrl): TryCatchResult<URL, KontentSdkE
 		success: true,
 		data: clonedUrl,
 	};
-}
-
-async function parseResponse<TPayload extends JsonValue, TBody extends HttpRequestBody>({
-	url,
-	response,
-	zodSchema,
-}: {
-	readonly url: URL;
-	readonly response: SuccessfulHttpResponse<TPayload, TBody>;
-	readonly zodSchema: ZodType<TPayload>;
-}): Promise<Failure<{ readonly response?: never }, KontentSdkError> | undefined> {
-	const { success, error } = await zodSchema.safeParseAsync(response.payload);
-
-	if (!success) {
-		return {
-			success: false,
-			error: createSdkError({
-				baseErrorData: {
-					message: `Failed to parse response payload for '${url.toString()}'`,
-					url,
-					retryStrategyOptions: undefined,
-					retryAttempt: undefined,
-				},
-				details: {
-					reason: "parsingFailed",
-					zodError: error,
-					response,
-					url,
-				},
-			}),
-		};
-	}
-
-	return undefined;
 }
 
 function getHttpService(config: SdkConfig): HttpService {

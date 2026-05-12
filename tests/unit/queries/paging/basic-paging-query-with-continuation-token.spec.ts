@@ -62,7 +62,6 @@ describe("Basic paging query with continuation token", async () => {
 		mapPagingExtraResponseProps: (responses) => ({
 			lastContinuationToken: extractContinuationToken(responses.at(-1)?.meta.responseHeaders ?? []),
 		}),
-		transformPayload: (payload) => payload,
 	}).fetchAllPagesSafe({ maxPagesCount: maxPagesCount });
 
 	it("Success should be true", () => {

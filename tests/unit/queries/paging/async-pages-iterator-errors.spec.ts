@@ -46,7 +46,6 @@ describe("Async pages iterator errors", async () => {
 		mapError: (error) => error,
 		mapExtraResponseProps: () => ({}),
 		mapPagingExtraResponseProps: () => ({}),
-		transformPayload: (payload) => payload,
 	}).pagesSafe();
 
 	const responses: QueryResponse<null, unknown, unknown>[] = [];
