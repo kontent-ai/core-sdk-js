@@ -67,6 +67,9 @@ export type {
 	SuccessfulHttpResponse,
 } from "./sdk/sdk-models.js";
 export { isPagingQuery } from "./sdk/sdk-utils.js";
+export { transformFetchQuery } from "./sdk/transform/transform-fetch-query.js";
+export { transformMutationQuery } from "./sdk/transform/transform-mutation-query.js";
+export { transformPagedFetchQuery } from "./sdk/transform/transform-paged-fetch-query.js";
 export { isDefined } from "./utils/core.utils.js";
 export { isKontent404Error, isKontentSdkError } from "./utils/error.utils.js";
 export { createSdkIdHeader, extractContinuationToken } from "./utils/header.utils.js";

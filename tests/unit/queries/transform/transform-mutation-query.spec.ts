@@ -1,17 +1,17 @@
 import { describe, expect, it } from "vitest";
 import z from "zod";
 import type { KontentSdkError } from "../../../../lib/models/error.models.js";
-import { createFetchQuery } from "../../../../lib/sdk/queries/fetch-sdk-query.js";
-import type { FetchQuery } from "../../../../lib/sdk/sdk-models.js";
-import { transformFetchQuery } from "../../../../lib/sdk/transform/transform-fetch-query.js";
+import { createMutationQuery } from "../../../../lib/sdk/queries/mutation-sdk-query.js";
+import type { MutationQuery } from "../../../../lib/sdk/sdk-models.js";
+import { transformMutationQuery } from "../../../../lib/sdk/transform/transform-mutation-query.js";
 import { getTestHttpServiceWithJsonResponse, getTestSdkInfo } from "../../../../lib/testkit/testkit.utils.js";
 import { tryCatchAsync } from "../../../../lib/utils/try-catch.utils.js";
 
 const jsonResponse = { name: "test" };
 const extraValue = "added-by-transform";
 
-const buildBaseQuery = (overrides?: { readonly url?: string }): FetchQuery<typeof jsonResponse, KontentSdkError> =>
-	createFetchQuery({
+const buildBaseQuery = (overrides?: { readonly url?: string }): MutationQuery<typeof jsonResponse, KontentSdkError> =>
+	createMutationQuery({
 		mapMetadata: () => ({}),
 		config: {
 			httpService: getTestHttpServiceWithJsonResponse({ jsonResponse, statusCode: 200 }),
@@ -19,13 +19,15 @@ const buildBaseQuery = (overrides?: { readonly url?: string }): FetchQuery<typeo
 		},
 		sdkInfo: getTestSdkInfo(),
 		zodSchema: async () => Promise.resolve(z.object({ name: z.string() })),
+		method: "POST",
 		url: overrides?.url ?? "https://domain.com",
+		body: null,
 		mapError: (error) => error,
 		mapExtraResponseProps: () => ({}),
 	});
 
-describe("transformFetchQuery - fetchSafe applies transform that adds extra property", async () => {
-	const transformedQuery = transformFetchQuery({
+describe("transformMutationQuery - executeSafe applies transform that adds extra property", async () => {
+	const transformedQuery = transformMutationQuery({
 		config: { runtimeValidation: { validateResponses: false } },
 		query: buildBaseQuery(),
 		transform: (payload) => ({ ...payload, extra: extraValue }),
@@ -33,7 +35,7 @@ describe("transformFetchQuery - fetchSafe applies transform that adds extra prop
 		mapError: (error) => error,
 	});
 
-	const { success, response } = await transformedQuery.fetchSafe();
+	const { success, response } = await transformedQuery.executeSafe();
 
 	it("Should succeed", () => {
 		expect(success).toBe(true);
@@ -48,8 +50,8 @@ describe("transformFetchQuery - fetchSafe applies transform that adds extra prop
 	});
 });
 
-describe("transformFetchQuery - fetch applies transform that adds extra property", async () => {
-	const transformedQuery = transformFetchQuery({
+describe("transformMutationQuery - execute applies transform that adds extra property", async () => {
+	const transformedQuery = transformMutationQuery({
 		config: { runtimeValidation: { validateResponses: false } },
 		query: buildBaseQuery(),
 		transform: (payload) => ({ ...payload, extra: extraValue }),
@@ -57,7 +59,7 @@ describe("transformFetchQuery - fetch applies transform that adds extra property
 		mapError: (error) => error,
 	});
 
-	const response = await transformedQuery.fetch();
+	const response = await transformedQuery.execute();
 
 	it("Should include the extra property added by transform", () => {
 		expect(response.payload.extra).toBe(extraValue);
@@ -68,8 +70,8 @@ describe("transformFetchQuery - fetch applies transform that adds extra property
 	});
 });
 
-describe("transformFetchQuery - fetch throws when transform throws", async () => {
-	const transformedQuery = transformFetchQuery({
+describe("transformMutationQuery - execute throws when transform throws", async () => {
+	const transformedQuery = transformMutationQuery({
 		config: { runtimeValidation: { validateResponses: false } },
 		query: buildBaseQuery(),
 		transform: () => {
@@ -79,7 +81,7 @@ describe("transformFetchQuery - fetch throws when transform throws", async () =>
 		mapError: (error) => error,
 	});
 
-	const { success, error } = await tryCatchAsync(async () => await transformedQuery.fetch());
+	const { success, error } = await tryCatchAsync(async () => await transformedQuery.execute());
 
 	it("Should fail", () => {
 		expect(success).toBe(false);
@@ -90,8 +92,8 @@ describe("transformFetchQuery - fetch throws when transform throws", async () =>
 	});
 });
 
-describe("transformFetchQuery - fetchSafe returns failure when transform throws", async () => {
-	const transformedQuery = transformFetchQuery({
+describe("transformMutationQuery - executeSafe returns failure when transform throws", async () => {
+	const transformedQuery = transformMutationQuery({
 		config: { runtimeValidation: { validateResponses: false } },
 		query: buildBaseQuery(),
 		transform: () => {
@@ -101,7 +103,7 @@ describe("transformFetchQuery - fetchSafe returns failure when transform throws"
 		mapError: (error) => error,
 	});
 
-	const { success, error } = await transformedQuery.fetchSafe();
+	const { success, error } = await transformedQuery.executeSafe();
 
 	it("Should not succeed", () => {
 		expect(success).toBe(false);
@@ -112,8 +114,8 @@ describe("transformFetchQuery - fetchSafe returns failure when transform throws"
 	});
 });
 
-describe("transformFetchQuery - fetchSafe propagates underlying query failure unchanged", async () => {
-	const transformedQuery = transformFetchQuery({
+describe("transformMutationQuery - executeSafe propagates underlying query failure unchanged", async () => {
+	const transformedQuery = transformMutationQuery({
 		config: { runtimeValidation: { validateResponses: false } },
 		query: buildBaseQuery({ url: "not-a-valid-url" }),
 		transform: (payload) => payload,
@@ -121,7 +123,7 @@ describe("transformFetchQuery - fetchSafe propagates underlying query failure un
 		mapError: (error) => error,
 	});
 
-	const { success, error } = await transformedQuery.fetchSafe();
+	const { success, error } = await transformedQuery.executeSafe();
 
 	it("Should not succeed", () => {
 		expect(success).toBe(false);
@@ -132,8 +134,8 @@ describe("transformFetchQuery - fetchSafe propagates underlying query failure un
 	});
 });
 
-describe("transformFetchQuery - runtime validation passes when transformed payload matches schema", async () => {
-	const transformedQuery = transformFetchQuery({
+describe("transformMutationQuery - runtime validation passes when transformed payload matches schema", async () => {
+	const transformedQuery = transformMutationQuery({
 		config: { runtimeValidation: { validateResponses: true } },
 		query: buildBaseQuery(),
 		transform: (payload) => payload,
@@ -141,7 +143,7 @@ describe("transformFetchQuery - runtime validation passes when transformed paylo
 		mapError: (error) => error,
 	});
 
-	const { success, response } = await transformedQuery.fetchSafe();
+	const { success, response } = await transformedQuery.executeSafe();
 
 	it("Should succeed", () => {
 		expect(success).toBe(true);
@@ -152,8 +154,8 @@ describe("transformFetchQuery - runtime validation passes when transformed paylo
 	});
 });
 
-describe("transformFetchQuery - runtime validation fails when transformed payload mismatches schema", async () => {
-	const transformedQuery = transformFetchQuery({
+describe("transformMutationQuery - runtime validation fails when transformed payload mismatches schema", async () => {
+	const transformedQuery = transformMutationQuery({
 		config: { runtimeValidation: { validateResponses: true } },
 		query: buildBaseQuery(),
 		transform: (payload) => payload,
@@ -161,7 +163,7 @@ describe("transformFetchQuery - runtime validation fails when transformed payloa
 		mapError: (error) => error,
 	});
 
-	const { success, error } = await transformedQuery.fetchSafe();
+	const { success, error } = await transformedQuery.executeSafe();
 
 	it("Should not succeed", () => {
 		expect(success).toBe(false);

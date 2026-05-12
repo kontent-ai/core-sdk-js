@@ -11,7 +11,7 @@ describe("Basic paging errors", async () => {
 
 	const expectedResponseUrls: readonly string[] = Array.from({ length: maxPagesCount }, (_, index) => getNextPageUrl(index));
 
-	const { error, partialResponses } = await createPagedFetchQuery({
+	const { error } = await createPagedFetchQuery({
 		getNextPageData: () => {
 			responseIndex++;
 
@@ -58,10 +58,5 @@ describe("Basic paging errors", async () => {
 		} else {
 			throw new Error("Error reason is not adapterError");
 		}
-	});
-
-	it(`Expected partial responses to be set instead of responses and include partial responses`, () => {
-		expect(partialResponses).toBeDefined();
-		expect(partialResponses).toHaveLength(throwErrorAtResponseIndex);
 	});
 });

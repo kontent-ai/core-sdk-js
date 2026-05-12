@@ -11,6 +11,7 @@ export default defineConfig({
 			reporter: ["text"],
 			thresholds: { lines: 100, functions: 100, branches: 100 },
 			exclude: ["**/testkit/**", "**/devkit/**", "**/tests/**"],
+			include: ["lib/**"],
 		},
 	},
 	build: {

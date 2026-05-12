@@ -69,27 +69,18 @@ export type PagedFetchQuery<
 	TMeta = unknown,
 	TExtra = unknown,
 	TPagingExtra = unknown,
-	TTransformedPayload extends TPayload = TPayload,
 > = Query<TError> & {
-	fetchPageSafe(): Promise<SafeQueryResult<QueryResponse<TTransformedPayload, TMeta, TExtra>, TError>>;
-	fetchPage(): Promise<QueryResponse<TTransformedPayload, TMeta, TExtra>>;
-	fetchAllPagesSafe(
-		config?: PagingConfig,
-	): Promise<SafePagingQueryResult<QueryResponse<TTransformedPayload, TMeta, TExtra>, TError, TPagingExtra>>;
-	fetchAllPages(config?: PagingConfig): Promise<PagingQueryResponse<QueryResponse<TTransformedPayload, TMeta, TExtra>, TPagingExtra>>;
-	pagesSafe(config?: PagingConfig): AsyncGenerator<SafeQueryResult<QueryResponse<TTransformedPayload, TMeta, TExtra>, TError>>;
-	pages(config?: PagingConfig): AsyncGenerator<QueryResponse<TTransformedPayload, TMeta, TExtra>>;
+	fetchPageSafe(): Promise<SafeQueryResult<QueryResponse<TPayload, TMeta, TExtra>, TError>>;
+	fetchPage(): Promise<QueryResponse<TPayload, TMeta, TExtra>>;
+	fetchAllPagesSafe(config?: PagingConfig): Promise<SafePagingQueryResult<QueryResponse<TPayload, TMeta, TExtra>, TError, TPagingExtra>>;
+	fetchAllPages(config?: PagingConfig): Promise<PagingQueryResponse<QueryResponse<TPayload, TMeta, TExtra>, TPagingExtra>>;
+	pagesSafe(config?: PagingConfig): AsyncGenerator<SafeQueryResult<QueryResponse<TPayload, TMeta, TExtra>, TError>>;
+	pages(config?: PagingConfig): AsyncGenerator<QueryResponse<TPayload, TMeta, TExtra>>;
 };
 
-export type MutationQuery<
-	TPayload extends JsonValue,
-	TError = KontentSdkError,
-	TMeta = unknown,
-	TExtra = unknown,
-	TTransformedPayload extends TPayload = TPayload,
-> = Query<TError> & {
-	executeSafe(): Promise<SafeQueryResult<QueryResponse<TTransformedPayload, TMeta, TExtra>, TError>>;
-	execute(): Promise<QueryResponse<TTransformedPayload, TMeta, TExtra>>;
+export type MutationQuery<TPayload extends JsonValue, TError = KontentSdkError, TMeta = unknown, TExtra = unknown> = Query<TError> & {
+	executeSafe(): Promise<SafeQueryResult<QueryResponse<TPayload, TMeta, TExtra>, TError>>;
+	execute(): Promise<QueryResponse<TPayload, TMeta, TExtra>>;
 };
 
 export type PendingNextPageState =
@@ -130,13 +121,11 @@ export type SafePagingQueryResult<TPayload, TError = KontentSdkError, TExtra = u
 	| Success<
 			{
 				readonly responses: readonly TPayload[];
-				readonly partialResponses?: never;
 			} & TExtra
 	  >
 	| Failure<
 			{
 				readonly responses?: never;
-				readonly partialResponses: readonly TPayload[];
 			} & { [K in keyof TExtra]: never },
 			TError
 	  >;

@@ -1,10 +1,10 @@
 import type { ZodType } from "zod";
 import type { KontentSdkError } from "../../models/error.models.js";
 import type { JsonValue } from "../../models/json.models.js";
-import { createSdkError } from "../../utils/error.utils.js";
 import { type TryCatchResult, tryCatch } from "../../utils/try-catch.utils.js";
 import type { FetchQuery, QueryResponse, SdkConfig } from "../sdk-models.js";
 import { parseResponse } from "../sdk-utils.js";
+import { createTransformError } from "./transform-utils.js";
 
 export function transformFetchQuery<
 	TPayload extends JsonValue,
@@ -25,26 +25,15 @@ export function transformFetchQuery<
 	readonly transformSchema: () => Promise<ZodType<TTransformedPayload>>;
 	readonly mapError: (error: KontentSdkError) => TError;
 }): FetchQuery<TTransformedPayload, TError, TMeta, TExtra> {
-	const mapPayload = async (response: QueryResponse<TPayload, TMeta, TExtra>): Promise<TryCatchResult<TTransformedPayload, TError>> => {
+	const transformResponse = async (
+		response: QueryResponse<TPayload, TMeta, TExtra>,
+	): Promise<TryCatchResult<QueryResponse<TTransformedPayload, TMeta, TExtra>, TError>> => {
 		const { success, data: transformedPayload, error } = tryCatch(() => transform(response.payload));
 
 		if (!success) {
 			return {
 				success: false,
-				error: mapError(
-					createSdkError({
-						baseErrorData: {
-							message: `Failed to transform payload for url ${response.meta.url.toString()}`,
-							url: response.meta.url.toString(),
-							retryAttempt: undefined,
-							retryStrategyOptions: undefined,
-						},
-						details: {
-							originalError: error,
-							reason: "transformError",
-						},
-					}),
-				),
+				error: mapError(createTransformError(error, response.meta.url)),
 			};
 		}
 
@@ -60,30 +49,37 @@ export function transformFetchQuery<
 			}
 		}
 
-		return { success: true, data: transformedPayload };
+		return {
+			success: true,
+			data: {
+				...response,
+				payload: transformedPayload,
+			},
+		};
 	};
 
 	return {
 		fetch: async () => {
-			const response = await query.fetch();
-			const { success, data, error } = await mapPayload(response);
+			const result = await query.fetch();
+			const { success, data: transformedResponse, error } = await transformResponse(result);
 
 			if (!success) {
 				throw error;
 			}
 
-			return {
-				...response,
-				payload: data,
-			};
+			return transformedResponse;
 		},
 		fetchSafe: async () => {
-			const response = await query.fetchSafe();
-			if (!response.success) {
-				return response;
+			const result = await query.fetchSafe();
+			if (!result.success) {
+				return result;
 			}
 
-			const { success: transformSuccess, data: transformedPayload, error: transformError } = await mapPayload(response.response);
+			const {
+				success: transformSuccess,
+				data: transformedResponse,
+				error: transformError,
+			} = await transformResponse(result.response);
 
 			if (!transformSuccess) {
 				return { success: false, error: transformError };
@@ -91,10 +87,7 @@ export function transformFetchQuery<
 
 			return {
 				success: true,
-				response: {
-					...response.response,
-					payload: transformedPayload,
-				},
+				response: transformedResponse,
 			};
 		},
 		inspect: query.inspect,
