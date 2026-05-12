@@ -16,9 +16,10 @@ type SharedQueryData = Pick<
 		{
 			readonly continuationToken?: string | undefined;
 		},
-		KontentSdkError
+		KontentSdkError,
+		null
 	>,
-	"config" | "mapMetadata" | "sdkInfo" | "zodSchema" | "mapError" | "url" | "mapExtraResponseProps"
+	"config" | "mapMetadata" | "sdkInfo" | "zodSchema" | "mapError" | "url" | "mapExtraResponseProps" | "transformPayload"
 >;
 
 describe("Query builder with mapExtraProps", async () => {
@@ -41,6 +42,7 @@ describe("Query builder with mapExtraProps", async () => {
 		mapExtraResponseProps: (_response) => ({
 			continuationToken: responseContinuationToken,
 		}),
+		transformPayload: (payload) => payload,
 	});
 
 	const { response, success } = await query.fetchSafe();
@@ -71,6 +73,7 @@ describe("Query builder url handling without modifications", () => {
 		mapError: (error: KontentSdkError) => error,
 		url: "https://domain.com/api/path",
 		mapExtraResponseProps: () => ({}),
+		transformPayload: (payload) => payload,
 	};
 	const queries: Query<null, unknown>[] = [
 		createFetchQuery(sharedData),
@@ -78,11 +81,13 @@ describe("Query builder url handling without modifications", () => {
 			...sharedData,
 			method: "POST",
 			body: null,
+			transformPayload: (payload) => payload,
 		}),
 		createPagedFetchQuery({
 			...sharedData,
 			getNextPageData: () => ({}),
 			mapPagingExtraResponseProps: () => ({}),
+			transformPayload: (payload) => payload,
 		}),
 	];
 
@@ -104,6 +109,7 @@ describe("Query builder url handling with base url", () => {
 		mapError: (error: KontentSdkError) => error,
 		url: "https://domain.com/api/path",
 		mapExtraResponseProps: () => ({}),
+		transformPayload: (payload) => payload,
 	};
 	const queries: Query<null, unknown>[] = [
 		createFetchQuery(sharedData),

@@ -5,11 +5,19 @@ import { KontentSdkError } from "../../../../lib/models/error.models.js";
 import { createFetchQuery } from "../../../../lib/sdk/queries/fetch-sdk-query.js";
 import { getTestSdkInfo } from "../../../../lib/testkit/testkit.utils.js";
 
-class CustomSdkError extends Error {
+class CustomSdkError extends KontentSdkError {
 	readonly originalError: KontentSdkError;
 
 	constructor(error: KontentSdkError) {
-		super(error.message);
+		super({
+			baseErrorData: {
+				message: error.message,
+				url: error.url,
+				retryStrategyOptions: error.retryStrategyOptions,
+				retryAttempt: error.retryAttempt,
+			},
+			details: error.details,
+		});
 		this.originalError = error;
 	}
 }
@@ -34,6 +42,7 @@ describe("createFetchQuery mapError", async () => {
 		mapMetadata: () => ({}),
 		mapError: (error) => new CustomSdkError(error),
 		mapExtraResponseProps: () => ({}),
+		transformPayload: (payload) => payload,
 	}).fetchSafe();
 
 	it("Error should be an instance of CustomSdkError", () => {

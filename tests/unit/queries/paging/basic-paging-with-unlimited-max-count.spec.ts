@@ -46,6 +46,7 @@ describe("Basic paging query with unlimited max count", async () => {
 		mapError: (error) => error,
 		mapExtraResponseProps: () => ({}),
 		mapPagingExtraResponseProps: () => ({}),
+		transformPayload: (payload) => payload,
 	}).fetchAllPagesSafe();
 
 	it("Success should be true", () => {

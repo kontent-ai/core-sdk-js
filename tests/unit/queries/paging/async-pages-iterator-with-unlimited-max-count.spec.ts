@@ -2,7 +2,6 @@ import { afterAll, describe, expect, it, vi } from "vitest";
 import z from "zod";
 import type { GetNextPageData } from "../../../../lib/http/http.models.js";
 import { getDefaultHttpService } from "../../../../lib/http/http.service.js";
-import type { KontentSdkError } from "../../../../lib/models/error.models.js";
 import { createPagedFetchQuery } from "../../../../lib/sdk/queries/paged-fetch-sdk-query.js";
 import type { QueryResponse } from "../../../../lib/sdk/sdk-models.js";
 import {
@@ -28,7 +27,7 @@ describe("Async pages iterator with unlimited max count", async () => {
 		statusCode: 200,
 	});
 
-	const pagesIterator = createPagedFetchQuery<null, KontentSdkError>({
+	const pagesIterator = createPagedFetchQuery({
 		getNextPageData: () => {
 			responseIndex++;
 
@@ -54,6 +53,7 @@ describe("Async pages iterator with unlimited max count", async () => {
 		mapError: (error) => error,
 		mapExtraResponseProps: () => ({}),
 		mapPagingExtraResponseProps: () => ({}),
+		transformPayload: (payload) => payload,
 	}).pagesSafe();
 
 	const responses: QueryResponse<null>[] = [];
@@ -94,7 +94,7 @@ describe("Async pages iterator fetches all pages when maxPagesCount is set to 0"
 		statusCode: 200,
 	});
 
-	const pagesIterator = createPagedFetchQuery<null, KontentSdkError>({
+	const pagesIterator = createPagedFetchQuery({
 		getNextPageData: () => {
 			responseIndex++;
 
@@ -117,6 +117,7 @@ describe("Async pages iterator fetches all pages when maxPagesCount is set to 0"
 		mapError: (error) => error,
 		mapExtraResponseProps: () => ({}),
 		mapPagingExtraResponseProps: () => ({}),
+		transformPayload: (payload) => payload,
 	}).pagesSafe({ maxPagesCount: 0 });
 
 	const responses: QueryResponse<null>[] = [];

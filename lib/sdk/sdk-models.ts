@@ -60,12 +60,15 @@ export type Query<TPayload extends JsonValue, TError = KontentSdkError> = {
 	readonly inspect: () => TryCatchResult<QueryInspection, TError>;
 };
 
-export type FetchQuery<TPayload extends JsonValue, TError = KontentSdkError, TMeta = unknown, TExtra = unknown> = Query<
-	TPayload,
-	TError
-> & {
-	fetchSafe(): Promise<SafeQueryResult<QueryResponse<TPayload, TMeta, TExtra>, TError>>;
-	fetch(): Promise<QueryResponse<TPayload, TMeta, TExtra>>;
+export type FetchQuery<
+	TPayload extends JsonValue,
+	TError = KontentSdkError,
+	TMeta = unknown,
+	TExtra = unknown,
+	TTransformedPayload extends TPayload = TPayload,
+> = Query<TPayload, TError> & {
+	fetchSafe(): Promise<SafeQueryResult<QueryResponse<TTransformedPayload, TMeta, TExtra>, TError>>;
+	fetch(): Promise<QueryResponse<TTransformedPayload, TMeta, TExtra>>;
 };
 
 export type PagedFetchQuery<
@@ -74,21 +77,27 @@ export type PagedFetchQuery<
 	TMeta = unknown,
 	TExtra = unknown,
 	TPagingExtra = unknown,
+	TTransformedPayload extends TPayload = TPayload,
 > = Query<TPayload, TError> & {
-	fetchPageSafe(): Promise<SafeQueryResult<QueryResponse<TPayload, TMeta, TExtra>, TError>>;
-	fetchPage(): Promise<QueryResponse<TPayload, TMeta, TExtra>>;
-	fetchAllPagesSafe(config?: PagingConfig): Promise<SafePagingQueryResult<QueryResponse<TPayload, TMeta, TExtra>, TError, TPagingExtra>>;
-	fetchAllPages(config?: PagingConfig): Promise<PagingQueryResponse<QueryResponse<TPayload, TMeta, TExtra>, TPagingExtra>>;
-	pagesSafe(config?: PagingConfig): AsyncGenerator<SafeQueryResult<QueryResponse<TPayload, TMeta, TExtra>, TError>>;
-	pages(config?: PagingConfig): AsyncGenerator<QueryResponse<TPayload, TMeta, TExtra>>;
+	fetchPageSafe(): Promise<SafeQueryResult<QueryResponse<TTransformedPayload, TMeta, TExtra>, TError>>;
+	fetchPage(): Promise<QueryResponse<TTransformedPayload, TMeta, TExtra>>;
+	fetchAllPagesSafe(
+		config?: PagingConfig,
+	): Promise<SafePagingQueryResult<QueryResponse<TTransformedPayload, TMeta, TExtra>, TError, TPagingExtra>>;
+	fetchAllPages(config?: PagingConfig): Promise<PagingQueryResponse<QueryResponse<TTransformedPayload, TMeta, TExtra>, TPagingExtra>>;
+	pagesSafe(config?: PagingConfig): AsyncGenerator<SafeQueryResult<QueryResponse<TTransformedPayload, TMeta, TExtra>, TError>>;
+	pages(config?: PagingConfig): AsyncGenerator<QueryResponse<TTransformedPayload, TMeta, TExtra>>;
 };
 
-export type MutationQuery<TPayload extends JsonValue, TError = KontentSdkError, TMeta = unknown, TExtra = unknown> = Query<
-	TPayload,
-	TError
-> & {
-	executeSafe(): Promise<SafeQueryResult<QueryResponse<TPayload, TMeta, TExtra>, TError>>;
-	execute(): Promise<QueryResponse<TPayload, TMeta, TExtra>>;
+export type MutationQuery<
+	TPayload extends JsonValue,
+	TError = KontentSdkError,
+	TMeta = unknown,
+	TExtra = unknown,
+	TTransformedPayload extends TPayload = TPayload,
+> = Query<TPayload, TError> & {
+	executeSafe(): Promise<SafeQueryResult<QueryResponse<TTransformedPayload, TMeta, TExtra>, TError>>;
+	execute(): Promise<QueryResponse<TTransformedPayload, TMeta, TExtra>>;
 };
 
 export type PendingNextPageState =
@@ -148,9 +157,15 @@ export type ResolveQueryResult<TPayload extends JsonValue, TError = KontentSdkEr
 	SafeQueryResult<QueryResponse<TPayload, TMeta, TExtra>, TError>
 >;
 
-export type FetchQueryRequest<TPayload extends JsonValue, TError = KontentSdkError, TMeta = unknown, TExtra = unknown> = Pick<
-	QueryInputData<TPayload, null, TMeta, TExtra, TError>,
-	"config" | "zodSchema" | "sdkInfo" | "mapMetadata" | "abortSignal" | "mapError" | "mapExtraResponseProps"
+export type FetchQueryRequest<
+	TPayload extends JsonValue,
+	TError = KontentSdkError,
+	TMeta = unknown,
+	TExtra = unknown,
+	TTransformedPayload extends TPayload = TPayload,
+> = Pick<
+	QueryInputData<TPayload, null, TMeta, TExtra, TError, TTransformedPayload>,
+	"config" | "zodSchema" | "sdkInfo" | "mapMetadata" | "abortSignal" | "mapError" | "mapExtraResponseProps" | "transformPayload"
 > &
 	RequestDataWithoutBody;
 
@@ -160,15 +175,24 @@ export type MutationQueryRequest<
 	TError = KontentSdkError,
 	TMeta = unknown,
 	TExtra = unknown,
+	TTransformedPayload extends TPayload = TPayload,
 > = Pick<
-	QueryInputData<TPayload, TBody, TMeta, TExtra, TError>,
-	"config" | "zodSchema" | "sdkInfo" | "mapMetadata" | "abortSignal" | "mapError" | "mapExtraResponseProps"
+	QueryInputData<TPayload, TBody, TMeta, TExtra, TError, TTransformedPayload>,
+	"config" | "zodSchema" | "sdkInfo" | "mapMetadata" | "abortSignal" | "mapError" | "mapExtraResponseProps" | "transformPayload"
 > & { readonly method: MutationHttpMethod } & RequestData<TBody>;
 
-export type QueryInputData<TPayload extends JsonValue, TBody extends HttpRequestBody, TMeta, TExtra, TError> = {
+export type QueryInputData<
+	TPayload extends JsonValue,
+	TBody extends HttpRequestBody,
+	TMeta,
+	TExtra,
+	TError,
+	TTransformedPayload extends TPayload,
+> = {
 	readonly method: HttpMethod;
 	readonly config: SdkConfig;
 	readonly zodSchema: () => Promise<ZodType<TPayload>>;
+	readonly transformPayload: (payload: TPayload) => TTransformedPayload;
 	readonly sdkInfo: SdkInfo;
 	readonly abortSignal?: AbortSignal | undefined;
 	readonly url: string | URL;
@@ -187,16 +211,24 @@ export type PagingQueryInputData<
 	TExtra,
 	TPagingExtra,
 	TError,
-> = QueryInputData<TPayload, TBody, TMeta, TExtra, TError> & {
+	TTransformedPayload extends TPayload,
+> = QueryInputData<TPayload, TBody, TMeta, TExtra, TError, TTransformedPayload> & {
 	readonly mapPagingExtraResponseProps: (responses: readonly QueryResponse<TPayload, TMeta, TExtra>[]) => TPagingExtra;
 };
 
 export type QueryInspection = Pick<
-	ResolvedQueryData<JsonValue, HttpRequestBody, unknown, unknown, unknown>,
+	ResolvedQueryData<JsonValue, HttpRequestBody, unknown, unknown, unknown, JsonValue>,
 	"url" | "requestHeaders" | "body" | "method"
 >;
 
-export type ResolvedQueryData<TPayload extends JsonValue, TBody extends HttpRequestBody, TMeta, TExtra, TError> = {
+export type ResolvedQueryData<
+	TPayload extends JsonValue,
+	TBody extends HttpRequestBody,
+	TMeta,
+	TExtra,
+	TError,
+	TTransformedPayload extends TPayload,
+> = {
 	readonly url: URL;
 	readonly requestHeaders: readonly Header[];
 	readonly httpService: HttpService;
@@ -204,6 +236,7 @@ export type ResolvedQueryData<TPayload extends JsonValue, TBody extends HttpRequ
 	readonly method: HttpMethod;
 	readonly abortSignal?: AbortSignal | undefined;
 	readonly zodSchema: () => Promise<ZodType<TPayload>>;
+	readonly transformPayload: (payload: TPayload) => TTransformedPayload;
 	readonly responseValidation: SdkConfig["runtimeValidation"];
 } & MetadataMapperConfig<TPayload, TBody, TMeta> &
 	ExtraResponsePropsMapper<TPayload, TBody, TExtra> &

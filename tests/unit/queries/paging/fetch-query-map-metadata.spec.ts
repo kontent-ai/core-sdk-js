@@ -25,7 +25,7 @@ const expectedMetadata: Metadata = {
 };
 
 describe("createFetchQuery mapMetadata", async () => {
-	const { response } = await createFetchQuery<ResponsePayload, KontentSdkError, Metadata>({
+	const { response } = await createFetchQuery<ResponsePayload, KontentSdkError, Metadata, unknown>({
 		zodSchema: async () =>
 			Promise.resolve(
 				z.object({
@@ -47,6 +47,7 @@ describe("createFetchQuery mapMetadata", async () => {
 		mapMetadata: () => expectedMetadata,
 		mapError: (error) => error,
 		mapExtraResponseProps: () => ({}),
+		transformPayload: (payload) => payload,
 	}).fetchSafe();
 
 	it("Response should contain the payload", () => {

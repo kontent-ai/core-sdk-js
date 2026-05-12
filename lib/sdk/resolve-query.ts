@@ -24,7 +24,7 @@ import type {
 
 export function inspectQuery<TError>(
 	data: Pick<
-		QueryInputData<JsonValue, HttpRequestBody, unknown, unknown, TError>,
+		QueryInputData<JsonValue, HttpRequestBody, unknown, unknown, TError, JsonValue>,
 		"url" | "config" | "requestHeaders" | "continuationToken" | "authorizationApiKey" | "sdkInfo" | "body" | "method" | "mapError"
 	>,
 ): TryCatchResult<QueryInspection, TError> {
@@ -50,9 +50,16 @@ export function inspectQuery<TError>(
 	};
 }
 
-export async function resolveQuery<TPayload extends JsonValue, TBody extends HttpRequestBody, TMeta, TExtra, TError>(
-	data: QueryInputData<TPayload, TBody, TMeta, TExtra, TError>,
-): Promise<SafeQueryResult<QueryResponse<TPayload, TMeta, TExtra>, TError>> {
+export async function resolveQuery<
+	TPayload extends JsonValue,
+	TBody extends HttpRequestBody,
+	TMeta,
+	TExtra,
+	TError,
+	TTransformedPayload extends TPayload,
+>(
+	data: QueryInputData<TPayload, TBody, TMeta, TExtra, TError, TTransformedPayload>,
+): Promise<SafeQueryResult<QueryResponse<TTransformedPayload, TMeta, TExtra>, TError>> {
 	const { success, data: resolvedQueryData, error } = prepareQueryData(data);
 	if (!success) {
 		return { success: false, error };
@@ -60,9 +67,16 @@ export async function resolveQuery<TPayload extends JsonValue, TBody extends Htt
 	return await executeQuery(resolvedQueryData);
 }
 
-function prepareQueryData<TPayload extends JsonValue, TBody extends HttpRequestBody, TMeta, TExtra, TError>(
-	data: QueryInputData<TPayload, TBody, TMeta, TExtra, TError>,
-): TryCatchResult<ResolvedQueryData<TPayload, TBody, TMeta, TExtra, TError>, TError> {
+function prepareQueryData<
+	TPayload extends JsonValue,
+	TBody extends HttpRequestBody,
+	TMeta,
+	TExtra,
+	TError,
+	TTransformedPayload extends TPayload,
+>(
+	data: QueryInputData<TPayload, TBody, TMeta, TExtra, TError, TTransformedPayload>,
+): TryCatchResult<ResolvedQueryData<TPayload, TBody, TMeta, TExtra, TError, TTransformedPayload>, TError> {
 	const { success: inspectionSuccess, data: inspectionData, error: inspectionError } = inspectQuery(data);
 
 	if (!inspectionSuccess) {
@@ -83,11 +97,19 @@ function prepareQueryData<TPayload extends JsonValue, TBody extends HttpRequestB
 			mapError: data.mapError,
 			mapMetadata: data.mapMetadata,
 			mapExtraResponseProps: data.mapExtraResponseProps,
+			transformPayload: data.transformPayload,
 		},
 	};
 }
 
-async function executeQuery<TPayload extends JsonValue, TBody extends HttpRequestBody, TMeta, TExtra, TError>({
+async function executeQuery<
+	TPayload extends JsonValue,
+	TBody extends HttpRequestBody,
+	TMeta,
+	TExtra,
+	TError,
+	TTransformedPayload extends TPayload,
+>({
 	url,
 	requestHeaders,
 	httpService,
@@ -99,7 +121,10 @@ async function executeQuery<TPayload extends JsonValue, TBody extends HttpReques
 	mapError,
 	mapMetadata,
 	mapExtraResponseProps,
-}: ResolvedQueryData<TPayload, TBody, TMeta, TExtra, TError>): Promise<SafeQueryResult<QueryResponse<TPayload, TMeta, TExtra>, TError>> {
+	transformPayload,
+}: ResolvedQueryData<TPayload, TBody, TMeta, TExtra, TError, TTransformedPayload>): Promise<
+	SafeQueryResult<QueryResponse<TTransformedPayload, TMeta, TExtra>, TError>
+> {
 	const { success, response, error } = await httpService.request<TPayload, TBody>({
 		body,
 		url,
@@ -125,11 +150,12 @@ async function executeQuery<TPayload extends JsonValue, TBody extends HttpReques
 	}
 
 	const continuationTokenFromResponse = extractContinuationToken(response.adapterResponse.responseHeaders);
+
 	return {
 		success: true,
 		response: {
 			...mapExtraResponseProps(response),
-			payload: response.payload,
+			payload: transformPayload(response.payload),
 			meta: {
 				...mapMetadata(response, { continuationToken: continuationTokenFromResponse }),
 				url: response.adapterResponse.url,

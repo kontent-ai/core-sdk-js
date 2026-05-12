@@ -26,7 +26,8 @@ describe("Query extra metadata", async () => {
 		KontentSdkError,
 		{
 			testExtraMetadata: string;
-		}
+		},
+		unknown
 	>({
 		mapMetadata: (response, data) => {
 			mappedContinuationToken = data.continuationToken;
@@ -54,6 +55,7 @@ describe("Query extra metadata", async () => {
 		requestHeaders: [requestHeader],
 		mapError: (error) => error,
 		mapExtraResponseProps: () => ({}),
+		transformPayload: (payload) => payload,
 	}).fetchSafe();
 
 	it("Meta should have proper extra metadata", () => {

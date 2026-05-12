@@ -1,7 +1,6 @@
 import { afterAll, describe, expect, it, vi } from "vitest";
 import z from "zod";
 import { getDefaultHttpService } from "../../../../lib/http/http.service.js";
-import type { KontentSdkError } from "../../../../lib/models/error.models.js";
 import { createPagedFetchQuery } from "../../../../lib/sdk/queries/paged-fetch-sdk-query.js";
 import type { QueryResponse } from "../../../../lib/sdk/sdk-models.js";
 import {
@@ -27,7 +26,7 @@ describe("Async pages iterator with max pages count", async () => {
 		statusCode: 200,
 	});
 
-	const pagesIterator = createPagedFetchQuery<null, KontentSdkError>({
+	const pagesIterator = createPagedFetchQuery({
 		getNextPageData: () => {
 			responseIndex++;
 
@@ -51,6 +50,7 @@ describe("Async pages iterator with max pages count", async () => {
 		mapError: (error) => error,
 		mapExtraResponseProps: () => ({}),
 		mapPagingExtraResponseProps: () => ({}),
+		transformPayload: (payload) => payload,
 	}).pagesSafe({ maxPagesCount });
 
 	const responses: QueryResponse<null>[] = [];

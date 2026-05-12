@@ -16,6 +16,7 @@ describe("resolveQuery - invalid baseUrl host", async () => {
 		mapMetadata: () => ({}),
 		mapError: (error) => error,
 		mapExtraResponseProps: () => ({}),
+		transformPayload: (payload) => payload,
 	});
 
 	it(`Error reason should be '${"invalidUrl" satisfies ErrorReason}'`, () => {
@@ -40,6 +41,7 @@ describe("resolveQuery - valid response matching zod schema", async () => {
 		mapMetadata: () => ({}),
 		mapError: (error) => error,
 		mapExtraResponseProps: () => ({}),
+		transformPayload: (payload) => payload,
 	});
 
 	it("Should succeed", () => {
@@ -67,6 +69,7 @@ describe("resolveQuery - response not matching zod schema", async () => {
 		mapMetadata: () => ({}),
 		mapError: (error) => error,
 		mapExtraResponseProps: () => ({}),
+		transformPayload: (payload) => payload,
 	});
 
 	it(`Error reason should be '${"parsingFailed" satisfies ErrorReason}'`, () => {
@@ -88,6 +91,7 @@ describe("resolveQuery - custom httpService from config is used", async () => {
 		mapMetadata: () => ({}),
 		mapError: (error) => error,
 		mapExtraResponseProps: () => ({}),
+		transformPayload: (payload) => payload,
 	});
 
 	it("Should call request on the provided httpService", () => {
@@ -111,6 +115,7 @@ describe("resolveQuery - authorization header is applied", async () => {
 		mapMetadata: () => ({}),
 		mapError: (error) => error,
 		mapExtraResponseProps: () => ({}),
+		transformPayload: (payload) => payload,
 	});
 
 	it("Should include the authorization header in the request", () => {
@@ -144,6 +149,7 @@ describe("resolveQuery - default httpService is used when none provided in confi
 			mapMetadata: () => ({}),
 			mapError: (error) => error,
 			mapExtraResponseProps: () => ({}),
+			transformPayload: (payload) => payload,
 		});
 
 		expect(success).toBe(true);
@@ -161,9 +167,40 @@ describe("resolveQuery - invalid URL", async () => {
 		mapMetadata: () => ({}),
 		mapError: (error) => error,
 		mapExtraResponseProps: () => ({}),
+		transformPayload: (payload) => payload,
 	});
 
 	it(`Error reason should be '${"invalidUrl" satisfies ErrorReason}'`, () => {
 		expect(error?.details.reason).toBe("invalidUrl" satisfies ErrorReason);
+	});
+});
+
+describe("resolveQuery - custom transformPayload adds extra property to payload", async () => {
+	const zodSchema = z.object({ name: z.string() });
+	const jsonResponse = { name: "test" };
+	const extraValue = "added-by-transform";
+
+	const { success, response } = await resolveQuery({
+		method: "GET",
+		url: "https://domain.com",
+		body: null,
+		config: {
+			httpService: getTestHttpServiceWithJsonResponse({ statusCode: 200, jsonResponse }),
+			runtimeValidation: { validateResponses: true },
+		},
+		zodSchema: async () => Promise.resolve(zodSchema),
+		sdkInfo: getTestSdkInfo(),
+		mapMetadata: () => ({}),
+		mapError: (error) => error,
+		mapExtraResponseProps: () => ({}),
+		transformPayload: (payload) => ({ ...payload, extra: extraValue }),
+	});
+
+	it("Should succeed", () => {
+		expect(success).toBe(true);
+	});
+
+	it("Should include the extra property added by transformPayload", () => {
+		expect(response?.payload).toStrictEqual({ ...jsonResponse, extra: extraValue });
 	});
 });
