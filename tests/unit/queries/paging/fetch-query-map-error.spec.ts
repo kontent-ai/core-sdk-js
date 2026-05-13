@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { z } from "zod/mini";
+import * as z from "zod/mini";
 import { getDefaultHttpService } from "../../../../lib/http/http.service.js";
 import { KontentSdkError } from "../../../../lib/models/error.models.js";
 import { createFetchQuery } from "../../../../lib/sdk/queries/fetch-sdk-query.js";
@@ -24,7 +24,7 @@ class CustomSdkError extends KontentSdkError {
 
 describe("createFetchQuery mapError", async () => {
 	const { error } = await createFetchQuery({
-		zodSchema: async () => Promise.resolve(z.null()),
+		schema: async () => Promise.resolve(z.null()),
 		url: "https://domain.com",
 		config: {
 			httpService: getDefaultHttpService({

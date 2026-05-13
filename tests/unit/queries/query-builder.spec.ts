@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { z } from "zod/mini";
+import * as z from "zod/mini";
 import { createMutationQuery, createPagedFetchQuery, type KontentSdkError, type Query } from "../../../lib/public_api.js";
 import { createFetchQuery } from "../../../lib/sdk/queries/fetch-sdk-query.js";
 import type { QueryInputData } from "../../../lib/sdk/sdk-models.js";
@@ -18,7 +18,7 @@ type SharedQueryData = Pick<
 		},
 		KontentSdkError
 	>,
-	"config" | "mapMetadata" | "sdkInfo" | "zodSchema" | "mapError" | "url" | "mapExtraResponseProps"
+	"config" | "mapMetadata" | "sdkInfo" | "schema" | "mapError" | "url" | "mapExtraResponseProps"
 >;
 
 describe("Query builder with mapExtraProps", async () => {
@@ -35,7 +35,7 @@ describe("Query builder with mapExtraProps", async () => {
 			},
 		},
 		sdkInfo: getTestSdkInfo(),
-		zodSchema: async () => Promise.resolve(z.null()),
+		schema: async () => Promise.resolve(z.null()),
 		url: "https://domain.com",
 		mapError: (error) => error,
 		mapExtraResponseProps: (_response) => ({
@@ -67,7 +67,7 @@ describe("Query builder url handling without modifications", () => {
 		config: {},
 		mapMetadata: () => ({}),
 		sdkInfo: getTestSdkInfo(),
-		zodSchema: async () => Promise.resolve(z.null()),
+		schema: async () => Promise.resolve(z.null()),
 		mapError: (error: KontentSdkError) => error,
 		url: "https://domain.com/api/path",
 		mapExtraResponseProps: () => ({}),
@@ -100,7 +100,7 @@ describe("Query builder url handling with base url", () => {
 		},
 		mapMetadata: () => ({}),
 		sdkInfo: getTestSdkInfo(),
-		zodSchema: async () => Promise.resolve(z.null()),
+		schema: async () => Promise.resolve(z.null()),
 		mapError: (error: KontentSdkError) => error,
 		url: "https://domain.com/api/path",
 		mapExtraResponseProps: () => ({}),

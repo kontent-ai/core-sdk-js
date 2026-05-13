@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { z } from "zod/mini";
+import * as z from "zod/mini";
 import type { KontentSdkError } from "../../../../lib/models/error.models.js";
 import { createMutationQuery } from "../../../../lib/sdk/queries/mutation-sdk-query.js";
 import type { MutationQuery } from "../../../../lib/sdk/sdk-models.js";
@@ -18,7 +18,7 @@ const buildBaseQuery = (overrides?: { readonly url?: string }): MutationQuery<ty
 			runtimeValidation: { validateResponses: false },
 		},
 		sdkInfo: getTestSdkInfo(),
-		zodSchema: async () => Promise.resolve(z.object({ name: z.string() })),
+		schema: async () => Promise.resolve(z.object({ name: z.string() })),
 		method: "POST",
 		url: overrides?.url ?? "https://domain.com",
 		body: null,

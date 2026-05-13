@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { z } from "zod/mini";
+import * as z from "zod/mini";
 import type { JsonValue } from "../../../lib/public_api.js";
 import type { PagedFetchQuery } from "../../../lib/sdk/sdk-models.js";
 import { isPagingQuery } from "../../../lib/sdk/sdk-utils.js";

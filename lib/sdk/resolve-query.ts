@@ -73,7 +73,7 @@ function prepareQueryData<TPayload extends JsonValue, TBody extends HttpRequestB
 			body: data.body,
 			method: data.method,
 			abortSignal: data.abortSignal,
-			zodSchema: data.zodSchema,
+			schema: data.schema,
 			responseValidation: data.config.runtimeValidation,
 			mapError: data.mapError,
 			mapMetadata: data.mapMetadata,
@@ -89,7 +89,7 @@ async function executeQuery<TPayload extends JsonValue, TBody extends HttpReques
 	body,
 	method,
 	abortSignal,
-	zodSchema,
+	schema,
 	responseValidation,
 	mapError,
 	mapMetadata,
@@ -111,7 +111,7 @@ async function executeQuery<TPayload extends JsonValue, TBody extends HttpReques
 		const validationError = await parseResponse({
 			url: response.adapterResponse.url,
 			payload: response.payload,
-			zodSchema: await zodSchema(),
+			schema: await schema(),
 		});
 
 		if (validationError) {

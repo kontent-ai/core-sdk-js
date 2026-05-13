@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { z } from "zod/mini";
+import * as z from "zod/mini";
 import type { KontentSdkError } from "../../../../lib/models/error.models.js";
 import { createFetchQuery } from "../../../../lib/sdk/queries/fetch-sdk-query.js";
 import type { FetchQuery } from "../../../../lib/sdk/sdk-models.js";
@@ -18,7 +18,7 @@ const buildBaseQuery = (overrides?: { readonly url?: string }): FetchQuery<typeo
 			runtimeValidation: { validateResponses: false },
 		},
 		sdkInfo: getTestSdkInfo(),
-		zodSchema: async () => Promise.resolve(z.object({ name: z.string() })),
+		schema: async () => Promise.resolve(z.object({ name: z.string() })),
 		url: overrides?.url ?? "https://domain.com",
 		mapError: (error) => error,
 		mapExtraResponseProps: () => ({}),

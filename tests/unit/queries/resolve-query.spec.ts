@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { z } from "zod/mini";
+import * as z from "zod/mini";
 import type { ErrorReason } from "../../../lib/models/error.models.js";
 import { resolveQuery } from "../../../lib/sdk/resolve-query.js";
 import { getTestHttpServiceWithJsonResponse, getTestSdkInfo } from "../../../lib/testkit/testkit.utils.js";
@@ -11,7 +11,7 @@ describe("resolveQuery - invalid baseUrl host", async () => {
 		url: "https://domain.com",
 		body: null,
 		config: { baseUrl: { protocol: "https", host: "not a valid host" } },
-		zodSchema: async () => Promise.resolve(z.null()),
+		schema: async () => Promise.resolve(z.null()),
 		sdkInfo: getTestSdkInfo(),
 		mapMetadata: () => ({}),
 		mapError: (error) => error,
@@ -24,7 +24,7 @@ describe("resolveQuery - invalid baseUrl host", async () => {
 });
 
 describe("resolveQuery - valid response matching zod schema", async () => {
-	const zodSchema = z.object({ name: z.string() });
+	const schema = z.object({ name: z.string() });
 	const jsonResponse = { name: "test" };
 
 	const { success, response } = await resolveQuery({
@@ -35,7 +35,7 @@ describe("resolveQuery - valid response matching zod schema", async () => {
 			httpService: getTestHttpServiceWithJsonResponse({ statusCode: 200, jsonResponse }),
 			runtimeValidation: { validateResponses: true },
 		},
-		zodSchema: async () => Promise.resolve(zodSchema),
+		schema: async () => Promise.resolve(schema),
 		sdkInfo: getTestSdkInfo(),
 		mapMetadata: () => ({}),
 		mapError: (error) => error,
@@ -52,7 +52,7 @@ describe("resolveQuery - valid response matching zod schema", async () => {
 });
 
 describe("resolveQuery - response not matching zod schema", async () => {
-	const zodSchema = z.object({ name: z.string() });
+	const schema = z.object({ name: z.string() });
 
 	const { error } = await resolveQuery({
 		method: "GET",
@@ -62,7 +62,7 @@ describe("resolveQuery - response not matching zod schema", async () => {
 			httpService: getTestHttpServiceWithJsonResponse({ statusCode: 200, jsonResponse: { name: 123 } }),
 			runtimeValidation: { validateResponses: true },
 		},
-		zodSchema: async () => Promise.resolve(zodSchema),
+		schema: async () => Promise.resolve(schema),
 		sdkInfo: getTestSdkInfo(),
 		mapMetadata: () => ({}),
 		mapError: (error) => error,
@@ -83,7 +83,7 @@ describe("resolveQuery - custom httpService from config is used", async () => {
 		url: "https://domain.com",
 		body: null,
 		config: { httpService: customHttpService },
-		zodSchema: async () => Promise.resolve(z.null()),
+		schema: async () => Promise.resolve(z.null()),
 		sdkInfo: getTestSdkInfo(),
 		mapMetadata: () => ({}),
 		mapError: (error) => error,
@@ -106,7 +106,7 @@ describe("resolveQuery - authorization header is applied", async () => {
 		body: null,
 		authorizationApiKey: apiKey,
 		config: { httpService },
-		zodSchema: async () => Promise.resolve(z.null()),
+		schema: async () => Promise.resolve(z.null()),
 		sdkInfo: getTestSdkInfo(),
 		mapMetadata: () => ({}),
 		mapError: (error) => error,
@@ -139,7 +139,7 @@ describe("resolveQuery - default httpService is used when none provided in confi
 			url: "https://domain.com",
 			body: null,
 			config: {},
-			zodSchema: async () => Promise.resolve(z.null()),
+			schema: async () => Promise.resolve(z.null()),
 			sdkInfo: getTestSdkInfo(),
 			mapMetadata: () => ({}),
 			mapError: (error) => error,
@@ -156,7 +156,7 @@ describe("resolveQuery - invalid URL", async () => {
 		url: "not-a-valid-url",
 		body: null,
 		config: {},
-		zodSchema: async () => Promise.resolve(z.null()),
+		schema: async () => Promise.resolve(z.null()),
 		sdkInfo: getTestSdkInfo(),
 		mapMetadata: () => ({}),
 		mapError: (error) => error,

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { z } from "zod/mini";
+import * as z from "zod/mini";
 import { type ErrorReason, KontentSdkError } from "../../../../lib/models/error.models.js";
 import { createPagedFetchQuery } from "../../../../lib/sdk/queries/paged-fetch-sdk-query.js";
 import { getNextPageUrl, getTestHttpServiceWithJsonResponse, getTestSdkInfo } from "../../../../lib/testkit/testkit.utils.js";
@@ -41,7 +41,7 @@ describe("Basic paging errors", async () => {
 			},
 		},
 		sdkInfo: getTestSdkInfo(),
-		zodSchema: async () => Promise.resolve(z.null()),
+		schema: async () => Promise.resolve(z.null()),
 		url: expectedResponseUrls?.[0] ?? "n/a",
 		mapError: (error) => error,
 		mapExtraResponseProps: () => ({}),

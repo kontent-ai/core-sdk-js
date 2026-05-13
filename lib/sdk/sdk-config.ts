@@ -1,4 +1,4 @@
-import { z } from "zod/mini";
+import * as z from "zod/mini";
 
 export const nilUuid = "00000000-0000-0000-0000-000000000000";
 

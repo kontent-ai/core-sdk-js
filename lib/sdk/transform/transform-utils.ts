@@ -47,7 +47,7 @@ export function createTransformResponse<TPayload extends JsonValue, TTransformed
 			const validationError = await parseResponse({
 				url: response.meta.url,
 				payload: transformedPayload,
-				zodSchema: await transformSchema(),
+				schema: await transformSchema(),
 			});
 
 			if (validationError) {

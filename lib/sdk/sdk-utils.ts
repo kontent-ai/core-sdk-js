@@ -24,13 +24,13 @@ export function isPagingQuery<TPayload extends JsonValue, TError, TMeta>(
 export async function parseResponse<TPayload extends JsonValue>({
 	url,
 	payload,
-	zodSchema,
+	schema,
 }: {
 	readonly url: URL;
 	readonly payload: TPayload;
-	readonly zodSchema: ZodMiniType<TPayload>;
+	readonly schema: ZodMiniType<TPayload>;
 }): Promise<Failure<{ readonly response?: never }, KontentSdkError> | undefined> {
-	const { success, error } = await zodSchema.safeParseAsync(payload);
+	const { success, error } = await schema.safeParseAsync(payload);
 
 	if (!success) {
 		return {

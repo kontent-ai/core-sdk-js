@@ -1,5 +1,5 @@
 import { afterAll, describe, expect, it, vi } from "vitest";
-import { z } from "zod/mini";
+import * as z from "zod/mini";
 import { getDefaultHttpService } from "../../../../lib/http/http.service.js";
 import { createPagedFetchQuery } from "../../../../lib/sdk/queries/paged-fetch-sdk-query.js";
 import { getNextPageUrl, getTestSdkInfo, mockGlobalFetchJsonResponse } from "../../../../lib/testkit/testkit.utils.js";
@@ -41,7 +41,7 @@ describe("Basic paging query with unlimited max count", async () => {
 			},
 		},
 		sdkInfo: getTestSdkInfo(),
-		zodSchema: async () => Promise.resolve(z.null()),
+		schema: async () => Promise.resolve(z.null()),
 		url: expectedResponseUrls?.[0] ?? "n/a",
 		mapError: (error) => error,
 		mapExtraResponseProps: () => ({}),

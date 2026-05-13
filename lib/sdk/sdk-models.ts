@@ -140,7 +140,7 @@ export type ResolveQueryResult<TPayload extends JsonValue, TError = KontentSdkEr
 
 export type FetchQueryRequest<TPayload extends JsonValue, TError = KontentSdkError, TMeta = unknown, TExtra = unknown> = Pick<
 	QueryInputData<TPayload, null, TMeta, TExtra, TError>,
-	"config" | "zodSchema" | "sdkInfo" | "mapMetadata" | "abortSignal" | "mapError" | "mapExtraResponseProps"
+	"config" | "schema" | "sdkInfo" | "mapMetadata" | "abortSignal" | "mapError" | "mapExtraResponseProps"
 > &
 	RequestDataWithoutBody;
 
@@ -152,13 +152,13 @@ export type MutationQueryRequest<
 	TExtra = unknown,
 > = Pick<
 	QueryInputData<TPayload, TBody, TMeta, TExtra, TError>,
-	"config" | "zodSchema" | "sdkInfo" | "mapMetadata" | "abortSignal" | "mapError" | "mapExtraResponseProps"
+	"config" | "schema" | "sdkInfo" | "mapMetadata" | "abortSignal" | "mapError" | "mapExtraResponseProps"
 > & { readonly method: MutationHttpMethod } & RequestData<TBody>;
 
 export type QueryInputData<TPayload extends JsonValue, TBody extends HttpRequestBody, TMeta, TExtra, TError> = {
 	readonly method: HttpMethod;
 	readonly config: SdkConfig;
-	readonly zodSchema: () => Promise<ZodMiniType<TPayload>>;
+	readonly schema: () => Promise<ZodMiniType<TPayload>>;
 	readonly sdkInfo: SdkInfo;
 	readonly abortSignal?: AbortSignal | undefined;
 	readonly url: string | URL;
@@ -193,7 +193,7 @@ export type ResolvedQueryData<TPayload extends JsonValue, TBody extends HttpRequ
 	readonly body: TBody;
 	readonly method: HttpMethod;
 	readonly abortSignal?: AbortSignal | undefined;
-	readonly zodSchema: () => Promise<ZodMiniType<TPayload>>;
+	readonly schema: () => Promise<ZodMiniType<TPayload>>;
 	readonly responseValidation: SdkConfig["runtimeValidation"];
 } & MetadataMapperConfig<TPayload, TBody, TMeta> &
 	ExtraResponsePropsMapper<TPayload, TBody, TExtra> &

@@ -1,4 +1,4 @@
-import { z } from "zod/mini";
+import * as z from "zod/mini";
 import type { AdapterPayload, AdapterResponse } from "../http/http.models.js";
 import { toFriendlyKontentSdkErrorMessage } from "../utils/error.utils.js";
 import type { ResolvedRetryStrategyOptions } from "./core.models.js";

@@ -22,6 +22,14 @@ export default defineConfig(
 					],
 				},
 			],
+			"no-restricted-syntax": [
+				"error",
+				{
+					selector: "ImportDeclaration[source.value='zod/mini'] > ImportSpecifier[imported.name='z']",
+					message:
+						'Use `import * as z from "zod/mini"` instead. The named `{ z }` import defeats esbuild\'s namespace tree-shaking and pulls ~280 kB of zod locales into consumer bundles.',
+				},
+			],
 		},
 	},
 );
