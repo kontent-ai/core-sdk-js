@@ -1,5 +1,5 @@
 import { afterAll, describe, expect, it, vi } from "vitest";
-import z from "zod";
+import { z } from "zod/mini";
 import type { GetNextPageData } from "../../../../lib/http/http.models.js";
 import { getDefaultHttpService } from "../../../../lib/http/http.service.js";
 import { extractContinuationToken } from "../../../../lib/public_api.js";

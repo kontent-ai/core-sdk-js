@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import z from "zod";
+import { z } from "zod/mini";
 import type { KontentSdkError } from "../../../../lib/models/error.models.js";
 import { createFetchQuery } from "../../../../lib/sdk/queries/fetch-sdk-query.js";
 import { getTestHttpServiceWithJsonResponse, getTestSdkInfo } from "../../../../lib/testkit/testkit.utils.js";

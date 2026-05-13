@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import z from "zod";
+import { z } from "zod/mini";
 import type { KontentSdkError } from "../../../../lib/models/error.models.js";
 import { createFetchQuery } from "../../../../lib/sdk/queries/fetch-sdk-query.js";
 import type { FetchQuery } from "../../../../lib/sdk/sdk-models.js";
@@ -157,7 +157,7 @@ describe("transformFetchQuery - runtime validation fails when transformed payloa
 		config: { runtimeValidation: { validateResponses: true } },
 		query: buildBaseQuery(),
 		transform: (payload) => payload,
-		transformSchema: async () => Promise.resolve(z.object({ name: z.string().min(50) })),
+		transformSchema: async () => Promise.resolve(z.object({ name: z.string().check(z.minLength(50)) })),
 		mapError: (error) => error,
 	});
 

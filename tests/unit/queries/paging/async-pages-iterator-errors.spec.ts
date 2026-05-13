@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import z from "zod";
+import { z } from "zod/mini";
 import { createPagedFetchQuery } from "../../../../lib/sdk/queries/paged-fetch-sdk-query.js";
 import type { QueryResponse } from "../../../../lib/sdk/sdk-models.js";
 import { getNextPageUrl, getTestHttpServiceWithJsonResponse, getTestSdkInfo } from "../../../../lib/testkit/testkit.utils.js";

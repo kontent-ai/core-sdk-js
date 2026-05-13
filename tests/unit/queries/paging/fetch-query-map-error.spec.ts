@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import z from "zod";
+import { z } from "zod/mini";
 import { getDefaultHttpService } from "../../../../lib/http/http.service.js";
 import { KontentSdkError } from "../../../../lib/models/error.models.js";
 import { createFetchQuery } from "../../../../lib/sdk/queries/fetch-sdk-query.js";

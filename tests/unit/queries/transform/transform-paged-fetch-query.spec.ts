@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import z from "zod";
+import { z } from "zod/mini";
 import type { KontentSdkError } from "../../../../lib/models/error.models.js";
 import { createPagedFetchQuery } from "../../../../lib/sdk/queries/paged-fetch-sdk-query.js";
 import type { PagedFetchQuery, QueryResponse, SafeQueryResult } from "../../../../lib/sdk/sdk-models.js";
@@ -45,7 +45,7 @@ const buildBaseQuery = (options?: {
 };
 
 const transformSchema = async () => Promise.resolve(z.object({ name: z.string(), extra: z.string() }));
-const identitySchema = async () => Promise.resolve(z.object({ name: z.string() })) as unknown as Promise<z.ZodType<PagePayload>>;
+const identitySchema = async () => Promise.resolve(z.object({ name: z.string() })) as unknown as Promise<z.ZodMiniType<PagePayload>>;
 
 describe("transformPagedFetchQuery - fetchPage applies transform that adds extra property", async () => {
 	const transformedQuery = transformPagedFetchQuery({
@@ -413,7 +413,7 @@ describe("transformPagedFetchQuery - runtime validation fails when transformed p
 		config: { runtimeValidation: { validateResponses: true } },
 		query: buildBaseQuery(),
 		transform: (payload) => ({ ...payload, extra: extraValue }),
-		transformSchema: async () => Promise.resolve(z.object({ name: z.string(), extra: z.string().min(50) })),
+		transformSchema: async () => Promise.resolve(z.object({ name: z.string(), extra: z.string().check(z.minLength(50)) })),
 		mapError: (error) => error,
 	});
 

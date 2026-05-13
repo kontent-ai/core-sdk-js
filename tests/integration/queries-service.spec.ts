@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import z from "zod";
+import { z } from "zod/mini";
 import type { HttpStatusCode } from "../../lib/http/http.models.js";
 import { getDefaultHttpService } from "../../lib/http/http.service.js";
 import type { KontentSdkError } from "../../lib/public_api.js";

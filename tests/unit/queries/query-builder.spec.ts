@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import z from "zod";
+import { z } from "zod/mini";
 import { createMutationQuery, createPagedFetchQuery, type KontentSdkError, type Query } from "../../../lib/public_api.js";
 import { createFetchQuery } from "../../../lib/sdk/queries/fetch-sdk-query.js";
 import type { QueryInputData } from "../../../lib/sdk/sdk-models.js";

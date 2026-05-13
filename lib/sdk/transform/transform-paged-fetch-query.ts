@@ -1,4 +1,4 @@
-import type { ZodType } from "zod";
+import type { ZodMiniType } from "zod/mini";
 import type { KontentSdkError } from "../../models/error.models.js";
 import type { JsonValue } from "../../models/json.models.js";
 import type { TryCatchResult } from "../../utils/try-catch.utils.js";
@@ -22,7 +22,7 @@ export function transformPagedFetchQuery<
 	readonly config: Pick<SdkConfig, "runtimeValidation">;
 	readonly query: PagedFetchQuery<TPayload, TError, TMeta, TExtra, TPagingExtra>;
 	readonly transform: (payload: TPayload) => TTransformedPayload;
-	readonly transformSchema: () => Promise<ZodType<TTransformedPayload>>;
+	readonly transformSchema: () => Promise<ZodMiniType<TTransformedPayload>>;
 	readonly mapError: (error: KontentSdkError) => TError;
 }): PagedFetchQuery<TTransformedPayload, TError, TMeta, TExtra, TPagingExtra> {
 	const transformResponse = createTransformResponse<TPayload, TTransformedPayload, TError, TMeta, TExtra>({

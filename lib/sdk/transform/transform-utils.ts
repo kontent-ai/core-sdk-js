@@ -1,4 +1,4 @@
-import type { ZodType } from "zod";
+import type { ZodMiniType } from "zod/mini";
 import type { KontentSdkError } from "../../models/error.models.js";
 import type { JsonValue } from "../../models/json.models.js";
 import { createSdkError } from "../../utils/error.utils.js";
@@ -33,7 +33,7 @@ export function createTransformResponse<TPayload extends JsonValue, TTransformed
 }: {
 	readonly config: Pick<SdkConfig, "runtimeValidation">;
 	readonly transform: (payload: TPayload) => TTransformedPayload;
-	readonly transformSchema: () => Promise<ZodType<TTransformedPayload>>;
+	readonly transformSchema: () => Promise<ZodMiniType<TTransformedPayload>>;
 	readonly mapError: (error: KontentSdkError) => TError;
 }): TransformResponseFn<TPayload, TTransformedPayload, TError, TMeta, TExtra> {
 	return async (response) => {

@@ -3,7 +3,7 @@
  * to keep common code and behavior consistent.
  */
 
-import type { ZodType } from "zod";
+import type { ZodMiniType } from "zod/mini";
 import type { AdapterPayload, AdapterResponse, HttpRequestBody, HttpResponse, HttpService, PagingConfig } from "../http/http.models.js";
 import type { Header, HttpMethod, SdkInfo } from "../models/core.models.js";
 import type { KontentSdkError } from "../models/error.models.js";
@@ -158,7 +158,7 @@ export type MutationQueryRequest<
 export type QueryInputData<TPayload extends JsonValue, TBody extends HttpRequestBody, TMeta, TExtra, TError> = {
 	readonly method: HttpMethod;
 	readonly config: SdkConfig;
-	readonly zodSchema: () => Promise<ZodType<TPayload>>;
+	readonly zodSchema: () => Promise<ZodMiniType<TPayload>>;
 	readonly sdkInfo: SdkInfo;
 	readonly abortSignal?: AbortSignal | undefined;
 	readonly url: string | URL;
@@ -193,7 +193,7 @@ export type ResolvedQueryData<TPayload extends JsonValue, TBody extends HttpRequ
 	readonly body: TBody;
 	readonly method: HttpMethod;
 	readonly abortSignal?: AbortSignal | undefined;
-	readonly zodSchema: () => Promise<ZodType<TPayload>>;
+	readonly zodSchema: () => Promise<ZodMiniType<TPayload>>;
 	readonly responseValidation: SdkConfig["runtimeValidation"];
 } & MetadataMapperConfig<TPayload, TBody, TMeta> &
 	ExtraResponsePropsMapper<TPayload, TBody, TExtra> &

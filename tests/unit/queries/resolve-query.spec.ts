@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import z from "zod";
+import { z } from "zod/mini";
 import type { ErrorReason } from "../../../lib/models/error.models.js";
 import { resolveQuery } from "../../../lib/sdk/resolve-query.js";
 import { getTestHttpServiceWithJsonResponse, getTestSdkInfo } from "../../../lib/testkit/testkit.utils.js";

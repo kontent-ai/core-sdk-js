@@ -10,5 +10,18 @@ export default defineConfig(
 	{
 		extends: [kontentAiConfig],
 		files: ["lib/**/*.ts", "tests/**/*.ts", "scripts/**/*.ts"],
+		rules: {
+			"no-restricted-imports": [
+				"error",
+				{
+					paths: [
+						{
+							name: "zod",
+							message: "Import from 'zod/mini' instead to keep the SDK tree-shakeable.",
+						},
+					],
+				},
+			],
+		},
 	},
 );

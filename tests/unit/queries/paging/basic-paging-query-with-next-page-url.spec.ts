@@ -1,5 +1,5 @@
 import { afterAll, describe, expect, it, vi } from "vitest";
-import z from "zod";
+import { z } from "zod/mini";
 import { getDefaultHttpService } from "../../../../lib/http/http.service.js";
 import { createPagedFetchQuery } from "../../../../lib/sdk/queries/paged-fetch-sdk-query.js";
 import {
