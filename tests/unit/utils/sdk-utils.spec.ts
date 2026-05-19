@@ -1,5 +1,4 @@
 import { describe, expect, it } from "vitest";
-import * as z from "zod/mini";
 import type { JsonValue } from "../../../lib/public_api.js";
 import type { PagedFetchQuery } from "../../../lib/sdk/sdk-models.js";
 import { isPagingQuery } from "../../../lib/sdk/sdk-utils.js";
@@ -7,7 +6,6 @@ import { isPagingQuery } from "../../../lib/sdk/sdk-utils.js";
 describe("isPagingQuery", () => {
 	it("Should return true for object with paging query shape", () => {
 		const pagingQueryLike: PagedFetchQuery<JsonValue> = {
-			schema: z.null(),
 			inspect: () => {
 				return {} as never;
 			},
@@ -41,7 +39,6 @@ describe("isPagingQuery", () => {
 
 	it("Should return false when one of paging methods is missing", () => {
 		const missingPagesQuery: Omit<PagedFetchQuery<JsonValue>, "pages"> = {
-			schema: z.null(),
 			inspect: () => {
 				return {} as never;
 			},
@@ -63,7 +60,6 @@ describe("isPagingQuery", () => {
 		};
 
 		const missingFetchAllPagesQuery: Omit<PagedFetchQuery<JsonValue>, "fetchAllPages"> = {
-			schema: z.null(),
 			inspect: () => {
 				return {} as never;
 			},

@@ -1,7 +1,7 @@
 import type { ZodMiniType } from "zod/mini";
 import type { KontentSdkError } from "../../models/error.models.js";
 import type { JsonValue } from "../../models/json.models.js";
-import type { MutationQuery, SdkConfig } from "../sdk-models.js";
+import type { MutationQuery, QueryResponse, SdkConfig } from "../sdk-models.js";
 import { applyTransformOrThrow, applyTransformSafely, createTransformResponse } from "./transform-utils.js";
 
 export function transformMutationQuery<
@@ -19,7 +19,7 @@ export function transformMutationQuery<
 }: {
 	readonly config: Pick<SdkConfig, "runtimeValidation">;
 	readonly query: MutationQuery<TPayload, TError, TMeta, TExtra>;
-	readonly transform: (payload: TPayload) => TTransformedPayload;
+	readonly transform: (response: QueryResponse<TPayload, TMeta, TExtra>) => QueryResponse<TTransformedPayload, TMeta, TExtra>;
 	readonly transformSchema: () => Promise<ZodMiniType<TTransformedPayload>>;
 	readonly mapError: (error: KontentSdkError) => TError;
 }): MutationQuery<TTransformedPayload, TError, TMeta, TExtra> {

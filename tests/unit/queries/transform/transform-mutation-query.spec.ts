@@ -30,7 +30,7 @@ describe("transformMutationQuery - executeSafe applies transform that adds extra
 	const transformedQuery = transformMutationQuery({
 		config: { runtimeValidation: { validateResponses: false } },
 		query: buildBaseQuery(),
-		transform: (payload) => ({ ...payload, extra: extraValue }),
+		transform: (response) => ({ ...response, payload: { ...response.payload, extra: extraValue } }),
 		transformSchema: async () => Promise.resolve(z.object({ name: z.string(), extra: z.string() })),
 		mapError: (error) => error,
 	});
@@ -54,7 +54,7 @@ describe("transformMutationQuery - execute applies transform that adds extra pro
 	const transformedQuery = transformMutationQuery({
 		config: { runtimeValidation: { validateResponses: false } },
 		query: buildBaseQuery(),
-		transform: (payload) => ({ ...payload, extra: extraValue }),
+		transform: (response) => ({ ...response, payload: { ...response.payload, extra: extraValue } }),
 		transformSchema: async () => Promise.resolve(z.object({ name: z.string(), extra: z.string() })),
 		mapError: (error) => error,
 	});
@@ -118,7 +118,7 @@ describe("transformMutationQuery - executeSafe propagates underlying query failu
 	const transformedQuery = transformMutationQuery({
 		config: { runtimeValidation: { validateResponses: false } },
 		query: buildBaseQuery({ url: "not-a-valid-url" }),
-		transform: (payload) => payload,
+		transform: (response) => response,
 		transformSchema: async () => Promise.resolve(z.object({ name: z.string() })),
 		mapError: (error) => error,
 	});
@@ -138,7 +138,7 @@ describe("transformMutationQuery - runtime validation passes when transformed pa
 	const transformedQuery = transformMutationQuery({
 		config: { runtimeValidation: { validateResponses: true } },
 		query: buildBaseQuery(),
-		transform: (payload) => payload,
+		transform: (response) => response,
 		transformSchema: async () => Promise.resolve(z.object({ name: z.string() })),
 		mapError: (error) => error,
 	});
@@ -158,7 +158,7 @@ describe("transformMutationQuery - runtime validation fails when transformed pay
 	const transformedQuery = transformMutationQuery({
 		config: { runtimeValidation: { validateResponses: true } },
 		query: buildBaseQuery(),
-		transform: (payload) => payload,
+		transform: (response) => response,
 		transformSchema: async () => Promise.resolve(z.object({ name: z.string().check(z.minLength(50)) })),
 		mapError: (error) => error,
 	});

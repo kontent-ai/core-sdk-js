@@ -28,7 +28,7 @@ describe("transformFetchQuery - fetchSafe applies transform that adds extra prop
 	const transformedQuery = transformFetchQuery({
 		config: { runtimeValidation: { validateResponses: false } },
 		query: buildBaseQuery(),
-		transform: (payload) => ({ ...payload, extra: extraValue }),
+		transform: (response) => ({ ...response, payload: { ...response.payload, extra: extraValue } }),
 		transformSchema: async () => Promise.resolve(z.object({ name: z.string(), extra: z.string() })),
 		mapError: (error) => error,
 	});
@@ -52,7 +52,7 @@ describe("transformFetchQuery - fetch applies transform that adds extra property
 	const transformedQuery = transformFetchQuery({
 		config: { runtimeValidation: { validateResponses: false } },
 		query: buildBaseQuery(),
-		transform: (payload) => ({ ...payload, extra: extraValue }),
+		transform: (response) => ({ ...response, payload: { ...response.payload, extra: extraValue } }),
 		transformSchema: async () => Promise.resolve(z.object({ name: z.string(), extra: z.string() })),
 		mapError: (error) => error,
 	});
@@ -116,7 +116,7 @@ describe("transformFetchQuery - fetchSafe propagates underlying query failure un
 	const transformedQuery = transformFetchQuery({
 		config: { runtimeValidation: { validateResponses: false } },
 		query: buildBaseQuery({ url: "not-a-valid-url" }),
-		transform: (payload) => payload,
+		transform: (response) => response,
 		transformSchema: async () => Promise.resolve(z.object({ name: z.string() })),
 		mapError: (error) => error,
 	});
@@ -136,7 +136,7 @@ describe("transformFetchQuery - runtime validation passes when transformed paylo
 	const transformedQuery = transformFetchQuery({
 		config: { runtimeValidation: { validateResponses: true } },
 		query: buildBaseQuery(),
-		transform: (payload) => payload,
+		transform: (response) => response,
 		transformSchema: async () => Promise.resolve(z.object({ name: z.string() })),
 		mapError: (error) => error,
 	});
@@ -156,7 +156,7 @@ describe("transformFetchQuery - runtime validation fails when transformed payloa
 	const transformedQuery = transformFetchQuery({
 		config: { runtimeValidation: { validateResponses: true } },
 		query: buildBaseQuery(),
-		transform: (payload) => payload,
+		transform: (response) => response,
 		transformSchema: async () => Promise.resolve(z.object({ name: z.string().check(z.minLength(50)) })),
 		mapError: (error) => error,
 	});
