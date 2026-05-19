@@ -1,5 +1,4 @@
 import { afterAll, describe, expect, it, vi } from "vitest";
-import * as z from "zod/mini";
 import type { GetNextPageData } from "../../../../lib/http/http.models.js";
 import { getDefaultHttpService } from "../../../../lib/http/http.service.js";
 import { extractContinuationToken } from "../../../../lib/public_api.js";
@@ -53,7 +52,7 @@ describe("Basic paging query with continuation token", async () => {
 			},
 		},
 		sdkInfo: getTestSdkInfo(),
-		schema: async () => Promise.resolve(z.null()),
+		schema: undefined,
 		url: "https://domain.com",
 		mapError: (error) => error,
 		mapExtraResponseProps: (response) => ({

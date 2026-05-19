@@ -1,7 +1,7 @@
-import type { ZodMiniType } from "zod/mini";
 import type { KontentSdkError } from "../../models/error.models.js";
 import type { JsonValue } from "../../models/json.models.js";
 import { isNonEmptyArray } from "../../utils/array.utils.js";
+import type { SchemaInput } from "../../utils/schema.utils.js";
 import type { PagedFetchQuery, QueryResponse, SafeQueryResult, SdkConfig } from "../sdk-models.js";
 import { createBatchTransformResponses, createTransformError } from "./transform-utils.js";
 
@@ -24,7 +24,7 @@ export function transformPagedFetchQuery<
 	readonly transform: (
 		responses: readonly QueryResponse<TPayload, TMeta, TExtra>[],
 	) => readonly QueryResponse<TTransformedPayload, TMeta, TExtra>[];
-	readonly transformSchema: () => Promise<ZodMiniType<TTransformedPayload>>;
+	readonly transformSchema: SchemaInput<TTransformedPayload>;
 	readonly mapError: (error: KontentSdkError) => TError;
 }): PagedFetchQuery<TTransformedPayload, TError, TMeta, TExtra, TPagingExtra> {
 	const batchTransformResponses = createBatchTransformResponses<TPayload, TTransformedPayload, TError, TMeta, TExtra>({

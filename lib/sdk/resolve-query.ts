@@ -5,6 +5,7 @@ import type { ErrorDetailsFor, KontentSdkError } from "../models/error.models.js
 import type { JsonValue } from "../models/json.models.js";
 import { createSdkError } from "../utils/error.utils.js";
 import { createAuthorizationHeader, createContinuationHeader, createSdkIdHeader, extractContinuationToken } from "../utils/header.utils.js";
+import { resolveSchema } from "../utils/schema.utils.js";
 import { type TryCatchResult, tryCatch } from "../utils/try-catch.utils.js";
 import type {
 	BaseUrl,
@@ -108,14 +109,17 @@ async function executeQuery<TPayload extends JsonValue, TBody extends HttpReques
 	}
 
 	if (responseValidation?.validateResponses) {
-		const validationError = await parseResponse({
-			url: response.adapterResponse.url,
-			payload: response.payload,
-			schema: await schema(),
-		});
+		const resolvedSchema = await resolveSchema(schema);
+		if (resolvedSchema) {
+			const validationError = await parseResponse({
+				url: response.adapterResponse.url,
+				payload: response.payload,
+				schema: resolvedSchema,
+			});
 
-		if (validationError) {
-			return { success: false, error: mapError(validationError.error) };
+			if (validationError) {
+				return { success: false, error: mapError(validationError.error) };
+			}
 		}
 	}
 

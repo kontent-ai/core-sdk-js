@@ -1,5 +1,4 @@
 import { describe, expect, it } from "vitest";
-import * as z from "zod/mini";
 import { getDefaultHttpService } from "../../../lib/http/http.service.js";
 import { createPagedFetchQuery, type JsonValue, KontentSdkError } from "../../../lib/public_api.js";
 import { createFetchQuery } from "../../../lib/sdk/queries/fetch-sdk-query.js";
@@ -23,7 +22,7 @@ type QueryCallback = {
 };
 
 const successfulBaseQueryConfig: Parameters<typeof createFetchQuery>[0] = {
-	schema: async () => Promise.resolve(z.null()),
+	schema: undefined,
 	url: "https://domain.com",
 	config: {
 		httpService: getTestHttpServiceWithJsonResponse({
@@ -41,7 +40,7 @@ const successfulBaseQueryConfig: Parameters<typeof createFetchQuery>[0] = {
 };
 
 const baseQueryConfig: Parameters<typeof createFetchQuery>[0] = {
-	schema: async () => Promise.resolve(z.null()),
+	schema: undefined,
 	url: "https://domain.com",
 	config: {
 		httpService: getDefaultHttpService({

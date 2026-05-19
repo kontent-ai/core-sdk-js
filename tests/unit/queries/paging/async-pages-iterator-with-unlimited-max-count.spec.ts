@@ -1,5 +1,4 @@
 import { afterAll, describe, expect, it, vi } from "vitest";
-import * as z from "zod/mini";
 import type { GetNextPageData } from "../../../../lib/http/http.models.js";
 import { getDefaultHttpService } from "../../../../lib/http/http.service.js";
 import { createPagedFetchQuery } from "../../../../lib/sdk/queries/paged-fetch-sdk-query.js";
@@ -48,7 +47,7 @@ describe("Async pages iterator with unlimited max count", async () => {
 			},
 		},
 		sdkInfo: getTestSdkInfo(),
-		schema: async () => Promise.resolve(z.null()),
+		schema: undefined,
 		url: expectedResponseUrls?.[0] ?? "n/a",
 		mapError: (error) => error,
 		mapExtraResponseProps: () => ({}),
@@ -111,7 +110,7 @@ describe("Async pages iterator fetches all pages when maxPagesCount is set to 0"
 			},
 		},
 		sdkInfo: getTestSdkInfo(),
-		schema: async () => Promise.resolve(z.null()),
+		schema: undefined,
 		url: expectedResponseUrls?.[0] ?? "n/a",
 		mapError: (error) => error,
 		mapExtraResponseProps: () => ({}),

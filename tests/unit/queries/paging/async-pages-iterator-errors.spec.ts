@@ -1,5 +1,4 @@
 import { describe, expect, it } from "vitest";
-import * as z from "zod/mini";
 import { createPagedFetchQuery } from "../../../../lib/sdk/queries/paged-fetch-sdk-query.js";
 import type { QueryResponse } from "../../../../lib/sdk/sdk-models.js";
 import { getNextPageUrl, getTestHttpServiceWithJsonResponse, getTestSdkInfo } from "../../../../lib/testkit/testkit.utils.js";
@@ -41,7 +40,7 @@ describe("Async pages iterator errors", async () => {
 			},
 		},
 		sdkInfo: getTestSdkInfo(),
-		schema: async () => Promise.resolve(z.null()),
+		schema: undefined,
 		url: expectedResponseUrls?.[0] ?? "n/a",
 		mapError: (error) => error,
 		mapExtraResponseProps: () => ({}),

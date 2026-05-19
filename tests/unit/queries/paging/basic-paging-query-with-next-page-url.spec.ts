@@ -1,5 +1,4 @@
 import { afterAll, describe, expect, it, vi } from "vitest";
-import * as z from "zod/mini";
 import { getDefaultHttpService } from "../../../../lib/http/http.service.js";
 import { createPagedFetchQuery } from "../../../../lib/sdk/queries/paged-fetch-sdk-query.js";
 import {
@@ -44,7 +43,7 @@ describe("Basic paging query with next page url", async () => {
 			},
 		},
 		sdkInfo: getTestSdkInfo(),
-		schema: async () => Promise.resolve(z.null()),
+		schema: undefined,
 		url: expectedResponseUrls?.[0] ?? "n/a",
 		mapError: (error) => error,
 		mapExtraResponseProps: () => ({}),

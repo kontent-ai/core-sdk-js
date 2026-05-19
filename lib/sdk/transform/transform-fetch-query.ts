@@ -1,6 +1,6 @@
-import type { ZodMiniType } from "zod/mini";
 import type { KontentSdkError } from "../../models/error.models.js";
 import type { JsonValue } from "../../models/json.models.js";
+import type { SchemaInput } from "../../utils/schema.utils.js";
 import type { FetchQuery, QueryResponse, SdkConfig } from "../sdk-models.js";
 import { applyTransformOrThrow, applyTransformSafely, createTransformResponse } from "./transform-utils.js";
 
@@ -20,7 +20,7 @@ export function transformFetchQuery<
 	readonly config: Pick<SdkConfig, "runtimeValidation">;
 	readonly query: FetchQuery<TPayload, TError, TMeta, TExtra>;
 	readonly transform: (response: QueryResponse<TPayload, TMeta, TExtra>) => QueryResponse<TTransformedPayload, TMeta, TExtra>;
-	readonly transformSchema: () => Promise<ZodMiniType<TTransformedPayload>>;
+	readonly transformSchema: SchemaInput<TTransformedPayload>;
 	readonly mapError: (error: KontentSdkError) => TError;
 }): FetchQuery<TTransformedPayload, TError, TMeta, TExtra> {
 	const transformResponse = createTransformResponse<TPayload, TTransformedPayload, TError, TMeta, TExtra>({

@@ -1,5 +1,4 @@
 import { describe, expect, it } from "vitest";
-import * as z from "zod/mini";
 import type { KontentSdkError } from "../../../../lib/models/error.models.js";
 import { createFetchQuery } from "../../../../lib/sdk/queries/fetch-sdk-query.js";
 import { getTestHttpServiceWithJsonResponse, getTestSdkInfo } from "../../../../lib/testkit/testkit.utils.js";
@@ -26,13 +25,7 @@ const expectedMetadata: Metadata = {
 
 describe("createFetchQuery mapMetadata", async () => {
 	const { response } = await createFetchQuery<ResponsePayload, KontentSdkError, Metadata, unknown>({
-		schema: async () =>
-			Promise.resolve(
-				z.object({
-					id: z.string(),
-					name: z.string(),
-				}),
-			),
+		schema: undefined,
 		url: "https://domain.com",
 		config: {
 			httpService: getTestHttpServiceWithJsonResponse({

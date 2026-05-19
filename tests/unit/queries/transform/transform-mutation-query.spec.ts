@@ -18,7 +18,7 @@ const buildBaseQuery = (overrides?: { readonly url?: string }): MutationQuery<ty
 			runtimeValidation: { validateResponses: false },
 		},
 		sdkInfo: getTestSdkInfo(),
-		schema: async () => Promise.resolve(z.object({ name: z.string() })),
+		schema: undefined,
 		method: "POST",
 		url: overrides?.url ?? "https://domain.com",
 		body: null,
@@ -31,7 +31,7 @@ describe("transformMutationQuery - executeSafe applies transform that adds extra
 		config: { runtimeValidation: { validateResponses: false } },
 		query: buildBaseQuery(),
 		transform: (response) => ({ ...response, payload: { ...response.payload, extra: extraValue } }),
-		transformSchema: async () => Promise.resolve(z.object({ name: z.string(), extra: z.string() })),
+		transformSchema: undefined,
 		mapError: (error) => error,
 	});
 
@@ -55,7 +55,7 @@ describe("transformMutationQuery - execute applies transform that adds extra pro
 		config: { runtimeValidation: { validateResponses: false } },
 		query: buildBaseQuery(),
 		transform: (response) => ({ ...response, payload: { ...response.payload, extra: extraValue } }),
-		transformSchema: async () => Promise.resolve(z.object({ name: z.string(), extra: z.string() })),
+		transformSchema: undefined,
 		mapError: (error) => error,
 	});
 
@@ -77,7 +77,7 @@ describe("transformMutationQuery - execute throws when transform throws", async 
 		transform: () => {
 			throw new Error();
 		},
-		transformSchema: async () => Promise.resolve(z.object({ name: z.string() })),
+		transformSchema: undefined,
 		mapError: (error) => error,
 	});
 
@@ -99,7 +99,7 @@ describe("transformMutationQuery - executeSafe returns failure when transform th
 		transform: () => {
 			throw new Error();
 		},
-		transformSchema: async () => Promise.resolve(z.object({ name: z.string() })),
+		transformSchema: undefined,
 		mapError: (error) => error,
 	});
 
@@ -119,7 +119,7 @@ describe("transformMutationQuery - executeSafe propagates underlying query failu
 		config: { runtimeValidation: { validateResponses: false } },
 		query: buildBaseQuery({ url: "not-a-valid-url" }),
 		transform: (response) => response,
-		transformSchema: async () => Promise.resolve(z.object({ name: z.string() })),
+		transformSchema: undefined,
 		mapError: (error) => error,
 	});
 
@@ -139,7 +139,7 @@ describe("transformMutationQuery - runtime validation passes when transformed pa
 		config: { runtimeValidation: { validateResponses: true } },
 		query: buildBaseQuery(),
 		transform: (response) => response,
-		transformSchema: async () => Promise.resolve(z.object({ name: z.string() })),
+		transformSchema: z.object({ name: z.string() }),
 		mapError: (error) => error,
 	});
 
@@ -159,7 +159,7 @@ describe("transformMutationQuery - runtime validation fails when transformed pay
 		config: { runtimeValidation: { validateResponses: true } },
 		query: buildBaseQuery(),
 		transform: (response) => response,
-		transformSchema: async () => Promise.resolve(z.object({ name: z.string().check(z.minLength(50)) })),
+		transformSchema: z.object({ name: z.string().check(z.minLength(50)) }),
 		mapError: (error) => error,
 	});
 

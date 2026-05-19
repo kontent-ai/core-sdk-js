@@ -11,7 +11,7 @@ describe("resolveQuery - invalid baseUrl host", async () => {
 		url: "https://domain.com",
 		body: null,
 		config: { baseUrl: { protocol: "https", host: "not a valid host" } },
-		schema: async () => Promise.resolve(z.null()),
+		schema: undefined,
 		sdkInfo: getTestSdkInfo(),
 		mapMetadata: () => ({}),
 		mapError: (error) => error,
@@ -35,7 +35,7 @@ describe("resolveQuery - valid response matching zod schema", async () => {
 			httpService: getTestHttpServiceWithJsonResponse({ statusCode: 200, jsonResponse }),
 			runtimeValidation: { validateResponses: true },
 		},
-		schema: async () => Promise.resolve(schema),
+		schema,
 		sdkInfo: getTestSdkInfo(),
 		mapMetadata: () => ({}),
 		mapError: (error) => error,
@@ -62,7 +62,7 @@ describe("resolveQuery - response not matching zod schema", async () => {
 			httpService: getTestHttpServiceWithJsonResponse({ statusCode: 200, jsonResponse: { name: 123 } }),
 			runtimeValidation: { validateResponses: true },
 		},
-		schema: async () => Promise.resolve(schema),
+		schema,
 		sdkInfo: getTestSdkInfo(),
 		mapMetadata: () => ({}),
 		mapError: (error) => error,
@@ -71,6 +71,33 @@ describe("resolveQuery - response not matching zod schema", async () => {
 
 	it(`Error reason should be '${"parsingFailed" satisfies ErrorReason}'`, () => {
 		expect(error?.details.reason).toBe("parsingFailed" satisfies ErrorReason);
+	});
+});
+
+describe("resolveQuery - validation is skipped when schema is undefined", async () => {
+	const jsonResponse = { name: 123 };
+
+	const { success, response } = await resolveQuery({
+		method: "GET",
+		url: "https://domain.com",
+		body: null,
+		config: {
+			httpService: getTestHttpServiceWithJsonResponse({ statusCode: 200, jsonResponse }),
+			runtimeValidation: { validateResponses: true },
+		},
+		schema: undefined,
+		sdkInfo: getTestSdkInfo(),
+		mapMetadata: () => ({}),
+		mapError: (error) => error,
+		mapExtraResponseProps: () => ({}),
+	});
+
+	it("Should succeed without running validation", () => {
+		expect(success).toBe(true);
+	});
+
+	it("Should return the unvalidated payload", () => {
+		expect(response?.payload).toStrictEqual(jsonResponse);
 	});
 });
 
@@ -83,7 +110,7 @@ describe("resolveQuery - custom httpService from config is used", async () => {
 		url: "https://domain.com",
 		body: null,
 		config: { httpService: customHttpService },
-		schema: async () => Promise.resolve(z.null()),
+		schema: undefined,
 		sdkInfo: getTestSdkInfo(),
 		mapMetadata: () => ({}),
 		mapError: (error) => error,
@@ -106,7 +133,7 @@ describe("resolveQuery - authorization header is applied", async () => {
 		body: null,
 		authorizationApiKey: apiKey,
 		config: { httpService },
-		schema: async () => Promise.resolve(z.null()),
+		schema: undefined,
 		sdkInfo: getTestSdkInfo(),
 		mapMetadata: () => ({}),
 		mapError: (error) => error,
@@ -139,7 +166,7 @@ describe("resolveQuery - default httpService is used when none provided in confi
 			url: "https://domain.com",
 			body: null,
 			config: {},
-			schema: async () => Promise.resolve(z.null()),
+			schema: undefined,
 			sdkInfo: getTestSdkInfo(),
 			mapMetadata: () => ({}),
 			mapError: (error) => error,
@@ -156,7 +183,7 @@ describe("resolveQuery - invalid URL", async () => {
 		url: "not-a-valid-url",
 		body: null,
 		config: {},
-		schema: async () => Promise.resolve(z.null()),
+		schema: undefined,
 		sdkInfo: getTestSdkInfo(),
 		mapMetadata: () => ({}),
 		mapError: (error) => error,

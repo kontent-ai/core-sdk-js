@@ -1,7 +1,7 @@
-import type { ZodMiniType } from "zod/mini";
 import type { KontentSdkError } from "../../models/error.models.js";
 import type { JsonValue } from "../../models/json.models.js";
 import { createSdkError } from "../../utils/error.utils.js";
+import { resolveSchema, type SchemaInput } from "../../utils/schema.utils.js";
 import { type TryCatchResult, tryCatch } from "../../utils/try-catch.utils.js";
 import type { QueryResponse, SafeQueryResult, SdkConfig } from "../sdk-models.js";
 import { parseResponse } from "../sdk-utils.js";
@@ -37,7 +37,7 @@ export function createTransformResponse<TPayload extends JsonValue, TTransformed
 }: {
 	readonly config: Pick<SdkConfig, "runtimeValidation">;
 	readonly transform: (response: QueryResponse<TPayload, TMeta, TExtra>) => QueryResponse<TTransformedPayload, TMeta, TExtra>;
-	readonly transformSchema: () => Promise<ZodMiniType<TTransformedPayload>>;
+	readonly transformSchema: SchemaInput<TTransformedPayload>;
 	readonly mapError: (error: KontentSdkError) => TError;
 }): TransformResponseFn<TPayload, TTransformedPayload, TError, TMeta, TExtra> {
 	return async (response) => {
@@ -48,14 +48,17 @@ export function createTransformResponse<TPayload extends JsonValue, TTransformed
 		}
 
 		if (config.runtimeValidation?.validateResponses) {
-			const validationError = await parseResponse({
-				url: transformedResponse.meta.url,
-				payload: transformedResponse.payload,
-				schema: await transformSchema(),
-			});
+			const schema = await resolveSchema(transformSchema);
+			if (schema) {
+				const validationError = await parseResponse({
+					url: transformedResponse.meta.url,
+					payload: transformedResponse.payload,
+					schema,
+				});
 
-			if (validationError) {
-				return { success: false, error: mapError(validationError.error) };
+				if (validationError) {
+					return { success: false, error: mapError(validationError.error) };
+				}
 			}
 		}
 
@@ -73,7 +76,7 @@ export function createBatchTransformResponses<TPayload extends JsonValue, TTrans
 	readonly transform: (
 		responses: readonly QueryResponse<TPayload, TMeta, TExtra>[],
 	) => readonly QueryResponse<TTransformedPayload, TMeta, TExtra>[];
-	readonly transformSchema: () => Promise<ZodMiniType<TTransformedPayload>>;
+	readonly transformSchema: SchemaInput<TTransformedPayload>;
 	readonly mapError: (error: KontentSdkError) => TError;
 }): BatchTransformResponsesFn<TPayload, TTransformedPayload, TError, TMeta, TExtra> {
 	return async (responses) => {
@@ -89,16 +92,18 @@ export function createBatchTransformResponses<TPayload extends JsonValue, TTrans
 		}
 
 		if (config.runtimeValidation?.validateResponses) {
-			const schema = await transformSchema();
-			for (const transformedResponse of transformedResponses) {
-				const validationError = await parseResponse({
-					url: transformedResponse.meta.url,
-					payload: transformedResponse.payload,
-					schema,
-				});
+			const schema = await resolveSchema(transformSchema);
+			if (schema) {
+				for (const transformedResponse of transformedResponses) {
+					const validationError = await parseResponse({
+						url: transformedResponse.meta.url,
+						payload: transformedResponse.payload,
+						schema,
+					});
 
-				if (validationError) {
-					return { success: false, error: mapError(validationError.error) };
+					if (validationError) {
+						return { success: false, error: mapError(validationError.error) };
+					}
 				}
 			}
 		}

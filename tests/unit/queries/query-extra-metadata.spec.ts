@@ -1,5 +1,4 @@
 import { describe, expect, it } from "vitest";
-import * as z from "zod/mini";
 import type { Header, HttpMethod, KnownHeaderName } from "../../../lib/models/core.models.js";
 import type { KontentSdkError } from "../../../lib/public_api.js";
 import { createFetchQuery } from "../../../lib/sdk/queries/fetch-sdk-query.js";
@@ -50,7 +49,7 @@ describe("Query extra metadata", async () => {
 			},
 		},
 		sdkInfo: getTestSdkInfo(),
-		schema: async () => Promise.resolve(z.null()),
+		schema: undefined,
 		url: "https://domain.com",
 		requestHeaders: [requestHeader],
 		mapError: (error) => error,

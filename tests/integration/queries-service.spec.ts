@@ -1,5 +1,4 @@
 import { describe, expect, it } from "vitest";
-import * as z from "zod/mini";
 import type { HttpStatusCode } from "../../lib/http/http.models.js";
 import { getDefaultHttpService } from "../../lib/http/http.service.js";
 import type { KontentSdkError } from "../../lib/public_api.js";
@@ -30,12 +29,7 @@ describe("Integration tests covering Fetch/Mutation queries against the Kontent.
 
 	const uploadBinaryFileQuery: MutationQuery<{ readonly id: string }, KontentSdkError> = createMutationQuery({
 		...baseMutationConfig,
-		schema: async () =>
-			Promise.resolve(
-				z.object({
-					id: z.string(),
-				}),
-			),
+		schema: undefined,
 		method: "POST",
 		url: config.urls.getUploadAssetBinaryFileUrl("core-sdk.txt"),
 		body: config.fileToUpload,
@@ -46,13 +40,7 @@ describe("Integration tests covering Fetch/Mutation queries against the Kontent.
 	const addAssetQueryFactory = (binaryFileId: string): MutationQuery<{ readonly id: string; readonly url: string }, KontentSdkError> =>
 		createMutationQuery({
 			...baseMutationConfig,
-			schema: async () =>
-				Promise.resolve(
-					z.object({
-						id: z.string(),
-						url: z.string(),
-					}),
-				),
+			schema: undefined,
 			method: "POST",
 			url: config.urls.addAssetUrl,
 			body: {
@@ -69,7 +57,7 @@ describe("Integration tests covering Fetch/Mutation queries against the Kontent.
 	const deleteAssetQueryFactory = (assetId: string): MutationQuery<null, KontentSdkError> =>
 		createMutationQuery({
 			...baseMutationConfig,
-			schema: async () => Promise.resolve(z.null()),
+			schema: undefined,
 			method: "DELETE",
 			url: config.urls.getDeleteAssetUrl(assetId),
 			body: null,

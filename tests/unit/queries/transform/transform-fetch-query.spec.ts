@@ -18,7 +18,7 @@ const buildBaseQuery = (overrides?: { readonly url?: string }): FetchQuery<typeo
 			runtimeValidation: { validateResponses: false },
 		},
 		sdkInfo: getTestSdkInfo(),
-		schema: async () => Promise.resolve(z.object({ name: z.string() })),
+		schema: undefined,
 		url: overrides?.url ?? "https://domain.com",
 		mapError: (error) => error,
 		mapExtraResponseProps: () => ({}),
@@ -29,7 +29,7 @@ describe("transformFetchQuery - fetchSafe applies transform that adds extra prop
 		config: { runtimeValidation: { validateResponses: false } },
 		query: buildBaseQuery(),
 		transform: (response) => ({ ...response, payload: { ...response.payload, extra: extraValue } }),
-		transformSchema: async () => Promise.resolve(z.object({ name: z.string(), extra: z.string() })),
+		transformSchema: undefined,
 		mapError: (error) => error,
 	});
 
@@ -53,7 +53,7 @@ describe("transformFetchQuery - fetch applies transform that adds extra property
 		config: { runtimeValidation: { validateResponses: false } },
 		query: buildBaseQuery(),
 		transform: (response) => ({ ...response, payload: { ...response.payload, extra: extraValue } }),
-		transformSchema: async () => Promise.resolve(z.object({ name: z.string(), extra: z.string() })),
+		transformSchema: undefined,
 		mapError: (error) => error,
 	});
 
@@ -75,7 +75,7 @@ describe("transformFetchQuery - fetch throws when transform throws", async () =>
 		transform: () => {
 			throw new Error();
 		},
-		transformSchema: async () => Promise.resolve(z.object({ name: z.string() })),
+		transformSchema: undefined,
 		mapError: (error) => error,
 	});
 
@@ -97,7 +97,7 @@ describe("transformFetchQuery - fetchSafe returns failure when transform throws"
 		transform: () => {
 			throw new Error();
 		},
-		transformSchema: async () => Promise.resolve(z.object({ name: z.string() })),
+		transformSchema: undefined,
 		mapError: (error) => error,
 	});
 
@@ -117,7 +117,7 @@ describe("transformFetchQuery - fetchSafe propagates underlying query failure un
 		config: { runtimeValidation: { validateResponses: false } },
 		query: buildBaseQuery({ url: "not-a-valid-url" }),
 		transform: (response) => response,
-		transformSchema: async () => Promise.resolve(z.object({ name: z.string() })),
+		transformSchema: undefined,
 		mapError: (error) => error,
 	});
 
@@ -137,7 +137,7 @@ describe("transformFetchQuery - runtime validation passes when transformed paylo
 		config: { runtimeValidation: { validateResponses: true } },
 		query: buildBaseQuery(),
 		transform: (response) => response,
-		transformSchema: async () => Promise.resolve(z.object({ name: z.string() })),
+		transformSchema: z.object({ name: z.string() }),
 		mapError: (error) => error,
 	});
 
@@ -157,7 +157,7 @@ describe("transformFetchQuery - runtime validation fails when transformed payloa
 		config: { runtimeValidation: { validateResponses: true } },
 		query: buildBaseQuery(),
 		transform: (response) => response,
-		transformSchema: async () => Promise.resolve(z.object({ name: z.string().check(z.minLength(50)) })),
+		transformSchema: z.object({ name: z.string().check(z.minLength(50)) }),
 		mapError: (error) => error,
 	});
 
@@ -169,5 +169,45 @@ describe("transformFetchQuery - runtime validation fails when transformed payloa
 
 	it("Should return error with parsingFailed reason", () => {
 		expect(error?.details.reason).toBe("parsingFailed");
+	});
+});
+
+describe("transformFetchQuery - skips validation when transformSchema is undefined", async () => {
+	const transformedQuery = transformFetchQuery({
+		config: { runtimeValidation: { validateResponses: true } },
+		query: buildBaseQuery(),
+		transform: (response) => response,
+		transformSchema: undefined,
+		mapError: (error) => error,
+	});
+
+	const { success, response } = await transformedQuery.fetchSafe();
+
+	it("Should succeed without running validation", () => {
+		expect(success).toBe(true);
+	});
+
+	it("Should return the untouched payload", () => {
+		expect(response?.payload).toStrictEqual({ name: "test" });
+	});
+});
+
+describe("transformFetchQuery - accepts a Zod schema passed directly", async () => {
+	const transformedQuery = transformFetchQuery({
+		config: { runtimeValidation: { validateResponses: true } },
+		query: buildBaseQuery(),
+		transform: (response) => response,
+		transformSchema: z.object({ name: z.string() }),
+		mapError: (error) => error,
+	});
+
+	const { success, response } = await transformedQuery.fetchSafe();
+
+	it("Should succeed", () => {
+		expect(success).toBe(true);
+	});
+
+	it("Should return the payload", () => {
+		expect(response?.payload).toStrictEqual({ name: "test" });
 	});
 });
