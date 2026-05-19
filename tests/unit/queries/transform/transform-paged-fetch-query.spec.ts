@@ -147,6 +147,42 @@ describe("transformPagedFetchQuery - fetchPageSafe returns failure when transfor
 	});
 });
 
+describe("transformPagedFetchQuery - fetchPage throws when transform returns empty array", async () => {
+	const transformedQuery = transformPagedFetchQuery({
+		config: { runtimeValidation: { validateResponses: false } },
+		query: buildBaseQuery(),
+		transform: () => [],
+		transformSchema,
+		mapError: (error) => error,
+	});
+
+	const { error } = await tryCatchAsync(async () => await transformedQuery.fetchPage());
+
+	it("Should throw error with transformError reason", () => {
+		expect(error).toMatchObject({ details: { reason: "transformError" } });
+	});
+});
+
+describe("transformPagedFetchQuery - fetchPageSafe returns failure when transform returns empty array", async () => {
+	const transformedQuery = transformPagedFetchQuery({
+		config: { runtimeValidation: { validateResponses: false } },
+		query: buildBaseQuery(),
+		transform: () => [],
+		transformSchema,
+		mapError: (error) => error,
+	});
+
+	const { success, error } = await transformedQuery.fetchPageSafe();
+
+	it("Should not succeed", () => {
+		expect(success).toBe(false);
+	});
+
+	it("Should return error with transformError reason", () => {
+		expect(error?.details.reason).toBe("transformError");
+	});
+});
+
 describe("transformPagedFetchQuery - fetchAllPages applies transform across multiple pages", async () => {
 	const transformedQuery = transformPagedFetchQuery({
 		config: { runtimeValidation: { validateResponses: false } },
