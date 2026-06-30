@@ -166,9 +166,9 @@ function getFetchMock<TPayload extends JsonValue | Blob>({
 		};
 
 		return await Promise.resolve<Response>({
-			// only implement the methods we need, ignore the rest
 			...({} as Response),
 			...baseResponse,
+			clone: () => baseResponse as Response,
 		});
 	});
 }

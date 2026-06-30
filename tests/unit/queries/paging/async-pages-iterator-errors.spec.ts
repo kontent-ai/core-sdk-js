@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import type { JsonValue } from "../../../../lib/models/json.models.js";
 import { createPagedFetchQuery } from "../../../../lib/sdk/queries/paged-fetch-sdk-query.js";
 import type { QueryResponse } from "../../../../lib/sdk/sdk-models.js";
 import { getNextPageUrl, getTestHttpServiceWithJsonResponse, getTestSdkInfo } from "../../../../lib/testkit/testkit.utils.js";
@@ -47,7 +48,7 @@ describe("Async pages iterator errors", async () => {
 		mapPagingExtraResponseProps: () => ({}),
 	}).pagesSafe();
 
-	const responses: QueryResponse<null, unknown, unknown>[] = [];
+	const responses: QueryResponse<JsonValue>[] = [];
 
 	for await (const { success, response } of pagesIterator) {
 		if (success) {

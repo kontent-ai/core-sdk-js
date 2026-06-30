@@ -1,6 +1,7 @@
 import { afterAll, describe, expect, it, vi } from "vitest";
 import type { GetNextPageData } from "../../../../lib/http/http.models.js";
 import { getDefaultHttpService } from "../../../../lib/http/http.service.js";
+import type { JsonValue } from "../../../../lib/public_api.js";
 import { createPagedFetchQuery } from "../../../../lib/sdk/queries/paged-fetch-sdk-query.js";
 import type { QueryResponse } from "../../../../lib/sdk/sdk-models.js";
 import {
@@ -54,7 +55,7 @@ describe("Async pages iterator with unlimited max count", async () => {
 		mapPagingExtraResponseProps: () => ({}),
 	}).pagesSafe();
 
-	const responses: QueryResponse<null>[] = [];
+	const responses: QueryResponse<JsonValue>[] = [];
 
 	for await (const { success, response } of pagesIterator) {
 		if (success) {
@@ -73,7 +74,7 @@ describe("Async pages iterator with unlimited max count", async () => {
 	});
 
 	it("Response urls should be correct & in the expected order", () => {
-		expect(responses?.map((response) => response.meta.url)).toEqual(expectedResponseUrls);
+		expect(responses.map((response) => response.meta.url)).toEqual(expectedResponseUrls);
 	});
 });
 
@@ -117,7 +118,7 @@ describe("Async pages iterator fetches all pages when maxPagesCount is set to 0"
 		mapPagingExtraResponseProps: () => ({}),
 	}).pagesSafe({ maxPagesCount: 0 });
 
-	const responses: QueryResponse<null>[] = [];
+	const responses: QueryResponse<JsonValue>[] = [];
 
 	for await (const { success, response } of pagesIterator) {
 		if (success) {
@@ -132,6 +133,6 @@ describe("Async pages iterator fetches all pages when maxPagesCount is set to 0"
 	});
 
 	it("Response urls should be correct & in the expected order", () => {
-		expect(responses?.map((response) => response.meta.url)).toEqual(expectedResponseUrls);
+		expect(responses.map((response) => response.meta.url)).toEqual(expectedResponseUrls);
 	});
 });

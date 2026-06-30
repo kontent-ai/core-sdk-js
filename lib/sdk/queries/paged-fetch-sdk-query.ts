@@ -82,7 +82,7 @@ async function* createPagingQueryIterator<TPayload extends JsonValue, TMeta, TEx
 	let pageIndex: number = 0;
 
 	while (isNextPageAvailable(nextPageState)) {
-		const urlToUse: string | URL = nextPageState?.nextPageUrl ?? data.url;
+		const urlToUse: string | URL = nextPageState.nextPageUrl ?? data.url;
 
 		const fetchResult = await createFetchQuery<TPayload, TError, TMeta, TExtra>({
 			...data,

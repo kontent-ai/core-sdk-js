@@ -1,5 +1,6 @@
 import { afterAll, describe, expect, it, vi } from "vitest";
 import { getDefaultHttpService } from "../../../../lib/http/http.service.js";
+import type { JsonValue } from "../../../../lib/public_api.js";
 import { createPagedFetchQuery } from "../../../../lib/sdk/queries/paged-fetch-sdk-query.js";
 import type { QueryResponse } from "../../../../lib/sdk/sdk-models.js";
 import {
@@ -51,7 +52,7 @@ describe("Async pages iterator with max pages count", async () => {
 		mapPagingExtraResponseProps: () => ({}),
 	}).pagesSafe({ maxPagesCount });
 
-	const responses: QueryResponse<null>[] = [];
+	const responses: QueryResponse<JsonValue>[] = [];
 
 	for await (const { success, response } of pagesIterator) {
 		if (success) {
@@ -66,6 +67,6 @@ describe("Async pages iterator with max pages count", async () => {
 	});
 
 	it("Response urls should be correct & in the expected order", () => {
-		expect(responses?.map((response) => response.meta.url)).toEqual(expectedResponseUrls);
+		expect(responses.map((response) => response.meta.url)).toEqual(expectedResponseUrls);
 	});
 });
