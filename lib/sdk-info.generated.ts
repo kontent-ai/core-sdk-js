@@ -2,6 +2,6 @@
 import { ISDKInfo } from '.';
 export const sdkInfo: ISDKInfo = {
     host: 'npmjs.com',
-    version: '10.12.5',
+    version: '10.12.6',
     name: '@kontent-ai/core-sdk'
 };
