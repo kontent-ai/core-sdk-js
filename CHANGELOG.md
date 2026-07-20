@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [10.12.7](https://github.com/kontent-ai/kontent-core-js/compare/v10.12.6...v10.12.7) (2026-07-20)
+
+
+### Bug Fixes
+
+* automatically redacts authorization header values from axios error ([a0d7dd4](https://github.com/kontent-ai/kontent-core-js/commit/a0d7dd492e9848335805ead4fb247dc5e663728d))
+
 ### [10.12.6](https://github.com/kontent-ai/kontent-core-js/compare/v10.12.3...v10.12.6) (2026-07-03)
 
 
