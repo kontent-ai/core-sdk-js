@@ -350,11 +350,16 @@ function redactSecretsInPlace(target: unknown, secrets: string[], seen: WeakSet<
     }
     seen.add(target);
 
-    for (const key of Object.keys(target as Record<string, unknown>)) {
+    const container = target as Record<PropertyKey, unknown>;
+
+    // Reflect.ownKeys (not Object.keys) so symbol-keyed and non-enumerable properties are also
+    // scrubbed - e.g. Node's ClientRequest keeps the outgoing headers (incl. the token) under the
+    // Symbol(kOutHeaders) property, which Object.keys does not enumerate.
+    for (const key of Reflect.ownKeys(target)) {
         let value: unknown;
 
         try {
-            value = (target as Record<string, unknown>)[key];
+            value = container[key];
         } catch {
             // accessing the property threw (e.g. a getter) - skip it
             continue;
@@ -365,7 +370,7 @@ function redactSecretsInPlace(target: unknown, secrets: string[], seen: WeakSet<
 
             if (redacted !== value) {
                 try {
-                    (target as Record<string, unknown>)[key] = redacted;
+                    container[key] = redacted;
                 } catch {
                     // property is read-only - skip it
                 }
