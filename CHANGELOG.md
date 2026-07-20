@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [10.12.8](https://github.com/kontent-ai/kontent-core-js/compare/v10.12.7...v10.12.8) (2026-07-20)
+
+
+### Bug Fixes
+
+* Cover symbols when redacting authorization key ([b0f9b69](https://github.com/kontent-ai/kontent-core-js/commit/b0f9b69d4b0c0d951725d8dcdec46415b663c677))
+
 ### [10.12.7](https://github.com/kontent-ai/kontent-core-js/compare/v10.12.6...v10.12.7) (2026-07-20)
 
 
