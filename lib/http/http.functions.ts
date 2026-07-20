@@ -33,6 +33,7 @@ export async function getWithRetryAsync<TRawData>(
         url: call.url,
         retryStrategy: retryStrategyOptions,
         functionsConfig: functionsConfig,
+        headers: options?.headers ?? [],
         call: async (retryAttempt) => {
             httpDebugger.debugStartHttpRequest();
 
@@ -72,6 +73,7 @@ export async function postWithRetryAsync<TRawData>(
         url: call.url,
         retryStrategy: retryStrategyOptions,
         functionsConfig: functionsConfig,
+        headers: options?.headers ?? [],
         call: async (retryAttempt) => {
             httpDebugger.debugStartHttpRequest();
 
@@ -115,6 +117,7 @@ export async function putWithRetryAsync<TRawData>(
         url: call.url,
         retryStrategy: retryStrategyOptions,
         functionsConfig: functionsConfig,
+        headers: options?.headers ?? [],
         call: async (retryAttempt) => {
             httpDebugger.debugStartHttpRequest();
 
@@ -158,6 +161,7 @@ export async function patchWithRetryAsync<TRawData>(
         url: call.url,
         retryStrategy: retryStrategyOptions,
         functionsConfig: functionsConfig,
+        headers: options?.headers ?? [],
         call: async (retryAttempt) => {
             httpDebugger.debugStartHttpRequest();
 
@@ -201,6 +205,7 @@ export async function deleteWithRetryAsync<TRawData>(
         url: call.url,
         retryStrategy: retryStrategyOptions,
         functionsConfig: functionsConfig,
+        headers: options?.headers ?? [],
         call: async (retryAttempt) => {
             httpDebugger.debugStartHttpRequest();
 
@@ -252,6 +257,7 @@ async function runWithRetryAsync<TRawData>(data: {
     call: (retryAttempt: number) => Promise<IResponse<TRawData>>;
     retryStrategy: IRetryStrategyOptions;
     functionsConfig: IHttpFunctionsConfig;
+    headers: IHeader[];
 }): Promise<IResponse<TRawData>> {
     try {
         return await data.call(data.retryAttempt);
@@ -282,16 +288,112 @@ async function runWithRetryAsync<TRawData>(data: {
                 retryStrategy: data.retryStrategy,
                 retryAttempt: data.retryAttempt + 1,
                 url: data.url,
-                functionsConfig: data.functionsConfig
+                functionsConfig: data.functionsConfig,
+                headers: data.headers
             });
         }
 
+        // sanitize the error before logging / re-throwing so the authorization token is not leaked
+        const sanitizedError = sanitizeError(error, data.headers);
+
         if (data.functionsConfig.logErrorsToConsole) {
-            console.error(`Executing '${data.url}' failed. Request was retried '${data.retryAttempt}' times. `, error);
+            console.error(
+                `Executing '${data.url}' failed. Request was retried '${data.retryAttempt}' times.`,
+                sanitizedError
+            );
         }
 
-        throw error;
+        throw sanitizedError;
     }
+}
+
+const redactedValue = 'redacted';
+const maxRedactionDepth = 10;
+
+/**
+ * Returns the caller-supplied 'authorization' header value(s), which are the secret token(s) to
+ * scrub from errors. Note: if a consumer sets the authorization token on the axios instance defaults
+ * instead of passing it via 'options.headers', it is not known here and cannot be redacted.
+ */
+function getSecretHeaderValues(headers: IHeader[]): string[] {
+    return headers
+        .filter((header) => header.header.toLowerCase() === 'authorization')
+        .map((header) => header.value)
+        // skip empty values - splitting on an empty string would corrupt every string
+        .filter((value) => typeof value === 'string' && value.length > 0);
+}
+
+function redactStringValue(value: string, secrets: string[]): string {
+    let result = value;
+
+    for (const secret of secrets) {
+        if (result.includes(secret)) {
+            result = result.split(secret).join(redactedValue);
+        }
+    }
+
+    return result;
+}
+
+/**
+ * Walks the object graph (cycle- and depth-guarded) replacing every occurrence of a secret with the
+ * redacted placeholder in place.
+ */
+function redactSecretsInPlace(target: unknown, secrets: string[], seen: WeakSet<object>, depth: number): void {
+    if (depth > maxRedactionDepth || target === null || typeof target !== 'object') {
+        return;
+    }
+
+    if (seen.has(target)) {
+        // break cycles (config.headers, request.socket, response.request, ...)
+        return;
+    }
+    seen.add(target);
+
+    for (const key of Object.keys(target as Record<string, unknown>)) {
+        let value: unknown;
+
+        try {
+            value = (target as Record<string, unknown>)[key];
+        } catch {
+            // accessing the property threw (e.g. a getter) - skip it
+            continue;
+        }
+
+        if (typeof value === 'string') {
+            const redacted = redactStringValue(value, secrets);
+
+            if (redacted !== value) {
+                try {
+                    (target as Record<string, unknown>)[key] = redacted;
+                } catch {
+                    // property is read-only - skip it
+                }
+            }
+        } else if (value && typeof value === 'object') {
+            redactSecretsInPlace(value, secrets, seen, depth + 1);
+        }
+    }
+}
+
+/**
+ * If 'error' is an axios error, redacts every occurrence of the caller's authorization token (taken
+ * from 'headers') throughout the error, replacing it with a redacted placeholder. Non-axios errors
+ * and errors with no known token are returned unchanged. This prevents the authorization token from
+ * leaking via console logs or the re-thrown error. All other axios properties are preserved.
+ */
+function sanitizeError(error: unknown, headers: IHeader[]): unknown {
+    if (!axios.isAxiosError(error)) {
+        return error;
+    }
+
+    const secrets = getSecretHeaderValues(headers);
+    if (secrets.length === 0) {
+        return error;
+    }
+
+    redactSecretsInPlace(error, secrets, new WeakSet<object>(), 0);
+    return error;
 }
 
 function getHeadersJson(headers: IHeader[], addContentTypeHeader: boolean): { [header: string]: string } {
