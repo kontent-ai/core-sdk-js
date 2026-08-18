@@ -3,7 +3,7 @@ const util = require('util');
 const Lib = require('../../dist/cjs');
 
 describe('Node execute management request - redacts authorization token on failure', () => {
-    const httpService = new Lib.HttpService();
+    const httpService = new Lib.HttpService({logErrorsToConsole: true});
 
     // Distinctive made-up token so we can scan the entire error / log output for any leak
     const fakeToken = 'fake-token-123456789';
@@ -26,7 +26,7 @@ describe('Node execute management request - redacts authorization token on failu
             await httpService.postAsync(
                 {
                     url: 'https://manage.kontent.ai/v2/projects/00000000-0000-0000-0000-000000000000/items',
-                    body: { name: 'test' }
+                    body: { name: 'test' },
                 },
                 {
                     headers: [{ header: 'Authorization', value: authorizationHeaderValue }],

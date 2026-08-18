@@ -338,46 +338,64 @@ function redactStringValue(value: string, secrets: string[]): string {
 /**
  * Walks the object graph (cycle- and depth-guarded) replacing every occurrence of a secret with the
  * redacted placeholder in place.
+ *
+ * Traversal is breadth-first, not depth-first: axios error graphs contain multiple paths to the same
+ * underlying object (e.g. on a transport-level failure, both 'error.request._currentRequest' and a
+ * much longer route through 'error.request._options...') and only the shortest one is guaranteed to
+ * stay within 'maxRedactionDepth'. BFS visits every object for the first (and only) time via its
+ * shortest path from 'target', so the depth guard is never tripped by a longer alternate route to an
+ * object that is actually shallow enough to redact.
  */
-function redactSecretsInPlace(target: unknown, secrets: string[], seen: WeakSet<object>, depth: number): void {
-    if (depth > maxRedactionDepth || target === null || typeof target !== 'object') {
+function redactSecretsInPlace(target: unknown, secrets: string[]): void {
+    if (target === null || typeof target !== 'object') {
         return;
     }
 
-    if (seen.has(target)) {
-        // break cycles (config.headers, request.socket, response.request, ...)
-        return;
-    }
-    seen.add(target);
+    const seen = new WeakSet<object>([target]);
+    let frontier: { value: object; depth: number }[] = [{ value: target, depth: 0 }];
 
-    const container = target as Record<PropertyKey, unknown>;
+    while (frontier.length > 0) {
+        const next: { value: object; depth: number }[] = [];
 
-    // Reflect.ownKeys (not Object.keys) so symbol-keyed and non-enumerable properties are also
-    // scrubbed - e.g. Node's ClientRequest keeps the outgoing headers (incl. the token) under the
-    // Symbol(kOutHeaders) property, which Object.keys does not enumerate.
-    for (const key of Reflect.ownKeys(target)) {
-        let value: unknown;
+        for (const { value: item, depth } of frontier) {
+            const container = item as Record<PropertyKey, unknown>;
 
-        try {
-            value = container[key];
-        } catch {
-            // accessing the property threw (e.g. a getter) - skip it
-            continue;
-        }
+            // Reflect.ownKeys (not Object.keys) so symbol-keyed and non-enumerable properties are
+            // also scrubbed - e.g. Node's ClientRequest keeps the outgoing headers (incl. the token)
+            // under the Symbol(kOutHeaders) property, which Object.keys does not enumerate.
+            for (const key of Reflect.ownKeys(item)) {
+                let value: unknown;
 
-        if (typeof value === 'string') {
-            const redacted = redactStringValue(value, secrets);
-
-            if (redacted !== value) {
                 try {
-                    container[key] = redacted;
+                    value = container[key];
                 } catch {
-                    // property is read-only - skip it
+                    // accessing the property threw (e.g. a getter) - skip it
+                    continue;
+                }
+
+                if (typeof value === 'string') {
+                    const redacted = redactStringValue(value, secrets);
+
+                    if (redacted !== value) {
+                        try {
+                            container[key] = redacted;
+                        } catch {
+                            // property is read-only - skip it
+                        }
+                    }
+                } else if (
+                    value &&
+                    typeof value === 'object' &&
+                    depth + 1 <= maxRedactionDepth &&
+                    !seen.has(value)
+                ) {
+                    seen.add(value);
+                    next.push({ value, depth: depth + 1 });
                 }
             }
-        } else if (value && typeof value === 'object') {
-            redactSecretsInPlace(value, secrets, seen, depth + 1);
         }
+
+        frontier = next;
     }
 }
 
@@ -397,7 +415,7 @@ function sanitizeError(error: unknown, headers: IHeader[]): unknown {
         return error;
     }
 
-    redactSecretsInPlace(error, secrets, new WeakSet<object>(), 0);
+    redactSecretsInPlace(error, secrets);
     return error;
 }
 
