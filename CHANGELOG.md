@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [10.12.10](https://github.com/kontent-ai/kontent-core-js/compare/v10.12.9...v10.12.10) (2026-08-18)
+
+
+### Bug Fixes
+
+* makes error sanitization more robust ([7287aea](https://github.com/kontent-ai/kontent-core-js/commit/7287aeaf49de4ea6317ba98fe29a9dafb62e8b79))
+
 ### [10.12.9](https://github.com/kontent-ai/kontent-core-js/compare/v10.12.8...v10.12.9) (2026-08-04)
 
 ### [10.12.8](https://github.com/kontent-ai/kontent-core-js/compare/v10.12.7...v10.12.8) (2026-07-20)
