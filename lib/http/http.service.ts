@@ -85,7 +85,7 @@ export class HttpService implements IHttpService<CancelToken> {
 
     private getFunctionsConfig(): IHttpFunctionsConfig {
         return {
-            logErrorsToConsole: this.opts?.logErrorsToConsole ?? true
+            logErrorsToConsole: this.opts?.logErrorsToConsole ?? false
         };
     }
 }
