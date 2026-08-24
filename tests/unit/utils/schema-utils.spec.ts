@@ -12,7 +12,7 @@ describe("resolveSchema - returns undefined when input is undefined", async () =
 });
 
 describe("resolveSchema - returns the schema unchanged when given a schema directly", async () => {
-	const schema = z.object({ name: z.string() });
+	const schema = z.object({ name: z.string() }).readonly();
 	const resolved = await resolveSchema(schema);
 
 	it("Should return the same schema reference", () => {
@@ -21,7 +21,7 @@ describe("resolveSchema - returns the schema unchanged when given a schema direc
 });
 
 describe("resolveSchema - awaits the loader function and returns the schema", async () => {
-	const schema = z.object({ name: z.string() });
+	const schema = z.object({ name: z.string() }).readonly();
 	const resolved = await resolveSchema(async () => schema);
 
 	it("Should return the schema returned by the loader", () => {
@@ -30,7 +30,7 @@ describe("resolveSchema - awaits the loader function and returns the schema", as
 });
 
 describe("resolveSchema - also accepts a zod/mini schema", async () => {
-	const schema = zMini.object({ name: zMini.string() });
+	const schema = zMini.readonly(zMini.object({ name: zMini.string() }));
 	const resolved = await resolveSchema(schema);
 
 	it("Should return the same schema reference", () => {

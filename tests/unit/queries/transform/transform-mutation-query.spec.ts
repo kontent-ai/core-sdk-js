@@ -139,7 +139,7 @@ describe("transformMutationQuery - runtime validation passes when transformed pa
 		config: { runtimeValidation: { validateResponses: true } },
 		query: buildBaseQuery(),
 		transform: (response) => response,
-		transformSchema: z.object({ name: z.string() }),
+		transformSchema: z.object({ name: z.string() }).readonly(),
 		mapError: (error) => error,
 	});
 
@@ -159,7 +159,7 @@ describe("transformMutationQuery - runtime validation fails when transformed pay
 		config: { runtimeValidation: { validateResponses: true } },
 		query: buildBaseQuery(),
 		transform: (response) => response,
-		transformSchema: z.object({ name: z.string().min(50) }),
+		transformSchema: z.object({ name: z.string().min(50) }).readonly(),
 		mapError: (error) => error,
 	});
 

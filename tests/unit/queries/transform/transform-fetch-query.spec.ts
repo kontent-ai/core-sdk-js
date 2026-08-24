@@ -137,7 +137,7 @@ describe("transformFetchQuery - runtime validation passes when transformed paylo
 		config: { runtimeValidation: { validateResponses: true } },
 		query: buildBaseQuery(),
 		transform: (response) => response,
-		transformSchema: z.object({ name: z.string() }),
+		transformSchema: z.object({ name: z.string() }).readonly(),
 		mapError: (error) => error,
 	});
 
@@ -157,7 +157,7 @@ describe("transformFetchQuery - runtime validation fails when transformed payloa
 		config: { runtimeValidation: { validateResponses: true } },
 		query: buildBaseQuery(),
 		transform: (response) => response,
-		transformSchema: z.object({ name: z.string().min(50) }),
+		transformSchema: z.object({ name: z.string().min(50) }).readonly(),
 		mapError: (error) => error,
 	});
 
@@ -197,7 +197,7 @@ describe("transformFetchQuery - accepts a Zod schema passed directly", async () 
 		config: { runtimeValidation: { validateResponses: true } },
 		query: buildBaseQuery(),
 		transform: (response) => response,
-		transformSchema: z.object({ name: z.string() }),
+		transformSchema: z.object({ name: z.string() }).readonly(),
 		mapError: (error) => error,
 	});
 

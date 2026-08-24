@@ -91,7 +91,7 @@ describe("parseResponse", () => {
 		const result = await parseResponse({
 			url: new URL("https://example.com"),
 			payload: { name: "test" },
-			schema: zMini.object({ name: zMini.string() }),
+			schema: zMini.readonly(zMini.object({ name: zMini.string() })),
 		});
 
 		expect(result).toBeUndefined();
@@ -101,7 +101,7 @@ describe("parseResponse", () => {
 		const result = await parseResponse({
 			url: new URL("https://example.com"),
 			payload: { name: "test" },
-			schema: zMini.object({ name: zMini.string().check(zMini.minLength(50)) }),
+			schema: zMini.readonly(zMini.object({ name: zMini.string().check(zMini.minLength(50)) })),
 		});
 
 		expect(result?.success).toBe(false);

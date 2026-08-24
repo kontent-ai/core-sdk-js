@@ -24,7 +24,7 @@ describe("resolveQuery - invalid baseUrl host", async () => {
 });
 
 describe("resolveQuery - valid response matching zod schema", async () => {
-	const schema = z.object({ name: z.string() });
+	const schema = z.object({ name: z.string() }).readonly();
 	const jsonResponse = { name: "test" };
 
 	const { success, response } = await resolveQuery({
@@ -52,7 +52,7 @@ describe("resolveQuery - valid response matching zod schema", async () => {
 });
 
 describe("resolveQuery - response not matching zod schema", async () => {
-	const schema = z.object({ name: z.string() });
+	const schema = z.object({ name: z.string() }).readonly();
 
 	const { error } = await resolveQuery({
 		method: "GET",

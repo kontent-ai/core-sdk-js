@@ -44,7 +44,7 @@ const buildBaseQuery = (options?: {
 	});
 };
 
-const transformSchema = z.object({ name: z.string(), extra: z.string() });
+const transformSchema = z.object({ name: z.string(), extra: z.string() }).readonly();
 
 describe("transformPagedFetchQuery - fetchPage applies transform that adds extra property", async () => {
 	const transformedQuery = transformPagedFetchQuery({
@@ -448,7 +448,7 @@ describe("transformPagedFetchQuery - runtime validation fails when transformed p
 		config: { runtimeValidation: { validateResponses: true } },
 		query: buildBaseQuery(),
 		transform: (responses) => responses.map((r) => ({ ...r, payload: { ...r.payload, extra: extraValue } })),
-		transformSchema: z.object({ name: z.string(), extra: z.string().min(50) }),
+		transformSchema: z.object({ name: z.string(), extra: z.string().min(50) }).readonly(),
 		mapError: (error) => error,
 	});
 

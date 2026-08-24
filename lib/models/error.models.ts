@@ -4,21 +4,25 @@ import { toFriendlyKontentSdkErrorMessage } from "../utils/error.utils.js";
 import type { ResolvedRetryStrategyOptions } from "./core.models.js";
 import type { JsonValue } from "./json.models.js";
 
-export const validationErrorSchema = z.object({
-	message: z.string(),
-	path: z.string().optional(),
-	line: z.number().optional(),
-	position: z.number().optional(),
-});
+export const validationErrorSchema = z
+	.object({
+		message: z.string(),
+		path: z.string().optional(),
+		line: z.number().optional(),
+		position: z.number().optional(),
+	})
+	.readonly();
 
 export type ValidationError = z.infer<typeof validationErrorSchema>;
 
-export const errorResponseDataSchema = z.object({
-	message: z.string(),
-	request_id: z.string(),
-	error_code: z.number(),
-	validation_errors: z.array(validationErrorSchema).optional(),
-});
+export const errorResponseDataSchema = z
+	.object({
+		message: z.string(),
+		request_id: z.string(),
+		error_code: z.number(),
+		validation_errors: z.array(validationErrorSchema).readonly().optional(),
+	})
+	.readonly();
 
 export type ErrorResponseData = z.infer<typeof errorResponseDataSchema>;
 
