@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
+import * as zMini from "zod/mini";
 import type { JsonValue } from "../../../lib/public_api.js";
 import type { PagedFetchQuery } from "../../../lib/sdk/sdk-models.js";
-import { isPagingQuery } from "../../../lib/sdk/sdk-utils.js";
+import { isPagingQuery, parseResponse } from "../../../lib/sdk/sdk-utils.js";
 
 describe("isPagingQuery", () => {
 	it("Should return true for object with paging query shape", () => {
@@ -82,5 +83,27 @@ describe("isPagingQuery", () => {
 
 		expect(isPagingQuery(missingPagesQuery)).toBe(false);
 		expect(isPagingQuery(missingFetchAllPagesQuery)).toBe(false);
+	});
+});
+
+describe("parseResponse", () => {
+	it("Should accept a zod/mini schema and succeed for a matching payload", async () => {
+		const result = await parseResponse({
+			url: new URL("https://example.com"),
+			payload: { name: "test" },
+			schema: zMini.object({ name: zMini.string() }),
+		});
+
+		expect(result).toBeUndefined();
+	});
+
+	it("Should accept a zod/mini schema and report a failure for a mismatching payload", async () => {
+		const result = await parseResponse({
+			url: new URL("https://example.com"),
+			payload: { name: "test" },
+			schema: zMini.object({ name: zMini.string().check(zMini.minLength(50)) }),
+		});
+
+		expect(result?.success).toBe(false);
 	});
 });

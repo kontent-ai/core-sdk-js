@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import * as z from "zod/mini";
+import * as z from "zod";
 import type { KontentSdkError } from "../../../../lib/models/error.models.js";
 import { createMutationQuery } from "../../../../lib/sdk/queries/mutation-sdk-query.js";
 import type { MutationQuery } from "../../../../lib/sdk/sdk-models.js";
@@ -159,7 +159,7 @@ describe("transformMutationQuery - runtime validation fails when transformed pay
 		config: { runtimeValidation: { validateResponses: true } },
 		query: buildBaseQuery(),
 		transform: (response) => response,
-		transformSchema: z.object({ name: z.string().check(z.minLength(50)) }),
+		transformSchema: z.object({ name: z.string().min(50) }),
 		mapError: (error) => error,
 	});
 

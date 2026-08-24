@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import * as z from "zod/mini";
+import * as z from "zod";
 import type { KontentSdkError } from "../../../../lib/models/error.models.js";
 import { createPagedFetchQuery } from "../../../../lib/sdk/queries/paged-fetch-sdk-query.js";
 import type { PagedFetchQuery, QueryResponse, SafeQueryResult } from "../../../../lib/sdk/sdk-models.js";
@@ -448,7 +448,7 @@ describe("transformPagedFetchQuery - runtime validation fails when transformed p
 		config: { runtimeValidation: { validateResponses: true } },
 		query: buildBaseQuery(),
 		transform: (responses) => responses.map((r) => ({ ...r, payload: { ...r.payload, extra: extraValue } })),
-		transformSchema: z.object({ name: z.string(), extra: z.string().check(z.minLength(50)) }),
+		transformSchema: z.object({ name: z.string(), extra: z.string().min(50) }),
 		mapError: (error) => error,
 	});
 

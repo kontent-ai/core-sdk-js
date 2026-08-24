@@ -13,7 +13,8 @@
 ## Libraries
 
 - Use **ts-pattern** for non-trivial `switch`/`if-else` chains — anything beyond a simple 2-branch condition should use `match()` from `ts-pattern`
-- Use **Zod** to define schemas for all API response payloads and API endpoint inputs — the Zod schema is the source of truth; TypeScript types are always derived via `z.infer<>`, never written by hand alongside a schema
+- Use standard **Zod** (`import * as z from "zod"`, chaining API) to define schemas for all API response payloads and API endpoint inputs — the Zod schema is the source of truth; TypeScript types are always derived via `z.infer<>`, never written by hand alongside a schema
+- Shared utilities that accept a schema from a caller (`resolveSchema`, `parseResponse`) type it against Zod's flavor-agnostic core type (`import type { $ZodType } from "zod/v4/core"`), not `zod`'s or `zod/mini`'s own `ZodType`/`ZodMiniType` — this lets consumers (e.g. delivery/management SDKs) pass a schema built with either `zod` or `zod/mini`, so this package never forces a bundle-size/DX tradeoff onto them
 
 ## Exports
 

@@ -1,4 +1,4 @@
-import type { ZodMiniType } from "zod/mini";
+import { type $ZodType, safeParseAsync } from "zod/v4/core";
 import type { KontentSdkError } from "../models/error.models.js";
 import type { JsonValue } from "../models/json.models.js";
 import { createSdkError } from "../utils/error.utils.js";
@@ -28,9 +28,9 @@ export async function parseResponse<TPayload extends JsonValue>({
 }: {
 	readonly url: URL;
 	readonly payload: TPayload;
-	readonly schema: ZodMiniType<TPayload>;
+	readonly schema: $ZodType<TPayload>;
 }): Promise<Failure<{ readonly response?: never }, KontentSdkError> | undefined> {
-	const { success, error } = await schema.safeParseAsync(payload);
+	const { success, error } = await safeParseAsync(schema, payload);
 
 	if (!success) {
 		return {
