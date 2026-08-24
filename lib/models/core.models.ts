@@ -67,12 +67,20 @@ export type RetryStrategyOptions = {
 	 *
 	 * If undefined, no retry logging occurs (default behavior).
 	 * If set to `'logToConsole'`, retries are logged to the console.
-	 * If a function is provided, it is called with the retry attempt and url.
+	 * If a function is provided, it is called with the retry attempt, url and the delay before the retry in milliseconds.
 	 */
-	readonly logRetryAttempt?: "logToConsole" | ((retryAttempt: number, url: string) => void);
+	readonly logRetryAttempt?: "logToConsole" | ((retryAttempt: number, url: string, retryInMs: number) => void);
+
+	/**
+	 * Maximum delay between retries, in milliseconds.
+	 *
+	 * By default, the delay is derived from the `Retry-After` response header with no upper bound.
+	 * When set, a delay that would otherwise exceed this value is clamped to it.
+	 */
+	readonly maxRetryDelayMs?: number;
 };
 
 export type ResolvedRetryStrategyOptions = Pick<Required<RetryStrategyOptions>, "maxRetries" | "canRetryAdapterError"> & {
-	readonly logRetryAttempt: undefined | ((retryAttempt: number, url: string) => void);
+	readonly logRetryAttempt: undefined | ((retryAttempt: number, url: string, retryInMs: number) => void);
 	readonly getDelayBetweenRetriesMs: (error: KontentSdkError) => number;
 };

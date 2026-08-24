@@ -59,7 +59,7 @@ export async function runWithRetry<TPayload extends AdapterPayload, TBody extend
 			retryAttempt += 1;
 
 			// log retry attempt when available
-			data.retryStrategyOptions.logRetryAttempt?.(retryAttempt, data.url.toString());
+			data.retryStrategyOptions.logRetryAttempt?.(retryAttempt, data.url.toString(), retryResult.retryInMs);
 		}
 	}
 
@@ -71,15 +71,19 @@ export async function runWithRetry<TPayload extends AdapterPayload, TBody extend
 
 export function resolveDefaultRetryStrategyOptions(options?: RetryStrategyOptions): ResolvedRetryStrategyOptions {
 	const maxRetries: number = options?.maxRetries ?? defaultMaxRetries;
+	const maxRetryDelayMs = options?.maxRetryDelayMs;
 
 	const resolvedOptions: ResolvedRetryStrategyOptions = {
 		maxRetries: maxRetries,
-		getDelayBetweenRetriesMs: (error) => getRetryMsFromHeaders({ error }),
+		getDelayBetweenRetriesMs: (error) => {
+			const delayMs = getRetryMsFromHeaders({ error });
+			return maxRetryDelayMs === undefined ? delayMs : Math.min(delayMs, maxRetryDelayMs);
+		},
 		canRetryAdapterError: options?.canRetryAdapterError ?? defaultCanRetryAdapterError,
 		logRetryAttempt: match(options?.logRetryAttempt)
 			.returnType<ResolvedRetryStrategyOptions["logRetryAttempt"]>()
-			.with("logToConsole", () => (retryAttempt, url) => {
-				console.warn(getDefaultRetryAttemptLogMessage(retryAttempt, maxRetries, url));
+			.with("logToConsole", () => (retryAttempt, url, retryInMs) => {
+				console.warn(getDefaultRetryAttemptLogMessage(retryAttempt, maxRetries, url, retryInMs));
 			})
 			.otherwise((m) => m),
 	};
@@ -145,8 +149,8 @@ async function waitBeforeNextRetryWithAbortSignal({
 	});
 }
 
-function getDefaultRetryAttemptLogMessage(retryAttempt: number, maxRetries: number, url: string): string {
-	return `Retry attempt '${retryAttempt}' from a maximum of '${maxRetries}' retries. Requested url: '${url}'`;
+function getDefaultRetryAttemptLogMessage(retryAttempt: number, maxRetries: number, url: string, retryInMs: number): string {
+	return `Retry attempt '${retryAttempt}' from a maximum of '${maxRetries}' retries after waiting '${retryInMs}' ms. Requested url: '${url}'`;
 }
 
 function getRetryResult({

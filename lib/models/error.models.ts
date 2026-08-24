@@ -122,6 +122,7 @@ export type ErrorDetailsFor<TReason extends ErrorReason> = Extract<ErrorDetails,
 
 type ErrorWithKontentResponse = {
 	readonly kontentErrorResponse: ErrorResponseData | undefined;
+	readonly adapterResponse: AdapterResponse<AdapterPayload> | undefined;
 } & Pick<AdapterResponse<AdapterPayload>, "responseHeaders" | "status" | "statusText">;
 
 type ErrorWithOriginalError = {

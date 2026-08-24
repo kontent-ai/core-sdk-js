@@ -1,7 +1,9 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import type { AdapterResponse } from "../../../lib/http/http.models.js";
-import type { ErrorResponseData } from "../../../lib/models/error.models.js";
+import { getDefaultHttpService } from "../../../lib/http/http.service.js";
+import type { ErrorReason, ErrorResponseData } from "../../../lib/models/error.models.js";
 import type { ErrorDetails } from "../../../lib/public_api.js";
+import { mockGlobalFetchJsonResponse } from "../../../lib/testkit/testkit.utils.js";
 import {
 	createSdkError,
 	isFetchAbortError,
@@ -50,6 +52,7 @@ describe("isKontent404Error", () => {
 						statusText: "",
 						responseHeaders: [],
 						kontentErrorResponse: undefined,
+						adapterResponse: undefined,
 					},
 				}),
 			),
@@ -72,6 +75,7 @@ describe("isKontent404Error", () => {
 						statusText: "",
 						responseHeaders: [],
 						kontentErrorResponse: undefined,
+						adapterResponse: undefined,
 					},
 				}),
 			),
@@ -138,7 +142,44 @@ const responseErrorBase = {
 	status: 404 as const,
 	statusText: "Not Found",
 	responseHeaders: [],
+	adapterResponse: undefined,
 } as const;
+
+describe("Invalid response error - adapterResponse attachment", () => {
+	afterEach(() => {
+		vi.resetAllMocks();
+	});
+
+	it("Should attach the raw adapterResponse when the error body conforms to the Kontent error schema", async () => {
+		const jsonResponse = { message: "Not found.", request_id: "abc-123", error_code: 100 };
+		mockGlobalFetchJsonResponse({ jsonResponse, statusCode: 404 });
+
+		const { error } = await getDefaultHttpService().request({ url: "https://domain.com", method: "GET" });
+
+		const invalidResponseReason = "notFound" satisfies ErrorReason;
+		if (error?.details.reason !== invalidResponseReason) {
+			throw new Error(`Expected error reason to be '${invalidResponseReason}'`);
+		}
+
+		expect(error.details.kontentErrorResponse).toBeDefined();
+		expect(error.details.adapterResponse?.payload).toStrictEqual(jsonResponse);
+	});
+
+	it("Should attach the raw adapterResponse even when the error body does not conform to the Kontent error schema", async () => {
+		const nonConformingPayload = { unexpected: "shape" };
+		mockGlobalFetchJsonResponse({ jsonResponse: nonConformingPayload, statusCode: 500 });
+
+		const { error } = await getDefaultHttpService().request({ url: "https://domain.com", method: "GET" });
+
+		const invalidResponseReason = "invalidResponse" satisfies ErrorReason;
+		if (error?.details.reason !== invalidResponseReason) {
+			throw new Error(`Expected error reason to be '${invalidResponseReason}'`);
+		}
+
+		expect(error.details.kontentErrorResponse).toBeUndefined();
+		expect(error.details.adapterResponse?.payload).toStrictEqual(nonConformingPayload);
+	});
+});
 
 describe("toFriendlyKontentSdkErrorMessage", () => {
 	it("Should append kontentErrorResponse message for 'invalidResponse' with non-null kontentErrorResponse", () => {

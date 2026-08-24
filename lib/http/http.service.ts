@@ -341,6 +341,7 @@ function extractInvalidResponseErrorDetails({
 		status: response.status,
 		statusText: response.statusText,
 		kontentErrorResponse: kontentErrorData,
+		adapterResponse: response,
 	};
 }
 
@@ -507,7 +508,7 @@ function buildRequestHeaders({
 	readonly optionHeaders: readonly Header[] | undefined;
 	readonly body: HttpRequestBody;
 }): readonly Header[] {
-	const combinedHeaders: readonly Header[] = [...(configHeaders ?? []), ...(optionHeaders ?? [])];
+	const combinedHeaders: readonly Header[] = dedupeHeadersByName([...(configHeaders ?? []), ...(optionHeaders ?? [])]);
 	const existingContentTypeHeader = findHeaderByName(combinedHeaders, "Content-Type");
 	const existingSdkVersionHeader = findHeaderByName(combinedHeaders, "X-KC-SDKID");
 
@@ -520,6 +521,11 @@ function buildRequestHeaders({
 	const contentLengthHeader = isBlob(body) ? createDefaultContentLengthHeader(body) : undefined;
 
 	return [...combinedHeaders, ...[contentTypeHeader, contentLengthHeader, sdkVersionHeader].filter(isDefined)];
+}
+
+function dedupeHeadersByName(headers: readonly Header[]): readonly Header[] {
+	const lastByLowercasedName = new Map(headers.map((header) => [header.name.toLowerCase(), header]));
+	return Array.from(lastByLowercasedName.values());
 }
 
 function createDefaultContentTypeHeader(body: Blob | JsonValue): Header {

@@ -114,6 +114,37 @@ describe("Custom Http Service & Request headers", async () => {
 	});
 });
 
+describe("Duplicate header names across config and option headers", async () => {
+	afterAll(() => {
+		vi.resetAllMocks();
+	});
+
+	const headerName = "Authorization";
+	const configValue = "Bearer config-token";
+	const optionValue = "Bearer option-token";
+
+	mockGlobalFetchJsonResponse({
+		jsonResponse: {},
+		statusCode: 200,
+	});
+
+	const { response } = await getDefaultHttpService({
+		requestHeaders: [{ name: headerName, value: configValue }],
+	}).request({
+		url: "https://domain.com",
+		method: "GET",
+		requestHeaders: [{ name: headerName, value: optionValue }],
+	});
+
+	it("Request should contain only a single header with that name", () => {
+		expect(response?.requestHeaders.filter((m) => m.name.toLowerCase() === headerName.toLowerCase()).length).toStrictEqual(1);
+	});
+
+	it("Option header value should win over config header value", () => {
+		expect(response?.requestHeaders.find((m) => m.name.toLowerCase() === headerName.toLowerCase())?.value).toStrictEqual(optionValue);
+	});
+});
+
 describe("Content-Type header handling", async () => {
 	afterAll(() => {
 		vi.resetAllMocks();

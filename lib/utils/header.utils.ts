@@ -55,18 +55,16 @@ export function extractContinuationToken(responseHeaders: readonly Header[]): st
 	return findHeaderByName(responseHeaders, "X-Continuation")?.value;
 }
 
+const deltaSecondsPattern = /^\d+$/;
+
 function getNumericRetryAfterHeaderValue(retryAfterValue: string): number | undefined {
-	if (!retryAfterValue.trim()) {
+	const trimmedValue = retryAfterValue.trim();
+
+	if (!deltaSecondsPattern.test(trimmedValue)) {
 		return undefined;
 	}
 
-	const parsedNumber = Number(retryAfterValue);
-
-	if (!Number.isNaN(parsedNumber)) {
-		return parsedNumber;
-	}
-
-	return undefined;
+	return Number(trimmedValue);
 }
 
 function getDateRetryAfterHeaderValue(retryAfterValue: string): number | undefined {

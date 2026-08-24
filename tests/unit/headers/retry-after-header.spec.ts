@@ -81,3 +81,16 @@ describe("Retry-after with unsafe integer value", () => {
 		expect(getRetryAfterHeaderValue(headers)).toBeUndefined();
 	});
 });
+
+describe.each(["1e3", "0x10"])("Retry-After with non delta-seconds numeric value '%s'", (value) => {
+	const headers: readonly Header[] = [
+		{
+			name: "Retry-After" satisfies KnownHeaderName,
+			value,
+		},
+	];
+
+	it("Should return undefined", () => {
+		expect(getRetryAfterHeaderValue(headers)).toBeUndefined();
+	});
+});

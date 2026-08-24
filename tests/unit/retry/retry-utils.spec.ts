@@ -25,6 +25,7 @@ const rateLimitError = createSdkError({
 		statusText: "Too Many Requests",
 		responseHeaders: [],
 		kontentErrorResponse: undefined,
+		adapterResponse: undefined,
 	},
 });
 
@@ -44,10 +45,10 @@ describe("resolveDefaultRetryStrategyOptions - logRetryAttempt: custom function"
 		expect(resolved.logRetryAttempt).toBe(customLog);
 	});
 
-	it("Should call the custom function with retryAttempt and url when invoked", () => {
-		resolved.logRetryAttempt?.(1, "https://domain.com");
+	it("Should call the custom function with retryAttempt, url and retryInMs when invoked", () => {
+		resolved.logRetryAttempt?.(1, "https://domain.com", 500);
 		expect(customLog).toHaveBeenCalledOnce();
-		expect(customLog).toHaveBeenCalledWith(1, "https://domain.com");
+		expect(customLog).toHaveBeenCalledWith(1, "https://domain.com", 500);
 	});
 });
 
@@ -60,10 +61,12 @@ describe("resolveDefaultRetryStrategyOptions - logRetryAttempt: 'logToConsole'",
 		const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
 		const resolved = resolveDefaultRetryStrategyOptions({ maxRetries: 5, logRetryAttempt: "logToConsole" });
 
-		resolved.logRetryAttempt?.(2, "https://domain.com");
+		resolved.logRetryAttempt?.(2, "https://domain.com", 1000);
 
 		expect(warnSpy).toHaveBeenCalledOnce();
-		expect(warnSpy).toHaveBeenCalledWith("Retry attempt '2' from a maximum of '5' retries. Requested url: 'https://domain.com'");
+		expect(warnSpy).toHaveBeenCalledWith(
+			"Retry attempt '2' from a maximum of '5' retries after waiting '1000' ms. Requested url: 'https://domain.com'",
+		);
 	});
 
 	it("Should not call console.warn when logRetryAttempt is not invoked", () => {
@@ -86,6 +89,7 @@ describe("getDelayBetweenRetriesMs - Retry-After header present", () => {
 				statusText: "Too Many Requests",
 				responseHeaders: [{ name: "Retry-After", value: "3" }],
 				kontentErrorResponse: undefined,
+				adapterResponse: undefined,
 			},
 		});
 
@@ -101,10 +105,47 @@ describe("getDelayBetweenRetriesMs - Retry-After header present", () => {
 				statusText: "Too Many Requests",
 				responseHeaders: [],
 				kontentErrorResponse: undefined,
+				adapterResponse: undefined,
 			},
 		});
 
 		expect(getDelayBetweenRetriesMs(error)).toBe(0);
+	});
+});
+
+describe("getDelayBetweenRetriesMs - maxRetryDelayMs clamp", () => {
+	it("Should clamp a delay larger than maxRetryDelayMs", () => {
+		const { getDelayBetweenRetriesMs } = resolveDefaultRetryStrategyOptions({ maxRetryDelayMs: 5000 });
+		const error = createSdkError({
+			baseErrorData: { message: "Rate limited", url: url.toString(), retryStrategyOptions: undefined, retryAttempt: 0 },
+			details: {
+				reason: "invalidResponse",
+				status: 429,
+				statusText: "Too Many Requests",
+				responseHeaders: [{ name: "Retry-After", value: "60" }],
+				kontentErrorResponse: undefined,
+				adapterResponse: undefined,
+			},
+		});
+
+		expect(getDelayBetweenRetriesMs(error)).toBe(5000);
+	});
+
+	it("Should not affect a delay smaller than maxRetryDelayMs", () => {
+		const { getDelayBetweenRetriesMs } = resolveDefaultRetryStrategyOptions({ maxRetryDelayMs: 5000 });
+		const error = createSdkError({
+			baseErrorData: { message: "Rate limited", url: url.toString(), retryStrategyOptions: undefined, retryAttempt: 0 },
+			details: {
+				reason: "invalidResponse",
+				status: 429,
+				statusText: "Too Many Requests",
+				responseHeaders: [{ name: "Retry-After", value: "3" }],
+				kontentErrorResponse: undefined,
+				adapterResponse: undefined,
+			},
+		});
+
+		expect(getDelayBetweenRetriesMs(error)).toBe(3000);
 	});
 });
 
