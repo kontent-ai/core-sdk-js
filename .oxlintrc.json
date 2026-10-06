@@ -1,0 +1,41 @@
+{
+	"$schema": "./node_modules/oxlint/configuration_schema.json",
+	"plugins": ["typescript"],
+	"jsPlugins": ["./oxlint-plugins/zod-imports.mjs"],
+	"categories": {
+		"correctness": "off"
+	},
+	"ignorePatterns": ["dist/**"],
+	"rules": {
+		"no-duplicate-imports": "error",
+		"no-promise-executor-return": "error",
+		"no-unexpected-multiline": "error",
+		"no-unreachable-loop": "error",
+		"no-useless-backreference": "error",
+
+		"no-loop-func": "error",
+		"typescript/no-redundant-type-constituents": "error",
+		"typescript/no-unnecessary-boolean-literal-compare": "error",
+		"typescript/no-unnecessary-qualifier": "error",
+		"typescript/prefer-includes": "error",
+		"typescript/prefer-return-this-type": "error",
+		"typescript/prefer-string-starts-ends-with": "error",
+		"typescript/await-thenable": "error",
+		"typescript/no-unsafe-argument": "error",
+		"typescript/no-unsafe-assignment": "error",
+		"typescript/no-unsafe-call": "error",
+		"typescript/no-unsafe-member-access": "error",
+		"typescript/no-unsafe-return": "error",
+		"typescript/prefer-nullish-coalescing": "error",
+		"typescript/restrict-plus-operands": "error",
+		"typescript/restrict-template-expressions": "error",
+		"typescript/unbound-method": "error",
+		"typescript/no-duplicate-enum-values": "error",
+		"typescript/no-unnecessary-type-assertion": "error",
+		"typescript/promise-function-async": "error",
+		"typescript/no-mixed-enums": "error",
+		"typescript/no-unsafe-enum-comparison": "error",
+
+		"kontent/no-named-zod-import": "error"
+	}
+}

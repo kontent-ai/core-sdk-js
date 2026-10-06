@@ -1,0 +1,13 @@
+{
+  "languages": {
+    "TypeScript": {
+      "language_servers": ["!angular", "..."]
+    },
+    "TSX": {
+      "language_servers": ["!angular", "..."]
+    },
+    "HTML": {
+      "language_servers": ["!angular", "..."]
+    }
+  }
+}

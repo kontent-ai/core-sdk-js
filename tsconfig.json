@@ -33,6 +33,6 @@
 		// Types
 		"types": ["node"]
 	},
-	"include": ["lib/**/*", "tests/**/*", "scripts/**/*", "eslint.config.mjs", "vitest-unit.config.ts", "vitest-integration.config.ts"],
+	"include": ["lib/**/*", "tests/**/*", "scripts/**/*", "vitest-unit.config.ts", "vitest-integration.config.ts"],
 	"exclude": ["node_modules"]
 }

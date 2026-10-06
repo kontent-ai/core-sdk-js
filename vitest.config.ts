@@ -5,7 +5,8 @@ export default defineConfig({
 	test: {
 		dir: "tests",
 		globals: true,
-		environment: "node",
+    environment: "node",
+		clearMocks: false,
 		coverage: {
 			provider: "v8",
 			reporter: ["text"],

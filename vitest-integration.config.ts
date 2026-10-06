@@ -6,7 +6,8 @@ export default defineConfig({
 		dir: "tests/integration",
 		globals: true,
 		environment: "node",
-		coverage: { provider: "v8" },
+    coverage: { provider: "v8" },
+		clearMocks: false,
 	},
 	build: {
 		target: "esnext",

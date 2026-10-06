@@ -37,12 +37,12 @@
 	"scripts": {
 		"prepublishOnly": "pnpm run build && pnpm run test",
 		"build": "pnpm run lint && pnpm run clean && pnpm run build:ts && pnpm run update:version",
-		"build:ts": "tsgo -p tsconfig.build.json",
+		"build:ts": "tsc -p tsconfig.build.json",
 		"test": "vitest run --config=vitest.config.ts --coverage",
 		"test:unit": "vitest run --config=vitest-unit.config.ts",
 		"test:integration": "vitest run --config=vitest-integration.config.ts",
-		"lint": "pnpm run biome:check && pnpm run eslint",
-		"eslint": "eslint lib tests scripts",
+		"lint": "pnpm run biome:check && pnpm run oxlint",
+		"oxlint": "oxlint --type-aware --deny-warnings lib tests scripts",
 		"biome:check": "biome check",
 		"biome:fix": "biome check --write",
 		"biome:fix:unsafe": "biome check --write --unsafe",
@@ -54,14 +54,14 @@
 		"zod": "^4"
 	},
 	"devDependencies": {
-		"@biomejs/biome": "2.5.10",
+		"@biomejs/biome": "2.5.15",
 		"@kontent-ai/biome-config": "0.7.3",
-		"@kontent-ai/eslint-config": "3.0.0",
-		"@types/node": "26.2.0",
-		"@typescript/native-preview": "7.0.0-dev.20260707.2",
-		"@vitest/coverage-v8": "4.1.11",
-		"eslint": "10.9.0",
-		"tsx": "4.23.12",
-		"vitest": "4.1.11"
+		"@types/node": "26.6.4",
+		"@vitest/coverage-v8": "5.0.3",
+		"oxlint": "1.86.0",
+		"oxlint-tsgolint": "7.0.2003",
+		"tsx": "4.23.15",
+		"typescript": "7.0.2",
+		"vitest": "5.0.3"
 	}
 }
