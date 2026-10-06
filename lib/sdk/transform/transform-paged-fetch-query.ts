@@ -5,6 +5,8 @@ import type { SchemaInput } from "../../utils/schema.utils.js";
 import type { PagedFetchQuery, QueryResponse, SafeQueryResult, SdkConfig } from "../sdk-models.js";
 import { createBatchTransformResponses, createTransformError } from "./transform-utils.js";
 
+const emptyTransformResultMessage = "Transform returned no response for input";
+
 /**
  * Wraps a paged query so that every page's payload is passed through `transform`.
  *
@@ -52,7 +54,7 @@ export function transformPagedFetchQuery<
 		if (isNonEmptyArray(data)) {
 			return data[0];
 		}
-		throw mapError(createTransformError(new Error("Transform returned no response for input"), response.meta.url));
+		throw mapError(createTransformError(new Error(emptyTransformResultMessage), response.meta.url));
 	};
 
 	const transformSingleSafely = async (
@@ -70,7 +72,7 @@ export function transformPagedFetchQuery<
 		}
 		return {
 			success: false,
-			error: mapError(createTransformError(new Error("Transform returned no response for input"), safeResult.response.meta.url)),
+			error: mapError(createTransformError(new Error(emptyTransformResultMessage), safeResult.response.meta.url)),
 		};
 	};
 

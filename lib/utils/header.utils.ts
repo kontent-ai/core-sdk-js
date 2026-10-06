@@ -1,5 +1,7 @@
 import type { Header, KnownHeaderName, SdkInfo } from "../models/core.models.js";
 
+export const jsonContentType = "application/json";
+
 export function createSdkIdHeader(info: SdkInfo): Header {
 	return {
 		name: "X-KC-SDKID" satisfies KnownHeaderName,
@@ -54,7 +56,7 @@ export function toFetchHeaders(headers: readonly Header[]): Headers {
 }
 
 export function isApplicationJsonResponseType(headers: readonly Header[]): boolean {
-	return findHeaderByName(headers, "Content-Type")?.value.toLowerCase().includes("application/json") ?? false;
+	return findHeaderByName(headers, "Content-Type")?.value.toLowerCase().includes(jsonContentType) ?? false;
 }
 
 export function extractContinuationToken(responseHeaders: readonly Header[]): string | undefined {

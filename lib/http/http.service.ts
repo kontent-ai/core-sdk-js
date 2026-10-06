@@ -13,7 +13,7 @@ import {
 	isKontentSdkError,
 	toInvalidResponseMessage,
 } from "../utils/error.utils.js";
-import { createSdkIdHeader, findHeaderByName, isApplicationJsonResponseType } from "../utils/header.utils.js";
+import { createSdkIdHeader, findHeaderByName, isApplicationJsonResponseType, jsonContentType } from "../utils/header.utils.js";
 import { resolveDefaultRetryStrategyOptions, runWithRetry } from "../utils/retry.utils.js";
 import { type TryCatchResult, tryCatch, tryCatchAsync } from "../utils/try-catch.utils.js";
 import { parseUrl } from "../utils/url.utils.js";
@@ -500,7 +500,7 @@ function dedupeHeadersByName(headers: readonly Header[]): readonly Header[] {
 function createDefaultContentTypeHeader(body: Blob | JsonValue): Header {
 	return {
 		name: "Content-Type" satisfies KnownHeaderName,
-		value: isBlob(body) ? body.type : "application/json",
+		value: isBlob(body) ? body.type : jsonContentType,
 	};
 }
 
