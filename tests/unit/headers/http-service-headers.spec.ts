@@ -3,7 +3,7 @@ import { coreSdkInfo } from "../../../lib/core-sdk-info.js";
 import { getDefaultHttpService } from "../../../lib/http/http.service.js";
 import type { Header, KnownHeaderName } from "../../../lib/models/core.models.js";
 import { stubFetchWithResponse } from "../../../lib/testkit/testkit.utils.js";
-import { createSdkIdHeader } from "../../../lib/utils/header.utils.js";
+import { createSdkIdHeader, findHeaderByName } from "../../../lib/utils/header.utils.js";
 
 const sdkIdHeader = createSdkIdHeader(coreSdkInfo);
 
@@ -138,5 +138,31 @@ describe("Content-Type header handling", async () => {
 
 	it("Request should preserve provided content type header", () => {
 		expect(response?.requestHeaders.find((m) => m.name.toLowerCase() === "content-type")).toStrictEqual(contentTypeHeader);
+	});
+});
+
+describe("Content-Type header for blob bodies", async () => {
+	stubFetchWithResponse(() => Response.json({}));
+
+	const typedBlob = new Blob(["x"], { type: "image/png" });
+	const untypedBlob = new Blob(["x"]);
+
+	const { response: typedBlobResponse } = await getDefaultHttpService().uploadFile({
+		url: "https://domain.com",
+		method: "POST",
+		body: typedBlob,
+	});
+	const { response: untypedBlobResponse } = await getDefaultHttpService().uploadFile({
+		url: "https://domain.com",
+		method: "POST",
+		body: untypedBlob,
+	});
+
+	it("Should use the blob type as content type", () => {
+		expect(findHeaderByName(typedBlobResponse?.requestHeaders ?? [], "Content-Type")?.value).toBe(typedBlob.type);
+	});
+
+	it("Should fall back to 'application/octet-stream' when the blob has no type", () => {
+		expect(findHeaderByName(untypedBlobResponse?.requestHeaders ?? [], "Content-Type")?.value).toBe("application/octet-stream");
 	});
 });

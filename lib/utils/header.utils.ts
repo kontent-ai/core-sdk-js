@@ -2,6 +2,11 @@ import type { Header, KnownHeaderName, SdkInfo } from "../models/core.models.js"
 
 export const jsonContentType = "application/json";
 
+/**
+ * Default content type for binary data whose type is unknown (e.g. a `Blob` created without a `type`).
+ */
+export const binaryContentType = "application/octet-stream";
+
 export function createSdkIdHeader(info: SdkInfo): Header {
 	return {
 		name: "X-KC-SDKID" satisfies KnownHeaderName,
