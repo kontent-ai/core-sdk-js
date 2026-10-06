@@ -32,15 +32,18 @@ export type {
 export {
 	AdapterAbortError,
 	AdapterParseError,
+	type BaseErrorData,
 	type ErrorDetails,
 	type ErrorDetailsFor,
 	type ErrorReason,
 	type ErrorResponseData,
+	errorResponseDataSchema,
 	KontentSdkError,
 	type ValidationError,
+	validationErrorSchema,
 } from "./models/error.models.js";
 export { type JsonArray, type JsonObject, type JsonValue, jsonValueSchema } from "./models/json.models.js";
-export type { EmptyObject, PickStringLiteral } from "./models/utility.types.js";
+export type { EmptyObject, LiteralUnion, LiteralUnionNumber, PickStringLiteral } from "./models/utility.types.js";
 export { createFetchQuery } from "./sdk/queries/fetch-sdk-query.js";
 export { createMutationQuery } from "./sdk/queries/mutation-sdk-query.js";
 export { createPagedFetchQuery } from "./sdk/queries/paged-fetch-sdk-query.js";
@@ -59,6 +62,7 @@ export type {
 	PagedFetchQuery,
 	PagingQueryResponse,
 	Query,
+	QueryInspection,
 	QueryResponse,
 	QueryResponseMeta,
 	SafePagingQueryResult,
@@ -71,7 +75,7 @@ export { transformFetchQuery } from "./sdk/transform/transform-fetch-query.js";
 export { transformMutationQuery } from "./sdk/transform/transform-mutation-query.js";
 export { transformPagedFetchQuery } from "./sdk/transform/transform-paged-fetch-query.js";
 export { isDefined } from "./utils/core.utils.js";
-export { isKontent404Error, isKontentSdkError } from "./utils/error.utils.js";
+export { isAdapterAbortError, isAdapterParseError, isKontent404Error, isKontentSdkError } from "./utils/error.utils.js";
 export { createSdkIdHeader, extractContinuationToken } from "./utils/header.utils.js";
 export { resolveDefaultRetryStrategyOptions } from "./utils/retry.utils.js";
 export { resolveSchema, type SchemaInput } from "./utils/schema.utils.js";

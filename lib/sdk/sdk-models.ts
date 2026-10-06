@@ -134,10 +134,6 @@ export type PagingQueryResponse<TPayload, TExtra = unknown> = {
 	readonly responses: readonly TPayload[];
 } & TExtra;
 
-export type ResolveQueryResult<TPayload extends JsonValue, TError = KontentSdkError, TMeta = unknown, TExtra = unknown> = Promise<
-	SafeQueryResult<QueryResponse<TPayload, TMeta, TExtra>, TError>
->;
-
 export type FetchQueryRequest<TPayload extends JsonValue, TError = KontentSdkError, TMeta = unknown, TExtra = unknown> = Pick<
 	QueryInputData<TPayload, null, TMeta, TExtra, TError>,
 	"config" | "schema" | "sdkInfo" | "mapMetadata" | "abortSignal" | "mapError" | "mapExtraResponseProps"
