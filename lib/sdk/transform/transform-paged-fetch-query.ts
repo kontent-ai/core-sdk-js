@@ -5,6 +5,13 @@ import type { SchemaInput } from "../../utils/schema.utils.js";
 import type { PagedFetchQuery, QueryResponse, SafeQueryResult, SdkConfig } from "../sdk-models.js";
 import { createBatchTransformResponses, createTransformError } from "./transform-utils.js";
 
+/**
+ * Wraps a paged query so that every page's payload is passed through `transform`.
+ *
+ * Paging extras returned by `fetchAllPages` / `fetchAllPagesSafe` are intentionally kept from the wrapped query:
+ * they are computed by its `mapPagingExtraResponseProps` from the untransformed responses, which is also why
+ * their type (`TPagingExtra`) is unchanged by the transform.
+ */
 export function transformPagedFetchQuery<
 	TPayload extends JsonValue,
 	TTransformedPayload extends TPayload,
