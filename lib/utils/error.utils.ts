@@ -60,11 +60,8 @@ export function toInvalidResponseMessage({
 /**
  * Checks if the given JSON value is a Kontent API error response data.
  */
-export function isKontentErrorResponseData(json: unknown): json is ErrorResponseData {
-	if (!json || typeof json !== "object" || Array.isArray(json)) {
-		return false;
-	}
-	return errorResponseDataSchema.safeParse(json).success;
+export function isKontentErrorResponseData(payload: unknown): payload is ErrorResponseData {
+	return errorResponseDataSchema.safeParse(payload).success;
 }
 
 /**

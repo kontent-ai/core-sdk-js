@@ -151,7 +151,7 @@ async function processHttpRequest<TPayload extends AdapterPayload, TBody extends
 				};
 			}
 
-			return mapAdapterResponse({
+			return await mapAdapterResponse({
 				retryStrategyOptions,
 				method: options.method,
 				requestHeaders: parsedRequest.requestHeaders,
@@ -222,7 +222,7 @@ function createAdapterError({
 		);
 }
 
-function mapAdapterResponse<TPayload extends AdapterPayload, TBody extends HttpRequestBody>({
+async function mapAdapterResponse<TPayload extends AdapterPayload, TBody extends HttpRequestBody>({
 	response,
 	method,
 	requestHeaders,
@@ -236,11 +236,11 @@ function mapAdapterResponse<TPayload extends AdapterPayload, TBody extends HttpR
 	readonly requestBody?: TBody;
 	readonly retryAttempt: number;
 	readonly retryStrategyOptions: ResolvedRetryStrategyOptions;
-}): HttpResponse<TPayload, TBody> {
+}): Promise<HttpResponse<TPayload, TBody>> {
 	if (!isSuccessfulResponse(response)) {
 		return {
 			success: false,
-			error: createInvalidResponseError({ response, method, retryAttempt, retryStrategyOptions }),
+			error: await createInvalidResponseError({ response, method, retryAttempt, retryStrategyOptions }),
 		};
 	}
 
@@ -293,7 +293,7 @@ function isSuccessfulResponse(response: AdapterResponse<AdapterPayload>): boolea
 	return response.status >= 200 && response.status < 300;
 }
 
-function createInvalidResponseError({
+async function createInvalidResponseError({
 	response,
 	method,
 	retryAttempt,
@@ -303,8 +303,8 @@ function createInvalidResponseError({
 	readonly method: HttpMethod;
 	readonly retryAttempt: number;
 	readonly retryStrategyOptions: ResolvedRetryStrategyOptions;
-}): KontentSdkError {
-	const kontentErrorData = tryExtractKontentErrorData(response);
+}): Promise<KontentSdkError> {
+	const kontentErrorData = await tryExtractKontentErrorData(response);
 
 	return createSdkError({
 		baseErrorData: {
@@ -402,12 +402,20 @@ function stringifyJson({
 	};
 }
 
-function tryExtractKontentErrorData(response: AdapterResponse<AdapterPayload>): ErrorResponseData | undefined {
-	if (isApplicationJsonResponseType(response.responseHeaders) && isKontentErrorResponseData(response.payload)) {
-		return response.payload;
+async function tryExtractKontentErrorData(response: AdapterResponse<AdapterPayload>): Promise<ErrorResponseData | undefined> {
+	if (!isApplicationJsonResponseType(response.responseHeaders)) {
+		return undefined;
 	}
 
-	return undefined;
+	// file downloads are always read as a Blob, so a JSON error body has to be decoded first
+	const payload = isBlob(response.payload) ? await parseJsonBlob(response.payload) : response.payload;
+
+	return isKontentErrorResponseData(payload) ? payload : undefined;
+}
+
+async function parseJsonBlob(blob: Blob): Promise<unknown> {
+	const { data } = await tryCatchAsync(async () => JSON.parse(await blob.text()) as unknown);
+	return data;
 }
 
 function isStringUrl(url: string | URL): url is string {
