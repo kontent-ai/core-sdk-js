@@ -48,6 +48,7 @@ type AdapterRequestData = {
 
 export function getDefaultHttpService(config?: DefaultHttpServiceOptions): HttpService {
 	const adapter = resolveHttpAdapter(config);
+	const retryStrategyOptions = resolveDefaultRetryStrategyOptions(config?.retryStrategy);
 
 	const executeWithAdapter = async <TPayload extends AdapterPayload>({
 		parsedUrl,
@@ -69,6 +70,7 @@ export function getDefaultHttpService(config?: DefaultHttpServiceOptions): HttpS
 		request: async <TPayload extends JsonValue, TBody extends HttpRequestBody>(options: HttpServiceRequestOptions<TBody>) => {
 			return await processHttpRequest<TPayload, TBody>({
 				config,
+				retryStrategyOptions,
 				options,
 				runAdapterFunc: executeWithAdapter,
 			});
@@ -77,6 +79,7 @@ export function getDefaultHttpService(config?: DefaultHttpServiceOptions): HttpS
 		downloadFile: async (options: DownloadFileRequestOptions): Promise<HttpResponse<Blob, null>> => {
 			return await processHttpRequest<Blob, null>({
 				config,
+				retryStrategyOptions,
 				options: {
 					...options,
 					method: "GET",
@@ -94,6 +97,7 @@ export function getDefaultHttpService(config?: DefaultHttpServiceOptions): HttpS
 		uploadFile: async <TPayload extends JsonValue>(options: UploadFileRequestOptions): Promise<HttpResponse<TPayload, Blob>> => {
 			return await processHttpRequest<TPayload, Blob>({
 				config,
+				retryStrategyOptions,
 				options,
 				runAdapterFunc: executeWithAdapter,
 			});
@@ -114,13 +118,13 @@ async function processHttpRequest<TPayload extends AdapterPayload, TBody extends
 	options,
 	runAdapterFunc,
 	config,
+	retryStrategyOptions,
 }: {
 	readonly runAdapterFunc: (data: AdapterRequestData) => Promise<AdapterResponse<TPayload>>;
 	readonly config: DefaultHttpServiceOptions | undefined;
+	readonly retryStrategyOptions: ResolvedRetryStrategyOptions;
 	readonly options: HttpServiceRequestOptions<TBody>;
 }): Promise<HttpResponse<TPayload, TBody>> {
-	const retryStrategyOptions = resolveDefaultRetryStrategyOptions(config?.retryStrategy);
-
 	const { success, data: parsedRequest, error } = parseAndValidateRequest({ options, retryStrategyOptions, config });
 
 	if (!success) {

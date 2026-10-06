@@ -184,8 +184,11 @@ function setBaseUrl(url: URL, baseUrl: BaseUrl): TryCatchResult<URL, KontentSdkE
 	return { success: true, data: clonedUrl };
 }
 
+// shared by all queries without a custom http service, so it is not rebuilt for every query (or page)
+const defaultHttpService = getDefaultHttpService();
+
 function getHttpService(config: SdkConfig): HttpService {
-	return config.httpService ?? getDefaultHttpService();
+	return config.httpService ?? defaultHttpService;
 }
 
 function getCombinedRequestHeaders({
