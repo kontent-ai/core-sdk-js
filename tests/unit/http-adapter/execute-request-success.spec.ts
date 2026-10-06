@@ -24,7 +24,7 @@ const method: HttpMethod = "POST";
 describe("Execute request - Success (POST)", async () => {
 	stubFetchWithResponse(() => Response.json(responseData));
 
-	const { success, response } = await getDefaultHttpService().request<ResponseData, RequestBody>({
+	const { success, response } = await getDefaultHttpService().request<RequestBody>({
 		url: "https://domain.com",
 		method,
 		body: requestBody,

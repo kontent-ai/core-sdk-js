@@ -13,9 +13,7 @@ describe("Upload file - Success", async () => {
 		retryStrategy: {
 			maxRetries: 0,
 		},
-	}).uploadFile<{
-		readonly id: string;
-	}>({
+	}).uploadFile({
 		url: "https://domain.com",
 		body: fakeBlob,
 		method: "POST",

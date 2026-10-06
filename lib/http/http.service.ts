@@ -50,25 +50,27 @@ export function getDefaultHttpService(config?: DefaultHttpServiceOptions): HttpS
 	const adapter = resolveHttpAdapter(config);
 	const retryStrategyOptions = resolveDefaultRetryStrategyOptions(config?.retryStrategy);
 
-	const executeWithAdapter = async <TPayload extends AdapterPayload>({
+	const executeWithAdapter = async ({
 		parsedUrl,
 		method,
 		requestHeaders,
 		parsedBody,
 		abortSignal,
-	}: AdapterRequestData): Promise<AdapterResponse<TPayload>> => {
-		return (await adapter.executeRequest({
+	}: AdapterRequestData): Promise<AdapterResponse<JsonValue>> => {
+		return await adapter.executeRequest({
 			url: parsedUrl,
 			method,
 			requestHeaders,
 			body: parsedBody ?? null,
 			abortSignal,
-		})) as AdapterResponse<TPayload>;
+		});
 	};
 
 	return {
-		request: async <TPayload extends JsonValue, TBody extends HttpRequestBody>(options: HttpServiceRequestOptions<TBody>) => {
-			return await processHttpRequest<TPayload, TBody>({
+		request: async <TBody extends HttpRequestBody>(
+			options: HttpServiceRequestOptions<TBody>,
+		): Promise<HttpResponse<JsonValue, TBody>> => {
+			return await processHttpRequest<JsonValue, TBody>({
 				config,
 				retryStrategyOptions,
 				options,
@@ -94,8 +96,8 @@ export function getDefaultHttpService(config?: DefaultHttpServiceOptions): HttpS
 			});
 		},
 
-		uploadFile: async <TPayload extends JsonValue>(options: UploadFileRequestOptions): Promise<HttpResponse<TPayload, Blob>> => {
-			return await processHttpRequest<TPayload, Blob>({
+		uploadFile: async (options: UploadFileRequestOptions): Promise<HttpResponse<JsonValue, Blob>> => {
+			return await processHttpRequest<JsonValue, Blob>({
 				config,
 				retryStrategyOptions,
 				options,
@@ -419,7 +421,7 @@ async function tryExtractKontentErrorData(response: AdapterResponse<AdapterPaylo
 }
 
 async function parseJsonBlob(blob: Blob): Promise<unknown> {
-	const { data } = await tryCatchAsync(async () => JSON.parse(await blob.text()) as unknown);
+	const { data } = await tryCatchAsync(async () => JSON.parse(await blob.text()));
 	return data;
 }
 

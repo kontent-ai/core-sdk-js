@@ -20,6 +20,7 @@ import type {
 	ResolvedQueryData,
 	SafeQueryResult,
 	SdkConfig,
+	SuccessfulHttpResponse,
 } from "./sdk-models.js";
 import { validatePayloads } from "./sdk-utils.js";
 
@@ -101,7 +102,11 @@ async function executeQuery<TPayload extends JsonValue, TBody extends HttpReques
 	mapMetadata,
 	mapExtraResponseProps,
 }: ResolvedQueryData<TPayload, TBody, TMeta, TExtra, TError>): Promise<SafeQueryResult<QueryResponse<TPayload, TMeta, TExtra>, TError>> {
-	const { success, response, error } = await httpService.request<TPayload, TBody>({
+	const {
+		success,
+		response: jsonResponse,
+		error,
+	} = await httpService.request<TBody>({
 		body,
 		url,
 		method,
@@ -112,6 +117,8 @@ async function executeQuery<TPayload extends JsonValue, TBody extends HttpReques
 	if (!success) {
 		return { success: false, error: mapError(error) };
 	}
+
+	const response = trustQueryResponse<TPayload, TBody>(jsonResponse);
 
 	const validationError = await validatePayloads({
 		runtimeValidation: responseValidation,
@@ -138,6 +145,16 @@ async function executeQuery<TPayload extends JsonValue, TBody extends HttpReques
 			},
 		},
 	};
+}
+
+/**
+ * Narrows the JSON response to the payload type of the query. This is the single place where the SDK trusts
+ * the Kontent API contract: the payload is verified against the query schema only when runtime validation is enabled.
+ */
+function trustQueryResponse<TPayload extends JsonValue, TBody extends HttpRequestBody>(
+	response: SuccessfulHttpResponse<JsonValue, TBody>,
+): SuccessfulHttpResponse<TPayload, TBody> {
+	return response as SuccessfulHttpResponse<TPayload, TBody>;
 }
 
 export function resolveUrl<TError>({

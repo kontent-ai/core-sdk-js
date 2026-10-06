@@ -35,6 +35,8 @@ The SDK includes a default implementation of the `HttpService` and `HttpAdapter`
 
 These implementations are designed to work out-of-the-box but are also fully customizable. Developers may replace them with custom versions to extend or override the default behavior, depending on specific application requirements.
 
+The `HttpService` returns response payloads as `JsonValue` (or `Blob` for downloads), because it cannot know their shape. Typed payloads come from the query helpers (`createFetchQuery`, `createPagedFetchQuery`, `createMutationQuery`), which can validate the payload against the query's Zod schema when runtime validation is enabled.
+
 ---
 
 ## Customization Options
@@ -116,7 +118,7 @@ if (!success) {
       console.error("Failed to parse response:", error.details.originalError);
       break;
     case "adapterError":
-      // Network failure, timeout, or other transport-level issue
+      // Network failure, connection timeout, or other transport-level issue
       console.error("Request failed:", error.details.originalError);
       break;
     case "invalidUrl":
@@ -132,14 +134,19 @@ if (!success) {
       console.error("Unexpected response shape for", error.details.url, error.details.zodError);
       break;
     case "aborted":
-      // The request was cancelled before it could complete
+      // The request was cancelled through its AbortSignal (including AbortSignal.timeout()).
+      // The abort reason is available as the `cause` of error.details.originalError
       console.error("Request was aborted:", error.details.originalError);
+      break;
+    case "transformError":
+      // A transform passed to transformFetchQuery / transformMutationQuery / transformPagedFetchQuery threw
+      console.error("Transform failed:", error.details.originalError);
       break;
   }
   return;
 }
 
-// response is fully typed here
+// response.payload is a JsonValue here, use a query helper with a Zod schema for a typed payload
 console.log(response.payload);
 ```
 

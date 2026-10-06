@@ -22,7 +22,7 @@ describe("Abort signal forwarding", () => {
 			adapter: {
 				executeRequest,
 			},
-		}).request<null, null>({
+		}).request<null>({
 			url: "https://domain.com",
 			method: "GET",
 			abortSignal: abortController.signal,
@@ -55,7 +55,7 @@ describe("Abort signal cancellation", async () => {
 					throw new Error("Test error");
 				},
 			},
-		}).request<null, null>({
+		}).request<null>({
 			url: "https://domain.com",
 			method: "GET",
 			abortSignal: abortController.signal,
