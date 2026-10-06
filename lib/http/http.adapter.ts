@@ -5,34 +5,46 @@ import { runWithAbortSignal } from "../utils/abort.utils.js";
 import { isFetchAbortError } from "../utils/error.utils.js";
 import { isApplicationJsonResponseType, toFetchHeaders, toSdkHeaders } from "../utils/header.utils.js";
 import { tryCatchAsync } from "../utils/try-catch.utils.js";
-import type { AdapterPayload, AdapterRequestOptions, AdapterResponse, HttpAdapter } from "./http.models.js";
+import type { AdapterDownloadOptions, AdapterPayload, AdapterRequestOptions, AdapterResponse, HttpAdapter } from "./http.models.js";
 
 export function getDefaultHttpAdapter(): Required<HttpAdapter> {
 	return {
 		executeRequest: async (options) => {
-			const response = await getResponse(options);
-			const sdkHeaders = toSdkHeaders(response.headers);
-			const payload = isApplicationJsonResponseType(sdkHeaders)
-				? await parseResponse<JsonValue>({
-						parseFunc: async () => (await response.json()) as JsonValue,
-						abortSignal: options.abortSignal,
-					})
-				: null;
-
-			return createAdapterResponse({ url: options.url, response, payload, responseHeaders: sdkHeaders });
+			return await executeRequest(options);
 		},
 		downloadFile: async (options) => {
-			const response = await getResponse({
-				...options,
-				method: "GET",
-				body: null,
-			});
-
-			const file = await parseResponse({ parseFunc: async () => await response.blob(), abortSignal: options.abortSignal });
-
-			return createAdapterResponse({ url: options.url, response, payload: file, responseHeaders: toSdkHeaders(response.headers) });
+			return await downloadFile(options);
 		},
 	};
+}
+
+async function downloadFile(options: AdapterDownloadOptions): Promise<AdapterResponse<Blob>> {
+	const response = await getResponse({
+		...options,
+		method: "GET",
+		body: null,
+	});
+
+	const file = await parseResponse({ parseFunc: async () => await response.blob(), abortSignal: options.abortSignal });
+
+	return createAdapterResponse({ url: options.url, response, payload: file, responseHeaders: toSdkHeaders(response.headers) });
+}
+
+async function executeRequest(options: AdapterRequestOptions): Promise<AdapterResponse<JsonValue>> {
+	const response = await getResponse(options);
+	const sdkHeaders = toSdkHeaders(response.headers);
+
+	if (!isApplicationJsonResponseType(sdkHeaders)) {
+		await cancelResponseBody(response);
+		return createAdapterResponse({ url: options.url, response, payload: null, responseHeaders: sdkHeaders });
+	}
+
+	const payload = await parseResponse<JsonValue>({
+		parseFunc: async () => (await response.json()) as JsonValue,
+		abortSignal: options.abortSignal,
+	});
+
+	return createAdapterResponse({ url: options.url, response, payload, responseHeaders: sdkHeaders });
 }
 
 async function getResponse(options: AdapterRequestOptions): Promise<Response> {
@@ -58,6 +70,14 @@ async function getResponse(options: AdapterRequestOptions): Promise<Response> {
 
 	// re-throw original error
 	throw error;
+}
+
+/**
+ * Releases the connection of a response whose body is not read.
+ * Unconsumed bodies hold the socket until garbage collection (e.g. undici in Node.js).
+ */
+async function cancelResponseBody(response: Response): Promise<void> {
+	await tryCatchAsync(async () => await response.body?.cancel());
 }
 
 async function parseResponse<TPayload extends AdapterPayload>({
