@@ -62,7 +62,9 @@ async function getResponse(options: AdapterRequestOptions): Promise<Response> {
 		return data;
 	}
 
-	if (isFetchAbortError(error)) {
+	// fetch rejects with the signal's reason, which is not always an 'AbortError' (e.g. 'TimeoutError' for AbortSignal.timeout()
+	// or a custom reason passed to abort()), so an aborted signal is the reliable indicator
+	if (options.abortSignal?.aborted || isFetchAbortError(error)) {
 		// this is to notify the HttpService that the request was aborted
 		// HttpService will then convert the error to a KontentSdkError with the reason "aborted"
 		throw new AdapterAbortError({ message: "Request was aborted.", error });
