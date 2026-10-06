@@ -421,7 +421,10 @@ async function tryExtractKontentErrorData(response: AdapterResponse<AdapterPaylo
 }
 
 async function parseJsonBlob(blob: Blob): Promise<unknown> {
-	const { data } = await tryCatchAsync(async () => JSON.parse(await blob.text()));
+	const { data } = await tryCatchAsync(async () => {
+		const parsed: unknown = JSON.parse(await blob.text());
+		return parsed;
+	});
 	return data;
 }
 

@@ -1,5 +1,6 @@
 import type { KontentSdkError } from "../../models/error.models.js";
 import type { JsonValue } from "../../models/json.models.js";
+import { isNonEmptyArray as isArrayWithSomeData } from "../../utils/array.utils.js";
 import { createSdkError } from "../../utils/error.utils.js";
 import type { SchemaInput } from "../../utils/schema.utils.js";
 import { type TryCatchResult, tryCatch } from "../../utils/try-catch.utils.js";
@@ -74,10 +75,11 @@ export function createBatchTransformResponses<TPayload extends JsonValue, TTrans
 	readonly mapError: (error: KontentSdkError) => TError;
 }): BatchTransformResponsesFn<TPayload, TTransformedPayload, TError, TMeta, TExtra> {
 	return async (responses) => {
-		const firstResponse = responses?.[0];
-		if (!firstResponse) {
+		if (!isArrayWithSomeData(responses)) {
 			return { success: true, data: [] };
 		}
+
+		const [firstResponse] = responses;
 
 		const { success, data: transformedResponses, error } = tryCatch(() => transform(responses));
 
