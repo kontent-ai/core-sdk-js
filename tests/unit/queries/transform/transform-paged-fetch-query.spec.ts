@@ -458,8 +458,8 @@ describe("transformPagedFetchQuery - runtime validation fails when transformed p
 		expect(success).toBe(false);
 	});
 
-	it("Should return error with parsingFailed reason", () => {
-		expect(error?.details.reason).toBe("parsingFailed" satisfies ErrorReason);
+	it("Should return error with schemaMismatch reason", () => {
+		expect(error?.details.reason).toBe("schemaMismatch" satisfies ErrorReason);
 	});
 });
 

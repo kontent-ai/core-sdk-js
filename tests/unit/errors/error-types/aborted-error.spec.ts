@@ -24,7 +24,7 @@ describe("Aborted error", async () => {
 		if (error?.details.reason === "aborted") {
 			expect(error.details.originalError).toBeInstanceOf(AdapterAbortError);
 			if (error.details.originalError instanceof AdapterAbortError) {
-				expect(error.details.originalError.details).toBe(originalError);
+				expect(error.details.originalError.cause).toBe(originalError);
 			} else {
 				throw new Error("Original error is not an instance of AdapterAbortError");
 			}

@@ -43,7 +43,7 @@ export async function parseResponse<TPayload extends JsonValue>({
 					retryAttempt: undefined,
 				},
 				details: {
-					reason: "parsingFailed",
+					reason: "schemaMismatch",
 					zodError: error,
 					payload,
 					url,

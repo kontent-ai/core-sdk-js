@@ -1,3 +1,4 @@
+import { match, P } from "ts-pattern";
 import * as z from "zod";
 import type { AdapterPayload, AdapterResponse } from "../http/http.models.js";
 import type { ResolvedRetryStrategyOptions } from "./core.models.js";
@@ -32,13 +33,13 @@ export type ErrorDetails =
 	| ReasonData<"transformError", ErrorWithOriginalError>
 	| ReasonData<"unauthorized", ErrorWithKontentResponse>
 	| ReasonData<"invalidResponse", ErrorWithKontentResponse>
-	| ReasonData<"parseError", ErrorWithOriginalError>
+	| ReasonData<"invalidResponseBody", ErrorWithOriginalError>
 	| ReasonData<"notFound", ErrorWithKontentResponse>
 	| ReasonData<"invalidBody", ErrorWithOriginalError>
 	| ReasonData<"invalidUrl", ErrorWithOriginalError>
 	| ReasonData<"aborted", ErrorWithOriginalError>
 	| ReasonData<
-			"parsingFailed",
+			"schemaMismatch",
 			{
 				readonly zodError: z.core.$ZodError;
 				readonly payload: JsonValue;
@@ -69,6 +70,7 @@ export type BaseErrorData = {
 };
 
 export class KontentSdkError<TDetails extends ErrorDetails = ErrorDetails> extends Error implements BaseErrorData {
+	override readonly name = "KontentSdkError";
 	readonly details: TDetails;
 	readonly url: string | URL;
 	readonly retryStrategyOptions: ResolvedRetryStrategyOptions | undefined;
@@ -81,7 +83,7 @@ export class KontentSdkError<TDetails extends ErrorDetails = ErrorDetails> exten
 		readonly baseErrorData: BaseErrorData;
 		readonly details: TDetails;
 	}) {
-		super(message);
+		super(message, getErrorOptions(details));
 
 		this.url = url;
 		this.retryStrategyOptions = retryStrategyOptions;
@@ -96,24 +98,23 @@ export class KontentSdkError<TDetails extends ErrorDetails = ErrorDetails> exten
  * The error is then handled by the HttpService and converted to a KontentSdkError with the reason "aborted".
  */
 export class AdapterAbortError extends Error {
-	readonly details: unknown;
+	override readonly name = "AdapterAbortError";
+
 	constructor({ message, error }: { readonly message: string; readonly error?: unknown }) {
 		super(message, { cause: error });
-		this.details = error;
 	}
 }
 
 /**
  * Http adapter should throw this error when the response is not valid JSON or BLOB.
  *
- * The error is then handled by the HttpService and converted to a KontentSdkError with the reason "parseError".
+ * The error is then handled by the HttpService and converted to a KontentSdkError with the reason "invalidResponseBody".
  */
 export class AdapterParseError extends Error {
-	readonly details: unknown;
+	override readonly name = "AdapterParseError";
 
 	constructor({ message, error }: { readonly message: string; readonly error?: unknown }) {
 		super(message, { cause: error });
-		this.details = error;
 	}
 }
 
@@ -131,3 +132,15 @@ type ErrorWithOriginalError = {
 type ReasonData<TReason extends ErrorReason, TData> = {
 	readonly reason: TReason;
 } & TData;
+
+/**
+ * Exposes the underlying error as the standard `cause` so that it shows up in Node.js / browser console output
+ * and in error trackers. The typed access path remains `details`, narrowed by `details.reason`.
+ */
+function getErrorOptions(details: ErrorDetails): ErrorOptions | undefined {
+	return match(details)
+		.returnType<ErrorOptions | undefined>()
+		.with({ originalError: P.nonNullable }, (m) => ({ cause: m.originalError }))
+		.with({ reason: "schemaMismatch" }, (m) => ({ cause: m.zodError }))
+		.otherwise(() => undefined);
+}

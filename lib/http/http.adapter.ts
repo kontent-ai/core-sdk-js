@@ -94,7 +94,7 @@ async function parseResponse<TPayload extends AdapterPayload>({
 
 		if (!success) {
 			// this is to notify the HttpService that the response is not valid JSON or BLOB
-			// HttpService will then convert the error to a KontentSdkError with the reason "parseError"
+			// HttpService will then convert the error to a KontentSdkError with the reason "invalidResponseBody"
 			throw new AdapterParseError({ message: "Failed to parse the response.", error });
 		}
 

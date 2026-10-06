@@ -110,8 +110,8 @@ if (!success) {
       // Any non-2xx response that isn't 401 or 404
       console.error(`HTTP ${error.details.status}:`, error.details.kontentErrorResponse?.message);
       break;
-    case "parseError":
-      // The response claimed to be JSON, but parsing it failed
+    case "invalidResponseBody":
+      // The response body could not be read (e.g. the response claimed to be JSON, but wasn't valid JSON)
       console.error("Failed to parse response:", error.details.originalError);
       break;
     case "adapterError":
@@ -126,8 +126,8 @@ if (!success) {
       // The request body could not be serialized before the request was sent
       console.error("Invalid body:", error.details.originalError);
       break;
-    case "parsingFailed":
-      // Zod schema parsing fails
+    case "schemaMismatch":
+      // The response payload does not match the expected Zod schema (only with runtime validation enabled)
       console.error("Unexpected response shape for", error.details.url, error.details.zodError);
       break;
     case "aborted":

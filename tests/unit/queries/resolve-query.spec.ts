@@ -71,8 +71,8 @@ describe("resolveQuery - response not matching zod schema", async () => {
 		mapExtraResponseProps: () => ({}),
 	});
 
-	it(`Error reason should be '${"parsingFailed" satisfies ErrorReason}'`, () => {
-		expect(error?.details.reason).toBe("parsingFailed" satisfies ErrorReason);
+	it(`Error reason should be '${"schemaMismatch" satisfies ErrorReason}'`, () => {
+		expect(error?.details.reason).toBe("schemaMismatch" satisfies ErrorReason);
 	});
 });
 

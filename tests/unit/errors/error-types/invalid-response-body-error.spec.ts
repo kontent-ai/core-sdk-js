@@ -16,20 +16,20 @@ describe("Parse failure", async () => {
 		method: "GET",
 	});
 
-	it(`Error details should be of type '${"parseError" satisfies ErrorReason}'`, () => {
-		expect(error?.details.reason).toBe("parseError" satisfies ErrorReason);
+	it(`Error details should be of type '${"invalidResponseBody" satisfies ErrorReason}'`, () => {
+		expect(error?.details.reason).toBe("invalidResponseBody" satisfies ErrorReason);
 	});
 
 	it("Original error should be preserved", () => {
-		if (error?.details.reason === "parseError") {
+		if (error?.details.reason === "invalidResponseBody") {
 			expect(error.details.originalError).toBeInstanceOf(AdapterParseError);
 			if (error.details.originalError instanceof AdapterParseError) {
-				expect(error.details.originalError.details).toBe(originalError);
+				expect(error.details.originalError.cause).toBe(originalError);
 			} else {
 				throw new Error("Original error is not an instance of AdapterParseError");
 			}
 		} else {
-			throw new Error("Error reason is not parseError");
+			throw new Error("Error reason is not invalidResponseBody");
 		}
 	});
 });

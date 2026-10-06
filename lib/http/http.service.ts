@@ -175,9 +175,9 @@ function createAdapterError({
 	readonly error: unknown;
 	readonly retryAttempt: number;
 	readonly retryStrategyOptions: ResolvedRetryStrategyOptions;
-}): KontentSdkError<ErrorDetailsFor<"adapterError" | "aborted" | "parseError">> {
+}): KontentSdkError<ErrorDetailsFor<"adapterError" | "aborted" | "invalidResponseBody">> {
 	return match(error)
-		.returnType<KontentSdkError<ErrorDetailsFor<"adapterError" | "aborted" | "parseError">>>()
+		.returnType<KontentSdkError<ErrorDetailsFor<"adapterError" | "aborted" | "invalidResponseBody">>>()
 		.when(isAdapterAbortError, (abortError) =>
 			createSdkError({
 				baseErrorData: {
@@ -201,7 +201,7 @@ function createAdapterError({
 					retryAttempt,
 				},
 				details: {
-					reason: "parseError",
+					reason: "invalidResponseBody",
 					originalError: parseError,
 				},
 			}),
