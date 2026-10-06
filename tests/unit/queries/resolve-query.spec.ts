@@ -4,6 +4,7 @@ import type { ErrorReason } from "../../../lib/models/error.models.js";
 import { resolveQuery } from "../../../lib/sdk/resolve-query.js";
 import { getTestHttpServiceWithJsonResponse, getTestSdkInfo } from "../../../lib/testkit/testkit.utils.js";
 import { createAuthorizationHeader } from "../../../lib/utils/header.utils.js";
+import { HttpService } from "../../../lib/http/http.models.js";
 
 describe("resolveQuery - invalid baseUrl host", async () => {
 	const { error } = await resolveQuery({
@@ -103,7 +104,7 @@ describe("resolveQuery - validation is skipped when schema is undefined", async 
 
 describe("resolveQuery - custom httpService from config is used", async () => {
 	const customHttpService = getTestHttpServiceWithJsonResponse({ statusCode: 200, jsonResponse: null });
-	const requestSpy = vi.spyOn(customHttpService, "request");
+	const requestSpy = vi.spyOn(customHttpService, "request" satisfies keyof HttpService);
 
 	await resolveQuery({
 		method: "GET",
@@ -125,7 +126,7 @@ describe("resolveQuery - custom httpService from config is used", async () => {
 describe("resolveQuery - authorization header is applied", async () => {
 	const apiKey = "my-api-key";
 	const httpService = getTestHttpServiceWithJsonResponse({ statusCode: 200, jsonResponse: null });
-	const requestSpy = vi.spyOn(httpService, "request");
+	const requestSpy = vi.spyOn(httpService,  "request" satisfies keyof HttpService);
 
 	await resolveQuery({
 		method: "GET",
@@ -154,7 +155,8 @@ describe("resolveQuery - default httpService is used when none provided in confi
 	it("Should use the default httpService and succeed", async () => {
 		vi.spyOn(globalThis, "fetch").mockResolvedValueOnce({
 			...({} as Response),
-			ok: true,
+      ok: true,
+			clone: () => ({}) as Response,
 			status: 200,
 			statusText: "OK",
 			headers: new Headers({ "Content-Type": "application/json" }),
