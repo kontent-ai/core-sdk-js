@@ -1,9 +1,9 @@
 import * as z from "zod";
 
-export type JsonValue = undefined | string | number | null | boolean | JsonObject | JsonArray;
+export type JsonValue = string | number | null | boolean | JsonObject | JsonArray;
 
 export type JsonObject = {
-	readonly [property: string]: JsonValue;
+	readonly [property: string]: JsonValue | undefined;
 };
 
 export type JsonArray = readonly JsonValue[];
