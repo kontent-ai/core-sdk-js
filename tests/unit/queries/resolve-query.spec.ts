@@ -1,10 +1,11 @@
 import { describe, expect, it, vi } from "vitest";
 import * as z from "zod";
 import type { HttpService } from "../../../lib/http/http.models.js";
+import type { Header, KnownHeaderName } from "../../../lib/models/core.models.js";
 import type { ErrorReason } from "../../../lib/models/error.models.js";
-import { resolveQuery } from "../../../lib/sdk/resolve-query.js";
+import { inspectQuery, resolveQuery } from "../../../lib/sdk/resolve-query.js";
 import { getTestHttpServiceWithJsonResponse, getTestSdkInfo, stubFetchWithResponse } from "../../../lib/testkit/testkit.utils.js";
-import { createAuthorizationHeader } from "../../../lib/utils/header.utils.js";
+import { createAuthorizationHeader, createSdkIdHeader } from "../../../lib/utils/header.utils.js";
 
 describe("resolveQuery - invalid baseUrl host", async () => {
 	const { error } = await resolveQuery({
@@ -182,5 +183,61 @@ describe("resolveQuery - invalid URL", async () => {
 
 	it(`Error reason should be '${"invalidUrl" satisfies ErrorReason}'`, () => {
 		expect(error?.details.reason).toBe("invalidUrl" satisfies ErrorReason);
+	});
+});
+
+describe("inspectQuery - SDK-managed headers take precedence over request headers regardless of casing", () => {
+	const apiKey = "sdk-api-key";
+	const customHeader: Header = { name: "X-Custom", value: "custom" };
+	const callerAuthorizationHeader: Header = { name: "authorization", value: "Bearer caller-token" };
+
+	const getRequestHeaders = ({
+		requestHeaders,
+		authorizationApiKey,
+	}: {
+		readonly requestHeaders: readonly Header[];
+		readonly authorizationApiKey?: string;
+	}): readonly Header[] => {
+		const { success, data } = inspectQuery({
+			method: "GET",
+			url: "https://domain.com",
+			body: null,
+			config: {},
+			sdkInfo: getTestSdkInfo(),
+			requestHeaders,
+			authorizationApiKey,
+			mapError: (error) => error,
+		});
+		if (!success) {
+			throw new Error("Expected query inspection to succeed");
+		}
+		return data.requestHeaders;
+	};
+
+	const findAllByName = (headers: readonly Header[], name: KnownHeaderName): readonly Header[] =>
+		headers.filter((header) => header.name.toLowerCase() === name.toLowerCase());
+
+	it("Should replace a lowercase caller SDK id header with the SDK's own", () => {
+		const headers = getRequestHeaders({ requestHeaders: [{ name: "x-kc-sdkid", value: "caller;sdk;0.0.1" }] });
+
+		expect(findAllByName(headers, "X-KC-SDKID")).toStrictEqual([createSdkIdHeader(getTestSdkInfo())]);
+	});
+
+	it("Should replace a caller authorization header when an API key is provided", () => {
+		const headers = getRequestHeaders({ requestHeaders: [callerAuthorizationHeader], authorizationApiKey: apiKey });
+
+		expect(findAllByName(headers, "Authorization")).toStrictEqual([createAuthorizationHeader(apiKey)]);
+	});
+
+	it("Should keep a caller authorization header when no API key is provided", () => {
+		const headers = getRequestHeaders({ requestHeaders: [callerAuthorizationHeader] });
+
+		expect(findAllByName(headers, "Authorization")).toStrictEqual([callerAuthorizationHeader]);
+	});
+
+	it("Should keep unrelated caller headers", () => {
+		const headers = getRequestHeaders({ requestHeaders: [customHeader] });
+
+		expect(headers).toContainEqual(customHeader);
 	});
 });

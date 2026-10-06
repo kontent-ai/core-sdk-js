@@ -1,10 +1,16 @@
 import type { HttpRequestBody, HttpService } from "../http/http.models.js";
 import { getDefaultHttpService } from "../http/http.service.js";
-import type { Header, KnownHeaderName, SdkInfo } from "../models/core.models.js";
+import type { Header, SdkInfo } from "../models/core.models.js";
 import type { ErrorDetailsFor, KontentSdkError } from "../models/error.models.js";
 import type { JsonValue } from "../models/json.models.js";
 import { createSdkError } from "../utils/error.utils.js";
-import { createAuthorizationHeader, createContinuationHeader, createSdkIdHeader, extractContinuationToken } from "../utils/header.utils.js";
+import {
+	createAuthorizationHeader,
+	createContinuationHeader,
+	createSdkIdHeader,
+	extractContinuationToken,
+	isSameHeaderName,
+} from "../utils/header.utils.js";
 import { resolveSchema } from "../utils/schema.utils.js";
 import { type TryCatchResult, tryCatch } from "../utils/try-catch.utils.js";
 import type {
@@ -240,10 +246,15 @@ function getCombinedRequestHeaders({
 	readonly authorizationApiKey: string | undefined;
 	readonly sdkInfo: SdkInfo;
 }): readonly Header[] {
-	return [
+	// headers managed by the SDK always take precedence over request headers with the same name
+	const sdkHeaders: readonly Header[] = [
 		createSdkIdHeader(sdkInfo),
-		...requestHeaders.filter((header) => header.name !== ("X-KC-SDKID" satisfies KnownHeaderName)),
 		...(continuationToken ? [createContinuationHeader(continuationToken)] : []),
 		...(authorizationApiKey ? [createAuthorizationHeader(authorizationApiKey)] : []),
+	];
+
+	return [
+		...requestHeaders.filter((header) => !sdkHeaders.some((sdkHeader) => isSameHeaderName(header.name, sdkHeader.name))),
+		...sdkHeaders,
 	];
 }

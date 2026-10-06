@@ -22,8 +22,14 @@ export function createAuthorizationHeader(apiKey: string): Header {
 }
 
 export function findHeaderByName(headers: readonly Header[], name: KnownHeaderName): Header | undefined {
-	const normalizedName = name.toLowerCase();
-	return headers.find((header) => header.name.toLowerCase() === normalizedName);
+	return headers.find((header) => isSameHeaderName(header.name, name));
+}
+
+/**
+ * Header names are case-insensitive in HTTP, so they must always be compared this way.
+ */
+export function isSameHeaderName(a: string, b: string): boolean {
+	return a.toLowerCase() === b.toLowerCase();
 }
 
 export function getRetryAfterHeaderValue(headers: readonly Header[]): number | undefined {
