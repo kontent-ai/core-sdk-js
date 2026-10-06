@@ -16,6 +16,7 @@ import {
 import { createSdkIdHeader, findHeaderByName, isApplicationJsonResponseType } from "../utils/header.utils.js";
 import { resolveDefaultRetryStrategyOptions, runWithRetry } from "../utils/retry.utils.js";
 import { type TryCatchResult, tryCatch, tryCatchAsync } from "../utils/try-catch.utils.js";
+import { parseUrl } from "../utils/url.utils.js";
 import { getDefaultHttpAdapter } from "./http.adapter.js";
 import type {
 	AdapterPayload,
@@ -418,10 +419,6 @@ async function parseJsonBlob(blob: Blob): Promise<unknown> {
 	return data;
 }
 
-function isStringUrl(url: string | URL): url is string {
-	return typeof url === "string";
-}
-
 function parseAndValidateRequest<TBody extends HttpRequestBody>({
 	options,
 	retryStrategyOptions,
@@ -431,7 +428,11 @@ function parseAndValidateRequest<TBody extends HttpRequestBody>({
 	readonly retryStrategyOptions: ResolvedRetryStrategyOptions;
 	readonly config: DefaultHttpServiceOptions | undefined;
 }): TryCatchResult<ParsedRequest, KontentSdkError> {
-	const { success: urlParsedSuccess, data: parsedUrl, error: urlError } = parseUrl({ url: options.url, retryStrategyOptions });
+	const {
+		success: urlParsedSuccess,
+		data: parsedUrl,
+		error: urlError,
+	} = parseUrl(options.url, { retryStrategyOptions, retryAttempt: 0 });
 
 	if (!urlParsedSuccess) {
 		return {
@@ -464,46 +465,6 @@ function parseAndValidateRequest<TBody extends HttpRequestBody>({
 				body: options.body ?? null,
 			}),
 		},
-	};
-}
-
-function parseUrl({
-	url,
-	retryStrategyOptions,
-}: {
-	readonly url: string | URL;
-	readonly retryStrategyOptions: ResolvedRetryStrategyOptions;
-}): TryCatchResult<URL, KontentSdkError> {
-	if (!isStringUrl(url)) {
-		return {
-			success: true,
-			data: url,
-		};
-	}
-
-	const { success, data: parsedUrl, error } = tryCatch(() => new URL(url));
-
-	if (success) {
-		return {
-			success: true,
-			data: parsedUrl,
-		};
-	}
-
-	return {
-		success: false,
-		error: createSdkError({
-			baseErrorData: {
-				message: `Failed to parse url '${url}'.`,
-				url: url,
-				retryStrategyOptions,
-				retryAttempt: 0,
-			},
-			details: {
-				reason: "invalidUrl",
-				originalError: error,
-			},
-		}),
 	};
 }
 

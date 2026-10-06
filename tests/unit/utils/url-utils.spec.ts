@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { getEndpointUrl } from "../../../lib/utils/url.utils.js";
+import type { ErrorReason } from "../../../lib/models/error.models.js";
+import { resolveDefaultRetryStrategyOptions } from "../../../lib/utils/retry.utils.js";
+import { getEndpointUrl, parseUrl } from "../../../lib/utils/url.utils.js";
 
 describe("getEndpointUrl", () => {
 	it("Should combine baseUrl, environmentId and path with single slashes", () => {
@@ -30,5 +32,36 @@ describe("getEndpointUrl", () => {
 		});
 
 		expect(url).toBe("https://deliver.kontent.ai/env-id/items/123");
+	});
+});
+
+describe("parseUrl", () => {
+	const invalidUrl = "invalid-url";
+
+	it("Should return a URL instance as is", () => {
+		const url = new URL("https://domain.com");
+
+		expect(parseUrl(url).data).toBe(url);
+	});
+
+	it("Should parse a valid url string", () => {
+		expect(parseUrl("https://domain.com/path").data?.toString()).toBe("https://domain.com/path");
+	});
+
+	it(`Should return an '${"invalidUrl" satisfies ErrorReason}' error without retry context for an invalid url`, () => {
+		const { error } = parseUrl(invalidUrl);
+
+		expect(error?.details.reason).toBe("invalidUrl" satisfies ErrorReason);
+		expect(error?.message).toBe(`Failed to parse url '${invalidUrl}'.`);
+		expect(error?.retryAttempt).toBeUndefined();
+		expect(error?.retryStrategyOptions).toBeUndefined();
+	});
+
+	it("Should carry the provided retry context on the error", () => {
+		const retryStrategyOptions = resolveDefaultRetryStrategyOptions();
+		const { error } = parseUrl(invalidUrl, { retryStrategyOptions, retryAttempt: 0 });
+
+		expect(error?.retryAttempt).toBe(0);
+		expect(error?.retryStrategyOptions).toBe(retryStrategyOptions);
 	});
 });

@@ -3,7 +3,6 @@ import { getDefaultHttpService } from "../http/http.service.js";
 import type { Header, SdkInfo } from "../models/core.models.js";
 import type { ErrorDetailsFor, KontentSdkError } from "../models/error.models.js";
 import type { JsonValue } from "../models/json.models.js";
-import { createSdkError } from "../utils/error.utils.js";
 import {
 	createAuthorizationHeader,
 	createContinuationHeader,
@@ -11,7 +10,8 @@ import {
 	extractContinuationToken,
 	isSameHeaderName,
 } from "../utils/header.utils.js";
-import { type TryCatchResult, tryCatch } from "../utils/try-catch.utils.js";
+import type { TryCatchResult } from "../utils/try-catch.utils.js";
+import { parseUrl } from "../utils/url.utils.js";
 import type {
 	BaseUrl,
 	QueryInputData,
@@ -149,79 +149,39 @@ export function resolveUrl<TError>({
 	readonly baseUrl: BaseUrl | undefined;
 	readonly mapError: (error: KontentSdkError<ErrorDetailsFor<"invalidUrl">>) => TError;
 }): TryCatchResult<URL, TError> {
-	const returnWithBaseUrl = (parsedUrl: URL): TryCatchResult<URL, TError> => {
-		if (!baseUrl) {
-			return {
-				success: true,
-				data: parsedUrl,
-			};
-		}
-		const { success, data: parsedUrlWithBaseUrl, error } = setBaseUrl(parsedUrl, baseUrl);
-		if (!success) {
-			return {
-				success: false,
-				error: mapError(error),
-			};
-		}
-		return {
-			success: true,
-			data: parsedUrlWithBaseUrl,
-		};
-	};
+	const { success, data: parsedUrl, error } = parseUrl(url);
 
-	if (typeof url === "string") {
-		const { success, data: parsedUrl, error } = tryCatch(() => new URL(url));
-
-		if (!success) {
-			return {
-				success: false,
-				error: mapError(createInvalidUrlError(url, error)),
-			};
-		}
-
-		return returnWithBaseUrl(parsedUrl);
+	if (!success) {
+		return { success: false, error: mapError(error) };
 	}
 
-	return returnWithBaseUrl(url);
-}
+	if (!baseUrl) {
+		return { success: true, data: parsedUrl };
+	}
 
-function createInvalidUrlError(invalidUrl: string, error: unknown): KontentSdkError<ErrorDetailsFor<"invalidUrl">> {
-	return createSdkError({
-		baseErrorData: {
-			message: `Failed to parse url '${invalidUrl}'`,
-			url: invalidUrl,
-			retryStrategyOptions: undefined,
-			retryAttempt: undefined,
-		},
-		details: {
-			reason: "invalidUrl",
-			originalError: error,
-		},
-	});
+	const { success: baseUrlSuccess, data: urlWithBaseUrl, error: baseUrlError } = setBaseUrl(parsedUrl, baseUrl);
+
+	if (!baseUrlSuccess) {
+		return { success: false, error: mapError(baseUrlError) };
+	}
+
+	return { success: true, data: urlWithBaseUrl };
 }
 
 function setBaseUrl(url: URL, baseUrl: BaseUrl): TryCatchResult<URL, KontentSdkError<ErrorDetailsFor<"invalidUrl">>> {
-	const clonedUrl = new URL(url.toString());
-	const baseUrlString = `${baseUrl.protocol}://${baseUrl.host}`;
-
 	// Direct host assignment is a silent no-op for invalid values per the URL spec,
 	// so validate by constructing a full URL first.
-	const { success, data: parsedBaseUrl, error } = tryCatch(() => new URL(baseUrlString));
+	const { success, data: parsedBaseUrl, error } = parseUrl(`${baseUrl.protocol}://${baseUrl.host}`);
 
 	if (!success) {
-		return {
-			success: false,
-			error: createInvalidUrlError(baseUrlString, error),
-		};
+		return { success: false, error };
 	}
 
+	const clonedUrl = new URL(url.toString());
 	clonedUrl.protocol = parsedBaseUrl.protocol;
 	clonedUrl.host = parsedBaseUrl.host;
 
-	return {
-		success: true,
-		data: clonedUrl,
-	};
+	return { success: true, data: clonedUrl };
 }
 
 function getHttpService(config: SdkConfig): HttpService {

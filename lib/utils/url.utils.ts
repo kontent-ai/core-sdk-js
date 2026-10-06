@@ -1,4 +1,9 @@
+import type { BaseErrorData, ErrorDetailsFor, KontentSdkError } from "../models/error.models.js";
 import type { BaseUrl } from "../sdk/sdk-models.js";
+import { createSdkError } from "./error.utils.js";
+import { type TryCatchResult, tryCatch } from "./try-catch.utils.js";
+
+type RetryContext = Pick<BaseErrorData, "retryStrategyOptions" | "retryAttempt">;
 
 export function getEndpointUrl({
 	environmentId,
@@ -18,4 +23,48 @@ function removeDuplicateSlashes(path: string): string {
 
 function removeTrailingSlashes(path: string): string {
 	return path.replace(/\/+$/, "");
+}
+
+/**
+ * Parses a URL string (a `URL` instance is returned as is). On failure returns an `invalidUrl` error,
+ * optionally carrying the retry context of the request it belongs to.
+ */
+export function parseUrl(
+	url: string | URL,
+	retryContext?: RetryContext,
+): TryCatchResult<URL, KontentSdkError<ErrorDetailsFor<"invalidUrl">>> {
+	if (typeof url !== "string") {
+		return { success: true, data: url };
+	}
+
+	const { success, data, error } = tryCatch(() => new URL(url));
+
+	if (!success) {
+		return { success: false, error: createInvalidUrlError({ url, error, retryContext }) };
+	}
+
+	return { success: true, data };
+}
+
+function createInvalidUrlError({
+	url,
+	error,
+	retryContext,
+}: {
+	readonly url: string;
+	readonly error: unknown;
+	readonly retryContext: RetryContext | undefined;
+}): KontentSdkError<ErrorDetailsFor<"invalidUrl">> {
+	return createSdkError({
+		baseErrorData: {
+			message: `Failed to parse url '${url}'.`,
+			url,
+			retryStrategyOptions: retryContext?.retryStrategyOptions,
+			retryAttempt: retryContext?.retryAttempt,
+		},
+		details: {
+			reason: "invalidUrl",
+			originalError: error,
+		},
+	});
 }
