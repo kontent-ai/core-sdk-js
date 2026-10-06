@@ -8,7 +8,9 @@ describe("isAbortError", () => {
 	});
 
 	it("Should throw AdapterAbortError when fetch throws a DOMException with name 'AbortError'", async () => {
-		vi.spyOn(globalThis, "fetch").mockRejectedValueOnce(new DOMException("The operation was aborted.", "AbortError"));
+		vi.spyOn(globalThis, "fetch" satisfies keyof typeof globalThis).mockRejectedValueOnce(
+			new DOMException("The operation was aborted.", "AbortError"),
+		);
 
 		await expect(
 			getDefaultHttpAdapter().executeRequest({
@@ -24,7 +26,7 @@ describe("isAbortError", () => {
 	it("Should re-throw the original error when fetch throws a non-abort error", async () => {
 		const networkError = new Error("Network failure");
 
-		vi.spyOn(globalThis, "fetch").mockRejectedValueOnce(networkError);
+		vi.spyOn(globalThis, "fetch" satisfies keyof typeof globalThis).mockRejectedValueOnce(networkError);
 
 		await expect(
 			getDefaultHttpAdapter().executeRequest({

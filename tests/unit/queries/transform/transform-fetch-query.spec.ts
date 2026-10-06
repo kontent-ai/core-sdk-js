@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import * as z from "zod";
-import type { KontentSdkError } from "../../../../lib/models/error.models.js";
+import type { ErrorReason, KontentSdkError } from "../../../../lib/models/error.models.js";
 import { createFetchQuery } from "../../../../lib/sdk/queries/fetch-sdk-query.js";
 import type { FetchQuery } from "../../../../lib/sdk/sdk-models.js";
 import { transformFetchQuery } from "../../../../lib/sdk/transform/transform-fetch-query.js";
@@ -86,7 +86,7 @@ describe("transformFetchQuery - fetch throws when transform throws", async () =>
 	});
 
 	it("Should throw error with transformError reason", () => {
-		expect(error).toMatchObject({ details: { reason: "transformError" } });
+		expect(error).toMatchObject({ details: { reason: "transformError" satisfies ErrorReason } });
 	});
 });
 
@@ -108,7 +108,7 @@ describe("transformFetchQuery - fetchSafe returns failure when transform throws"
 	});
 
 	it("Should return error with transformError reason", () => {
-		expect(error?.details.reason).toBe("transformError");
+		expect(error?.details.reason).toBe("transformError" satisfies ErrorReason);
 	});
 });
 
@@ -128,7 +128,7 @@ describe("transformFetchQuery - fetchSafe propagates underlying query failure un
 	});
 
 	it("Should return the underlying invalidUrl error", () => {
-		expect(error?.details.reason).toBe("invalidUrl");
+		expect(error?.details.reason).toBe("invalidUrl" satisfies ErrorReason);
 	});
 });
 
@@ -168,7 +168,7 @@ describe("transformFetchQuery - runtime validation fails when transformed payloa
 	});
 
 	it("Should return error with parsingFailed reason", () => {
-		expect(error?.details.reason).toBe("parsingFailed");
+		expect(error?.details.reason).toBe("parsingFailed" satisfies ErrorReason);
 	});
 });
 

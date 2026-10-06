@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import * as z from "zod";
-import type { KontentSdkError } from "../../../../lib/models/error.models.js";
+import type { ErrorReason, KontentSdkError } from "../../../../lib/models/error.models.js";
 import { createPagedFetchQuery } from "../../../../lib/sdk/queries/paged-fetch-sdk-query.js";
 import type { PagedFetchQuery, QueryResponse, SafeQueryResult } from "../../../../lib/sdk/sdk-models.js";
 import { transformPagedFetchQuery } from "../../../../lib/sdk/transform/transform-paged-fetch-query.js";
@@ -80,7 +80,7 @@ describe("transformPagedFetchQuery - fetchPage throws when transform throws", as
 	const { error } = await tryCatchAsync(async () => await transformedQuery.fetchPage());
 
 	it("Should throw error with transformError reason", () => {
-		expect(error).toMatchObject({ details: { reason: "transformError" } });
+		expect(error).toMatchObject({ details: { reason: "transformError" satisfies ErrorReason } });
 	});
 });
 
@@ -120,7 +120,7 @@ describe("transformPagedFetchQuery - fetchPageSafe propagates underlying failure
 	});
 
 	it("Should return the underlying invalidUrl error", () => {
-		expect(error?.details.reason).toBe("invalidUrl");
+		expect(error?.details.reason).toBe("invalidUrl" satisfies ErrorReason);
 	});
 });
 
@@ -142,7 +142,7 @@ describe("transformPagedFetchQuery - fetchPageSafe returns failure when transfor
 	});
 
 	it("Should return error with transformError reason", () => {
-		expect(error?.details.reason).toBe("transformError");
+		expect(error?.details.reason).toBe("transformError" satisfies ErrorReason);
 	});
 });
 
@@ -158,7 +158,7 @@ describe("transformPagedFetchQuery - fetchPage throws when transform returns emp
 	const { error } = await tryCatchAsync(async () => await transformedQuery.fetchPage());
 
 	it("Should throw error with transformError reason", () => {
-		expect(error).toMatchObject({ details: { reason: "transformError" } });
+		expect(error).toMatchObject({ details: { reason: "transformError" satisfies ErrorReason } });
 	});
 });
 
@@ -178,7 +178,7 @@ describe("transformPagedFetchQuery - fetchPageSafe returns failure when transfor
 	});
 
 	it("Should return error with transformError reason", () => {
-		expect(error?.details.reason).toBe("transformError");
+		expect(error?.details.reason).toBe("transformError" satisfies ErrorReason);
 	});
 });
 
@@ -223,7 +223,7 @@ describe("transformPagedFetchQuery - fetchAllPages throws when transform throws"
 	const { error } = await tryCatchAsync(async () => await transformedQuery.fetchAllPages());
 
 	it("Should throw error with transformError reason", () => {
-		expect(error).toMatchObject({ details: { reason: "transformError" } });
+		expect(error).toMatchObject({ details: { reason: "transformError" satisfies ErrorReason } });
 	});
 });
 
@@ -269,7 +269,7 @@ describe("transformPagedFetchQuery - fetchAllPagesSafe propagates underlying fai
 	});
 
 	it("Should return the underlying invalidUrl error", () => {
-		expect(result.error?.details.reason).toBe("invalidUrl");
+		expect(result.error?.details.reason).toBe("invalidUrl" satisfies ErrorReason);
 	});
 });
 
@@ -291,7 +291,7 @@ describe("transformPagedFetchQuery - fetchAllPagesSafe returns failure when tran
 	});
 
 	it("Should return error with transformError reason", () => {
-		expect(result.error?.details.reason).toBe("transformError");
+		expect(result.error?.details.reason).toBe("transformError" satisfies ErrorReason);
 	});
 });
 
@@ -338,7 +338,7 @@ describe("transformPagedFetchQuery - pages async iterator throws when transform 
 	});
 
 	it("Should throw error with transformError reason", () => {
-		expect(error).toMatchObject({ details: { reason: "transformError" } });
+		expect(error).toMatchObject({ details: { reason: "transformError" satisfies ErrorReason } });
 	});
 });
 
@@ -393,7 +393,7 @@ describe("transformPagedFetchQuery - pagesSafe async iterator yields underlying 
 
 	it("Should yield a failure with the underlying invalidUrl error", () => {
 		expect(collected[0]?.success).toBe(false);
-		expect(collected[0]?.error?.details.reason).toBe("invalidUrl");
+		expect(collected[0]?.error?.details.reason).toBe("invalidUrl" satisfies ErrorReason);
 	});
 });
 
@@ -419,7 +419,7 @@ describe("transformPagedFetchQuery - pagesSafe async iterator yields transform f
 
 	it("Should yield a failure with transformError reason", () => {
 		expect(collected[0]?.success).toBe(false);
-		expect(collected[0]?.error?.details.reason).toBe("transformError");
+		expect(collected[0]?.error?.details.reason).toBe("transformError" satisfies ErrorReason);
 	});
 });
 
@@ -459,7 +459,7 @@ describe("transformPagedFetchQuery - runtime validation fails when transformed p
 	});
 
 	it("Should return error with parsingFailed reason", () => {
-		expect(error?.details.reason).toBe("parsingFailed");
+		expect(error?.details.reason).toBe("parsingFailed" satisfies ErrorReason);
 	});
 });
 

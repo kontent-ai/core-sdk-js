@@ -10,6 +10,15 @@
 - Prefer `map`, `filter`, `reduce`, and other higher-order functions over imperative loops
 - Prefer early returns over nested conditionals
 
+## No Magic Strings
+
+- Do not use magic strings unless absolutely necessary (e.g. a one-off literal with no meaning outside its single use)
+- Values that carry meaning (header names, URLs, keys, error codes, config values) must live in a properly named `const` and be referenced through it
+- When a string refers to another type or property (property names, method names, union members), narrow it with `satisfies` so it is checked against the source type and breaks at compile time when that type changes:
+  - `vi.spyOn(httpService, "request" satisfies keyof HttpService)`
+  - `header.name !== ("X-KC-SDKID" satisfies KnownHeaderName)`
+- Never use `as` to type such a string; it widens the type and skips the check
+
 ## Libraries
 
 - Use **ts-pattern** for non-trivial `switch`/`if-else` chains — anything beyond a simple 2-branch condition should use `match()` from `ts-pattern`

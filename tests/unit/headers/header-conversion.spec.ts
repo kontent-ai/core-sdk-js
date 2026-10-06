@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
-import type { Header } from "../../../lib/models/core.models.js";
+import type { Header, KnownHeaderName } from "../../../lib/models/core.models.js";
 import { toFetchHeaders, toSdkHeaders } from "../../../lib/utils/header.utils.js";
 
 describe("toSdkHeaders", () => {
 	it("Should convert single header to single Header object", () => {
-		const headers = new Headers([["Content-Type", "application/json"]]);
+		const headers = new Headers([["Content-Type" satisfies KnownHeaderName, "application/json"]]);
 		expect(toSdkHeaders(headers)).toStrictEqual([
 			{
 				name: "content-type",
@@ -15,9 +15,9 @@ describe("toSdkHeaders", () => {
 
 	it("Should convert multiple headers to Header array", () => {
 		const headers = new Headers([
-			["Content-Type", "application/json"],
-			["X-KC-SDKID", "host;name;1.0.0"],
-			["Retry-After", "5"],
+			["Content-Type" satisfies KnownHeaderName, "application/json"],
+			["X-KC-SDKID" satisfies KnownHeaderName, "host;name;1.0.0"],
+			["Retry-After" satisfies KnownHeaderName, "5"],
 		]);
 		const result = toSdkHeaders(headers);
 		expect(result).toHaveLength(3);
@@ -34,16 +34,16 @@ describe("toSdkHeaders", () => {
 
 describe("toFetchHeaders", () => {
 	it("Should convert single Header to Headers with one entry", () => {
-		const headers: readonly Header[] = [{ name: "Content-Type", value: "application/json" }];
+		const headers: readonly Header[] = [{ name: "Content-Type" satisfies KnownHeaderName, value: "application/json" }];
 		const result = toFetchHeaders(headers);
 		expect(toSdkHeaders(result)).toStrictEqual([{ name: "content-type", value: "application/json" }]);
 	});
 
 	it("Should convert multiple Headers to Headers", () => {
 		const headers: readonly Header[] = [
-			{ name: "Content-Type", value: "application/json" },
-			{ name: "X-KC-SDKID", value: "host;name;1.0.0" },
-			{ name: "Retry-After", value: "5" },
+			{ name: "Content-Type" satisfies KnownHeaderName, value: "application/json" },
+			{ name: "X-KC-SDKID" satisfies KnownHeaderName, value: "host;name;1.0.0" },
+			{ name: "Retry-After" satisfies KnownHeaderName, value: "5" },
 		];
 		const result = toFetchHeaders(headers);
 		const back = toSdkHeaders(result);

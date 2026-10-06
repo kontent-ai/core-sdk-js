@@ -3,7 +3,7 @@ import path from "node:path";
 import { loadEnvFile } from "node:process";
 import { fileURLToPath } from "node:url";
 import { getEnvironmentRequiredValue } from "../lib/devkit_api.js";
-import type { Header } from "../lib/models/core.models.js";
+import type { Header, KnownHeaderName } from "../lib/models/core.models.js";
 
 export function getIntegrationTestConfig() {
 	loadEnvironmentVariables();
@@ -20,7 +20,7 @@ export function getIntegrationTestConfig() {
 		getMapiAuthorizationHeaders: (): readonly Header[] => {
 			return [
 				{
-					name: "Authorization",
+					name: "Authorization" satisfies KnownHeaderName,
 					value: `Bearer ${integrationEnv.apiKey}`,
 				},
 			];

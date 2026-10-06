@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import * as z from "zod";
-import type { KontentSdkError } from "../../../../lib/models/error.models.js";
+import type { ErrorReason, KontentSdkError } from "../../../../lib/models/error.models.js";
 import { createMutationQuery } from "../../../../lib/sdk/queries/mutation-sdk-query.js";
 import type { MutationQuery } from "../../../../lib/sdk/sdk-models.js";
 import { transformMutationQuery } from "../../../../lib/sdk/transform/transform-mutation-query.js";
@@ -88,7 +88,7 @@ describe("transformMutationQuery - execute throws when transform throws", async 
 	});
 
 	it("Should throw error with transformError reason", () => {
-		expect(error).toMatchObject({ details: { reason: "transformError" } });
+		expect(error).toMatchObject({ details: { reason: "transformError" satisfies ErrorReason } });
 	});
 });
 
@@ -110,7 +110,7 @@ describe("transformMutationQuery - executeSafe returns failure when transform th
 	});
 
 	it("Should return error with transformError reason", () => {
-		expect(error?.details.reason).toBe("transformError");
+		expect(error?.details.reason).toBe("transformError" satisfies ErrorReason);
 	});
 });
 
@@ -130,7 +130,7 @@ describe("transformMutationQuery - executeSafe propagates underlying query failu
 	});
 
 	it("Should return the underlying invalidUrl error", () => {
-		expect(error?.details.reason).toBe("invalidUrl");
+		expect(error?.details.reason).toBe("invalidUrl" satisfies ErrorReason);
 	});
 });
 
@@ -170,6 +170,6 @@ describe("transformMutationQuery - runtime validation fails when transformed pay
 	});
 
 	it("Should return error with parsingFailed reason", () => {
-		expect(error?.details.reason).toBe("parsingFailed");
+		expect(error?.details.reason).toBe("parsingFailed" satisfies ErrorReason);
 	});
 });

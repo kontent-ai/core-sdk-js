@@ -1,10 +1,11 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import * as z from "zod";
+import type { HttpService } from "../../../lib/http/http.models.js";
+import type { KnownHeaderName } from "../../../lib/models/core.models.js";
 import type { ErrorReason } from "../../../lib/models/error.models.js";
 import { resolveQuery } from "../../../lib/sdk/resolve-query.js";
 import { getTestHttpServiceWithJsonResponse, getTestSdkInfo } from "../../../lib/testkit/testkit.utils.js";
 import { createAuthorizationHeader } from "../../../lib/utils/header.utils.js";
-import { HttpService } from "../../../lib/http/http.models.js";
 
 describe("resolveQuery - invalid baseUrl host", async () => {
 	const { error } = await resolveQuery({
@@ -126,7 +127,7 @@ describe("resolveQuery - custom httpService from config is used", async () => {
 describe("resolveQuery - authorization header is applied", async () => {
 	const apiKey = "my-api-key";
 	const httpService = getTestHttpServiceWithJsonResponse({ statusCode: 200, jsonResponse: null });
-	const requestSpy = vi.spyOn(httpService,  "request" satisfies keyof HttpService);
+	const requestSpy = vi.spyOn(httpService, "request" satisfies keyof HttpService);
 
 	await resolveQuery({
 		method: "GET",
@@ -153,13 +154,13 @@ describe("resolveQuery - default httpService is used when none provided in confi
 	});
 
 	it("Should use the default httpService and succeed", async () => {
-		vi.spyOn(globalThis, "fetch").mockResolvedValueOnce({
+		vi.spyOn(globalThis, "fetch" satisfies keyof typeof globalThis).mockResolvedValueOnce({
 			...({} as Response),
-      ok: true,
+			ok: true,
 			clone: () => ({}) as Response,
 			status: 200,
 			statusText: "OK",
-			headers: new Headers({ "Content-Type": "application/json" }),
+			headers: new Headers({ ["Content-Type" satisfies KnownHeaderName]: "application/json" }),
 			json: async () => await Promise.resolve(null),
 		});
 

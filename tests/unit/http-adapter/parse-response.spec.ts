@@ -1,5 +1,6 @@
 import { afterAll, describe, expect, it, vi } from "vitest";
 import { getDefaultHttpAdapter } from "../../../lib/http/http.adapter.js";
+import type { KnownHeaderName } from "../../../lib/models/core.models.js";
 import { AdapterAbortError, AdapterParseError } from "../../../lib/models/error.models.js";
 
 describe("Handling parse errors in default http adapter", () => {
@@ -8,12 +9,12 @@ describe("Handling parse errors in default http adapter", () => {
 	});
 
 	it("Should succeed when requestHeaders is not provided", async () => {
-		vi.spyOn(globalThis, "fetch").mockResolvedValueOnce({
+		vi.spyOn(globalThis, "fetch" satisfies keyof typeof globalThis).mockResolvedValueOnce({
 			...({} as Response),
 			ok: true,
 			status: 200,
 			statusText: "OK",
-			headers: new Headers({ "Content-Type": "application/json" }),
+			headers: new Headers({ ["Content-Type" satisfies KnownHeaderName]: "application/json" }),
 			json: async () => await Promise.resolve(null),
 		});
 
@@ -30,12 +31,12 @@ describe("Handling parse errors in default http adapter", () => {
 		const abortController = new AbortController();
 		abortController.abort();
 
-		vi.spyOn(globalThis, "fetch").mockResolvedValueOnce({
+		vi.spyOn(globalThis, "fetch" satisfies keyof typeof globalThis).mockResolvedValueOnce({
 			...({} as Response),
 			ok: true,
 			status: 200,
 			statusText: "OK",
-			headers: new Headers({ "Content-Type": "application/json" }),
+			headers: new Headers({ ["Content-Type" satisfies KnownHeaderName]: "application/json" }),
 			json: async () => await new Promise(() => {}),
 		});
 
@@ -54,12 +55,12 @@ describe("Handling parse errors in default http adapter", () => {
 		const abortController = new AbortController();
 		const payload = { value: "test" };
 
-		vi.spyOn(globalThis, "fetch").mockResolvedValueOnce({
+		vi.spyOn(globalThis, "fetch" satisfies keyof typeof globalThis).mockResolvedValueOnce({
 			...({} as Response),
 			ok: true,
 			status: 200,
 			statusText: "OK",
-			headers: new Headers({ "Content-Type": "application/json" }),
+			headers: new Headers({ ["Content-Type" satisfies KnownHeaderName]: "application/json" }),
 			json: async () => await Promise.resolve(payload),
 		});
 
@@ -75,12 +76,12 @@ describe("Handling parse errors in default http adapter", () => {
 	});
 
 	it("Should throw AdapterParseError when response.json() throws", async () => {
-		vi.spyOn(globalThis, "fetch").mockResolvedValueOnce({
+		vi.spyOn(globalThis, "fetch" satisfies keyof typeof globalThis).mockResolvedValueOnce({
 			...({} as Response),
 			ok: true,
 			status: 200,
 			statusText: "OK",
-			headers: new Headers({ "Content-Type": "application/json" }),
+			headers: new Headers({ ["Content-Type" satisfies KnownHeaderName]: "application/json" }),
 			json: async () => await Promise.reject(new Error("Unexpected token in JSON")),
 		});
 

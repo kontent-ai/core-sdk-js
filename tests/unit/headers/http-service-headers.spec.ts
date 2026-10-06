@@ -119,7 +119,7 @@ describe("Duplicate header names across config and option headers", async () => 
 		vi.resetAllMocks();
 	});
 
-	const headerName = "Authorization";
+	const headerName = "Authorization" satisfies KnownHeaderName;
 	const configValue = "Bearer config-token";
 	const optionValue = "Bearer option-token";
 
@@ -151,7 +151,7 @@ describe("Content-Type header handling", async () => {
 	});
 
 	const contentTypeHeader: Header = {
-		name: "Content-Type",
+		name: "Content-Type" satisfies KnownHeaderName,
 		value: "application/json",
 	};
 

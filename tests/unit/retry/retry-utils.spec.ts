@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { HttpResponse } from "../../../lib/http/http.models.js";
 import { getDefaultHttpService } from "../../../lib/http/http.service.js";
-import type { RetryStrategyOptions } from "../../../lib/models/core.models.js";
+import type { KnownHeaderName, RetryStrategyOptions } from "../../../lib/models/core.models.js";
 import { createSdkError } from "../../../lib/utils/error.utils.js";
 import { resolveDefaultRetryStrategyOptions, runWithRetry, waitBeforeNextRetry } from "../../../lib/utils/retry.utils.js";
 
@@ -58,7 +58,7 @@ describe("resolveDefaultRetryStrategyOptions - logRetryAttempt: 'logToConsole'",
 	});
 
 	it("Should call console.warn with the formatted message when invoked", () => {
-		const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+		const warnSpy = vi.spyOn(console, "warn" satisfies keyof Console).mockImplementation(() => {});
 		const resolved = resolveDefaultRetryStrategyOptions({ maxRetries: 5, logRetryAttempt: "logToConsole" });
 
 		resolved.logRetryAttempt?.(2, "https://domain.com", 1000);
@@ -70,7 +70,7 @@ describe("resolveDefaultRetryStrategyOptions - logRetryAttempt: 'logToConsole'",
 	});
 
 	it("Should not call console.warn when logRetryAttempt is not invoked", () => {
-		const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+		const warnSpy = vi.spyOn(console, "warn" satisfies keyof Console).mockImplementation(() => {});
 		resolveDefaultRetryStrategyOptions({ logRetryAttempt: "logToConsole" });
 
 		expect(warnSpy).not.toHaveBeenCalled();
@@ -87,7 +87,7 @@ describe("getDelayBetweenRetriesMs - Retry-After header present", () => {
 				reason: "invalidResponse",
 				status: 429,
 				statusText: "Too Many Requests",
-				responseHeaders: [{ name: "Retry-After", value: "3" }],
+				responseHeaders: [{ name: "Retry-After" satisfies KnownHeaderName, value: "3" }],
 				kontentErrorResponse: undefined,
 				adapterResponse: undefined,
 			},
@@ -122,7 +122,7 @@ describe("getDelayBetweenRetriesMs - maxRetryDelayMs clamp", () => {
 				reason: "invalidResponse",
 				status: 429,
 				statusText: "Too Many Requests",
-				responseHeaders: [{ name: "Retry-After", value: "60" }],
+				responseHeaders: [{ name: "Retry-After" satisfies KnownHeaderName, value: "60" }],
 				kontentErrorResponse: undefined,
 				adapterResponse: undefined,
 			},
@@ -139,7 +139,7 @@ describe("getDelayBetweenRetriesMs - maxRetryDelayMs clamp", () => {
 				reason: "invalidResponse",
 				status: 429,
 				statusText: "Too Many Requests",
-				responseHeaders: [{ name: "Retry-After", value: "3" }],
+				responseHeaders: [{ name: "Retry-After" satisfies KnownHeaderName, value: "3" }],
 				kontentErrorResponse: undefined,
 				adapterResponse: undefined,
 			},
