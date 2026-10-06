@@ -68,19 +68,19 @@ export type HttpService = {
 	/**
 	 * Executes request with the given method and body.
 	 */
-	request<TPayload extends JsonValue, TBody extends HttpRequestBody>(
+	readonly request: <TPayload extends JsonValue, TBody extends HttpRequestBody>(
 		opts: HttpServiceRequestOptions<TBody>,
-	): Promise<HttpResponse<TPayload, TBody>>;
+	) => Promise<HttpResponse<TPayload, TBody>>;
 
 	/**
 	 * Downloads a file from the given URL as a blob.
 	 */
-	downloadFile(opts: DownloadFileRequestOptions): Promise<HttpResponse<Blob, null>>;
+	readonly downloadFile: (opts: DownloadFileRequestOptions) => Promise<HttpResponse<Blob, null>>;
 
 	/**
 	 * This method is used to upload a kontent.ai binary file.
 	 */
-	uploadFile<TPayload extends JsonValue>(opts: UploadFileRequestOptions): Promise<HttpResponse<TPayload, Blob>>;
+	readonly uploadFile: <TPayload extends JsonValue>(opts: UploadFileRequestOptions) => Promise<HttpResponse<TPayload, Blob>>;
 };
 
 export type AdapterResponse<TPayload extends AdapterPayload> = {
