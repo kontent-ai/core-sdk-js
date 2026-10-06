@@ -1,6 +1,5 @@
 import * as z from "zod";
 import type { AdapterPayload, AdapterResponse } from "../http/http.models.js";
-import { toFriendlyKontentSdkErrorMessage } from "../utils/error.utils.js";
 import type { ResolvedRetryStrategyOptions } from "./core.models.js";
 import type { JsonValue } from "./json.models.js";
 
@@ -82,7 +81,7 @@ export class KontentSdkError<TDetails extends ErrorDetails = ErrorDetails> exten
 		readonly baseErrorData: BaseErrorData;
 		readonly details: TDetails;
 	}) {
-		super(toFriendlyKontentSdkErrorMessage(message, details));
+		super(message);
 
 		this.url = url;
 		this.retryStrategyOptions = retryStrategyOptions;

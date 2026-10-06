@@ -2,14 +2,12 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import type { AdapterResponse } from "../../../lib/http/http.models.js";
 import { getDefaultHttpService } from "../../../lib/http/http.service.js";
 import type { ErrorReason, ErrorResponseData } from "../../../lib/models/error.models.js";
-import type { ErrorDetails } from "../../../lib/public_api.js";
 import { mockGlobalFetchJsonResponse } from "../../../lib/testkit/testkit.utils.js";
 import {
 	createSdkError,
 	isFetchAbortError,
 	isKontent404Error,
 	isKontentErrorResponseData,
-	toFriendlyKontentSdkErrorMessage,
 	toInvalidResponseMessage,
 } from "../../../lib/utils/error.utils.js";
 
@@ -130,20 +128,7 @@ describe("isKontentErrorResponseData", () => {
 	});
 });
 
-const baseMessage = "Base error message.";
-
-const kontentErrorResponse = {
-	message: "API error detail.",
-	request_id: "abc-123",
-	error_code: 100,
-} as const;
-
-const responseErrorBase = {
-	status: 404 as const,
-	statusText: "Not Found",
-	responseHeaders: [],
-	adapterResponse: undefined,
-} as const;
+const testUrl = new URL("https://domain.com");
 
 describe("Invalid response error - adapterResponse attachment", () => {
 	afterEach(() => {
@@ -181,25 +166,34 @@ describe("Invalid response error - adapterResponse attachment", () => {
 	});
 });
 
-describe("toFriendlyKontentSdkErrorMessage", () => {
-	it("Should append kontentErrorResponse message for 'invalidResponse' with non-null kontentErrorResponse", () => {
-		const error: ErrorDetails = {
-			reason: "invalidResponse",
-			kontentErrorResponse,
-			...responseErrorBase,
-		};
-
-		expect(toFriendlyKontentSdkErrorMessage(baseMessage, error)).toStrictEqual(`${baseMessage} ${kontentErrorResponse.message}`);
+describe("Invalid response error - message", () => {
+	afterEach(() => {
+		vi.resetAllMocks();
 	});
 
-	it("Should return base message for 'invalidResponse' when kontentErrorResponse is undefined", () => {
-		const error: ErrorDetails = {
-			reason: "invalidResponse",
-			kontentErrorResponse: undefined,
-			...responseErrorBase,
-		};
+	it.each([
+		{ statusCode: 404, reason: "notFound" },
+		{ statusCode: 401, reason: "unauthorized" },
+		{ statusCode: 400, reason: "invalidResponse" },
+	] as const)("Should include the Kontent API message exactly once for status $statusCode", async ({ statusCode, reason }) => {
+		const jsonResponse = { message: "API error detail.", request_id: "abc-123", error_code: 100 } satisfies ErrorResponseData;
+		mockGlobalFetchJsonResponse({ jsonResponse, statusCode });
 
-		expect(toFriendlyKontentSdkErrorMessage(baseMessage, error)).toStrictEqual(baseMessage);
+		const { error } = await getDefaultHttpService().request({ url: testUrl, method: "GET" });
+
+		if (error?.details.reason !== (reason satisfies ErrorReason) || !error.details.adapterResponse) {
+			throw new Error(`Expected error reason to be '${reason}' with an adapter response`);
+		}
+
+		expect(error.message).toStrictEqual(
+			toInvalidResponseMessage({
+				method: "GET",
+				url: testUrl,
+				adapterResponse: error.details.adapterResponse,
+				kontentErrorData: error.details.kontentErrorResponse,
+			}),
+		);
+		expect(error.message.split(jsonResponse.message)).toHaveLength(2);
 	});
 });
 
@@ -210,8 +204,6 @@ const adapterResponse: AdapterResponse<null> = {
 	url: new URL("https://domain.com"),
 	payload: null,
 };
-
-const testUrl = new URL("https://domain.com");
 
 describe("toInvalidResponseMessage", () => {
 	it("Should return base message when no kontentErrorResponse is provided", () => {

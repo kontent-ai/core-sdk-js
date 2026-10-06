@@ -1,4 +1,3 @@
-import { match, P } from "ts-pattern";
 import type { AdapterPayload, AdapterResponse } from "../http/http.models.js";
 import type { HttpMethod } from "../models/core.models.js";
 import {
@@ -76,16 +75,6 @@ export function isFetchAbortError(error: unknown): boolean {
 		return false;
 	}
 	return "name" in error && error.name === "AbortError";
-}
-
-export function toFriendlyKontentSdkErrorMessage(message: string, error: ErrorDetails): string {
-	return match(error)
-		.returnType<string>()
-		.with(
-			{ reason: P.union("invalidResponse", "notFound"), kontentErrorResponse: P.nonNullable },
-			(m) => `${message} ${m.kontentErrorResponse.message}`,
-		)
-		.otherwise(() => message);
 }
 
 function getValidationErrorMessage(validationErrors?: readonly ValidationError[]): string | undefined {
