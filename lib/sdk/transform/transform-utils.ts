@@ -1,10 +1,10 @@
 import type { KontentSdkError } from "../../models/error.models.js";
 import type { JsonValue } from "../../models/json.models.js";
 import { createSdkError } from "../../utils/error.utils.js";
-import { resolveSchema, type SchemaInput } from "../../utils/schema.utils.js";
+import type { SchemaInput } from "../../utils/schema.utils.js";
 import { type TryCatchResult, tryCatch } from "../../utils/try-catch.utils.js";
 import type { QueryResponse, SafeQueryResult, SdkConfig } from "../sdk-models.js";
-import { parseResponse } from "../sdk-utils.js";
+import { validatePayloads } from "../sdk-utils.js";
 
 type TransformResponseFn<TPayload extends JsonValue, TTransformedPayload extends TPayload, TError, TMeta, TExtra> = (
 	response: QueryResponse<TPayload, TMeta, TExtra>,
@@ -47,19 +47,13 @@ export function createTransformResponse<TPayload extends JsonValue, TTransformed
 			return { success: false, error: mapError(createTransformError(error, response.meta.url)) };
 		}
 
-		if (config.runtimeValidation?.validateResponses) {
-			const schema = await resolveSchema(transformSchema);
-			if (schema) {
-				const validationError = await parseResponse({
-					url: transformedResponse.meta.url,
-					payload: transformedResponse.payload,
-					schema,
-				});
-
-				if (validationError) {
-					return { success: false, error: mapError(validationError.error) };
-				}
-			}
+		const validationError = await validatePayloads({
+			runtimeValidation: config.runtimeValidation,
+			schema: transformSchema,
+			payloads: [{ url: transformedResponse.meta.url, payload: transformedResponse.payload }],
+		});
+		if (validationError) {
+			return { success: false, error: mapError(validationError) };
 		}
 
 		return { success: true, data: transformedResponse };
@@ -91,21 +85,16 @@ export function createBatchTransformResponses<TPayload extends JsonValue, TTrans
 			return { success: false, error: mapError(createTransformError(error, firstResponse.meta.url)) };
 		}
 
-		if (config.runtimeValidation?.validateResponses) {
-			const schema = await resolveSchema(transformSchema);
-			if (schema) {
-				for (const transformedResponse of transformedResponses) {
-					const validationError = await parseResponse({
-						url: transformedResponse.meta.url,
-						payload: transformedResponse.payload,
-						schema,
-					});
-
-					if (validationError) {
-						return { success: false, error: mapError(validationError.error) };
-					}
-				}
-			}
+		const validationError = await validatePayloads({
+			runtimeValidation: config.runtimeValidation,
+			schema: transformSchema,
+			payloads: transformedResponses.map((transformedResponse) => ({
+				url: transformedResponse.meta.url,
+				payload: transformedResponse.payload,
+			})),
+		});
+		if (validationError) {
+			return { success: false, error: mapError(validationError) };
 		}
 
 		return { success: true, data: transformedResponses };

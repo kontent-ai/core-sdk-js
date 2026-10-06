@@ -1,8 +1,9 @@
-import { describe, expect, it } from "vitest";
-import * as zMini from "zod/mini";
+import { describe, expect, it, vi } from "vitest";
+import * as zMini from "zod";
+import type { ErrorReason } from "../../../lib/models/error.models.js";
 import type { JsonValue } from "../../../lib/public_api.js";
 import type { PagedFetchQuery } from "../../../lib/sdk/sdk-models.js";
-import { isPagingQuery, parseResponse } from "../../../lib/sdk/sdk-utils.js";
+import { isPagingQuery, parseResponse, validatePayloads } from "../../../lib/sdk/sdk-utils.js";
 
 describe("isPagingQuery", () => {
 	it("Should return true for object with paging query shape", () => {
@@ -105,5 +106,56 @@ describe("parseResponse", () => {
 		});
 
 		expect(result?.success).toBe(false);
+	});
+});
+
+describe("validatePayloads", () => {
+	// names shorter than 5 characters are type-correct but fail the schema at runtime
+	const nameSchema = zMini.readonly(zMini.object({ name: zMini.string().check(zMini.minLength(5)) }));
+	const validPayload = { url: new URL("https://example.com/0"), payload: { name: "valid" } };
+	const invalidPayloadA = { url: new URL("https://example.com/1"), payload: { name: "a" } };
+	const invalidPayloadB = { url: new URL("https://example.com/2"), payload: { name: "b" } };
+
+	it.each([{ runtimeValidation: undefined }, { runtimeValidation: { validateResponses: false } }])(
+		"Should skip validation without resolving the schema when validation is disabled ($runtimeValidation)",
+		async ({ runtimeValidation }) => {
+			const schemaFactory = vi.fn(async () => await Promise.resolve(nameSchema));
+
+			const result = await validatePayloads({ runtimeValidation, schema: schemaFactory, payloads: [invalidPayloadA] });
+
+			expect(result).toBeUndefined();
+			expect(schemaFactory).not.toHaveBeenCalled();
+		},
+	);
+
+	it("Should skip validation when no schema is provided", async () => {
+		const result = await validatePayloads({
+			runtimeValidation: { validateResponses: true },
+			schema: undefined,
+			payloads: [invalidPayloadA],
+		});
+
+		expect(result).toBeUndefined();
+	});
+
+	it("Should return undefined when all payloads match the schema", async () => {
+		const result = await validatePayloads({
+			runtimeValidation: { validateResponses: true },
+			schema: nameSchema,
+			payloads: [validPayload],
+		});
+
+		expect(result).toBeUndefined();
+	});
+
+	it("Should return the error of the first mismatching payload in input order", async () => {
+		const result = await validatePayloads({
+			runtimeValidation: { validateResponses: true },
+			schema: nameSchema,
+			payloads: [validPayload, invalidPayloadA, invalidPayloadB],
+		});
+
+		expect(result?.details.reason).toBe("schemaMismatch" satisfies ErrorReason);
+		expect(result?.url).toStrictEqual(invalidPayloadA.url);
 	});
 });

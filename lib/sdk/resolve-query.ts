@@ -11,7 +11,6 @@ import {
 	extractContinuationToken,
 	isSameHeaderName,
 } from "../utils/header.utils.js";
-import { resolveSchema } from "../utils/schema.utils.js";
 import { type TryCatchResult, tryCatch } from "../utils/try-catch.utils.js";
 import type {
 	BaseUrl,
@@ -22,7 +21,7 @@ import type {
 	SafeQueryResult,
 	SdkConfig,
 } from "./sdk-models.js";
-import { parseResponse } from "./sdk-utils.js";
+import { validatePayloads } from "./sdk-utils.js";
 
 export function inspectQuery<TError>(
 	data: Pick<
@@ -114,19 +113,13 @@ async function executeQuery<TPayload extends JsonValue, TBody extends HttpReques
 		return { success: false, error: mapError(error) };
 	}
 
-	if (responseValidation?.validateResponses) {
-		const resolvedSchema = await resolveSchema(schema);
-		if (resolvedSchema) {
-			const validationError = await parseResponse({
-				url: response.adapterResponse.url,
-				payload: response.payload,
-				schema: resolvedSchema,
-			});
-
-			if (validationError) {
-				return { success: false, error: mapError(validationError.error) };
-			}
-		}
+	const validationError = await validatePayloads({
+		runtimeValidation: responseValidation,
+		schema,
+		payloads: [{ url: response.adapterResponse.url, payload: response.payload }],
+	});
+	if (validationError) {
+		return { success: false, error: mapError(validationError) };
 	}
 
 	const continuationTokenFromResponse = extractContinuationToken(response.adapterResponse.responseHeaders);

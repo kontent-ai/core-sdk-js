@@ -1,9 +1,11 @@
 import { type $ZodType, safeParseAsync } from "zod/v4/core";
 import type { KontentSdkError } from "../models/error.models.js";
 import type { JsonValue } from "../models/json.models.js";
+import { isDefined } from "../utils/core.utils.js";
 import { createSdkError } from "../utils/error.utils.js";
+import { resolveSchema, type SchemaInput } from "../utils/schema.utils.js";
 import type { Failure } from "../utils/try-catch.utils.js";
-import type { PagedFetchQuery, Query } from "./sdk-models.js";
+import type { PagedFetchQuery, Query, SdkConfig } from "./sdk-models.js";
 
 /**
  * Checks if a query is a paging query.
@@ -53,4 +55,33 @@ export async function parseResponse<TPayload extends JsonValue>({
 	}
 
 	return undefined;
+}
+
+/**
+ * Validates payloads against the schema when runtime response validation is enabled.
+ * Returns the error for the first payload (in input order) that does not match the schema, or `undefined`
+ * when validation is disabled, no schema is provided, or all payloads match.
+ */
+export async function validatePayloads<TPayload extends JsonValue>({
+	runtimeValidation,
+	schema,
+	payloads,
+}: {
+	readonly runtimeValidation: SdkConfig["runtimeValidation"];
+	readonly schema: SchemaInput<TPayload>;
+	readonly payloads: readonly { readonly url: URL; readonly payload: TPayload }[];
+}): Promise<KontentSdkError | undefined> {
+	if (!runtimeValidation?.validateResponses) {
+		return undefined;
+	}
+
+	const resolvedSchema = await resolveSchema(schema);
+	if (!resolvedSchema) {
+		return undefined;
+	}
+
+	const results = await Promise.all(
+		payloads.map(async ({ url, payload }) => await parseResponse({ url, payload, schema: resolvedSchema })),
+	);
+	return results.find(isDefined)?.error;
 }
