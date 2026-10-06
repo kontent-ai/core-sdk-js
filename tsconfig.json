@@ -29,6 +29,7 @@
 		"noFallthroughCasesInSwitch": true,
 		"useUnknownInCatchVariables": true,
 		"skipLibCheck": true,
+		"verbatimModuleSyntax": true,
 
 		// Types
 		"types": ["node"]
