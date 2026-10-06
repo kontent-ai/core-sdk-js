@@ -2,7 +2,6 @@ import { match, P } from "ts-pattern";
 import type { AdapterPayload, HttpRequestBody, HttpResponse } from "../http/http.models.js";
 import type { ResolvedRetryStrategyOptions, RetryStrategyOptions } from "../models/core.models.js";
 import type { ErrorDetailsFor, KontentSdkError } from "../models/error.models.js";
-import { runWithAbortSignal } from "./abort.utils.js";
 import { sleep } from "./core.utils.js";
 import { createSdkError } from "./error.utils.js";
 import { getRetryAfterHeaderValue } from "./header.utils.js";
@@ -98,19 +97,9 @@ export async function waitBeforeNextRetry({
 	readonly retryInMs: number;
 	readonly abortSignal?: AbortSignal | undefined;
 }): Promise<WaitResult> {
-	if (abortSignal) {
-		return await waitBeforeNextRetryWithAbortSignal({ retryInMs, abortSignal });
-	}
-
-	if (retryInMs <= 0) {
-		return {
-			isAborted: false,
-		};
-	}
-
-	await sleep(retryInMs);
+	await sleep(retryInMs, abortSignal);
 	return {
-		isAborted: false,
+		isAborted: abortSignal?.aborted ?? false,
 	};
 }
 
@@ -131,21 +120,6 @@ function createAbortError({
 			retryAttempt,
 		},
 		details: { reason: "aborted", originalError: undefined },
-	});
-}
-
-async function waitBeforeNextRetryWithAbortSignal({
-	retryInMs,
-	abortSignal,
-}: {
-	readonly retryInMs: number;
-	readonly abortSignal: AbortSignal;
-}): Promise<WaitResult> {
-	return await runWithAbortSignal<void>({
-		func: async () => {
-			return await sleep(retryInMs);
-		},
-		abortSignal,
 	});
 }
 

@@ -33,6 +33,22 @@ describe("runWithAbortSignal - aborted", async () => {
 	});
 });
 
+describe("runWithAbortSignal - aborted while func is running", async () => {
+	const abortController = new AbortController();
+
+	const resultPromise = runWithAbortSignal({
+		// never settles, so only the abort can resolve the result
+		func: async () => await new Promise<never>(() => {}),
+		abortSignal: abortController.signal,
+	});
+	abortController.abort();
+	const result = await resultPromise;
+
+	it("Result should be aborted", () => {
+		expect(result.isAborted).toBe(true);
+	});
+});
+
 describe("runWithAbortSignal - func returns a rejected promise", async () => {
 	const abortController = new AbortController();
 	const expectedError = new Error("async func error");

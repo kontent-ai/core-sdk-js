@@ -237,6 +237,24 @@ describe("waitBeforeNextRetry - no abort signal", () => {
 	});
 });
 
+describe("waitBeforeNextRetry - abort clears the pending timer", () => {
+	afterEach(() => {
+		vi.useRealTimers();
+	});
+
+	it("Should not leave a pending timer after the wait is aborted", async () => {
+		vi.useFakeTimers();
+		const abortController = new AbortController();
+
+		const waitPromise = waitBeforeNextRetry({ retryInMs: 60_000, abortSignal: abortController.signal });
+		abortController.abort();
+		const { isAborted } = await waitPromise;
+
+		expect(isAborted).toBe(true);
+		expect(vi.getTimerCount()).toBe(0);
+	});
+});
+
 type TestCase = RetryStrategyOptions & {
 	readonly title: string;
 	readonly expectedRetries: number;
