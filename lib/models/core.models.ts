@@ -52,13 +52,16 @@ export type RetryStrategyOptions = {
 	 * - Retried automatically:
 	 *   - HTTP 429 (rate limit exceeded)
 	 *
-	 * - Not retried automatically:
-	 *   - Invalid request body (`invalidBody`)
-	 *   - Invalid URL (`invalidUrl`)
-	 *   - 404 Not Found (`notFound`)
-	 *   - 401 Unauthorized (`unauthorized`)
+	 * - Never retried:
+	 *   - Any other non-2xx HTTP response, including 5xx and 408 (`invalidResponse`), 404 Not Found (`notFound`)
+	 *     and 401 Unauthorized (`unauthorized`). HTTP error responses are not adapter errors, so this callback
+	 *     is not consulted for them.
 	 *   - API business/validation error response (`kontentErrorResponse`)
+	 *   - Invalid request body (`invalidBody`) and invalid URL (`invalidUrl`)
+	 *   - Unreadable response body (`invalidResponseBody`), schema mismatch (`schemaMismatch`) and transform errors (`transformError`)
+	 *   - Aborted requests (`aborted`), including requests stopped by `AbortSignal.timeout()`
 	 *
+	 * Retrying transient 5xx responses is intentionally not done by default. To retry them, implement a custom `HttpService`.
 	 */
 	readonly canRetryAdapterError?: (error: KontentSdkError<ErrorDetailsFor<"adapterError">>) => boolean;
 

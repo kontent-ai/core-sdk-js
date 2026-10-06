@@ -146,9 +146,11 @@ console.log(response.payload);
 
 ## Retry Strategy
 
-The default `HttpService` includes configurable retry logic. HTTP 429 (rate limit) responses are always retried automatically with a delay based on the `Retry-After` header. All other HTTP error responses are not retried.
+The default `HttpService` includes configurable retry logic. HTTP 429 (rate limit) responses are always retried automatically with a delay based on the `Retry-After` header. All other HTTP error responses, including 5xx and 408, are intentionally not retried. If you need to retry transient 5xx responses, implement a custom `HttpService`.
 
-For transport-level failures (network errors, timeouts), you can control retry behavior via `canRetryAdapterError`:
+Requests cancelled through an `AbortSignal` (including `AbortSignal.timeout()`) are reported with the `aborted` reason and are never retried.
+
+For transport-level failures (network errors, connection timeouts), you can control retry behavior via `canRetryAdapterError`:
 
 ```typescript
 const httpService = getDefaultHttpService({
