@@ -7,11 +7,23 @@ import { type TryCatchResult, tryCatch } from "../../utils/try-catch.utils.js";
 import type { QueryResponse, SafeQueryResult, SdkConfig } from "../sdk-models.js";
 import { validatePayloads } from "../sdk-utils.js";
 
-type TransformResponseFn<TPayload extends JsonValue, TTransformedPayload extends TPayload, TError, TMeta, TExtra> = (
+type TransformResponseFn<
+	TPayload extends JsonValue,
+	TTransformedPayload extends TPayload,
+	TError extends KontentSdkError,
+	TMeta,
+	TExtra,
+> = (
 	response: QueryResponse<TPayload, TMeta, TExtra>,
 ) => Promise<TryCatchResult<QueryResponse<TTransformedPayload, TMeta, TExtra>, TError>>;
 
-type BatchTransformResponsesFn<TPayload extends JsonValue, TTransformedPayload extends TPayload, TError, TMeta, TExtra> = (
+type BatchTransformResponsesFn<
+	TPayload extends JsonValue,
+	TTransformedPayload extends TPayload,
+	TError extends KontentSdkError,
+	TMeta,
+	TExtra,
+> = (
 	responses: readonly QueryResponse<TPayload, TMeta, TExtra>[],
 ) => Promise<TryCatchResult<readonly QueryResponse<TTransformedPayload, TMeta, TExtra>[], TError>>;
 
@@ -30,7 +42,13 @@ export function createTransformError(error: unknown, url: URL): KontentSdkError 
 	});
 }
 
-export function createTransformResponse<TPayload extends JsonValue, TTransformedPayload extends TPayload, TError, TMeta, TExtra>({
+export function createTransformResponse<
+	TPayload extends JsonValue,
+	TTransformedPayload extends TPayload,
+	TError extends KontentSdkError,
+	TMeta,
+	TExtra,
+>({
 	config,
 	transform,
 	transformSchema,
@@ -61,7 +79,13 @@ export function createTransformResponse<TPayload extends JsonValue, TTransformed
 	};
 }
 
-export function createBatchTransformResponses<TPayload extends JsonValue, TTransformedPayload extends TPayload, TError, TMeta, TExtra>({
+export function createBatchTransformResponses<
+	TPayload extends JsonValue,
+	TTransformedPayload extends TPayload,
+	TError extends KontentSdkError,
+	TMeta,
+	TExtra,
+>({
 	config,
 	transform,
 	transformSchema,
@@ -103,7 +127,13 @@ export function createBatchTransformResponses<TPayload extends JsonValue, TTrans
 	};
 }
 
-export async function applyTransformOrThrow<TPayload extends JsonValue, TTransformedPayload extends TPayload, TError, TMeta, TExtra>(
+export async function applyTransformOrThrow<
+	TPayload extends JsonValue,
+	TTransformedPayload extends TPayload,
+	TError extends KontentSdkError,
+	TMeta,
+	TExtra,
+>(
 	response: QueryResponse<TPayload, TMeta, TExtra>,
 	transformResponse: TransformResponseFn<TPayload, TTransformedPayload, TError, TMeta, TExtra>,
 ): Promise<QueryResponse<TTransformedPayload, TMeta, TExtra>> {
@@ -114,7 +144,13 @@ export async function applyTransformOrThrow<TPayload extends JsonValue, TTransfo
 	return data;
 }
 
-export async function applyTransformSafely<TPayload extends JsonValue, TTransformedPayload extends TPayload, TError, TMeta, TExtra>(
+export async function applyTransformSafely<
+	TPayload extends JsonValue,
+	TTransformedPayload extends TPayload,
+	TError extends KontentSdkError,
+	TMeta,
+	TExtra,
+>(
 	safeResult: SafeQueryResult<QueryResponse<TPayload, TMeta, TExtra>, TError>,
 	transformResponse: TransformResponseFn<TPayload, TTransformedPayload, TError, TMeta, TExtra>,
 ): Promise<SafeQueryResult<QueryResponse<TTransformedPayload, TMeta, TExtra>, TError>> {

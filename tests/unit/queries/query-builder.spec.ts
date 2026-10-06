@@ -71,7 +71,7 @@ describe("Query builder url handling without modifications", () => {
 		url: "https://domain.com/api/path",
 		mapExtraResponseProps: () => ({}),
 	};
-	const queries: Query<unknown>[] = [
+	const queries: Query[] = [
 		createFetchQuery(sharedData),
 		createMutationQuery({
 			...sharedData,
@@ -104,7 +104,7 @@ describe("Query builder url handling with base url", () => {
 		url: "https://domain.com/api/path",
 		mapExtraResponseProps: () => ({}),
 	};
-	const queries: Query<unknown>[] = [
+	const queries: Query[] = [
 		createFetchQuery(sharedData),
 		createMutationQuery({
 			...sharedData,

@@ -24,7 +24,7 @@ import type {
 } from "./sdk-models.js";
 import { validatePayloads } from "./sdk-utils.js";
 
-export function inspectQuery<TError>(
+export function inspectQuery<TError extends KontentSdkError>(
 	data: Pick<
 		QueryInputData<JsonValue, HttpRequestBody, unknown, unknown, TError>,
 		"url" | "config" | "requestHeaders" | "continuationToken" | "authorizationApiKey" | "sdkInfo" | "body" | "method" | "mapError"
@@ -52,9 +52,13 @@ export function inspectQuery<TError>(
 	};
 }
 
-export async function resolveQuery<TPayload extends JsonValue, TBody extends HttpRequestBody, TMeta, TExtra, TError>(
-	data: QueryInputData<TPayload, TBody, TMeta, TExtra, TError>,
-): Promise<SafeQueryResult<QueryResponse<TPayload, TMeta, TExtra>, TError>> {
+export async function resolveQuery<
+	TPayload extends JsonValue,
+	TBody extends HttpRequestBody,
+	TMeta,
+	TExtra,
+	TError extends KontentSdkError,
+>(data: QueryInputData<TPayload, TBody, TMeta, TExtra, TError>): Promise<SafeQueryResult<QueryResponse<TPayload, TMeta, TExtra>, TError>> {
 	const { success, data: resolvedQueryData, error } = prepareQueryData(data);
 	if (!success) {
 		return { success: false, error };
@@ -62,7 +66,7 @@ export async function resolveQuery<TPayload extends JsonValue, TBody extends Htt
 	return await executeQuery(resolvedQueryData);
 }
 
-function prepareQueryData<TPayload extends JsonValue, TBody extends HttpRequestBody, TMeta, TExtra, TError>(
+function prepareQueryData<TPayload extends JsonValue, TBody extends HttpRequestBody, TMeta, TExtra, TError extends KontentSdkError>(
 	data: QueryInputData<TPayload, TBody, TMeta, TExtra, TError>,
 ): TryCatchResult<ResolvedQueryData<TPayload, TBody, TMeta, TExtra, TError>, TError> {
 	const { success: inspectionSuccess, data: inspectionData, error: inspectionError } = inspectQuery(data);
@@ -89,7 +93,7 @@ function prepareQueryData<TPayload extends JsonValue, TBody extends HttpRequestB
 	};
 }
 
-async function executeQuery<TPayload extends JsonValue, TBody extends HttpRequestBody, TMeta, TExtra, TError>({
+async function executeQuery<TPayload extends JsonValue, TBody extends HttpRequestBody, TMeta, TExtra, TError extends KontentSdkError>({
 	url,
 	requestHeaders,
 	httpService,
@@ -157,7 +161,7 @@ function trustQueryResponse<TPayload extends JsonValue, TBody extends HttpReques
 	return response as SuccessfulHttpResponse<TPayload, TBody>;
 }
 
-export function resolveUrl<TError>({
+export function resolveUrl<TError extends KontentSdkError>({
 	url,
 	baseUrl,
 	mapError,

@@ -10,7 +10,7 @@ import type { PagedFetchQuery, Query, SdkConfig } from "./sdk-models.js";
 /**
  * Checks if a query is a paging query.
  */
-export function isPagingQuery<TPayload extends JsonValue, TError, TMeta>(
+export function isPagingQuery<TPayload extends JsonValue, TError extends KontentSdkError, TMeta>(
 	query: Query<TError> | PagedFetchQuery<TPayload, TError, TMeta>,
 ): query is PagedFetchQuery<TPayload, TError, TMeta> {
 	return (
