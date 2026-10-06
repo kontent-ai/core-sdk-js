@@ -1,8 +1,8 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 import type { AdapterResponse } from "../../../lib/http/http.models.js";
 import { getDefaultHttpService } from "../../../lib/http/http.service.js";
 import type { ErrorReason, ErrorResponseData } from "../../../lib/models/error.models.js";
-import { mockGlobalFetchJsonResponse } from "../../../lib/testkit/testkit.utils.js";
+import { stubFetchWithResponse } from "../../../lib/testkit/testkit.utils.js";
 import {
 	createSdkError,
 	isFetchAbortError,
@@ -131,13 +131,9 @@ describe("isKontentErrorResponseData", () => {
 const testUrl = new URL("https://domain.com");
 
 describe("Invalid response error - adapterResponse attachment", () => {
-	afterEach(() => {
-		vi.resetAllMocks();
-	});
-
 	it("Should attach the raw adapterResponse when the error body conforms to the Kontent error schema", async () => {
 		const jsonResponse = { message: "Not found.", request_id: "abc-123", error_code: 100 };
-		mockGlobalFetchJsonResponse({ jsonResponse, statusCode: 404 });
+		stubFetchWithResponse(() => Response.json(jsonResponse, { status: 404 }));
 
 		const { error } = await getDefaultHttpService().request({ url: "https://domain.com", method: "GET" });
 
@@ -152,7 +148,7 @@ describe("Invalid response error - adapterResponse attachment", () => {
 
 	it("Should attach the raw adapterResponse even when the error body does not conform to the Kontent error schema", async () => {
 		const nonConformingPayload = { unexpected: "shape" };
-		mockGlobalFetchJsonResponse({ jsonResponse: nonConformingPayload, statusCode: 500 });
+		stubFetchWithResponse(() => Response.json(nonConformingPayload, { status: 500 }));
 
 		const { error } = await getDefaultHttpService().request({ url: "https://domain.com", method: "GET" });
 
@@ -167,17 +163,13 @@ describe("Invalid response error - adapterResponse attachment", () => {
 });
 
 describe("Invalid response error - message", () => {
-	afterEach(() => {
-		vi.resetAllMocks();
-	});
-
 	it.each([
 		{ statusCode: 404, reason: "notFound" },
 		{ statusCode: 401, reason: "unauthorized" },
 		{ statusCode: 400, reason: "invalidResponse" },
 	] as const)("Should include the Kontent API message exactly once for status $statusCode", async ({ statusCode, reason }) => {
 		const jsonResponse = { message: "API error detail.", request_id: "abc-123", error_code: 100 } satisfies ErrorResponseData;
-		mockGlobalFetchJsonResponse({ jsonResponse, statusCode });
+		stubFetchWithResponse(() => Response.json(jsonResponse, { status: statusCode }));
 
 		const { error } = await getDefaultHttpService().request({ url: testUrl, method: "GET" });
 

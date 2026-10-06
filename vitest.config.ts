@@ -7,6 +7,7 @@ export default defineConfig({
 		globals: true,
 		environment: "node",
 		clearMocks: false,
+		unstubGlobals: true,
 		coverage: {
 			provider: "v8",
 			reporter: ["text"],

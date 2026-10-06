@@ -1,28 +1,16 @@
-import { afterAll, describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 import { getDefaultHttpService } from "../../../../lib/http/http.service.js";
 import { createPagedFetchQuery } from "../../../../lib/sdk/queries/paged-fetch-sdk-query.js";
-import {
-	getNextPageUrl,
-	getTestSdkInfo,
-	mockGlobalFetchJsonResponse,
-	preventInfinitePaging,
-} from "../../../../lib/testkit/testkit.utils.js";
+import { getNextPageUrl, getTestSdkInfo, preventInfinitePaging, stubFetchWithResponse } from "../../../../lib/testkit/testkit.utils.js";
 
 describe("Basic paging query with next page url", async () => {
-	afterAll(() => {
-		vi.resetAllMocks();
-	});
-
 	const maxPagesCount: number = 5;
 	let responseIndex: number = 0;
 
 	const expectedResponseUrls: readonly URL[] = Array.from({ length: maxPagesCount }, (_, index) => new URL(getNextPageUrl(index)));
 
 	// mock initial response
-	mockGlobalFetchJsonResponse({
-		jsonResponse: null,
-		statusCode: 200,
-	});
+	stubFetchWithResponse(() => Response.json(null));
 
 	const { success, responses } = await createPagedFetchQuery({
 		getNextPageData: () => {

@@ -6,7 +6,6 @@ export {
 	getNextPageUrl,
 	getTestHttpServiceWithJsonResponse,
 	getTestSdkInfo,
-	mockGlobalFetchBlobResponse,
-	mockGlobalFetchJsonResponse,
 	preventInfinitePaging,
+	stubFetchWithResponse,
 } from "./testkit/testkit.utils.js";

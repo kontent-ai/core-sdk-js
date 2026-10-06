@@ -8,6 +8,7 @@ export default defineConfig({
 		environment: "node",
 		coverage: { provider: "v8" },
 		clearMocks: false,
+		unstubGlobals: true,
 	},
 	build: {
 		target: "esnext",

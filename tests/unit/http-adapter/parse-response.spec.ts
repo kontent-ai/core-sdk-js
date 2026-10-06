@@ -1,22 +1,14 @@
-import { afterAll, describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 import { getDefaultHttpAdapter } from "../../../lib/http/http.adapter.js";
 import type { KnownHeaderName } from "../../../lib/models/core.models.js";
 import { AdapterAbortError, AdapterParseError } from "../../../lib/models/error.models.js";
+import { stubFetchWithResponse } from "../../../lib/testkit/testkit.utils.js";
+
+const jsonContentTypeHeaders = { ["Content-Type" satisfies KnownHeaderName]: "application/json" };
 
 describe("Handling parse errors in default http adapter", () => {
-	afterAll(() => {
-		vi.restoreAllMocks();
-	});
-
 	it("Should succeed when requestHeaders is not provided", async () => {
-		vi.spyOn(globalThis, "fetch" satisfies keyof typeof globalThis).mockResolvedValueOnce({
-			...({} as Response),
-			ok: true,
-			status: 200,
-			statusText: "OK",
-			headers: new Headers({ ["Content-Type" satisfies KnownHeaderName]: "application/json" }),
-			json: async () => await Promise.resolve(null),
-		});
+		stubFetchWithResponse(() => Response.json(null));
 
 		const result = await getDefaultHttpAdapter().executeRequest({
 			url: new URL("https://domain.com"),
@@ -31,14 +23,8 @@ describe("Handling parse errors in default http adapter", () => {
 		const abortController = new AbortController();
 		abortController.abort();
 
-		vi.spyOn(globalThis, "fetch" satisfies keyof typeof globalThis).mockResolvedValueOnce({
-			...({} as Response),
-			ok: true,
-			status: 200,
-			statusText: "OK",
-			headers: new Headers({ ["Content-Type" satisfies KnownHeaderName]: "application/json" }),
-			json: async () => await new Promise(() => {}),
-		});
+		// a body stream that never closes, so parsing never finishes on its own
+		stubFetchWithResponse(() => new Response(new ReadableStream(), { headers: jsonContentTypeHeaders }));
 
 		await expect(
 			getDefaultHttpAdapter().executeRequest({
@@ -55,14 +41,7 @@ describe("Handling parse errors in default http adapter", () => {
 		const abortController = new AbortController();
 		const payload = { value: "test" };
 
-		vi.spyOn(globalThis, "fetch" satisfies keyof typeof globalThis).mockResolvedValueOnce({
-			...({} as Response),
-			ok: true,
-			status: 200,
-			statusText: "OK",
-			headers: new Headers({ ["Content-Type" satisfies KnownHeaderName]: "application/json" }),
-			json: async () => await Promise.resolve(payload),
-		});
+		stubFetchWithResponse(() => Response.json(payload));
 
 		const result = await getDefaultHttpAdapter().executeRequest({
 			url: new URL("https://domain.com"),
@@ -76,14 +55,7 @@ describe("Handling parse errors in default http adapter", () => {
 	});
 
 	it("Should throw AdapterParseError when response.json() throws", async () => {
-		vi.spyOn(globalThis, "fetch" satisfies keyof typeof globalThis).mockResolvedValueOnce({
-			...({} as Response),
-			ok: true,
-			status: 200,
-			statusText: "OK",
-			headers: new Headers({ ["Content-Type" satisfies KnownHeaderName]: "application/json" }),
-			json: async () => await Promise.reject(new Error("Unexpected token in JSON")),
-		});
+		stubFetchWithResponse(() => new Response("not json", { headers: jsonContentTypeHeaders }));
 
 		await expect(
 			getDefaultHttpAdapter().executeRequest({

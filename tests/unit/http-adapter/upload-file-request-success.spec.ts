@@ -1,20 +1,13 @@
-import { afterAll, describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 import type { HttpStatusCode } from "../../../lib/http/http.models.js";
 import { getDefaultHttpService } from "../../../lib/http/http.service.js";
 import type { HttpMethod } from "../../../lib/models/core.models.js";
-import { getFakeBlob, mockGlobalFetchBlobResponse } from "../../../lib/testkit/testkit.utils.js";
+import { getFakeBlob, stubFetchWithResponse } from "../../../lib/testkit/testkit.utils.js";
 
 const fakeBlob = getFakeBlob();
 
 describe("Upload file - Success", async () => {
-	afterAll(() => {
-		vi.resetAllMocks();
-	});
-
-	mockGlobalFetchBlobResponse({
-		blobResponse: fakeBlob,
-		statusCode: 200,
-	});
+	stubFetchWithResponse(() => Response.json({ id: "x" }));
 
 	const { success, response } = await getDefaultHttpService({
 		retryStrategy: {

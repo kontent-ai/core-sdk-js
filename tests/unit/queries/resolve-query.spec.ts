@@ -1,10 +1,9 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import * as z from "zod";
 import type { HttpService } from "../../../lib/http/http.models.js";
-import type { KnownHeaderName } from "../../../lib/models/core.models.js";
 import type { ErrorReason } from "../../../lib/models/error.models.js";
 import { resolveQuery } from "../../../lib/sdk/resolve-query.js";
-import { getTestHttpServiceWithJsonResponse, getTestSdkInfo } from "../../../lib/testkit/testkit.utils.js";
+import { getTestHttpServiceWithJsonResponse, getTestSdkInfo, stubFetchWithResponse } from "../../../lib/testkit/testkit.utils.js";
 import { createAuthorizationHeader } from "../../../lib/utils/header.utils.js";
 
 describe("resolveQuery - invalid baseUrl host", async () => {
@@ -149,20 +148,8 @@ describe("resolveQuery - authorization header is applied", async () => {
 });
 
 describe("resolveQuery - default httpService is used when none provided in config", () => {
-	afterEach(() => {
-		vi.restoreAllMocks();
-	});
-
 	it("Should use the default httpService and succeed", async () => {
-		vi.spyOn(globalThis, "fetch" satisfies keyof typeof globalThis).mockResolvedValueOnce({
-			...({} as Response),
-			ok: true,
-			clone: () => ({}) as Response,
-			status: 200,
-			statusText: "OK",
-			headers: new Headers({ ["Content-Type" satisfies KnownHeaderName]: "application/json" }),
-			json: async () => await Promise.resolve(null),
-		});
+		stubFetchWithResponse(() => Response.json(null));
 
 		const { success } = await resolveQuery({
 			method: "GET",

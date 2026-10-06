@@ -1,21 +1,14 @@
-import { afterAll, describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 import { coreSdkInfo } from "../../../lib/core-sdk-info.js";
 import { getDefaultHttpService } from "../../../lib/http/http.service.js";
 import type { Header, KnownHeaderName } from "../../../lib/models/core.models.js";
-import { mockGlobalFetchJsonResponse } from "../../../lib/testkit/testkit.utils.js";
+import { stubFetchWithResponse } from "../../../lib/testkit/testkit.utils.js";
 import { createSdkIdHeader } from "../../../lib/utils/header.utils.js";
 
 const sdkIdHeader = createSdkIdHeader(coreSdkInfo);
 
 describe("Default headers", async () => {
-	afterAll(() => {
-		vi.resetAllMocks();
-	});
-
-	mockGlobalFetchJsonResponse({
-		jsonResponse: {},
-		statusCode: 200,
-	});
+	stubFetchWithResponse(() => Response.json({}));
 
 	const { success, response } = await getDefaultHttpService().request({
 		url: "https://domain.com",
@@ -38,16 +31,9 @@ describe("Default headers", async () => {
 });
 
 describe(`SDK tracking header '${sdkIdHeader.name}'`, async () => {
-	afterAll(() => {
-		vi.resetAllMocks();
-	});
-
 	const customSdkId = "x";
 
-	mockGlobalFetchJsonResponse({
-		jsonResponse: {},
-		statusCode: 200,
-	});
+	stubFetchWithResponse(() => Response.json({}));
 
 	const { success, response } = await getDefaultHttpService().request({
 		url: "https://domain.com",
@@ -78,14 +64,7 @@ describe(`SDK tracking header '${sdkIdHeader.name}'`, async () => {
 });
 
 describe("Custom Http Service & Request headers", async () => {
-	afterAll(() => {
-		vi.resetAllMocks();
-	});
-
-	mockGlobalFetchJsonResponse({
-		jsonResponse: {},
-		statusCode: 200,
-	});
+	stubFetchWithResponse(() => Response.json({}));
 
 	const headerA: Header = {
 		name: "A",
@@ -115,18 +94,11 @@ describe("Custom Http Service & Request headers", async () => {
 });
 
 describe("Duplicate header names across config and option headers", async () => {
-	afterAll(() => {
-		vi.resetAllMocks();
-	});
-
 	const headerName = "Authorization" satisfies KnownHeaderName;
 	const configValue = "Bearer config-token";
 	const optionValue = "Bearer option-token";
 
-	mockGlobalFetchJsonResponse({
-		jsonResponse: {},
-		statusCode: 200,
-	});
+	stubFetchWithResponse(() => Response.json({}));
 
 	const { response } = await getDefaultHttpService({
 		requestHeaders: [{ name: headerName, value: configValue }],
@@ -146,19 +118,12 @@ describe("Duplicate header names across config and option headers", async () => 
 });
 
 describe("Content-Type header handling", async () => {
-	afterAll(() => {
-		vi.resetAllMocks();
-	});
-
 	const contentTypeHeader: Header = {
 		name: "Content-Type" satisfies KnownHeaderName,
 		value: "application/json",
 	};
 
-	mockGlobalFetchJsonResponse({
-		jsonResponse: {},
-		statusCode: 200,
-	});
+	stubFetchWithResponse(() => Response.json({}));
 
 	const { response } = await getDefaultHttpService().request({
 		url: "https://domain.com",

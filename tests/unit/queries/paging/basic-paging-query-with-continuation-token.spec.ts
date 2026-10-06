@@ -1,15 +1,12 @@
-import { afterAll, describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 import type { GetNextPageData } from "../../../../lib/http/http.models.js";
 import { getDefaultHttpService } from "../../../../lib/http/http.service.js";
 import { extractContinuationToken } from "../../../../lib/public_api.js";
 import { createPagedFetchQuery } from "../../../../lib/sdk/queries/paged-fetch-sdk-query.js";
-import { getTestSdkInfo, mockGlobalFetchJsonResponse, preventInfinitePaging } from "../../../../lib/testkit/testkit.utils.js";
+import { getTestSdkInfo, preventInfinitePaging, stubFetchWithResponse } from "../../../../lib/testkit/testkit.utils.js";
+import { createContinuationHeader, toFetchHeaders } from "../../../../lib/utils/header.utils.js";
 
 describe("Basic paging query with continuation token", async () => {
-	afterAll(() => {
-		vi.resetAllMocks();
-	});
-
 	const responseStatusCode = 200;
 	const maxPagesCount: number = 5;
 	let responseIndex: number = 0;
@@ -19,11 +16,12 @@ describe("Basic paging query with continuation token", async () => {
 	};
 
 	const mockResponseByIndex = (index: number) => {
-		mockGlobalFetchJsonResponse({
-			jsonResponse: null,
-			statusCode: responseStatusCode,
-			continuationToken: getResponseContinuationToken(index),
-		});
+		stubFetchWithResponse(() =>
+			Response.json(null, {
+				status: responseStatusCode,
+				headers: toFetchHeaders([createContinuationHeader(getResponseContinuationToken(index))]),
+			}),
+		);
 	};
 
 	// mock initial response

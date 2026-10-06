@@ -1,7 +1,7 @@
-import { afterAll, describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 import { getDefaultHttpService } from "../../../lib/http/http.service.js";
 import type { HttpMethod } from "../../../lib/models/core.models.js";
-import { mockGlobalFetchJsonResponse } from "../../../lib/testkit/testkit.utils.js";
+import { stubFetchWithResponse } from "../../../lib/testkit/testkit.utils.js";
 
 type ResponseData = {
 	readonly codename: string;
@@ -22,14 +22,7 @@ const requestBody: RequestBody = {
 const method: HttpMethod = "POST";
 
 describe("Execute request - Success (POST)", async () => {
-	afterAll(() => {
-		vi.resetAllMocks();
-	});
-
-	mockGlobalFetchJsonResponse({
-		jsonResponse: responseData,
-		statusCode: 200,
-	});
+	stubFetchWithResponse(() => Response.json(responseData));
 
 	const { success, response } = await getDefaultHttpService().request<ResponseData, RequestBody>({
 		url: "https://domain.com",
