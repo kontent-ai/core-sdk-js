@@ -19,6 +19,7 @@ Before using this package, make sure your environment matches the published pack
 - Node.js `>=22`
 - ESM-compatible runtime, because the package is published as an ES module
 - Peer dependencies: `zod` and `ts-pattern`
+- `vitest` (^5), only if you use the `@kontent-ai/core-sdk/testkit` entry point
 
 With modern package managers such as npm, peer dependencies are typically installed automatically, so you usually only need:
 
