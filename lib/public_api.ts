@@ -79,5 +79,5 @@ export { isAdapterAbortError, isAdapterParseError, isKontent404Error, isKontentS
 export { createSdkIdHeader, extractContinuationToken } from "./utils/header.utils.js";
 export { resolveDefaultRetryStrategyOptions } from "./utils/retry.utils.js";
 export { resolveSchema, type SchemaInput } from "./utils/schema.utils.js";
-export { Failure, Success, TryCatchResult, tryCatch, tryCatchAsync } from "./utils/try-catch.utils.js";
+export { type Failure, type Success, type TryCatchResult, tryCatch, tryCatchAsync } from "./utils/try-catch.utils.js";
 export { getEndpointUrl } from "./utils/url.utils.js";
