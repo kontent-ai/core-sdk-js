@@ -2,22 +2,16 @@ import { match, P } from "ts-pattern";
 import type { GetNextPageData, PagingConfig } from "../../http/http.models.js";
 import type { KontentSdkError } from "../../models/error.models.js";
 import type { JsonValue } from "../../models/json.models.js";
+import type { TryCatchResult } from "../../utils/try-catch.utils.js";
 import type {
 	FetchQueryRequest,
 	PagedFetchQuery,
 	PagingQueryInputData,
 	PendingNextPageState,
 	QueryResponse,
-	SafePagingQueryResult,
 	SafeQueryResult,
 } from "../sdk-models.js";
 import { createFetchQuery } from "./fetch-sdk-query.js";
-
-type PagingQueryPromiseResult<TPayload extends JsonValue, TMeta, TExtra, TPagingExtra, TError> = SafePagingQueryResult<
-	QueryResponse<TPayload, TMeta, TExtra>,
-	TError,
-	TPagingExtra
->;
 
 type NoNextPageState = {
 	readonly hasNextPage: false;
@@ -33,7 +27,7 @@ export function createPagedFetchQuery<TPayload extends JsonValue, TError extends
 ): PagedFetchQuery<TPayload, TError, TMeta, TExtra, TPagingExtra> {
 	const getPagingData: (
 		config: PagingConfig | undefined,
-	) => Parameters<typeof fetchAllPages<TPayload, TMeta, TExtra, TPagingExtra, TError>>[0] = (config) => {
+	) => Parameters<typeof fetchAllPageResponses<TPayload, TMeta, TExtra, TPagingExtra, TError>>[0] = (config) => {
 		return {
 			...data,
 			method: "GET",
@@ -50,17 +44,27 @@ export function createPagedFetchQuery<TPayload extends JsonValue, TError extends
 		fetchPage: async () => await fetchQuery.fetch(),
 		fetchPageSafe: async () => await fetchQuery.fetchSafe(),
 		fetchAllPages: async (config?: PagingConfig) => {
-			const { success, error, responses } = await fetchAllPages<TPayload, TMeta, TExtra, TPagingExtra, TError>(getPagingData(config));
+			const {
+				success,
+				data: responses,
+				error,
+			} = await fetchAllPageResponses<TPayload, TMeta, TExtra, TPagingExtra, TError>(getPagingData(config));
 			if (!success) {
 				throw error;
 			}
-			return {
-				...data.mapPagingExtraResponseProps(responses),
-				responses,
-			};
+			return { ...data.mapPagingExtraResponseProps(responses), responses };
 		},
-		fetchAllPagesSafe: async (config?: PagingConfig) =>
-			await fetchAllPages<TPayload, TMeta, TExtra, TPagingExtra, TError>(getPagingData(config)),
+		fetchAllPagesSafe: async (config?: PagingConfig) => {
+			const {
+				success,
+				data: responses,
+				error,
+			} = await fetchAllPageResponses<TPayload, TMeta, TExtra, TPagingExtra, TError>(getPagingData(config));
+			if (!success) {
+				return { success: false as const, error };
+			}
+			return { ...data.mapPagingExtraResponseProps(responses), success: true, responses };
+		},
 		pagesSafe: (config?: PagingConfig) =>
 			createPagingQueryIterator<TPayload, TMeta, TExtra, TPagingExtra, TError>(getPagingData(config)),
 		pages: async function* (config?: PagingConfig) {
@@ -76,7 +80,7 @@ export function createPagedFetchQuery<TPayload extends JsonValue, TError extends
 }
 
 async function* createPagingQueryIterator<TPayload extends JsonValue, TMeta, TExtra, TPagingExtra, TError extends KontentSdkError>(
-	data: Omit<Parameters<typeof fetchAllPages<TPayload, TMeta, TExtra, TPagingExtra, TError>>[0], "pageIndex">,
+	data: Omit<Parameters<typeof fetchAllPageResponses<TPayload, TMeta, TExtra, TPagingExtra, TError>>[0], "pageIndex">,
 ): AsyncGenerator<SafeQueryResult<QueryResponse<TPayload, TMeta, TExtra>, TError>> {
 	let nextPageState: NextPageState = { hasNextPage: true, pageSource: "firstRequest" };
 	let pageIndex: number = 0;
@@ -139,28 +143,24 @@ function resolveNextPageState<TPayload extends JsonValue, TMeta, TExtra>({
 		.otherwise(() => ({ hasNextPage: false }));
 }
 
-async function fetchAllPages<TPayload extends JsonValue, TMeta, TExtra, TPagingExtra, TError extends KontentSdkError>(
+async function fetchAllPageResponses<TPayload extends JsonValue, TMeta, TExtra, TPagingExtra, TError extends KontentSdkError>(
 	data: Omit<PagingQueryInputData<TPayload, null, TMeta, TExtra, TPagingExtra, TError>, "nextPageState"> & {
 		readonly getNextPageData: GetNextPageData<TPayload, TMeta, TExtra>;
 		readonly pagingConfig: PagingConfig;
 		readonly pageIndex: number;
 	},
-): Promise<PagingQueryPromiseResult<TPayload, TMeta, TExtra, TPagingExtra, TError>> {
+): Promise<TryCatchResult<readonly QueryResponse<TPayload, TMeta, TExtra>[], TError>> {
 	const responses: QueryResponse<TPayload, TMeta, TExtra>[] = [];
 
 	for await (const result of createPagingQueryIterator<TPayload, TMeta, TExtra, TPagingExtra, TError>(data)) {
 		if (!result.success) {
-			return { success: false as const, error: result.error };
+			return { success: false, error: result.error };
 		}
 
 		responses.push(result.response);
 	}
 
-	return {
-		success: true,
-		responses,
-		...data.mapPagingExtraResponseProps(responses),
-	};
+	return { success: true, data: responses };
 }
 
 function isNextPageAvailable(nextPageState: NextPageState): nextPageState is PendingNextPageState {
