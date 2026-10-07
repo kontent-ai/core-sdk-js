@@ -128,6 +128,30 @@ export function createBatchTransformResponses<
 	};
 }
 
+export function createSafeAndUnsafe<
+	TPayload extends JsonValue,
+	TTransformedPayload extends TPayload,
+	TError extends KontentSdkError,
+	TMeta,
+	TExtra,
+>({
+	querySafe,
+	transformResponse,
+}: {
+	readonly querySafe: () => Promise<SafeHttpResult<QueryResponse<TPayload, TMeta, TExtra>, TError>>;
+	readonly transformResponse: TransformResponseFn<TPayload, TTransformedPayload, TError, TMeta, TExtra>;
+}): {
+	readonly safe: () => Promise<SafeHttpResult<QueryResponse<TTransformedPayload, TMeta, TExtra>, TError>>;
+	readonly unsafe: () => Promise<QueryResponse<TTransformedPayload, TMeta, TExtra>>;
+} {
+	const safe = async () => applyTransformSafely(await querySafe(), transformResponse);
+
+	return {
+		safe,
+		unsafe: async () => unwrapOrThrow(await safe()).response,
+	};
+}
+
 export function createTransformedQueryMethods<
 	TPayload extends JsonValue,
 	TTransformedPayload extends TPayload,
@@ -143,18 +167,11 @@ export function createTransformedQueryMethods<
 	readonly transform: (response: QueryResponse<TPayload, TMeta, TExtra>) => QueryResponse<TTransformedPayload, TMeta, TExtra>;
 	readonly transformSchema: SchemaInput<TTransformedPayload>;
 	readonly mapError: (error: KontentSdkError) => TError;
-}): {
-	readonly safe: () => Promise<SafeHttpResult<QueryResponse<TTransformedPayload, TMeta, TExtra>, TError>>;
-	readonly unsafe: () => Promise<QueryResponse<TTransformedPayload, TMeta, TExtra>>;
-} {
-	const transformResponse = createTransformResponse<TPayload, TTransformedPayload, TError, TMeta, TExtra>(transformOptions);
-
-	const safe = async () => applyTransformSafely(await querySafe(), transformResponse);
-
-	return {
-		safe,
-		unsafe: async () => unwrapOrThrow(await safe()).response,
-	};
+}) {
+	return createSafeAndUnsafe({
+		querySafe,
+		transformResponse: createTransformResponse<TPayload, TTransformedPayload, TError, TMeta, TExtra>(transformOptions),
+	});
 }
 
 export async function applyTransformSafely<
