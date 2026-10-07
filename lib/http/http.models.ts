@@ -1,11 +1,7 @@
 import type { Header, HttpMethod, RetryStrategyOptions } from "../models/core.models.js";
-import type { KontentSdkError } from "../models/error.models.js";
 import type { JsonObject, JsonValue } from "../models/json.models.js";
 import type { LiteralUnionNumber } from "../models/utility.types.js";
-import type { QueryResponse } from "../sdk/sdk-models.js";
-import type { Failure, Success } from "../utils/try-catch.utils.js";
-
-export type HttpResult<TResponse> = Success<{ readonly response: TResponse }> | Failure<{ readonly response?: never }, KontentSdkError>;
+import type { QueryResponse, SafeQueryResult } from "../sdk/sdk-models.js";
 
 /**
  * Helper status codes for the HTTP service.
@@ -32,7 +28,7 @@ export type DefaultHttpServiceOptions = {
 
 export type HttpRequestBody = JsonObject | Blob | null;
 
-export type HttpResponse<TPayload extends AdapterPayload, TBody extends HttpRequestBody> = HttpResult<{
+export type HttpResponse<TPayload extends AdapterPayload, TBody extends HttpRequestBody> = SafeQueryResult<{
 	readonly payload: TPayload;
 	readonly body?: TBody;
 	readonly method: HttpMethod;

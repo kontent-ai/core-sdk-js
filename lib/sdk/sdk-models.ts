@@ -100,11 +100,6 @@ export type SuccessfulHttpResponse<TPayload extends AdapterPayload, TBody extend
 	{ readonly success: true }
 >["response"];
 
-/**
- * Result type that represents a success or failure of an operation.
- *
- * Ensures that consumers of this library handle both success and failure cases.
- */
 export type SafeQueryResult<TPayload, TError extends KontentSdkError = KontentSdkError> =
 	| Success<{ readonly response: TPayload }>
 	| Failure<{ readonly response?: never }, TError>;
