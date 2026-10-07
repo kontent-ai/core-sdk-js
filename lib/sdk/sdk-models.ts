@@ -97,19 +97,16 @@ export type MutationQuery<
 
 export type PendingNextPageState =
 	| {
-			readonly pageSource: "continuationToken";
 			readonly hasNextPage: true;
 			readonly continuationToken: string;
 			readonly nextPageUrl?: never;
 	  }
 	| {
-			readonly pageSource: "nextPageUrl";
 			readonly hasNextPage: true;
 			readonly continuationToken?: never;
 			readonly nextPageUrl: string;
 	  }
 	| {
-			readonly pageSource: "firstRequest";
 			readonly hasNextPage: true;
 			readonly continuationToken?: never;
 			readonly nextPageUrl?: never;
