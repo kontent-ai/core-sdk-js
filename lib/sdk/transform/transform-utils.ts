@@ -93,8 +93,8 @@ function createTransformResponse<
 	readonly transformSchema: SchemaInput<TTransformedPayload>;
 	readonly mapError: (error: KontentSdkError) => TError;
 }): TransformResponseFn<TPayload, TTransformedPayload, TError, TMeta, TExtra> {
-	return (response) =>
-		transformAndValidate({
+	return async (response) =>
+		await transformAndValidate({
 			config,
 			transformSchema,
 			mapError,
@@ -123,14 +123,14 @@ export function createBatchTransformResponses<
 	readonly transformSchema: SchemaInput<TTransformedPayload>;
 	readonly mapError: (error: KontentSdkError) => TError;
 }): BatchTransformResponsesFn<TPayload, TTransformedPayload, TError, TMeta, TExtra> {
-	return (responses) => {
+	return async (responses) => {
 		if (!isArrayWithSomeData(responses)) {
 			return Promise.resolve({ success: true, data: [] });
 		}
 
 		const [firstResponse] = responses;
 
-		return transformAndValidate({
+		return await transformAndValidate({
 			config,
 			transformSchema,
 			mapError,
