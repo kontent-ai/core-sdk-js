@@ -2,8 +2,9 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import type { HttpResponse } from "../../../lib/http/http.models.js";
 import { getDefaultHttpService } from "../../../lib/http/http.service.js";
 import type { KnownHeaderName, RetryStrategyOptions } from "../../../lib/models/core.models.js";
+import { sleep } from "../../../lib/utils/core.utils.js";
 import { createSdkError } from "../../../lib/utils/error.utils.js";
-import { resolveDefaultRetryStrategyOptions, runWithRetry, waitBeforeNextRetry } from "../../../lib/utils/retry.utils.js";
+import { resolveDefaultRetryStrategyOptions, runWithRetry } from "../../../lib/utils/retry.utils.js";
 
 const url = new URL("https://domain.com");
 
@@ -194,17 +195,16 @@ describe("runWithRetry - rate-limited request fails after max retries exceeded",
 	});
 });
 
-describe("waitBeforeNextRetry - no abort signal", () => {
+describe("sleep - no abort signal", () => {
 	it("Should wait before the next retry with no abort signal", async () => {
 		const start = performance.now();
 		const retryInMs = 200;
 
-		const { isAborted } = await waitBeforeNextRetry({ retryInMs });
+		await sleep(retryInMs);
 
 		const duration = Math.round(performance.now() - start);
 
 		expect(duration).toBeGreaterThanOrEqual(retryInMs);
-		expect(isAborted).toBe(false);
 	});
 
 	it("Should not wait before the next retry with abort signal", async () => {
@@ -217,8 +217,8 @@ describe("waitBeforeNextRetry - no abort signal", () => {
 		// some leeway for the test to pass
 		const expectedDurationMax = abortAfterMs * 4;
 
-		const [{ isAborted }] = await Promise.all([
-			waitBeforeNextRetry({ retryInMs, abortSignal: abortController.signal }),
+		await Promise.all([
+			sleep(retryInMs, abortController.signal),
 			new Promise((resolve) => {
 				setTimeout(() => {
 					abortController.abort();
@@ -229,13 +229,13 @@ describe("waitBeforeNextRetry - no abort signal", () => {
 
 		const duration = Math.round(performance.now() - start);
 
-		expect(isAborted).toBe(true);
+		expect(abortController.signal.aborted).toBe(true);
 		expect(duration).toBeGreaterThanOrEqual(expectedDurationMin);
 		expect(duration).toBeLessThanOrEqual(expectedDurationMax);
 	});
 });
 
-describe("waitBeforeNextRetry - abort clears the pending timer", () => {
+describe("sleep - abort clears the pending timer", () => {
 	afterEach(() => {
 		vi.useRealTimers();
 	});
@@ -244,11 +244,11 @@ describe("waitBeforeNextRetry - abort clears the pending timer", () => {
 		vi.useFakeTimers();
 		const abortController = new AbortController();
 
-		const waitPromise = waitBeforeNextRetry({ retryInMs: 60_000, abortSignal: abortController.signal });
+		const waitPromise = sleep(60_000, abortController.signal);
 		abortController.abort();
-		const { isAborted } = await waitPromise;
+		await waitPromise;
 
-		expect(isAborted).toBe(true);
+		expect(abortController.signal.aborted).toBe(true);
 		expect(vi.getTimerCount()).toBe(0);
 	});
 });
