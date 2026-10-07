@@ -3,7 +3,7 @@ import * as zMini from "zod";
 import type { ErrorReason } from "../../../lib/models/error.models.js";
 import type { JsonValue } from "../../../lib/public_api.js";
 import type { PagedFetchQuery } from "../../../lib/sdk/sdk-models.js";
-import { isPagingQuery, parseResponse, validatePayloads } from "../../../lib/sdk/sdk-utils.js";
+import { isPagingQuery, validatePayload, validatePayloads } from "../../../lib/sdk/sdk-utils.js";
 
 describe("isPagingQuery", () => {
 	it("Should return true for object with paging query shape", () => {
@@ -89,7 +89,7 @@ describe("isPagingQuery", () => {
 
 describe("parseResponse", () => {
 	it("Should accept a zod/mini schema and succeed for a matching payload", async () => {
-		const result = await parseResponse({
+		const result = await validatePayload({
 			url: new URL("https://example.com"),
 			payload: { name: "test" },
 			schema: zMini.readonly(zMini.object({ name: zMini.string() })),
@@ -99,7 +99,7 @@ describe("parseResponse", () => {
 	});
 
 	it("Should accept a zod/mini schema and report a failure for a mismatching payload", async () => {
-		const result = await parseResponse({
+		const result = await validatePayload({
 			url: new URL("https://example.com"),
 			payload: { name: "test" },
 			schema: zMini.readonly(zMini.object({ name: zMini.string().check(zMini.minLength(50)) })),

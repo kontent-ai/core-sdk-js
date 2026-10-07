@@ -23,7 +23,7 @@ export function isPagingQuery<TPayload extends JsonValue, TError extends Kontent
 	);
 }
 
-export async function parseResponse<TPayload extends JsonValue>({
+export async function validatePayload<TPayload extends JsonValue>({
 	url,
 	payload,
 	schema,
@@ -81,7 +81,7 @@ export async function validatePayloads<TPayload extends JsonValue>({
 	}
 
 	const results = await Promise.all(
-		payloads.map(async ({ url, payload }) => await parseResponse({ url, payload, schema: resolvedSchema })),
+		payloads.map(async ({ url, payload }) => await validatePayload({ url, payload, schema: resolvedSchema })),
 	);
 	return results.find(isDefined)?.error;
 }
