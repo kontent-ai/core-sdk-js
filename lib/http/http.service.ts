@@ -248,7 +248,6 @@ async function createInvalidResponseError({
 	return createSdkError({
 		baseErrorData: {
 			message: toInvalidResponseMessage({
-				url: response.url,
 				adapterResponse: response,
 				method: method,
 				kontentErrorData: kontentErrorData,

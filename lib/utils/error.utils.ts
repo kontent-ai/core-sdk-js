@@ -44,17 +44,15 @@ export function isAdapterAbortError(error: unknown): error is AdapterAbortError 
 
 export function toInvalidResponseMessage({
 	method,
-	url,
 	adapterResponse,
 	kontentErrorData: kontentErrorResponse,
 }: {
-	readonly url: URL;
 	readonly method: HttpMethod;
 	readonly adapterResponse: AdapterResponse<AdapterPayload>;
 	readonly kontentErrorData: ErrorResponseData | undefined;
 }): string {
 	const details = kontentErrorResponse ? ` ${getKontentErrorResponseMessage(adapterResponse, kontentErrorResponse)}` : "";
-	return `Failed to execute '${method}' request '${url.toString()}'.${details}`;
+	return `Failed to execute '${method}' request '${adapterResponse.url.toString()}'.${details}`;
 }
 
 /**

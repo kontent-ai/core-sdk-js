@@ -180,7 +180,7 @@ describe("Invalid response error - message", () => {
 		expect(error.message).toStrictEqual(
 			toInvalidResponseMessage({
 				method: "GET",
-				url: testUrl,
+
 				adapterResponse: error.details.adapterResponse,
 				kontentErrorData: error.details.kontentErrorResponse,
 			}),
@@ -202,7 +202,7 @@ describe("toInvalidResponseMessage", () => {
 		expect(
 			toInvalidResponseMessage({
 				method: "GET",
-				url: testUrl,
+
 				adapterResponse,
 				kontentErrorData: undefined,
 			}),
@@ -219,7 +219,7 @@ describe("toInvalidResponseMessage", () => {
 		expect(
 			toInvalidResponseMessage({
 				method: "POST",
-				url: testUrl,
+
 				adapterResponse,
 				kontentErrorData: kontentErrorResponse,
 			}),
@@ -239,7 +239,7 @@ describe("toInvalidResponseMessage", () => {
 		expect(
 			toInvalidResponseMessage({
 				method: "PUT",
-				url: testUrl,
+
 				adapterResponse,
 				kontentErrorData: kontentErrorResponse,
 			}),
@@ -259,7 +259,7 @@ describe("toInvalidResponseMessage", () => {
 		expect(
 			toInvalidResponseMessage({
 				method: "GET",
-				url: testUrl,
+
 				adapterResponse,
 				kontentErrorData: kontentErrorResponse,
 			}),

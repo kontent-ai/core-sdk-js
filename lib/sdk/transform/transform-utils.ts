@@ -1,7 +1,7 @@
 import type { SafeHttpResult } from "../../http/http.models.js";
 import type { KontentSdkError } from "../../models/error.models.js";
 import type { JsonValue } from "../../models/json.models.js";
-import { isNonEmptyArray as isArrayWithSomeData } from "../../utils/array.utils.js";
+import { isNonEmptyArray } from "../../utils/array.utils.js";
 import { createSdkError } from "../../utils/error.utils.js";
 import type { SchemaInput } from "../../utils/schema.utils.js";
 import { type TryCatchResult, tryCatch, unwrapOrThrow } from "../../utils/try-catch.utils.js";
@@ -124,7 +124,7 @@ export function createBatchTransformResponses<
 	readonly mapError: (error: KontentSdkError) => TError;
 }): BatchTransformResponsesFn<TPayload, TTransformedPayload, TError, TMeta, TExtra> {
 	return async (responses) => {
-		if (!isArrayWithSomeData(responses)) {
+		if (!isNonEmptyArray(responses)) {
 			return Promise.resolve({ success: true, data: [] });
 		}
 
