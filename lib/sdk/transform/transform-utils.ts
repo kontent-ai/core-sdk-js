@@ -4,7 +4,7 @@ import type { JsonValue } from "../../models/json.models.js";
 import { isNonEmptyArray as isArrayWithSomeData } from "../../utils/array.utils.js";
 import { createSdkError } from "../../utils/error.utils.js";
 import type { SchemaInput } from "../../utils/schema.utils.js";
-import { type TryCatchResult, tryCatch } from "../../utils/try-catch.utils.js";
+import { type TryCatchResult, tryCatch, unwrapOrThrow } from "../../utils/try-catch.utils.js";
 import type { QueryResponse, SdkConfig } from "../sdk-models.js";
 import { validatePayloads } from "../sdk-utils.js";
 
@@ -125,6 +125,35 @@ export function createBatchTransformResponses<
 		}
 
 		return { success: true, data: transformedResponses };
+	};
+}
+
+export function createTransformedQueryMethods<
+	TPayload extends JsonValue,
+	TTransformedPayload extends TPayload,
+	TError extends KontentSdkError,
+	TMeta,
+	TExtra,
+>({
+	querySafe,
+	...transformOptions
+}: {
+	readonly config: Pick<SdkConfig, "runtimeValidation">;
+	readonly querySafe: () => Promise<SafeHttpResult<QueryResponse<TPayload, TMeta, TExtra>, TError>>;
+	readonly transform: (response: QueryResponse<TPayload, TMeta, TExtra>) => QueryResponse<TTransformedPayload, TMeta, TExtra>;
+	readonly transformSchema: SchemaInput<TTransformedPayload>;
+	readonly mapError: (error: KontentSdkError) => TError;
+}): {
+	readonly safe: () => Promise<SafeHttpResult<QueryResponse<TTransformedPayload, TMeta, TExtra>, TError>>;
+	readonly unsafe: () => Promise<QueryResponse<TTransformedPayload, TMeta, TExtra>>;
+} {
+	const transformResponse = createTransformResponse<TPayload, TTransformedPayload, TError, TMeta, TExtra>(transformOptions);
+
+	const safe = async () => applyTransformSafely(await querySafe(), transformResponse);
+
+	return {
+		safe,
+		unsafe: async () => unwrapOrThrow(await safe()).response,
 	};
 }
 

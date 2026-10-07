@@ -1,9 +1,8 @@
 import type { KontentSdkError } from "../../models/error.models.js";
 import type { JsonValue } from "../../models/json.models.js";
 import type { SchemaInput } from "../../utils/schema.utils.js";
-import { unwrapOrThrow } from "../../utils/try-catch.utils.js";
 import type { MutationQuery, QueryResponse, SdkConfig } from "../sdk-models.js";
-import { applyTransformSafely, createTransformResponse } from "./transform-utils.js";
+import { createTransformedQueryMethods } from "./transform-utils.js";
 
 export function transformMutationQuery<
 	TPayload extends JsonValue,
@@ -24,18 +23,17 @@ export function transformMutationQuery<
 	readonly transformSchema: SchemaInput<TTransformedPayload>;
 	readonly mapError: (error: KontentSdkError) => TError;
 }): MutationQuery<TTransformedPayload, TError, TMeta, TExtra> {
-	const transformResponse = createTransformResponse<TPayload, TTransformedPayload, TError, TMeta, TExtra>({
+	const { safe, unsafe } = createTransformedQueryMethods({
 		config,
 		transform,
 		transformSchema,
 		mapError,
+		querySafe: query.executeSafe,
 	});
 
-	const executeSafe = async () => applyTransformSafely(await query.executeSafe(), transformResponse);
-
 	return {
-		execute: async () => unwrapOrThrow(await executeSafe()).response,
-		executeSafe,
+		execute: unsafe,
+		executeSafe: safe,
 		inspect: query.inspect,
 	};
 }
