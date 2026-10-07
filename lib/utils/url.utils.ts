@@ -3,7 +3,7 @@ import type { BaseUrl } from "../sdk/sdk-models.js";
 import { createSdkError } from "./error.utils.js";
 import { type TryCatchResult, tryCatch } from "./try-catch.utils.js";
 
-type RetryContext = Pick<BaseErrorData, "retryStrategyOptions" | "retryAttempt">;
+export type RetryContext = Pick<BaseErrorData, "retryStrategyOptions" | "retryAttempt">;
 
 export function getEndpointUrl({
 	environmentId,

@@ -22,7 +22,7 @@ import {
 } from "../utils/header.utils.js";
 import { resolveDefaultRetryStrategyOptions, runWithRetry } from "../utils/retry.utils.js";
 import { type TryCatchResult, tryCatch, tryCatchAsync } from "../utils/try-catch.utils.js";
-import { parseUrl } from "../utils/url.utils.js";
+import { parseUrl, type RetryContext } from "../utils/url.utils.js";
 import { getDefaultHttpAdapter } from "./http.adapter.js";
 import type {
 	AdapterPayload,
@@ -125,11 +125,11 @@ async function processHttpRequest<TPayload extends AdapterPayload, TBody extends
 		retryAttempt: 0,
 		abortSignal: options.abortSignal,
 		func: async (retryAttempt) => {
+			const retryContext: RetryContext = { retryStrategyOptions, retryAttempt };
 			const responseOrError = await runAdapterRequest({
 				adapterOptions,
 				runAdapterFunc,
-				retryAttempt,
-				retryStrategyOptions,
+				retryContext,
 			});
 
 			if (isKontentSdkError(responseOrError)) {
@@ -140,11 +140,10 @@ async function processHttpRequest<TPayload extends AdapterPayload, TBody extends
 			}
 
 			return await mapAdapterResponse({
-				retryStrategyOptions,
+				retryContext,
 				method: options.method,
 				requestHeaders: parsedRequest.requestHeaders,
 				response: responseOrError,
-				retryAttempt,
 				...(options.body === undefined ? {} : { requestBody: options.body }),
 			});
 		},
@@ -156,58 +155,34 @@ async function processHttpRequest<TPayload extends AdapterPayload, TBody extends
 function createAdapterError({
 	url,
 	error,
-	retryAttempt,
-	retryStrategyOptions,
+	retryContext,
 }: {
 	readonly url: URL;
 	readonly error: unknown;
-	readonly retryAttempt: number;
-	readonly retryStrategyOptions: ResolvedRetryStrategyOptions;
+	readonly retryContext: RetryContext;
 }): KontentSdkError<ErrorDetailsFor<"adapterError" | "aborted" | "invalidResponseBody">> {
-	return match(error)
-		.returnType<KontentSdkError<ErrorDetailsFor<"adapterError" | "aborted" | "invalidResponseBody">>>()
-		.when(isAdapterAbortError, (abortError) =>
-			createSdkError({
-				baseErrorData: {
-					message: `Adapter has aborted the request for url '${url.toString()}'. See the error object for more details.`,
-					url: url,
-					retryStrategyOptions,
-					retryAttempt,
-				},
-				details: {
-					reason: "aborted",
-					originalError: abortError,
-				},
-			}),
-		)
-		.when(isAdapterParseError, (parseError) =>
-			createSdkError({
-				baseErrorData: {
-					message: `Adapter failed to parse the response for url '${url.toString()}'. See the error object for more details.`,
-					url: url,
-					retryStrategyOptions,
-					retryAttempt,
-				},
-				details: {
-					reason: "invalidResponseBody",
-					originalError: parseError,
-				},
-			}),
-		)
-		.otherwise(() =>
-			createSdkError({
-				baseErrorData: {
-					message: `Adapter failed to execute the request for url '${url.toString()}'. See the error object for more details.`,
-					url: url,
-					retryStrategyOptions,
-					retryAttempt,
-				},
-				details: {
-					reason: "adapterError",
-					originalError: error,
-				},
-			}),
-		);
+	const { message, details } = match(error)
+		.returnType<{
+			readonly message: string;
+			readonly details: ErrorDetailsFor<"adapterError" | "aborted" | "invalidResponseBody">;
+		}>()
+		.when(isAdapterAbortError, (abortError) => ({
+			message: `Adapter has aborted the request for url '${url.toString()}'. See the error object for more details.`,
+			details: { reason: "aborted", originalError: abortError },
+		}))
+		.when(isAdapterParseError, (parseError) => ({
+			message: `Adapter failed to parse the response for url '${url.toString()}'. See the error object for more details.`,
+			details: { reason: "invalidResponseBody", originalError: parseError },
+		}))
+		.otherwise(() => ({
+			message: `Adapter failed to execute the request for url '${url.toString()}'. See the error object for more details.`,
+			details: { reason: "adapterError", originalError: error },
+		}));
+
+	return createSdkError({
+		baseErrorData: { message, url, ...retryContext },
+		details,
+	});
 }
 
 async function mapAdapterResponse<TPayload extends AdapterPayload, TBody extends HttpRequestBody>({
@@ -215,20 +190,18 @@ async function mapAdapterResponse<TPayload extends AdapterPayload, TBody extends
 	method,
 	requestHeaders,
 	requestBody,
-	retryAttempt,
-	retryStrategyOptions,
+	retryContext,
 }: {
 	readonly response: AdapterResponse<TPayload>;
 	readonly method: HttpMethod;
 	readonly requestHeaders: readonly Header[];
 	readonly requestBody?: TBody;
-	readonly retryAttempt: number;
-	readonly retryStrategyOptions: ResolvedRetryStrategyOptions;
+	readonly retryContext: RetryContext;
 }): Promise<HttpResponse<TPayload, TBody>> {
 	if (!isSuccessfulResponse(response)) {
 		return {
 			success: false,
-			error: await createInvalidResponseError({ response, method, retryAttempt, retryStrategyOptions }),
+			error: await createInvalidResponseError({ response, method, retryContext }),
 		};
 	}
 
@@ -247,17 +220,15 @@ async function mapAdapterResponse<TPayload extends AdapterPayload, TBody extends
 async function runAdapterRequest<TPayload extends AdapterPayload>({
 	adapterOptions,
 	runAdapterFunc,
-	retryAttempt,
-	retryStrategyOptions,
+	retryContext,
 }: {
 	readonly adapterOptions: AdapterRequestOptions;
 	readonly runAdapterFunc: (options: AdapterRequestOptions) => Promise<AdapterResponse<TPayload>>;
-	readonly retryAttempt: number;
-	readonly retryStrategyOptions: ResolvedRetryStrategyOptions;
+	readonly retryContext: RetryContext;
 }): Promise<AdapterResponse<TPayload> | KontentSdkError> {
 	const { error, data } = await tryCatchAsync(async () => await runAdapterFunc(adapterOptions));
 
-	return data ?? createAdapterError({ url: adapterOptions.url, error, retryAttempt, retryStrategyOptions });
+	return data ?? createAdapterError({ url: adapterOptions.url, error, retryContext });
 }
 
 function isSuccessfulResponse(response: AdapterResponse<AdapterPayload>): boolean {
@@ -267,13 +238,11 @@ function isSuccessfulResponse(response: AdapterResponse<AdapterPayload>): boolea
 async function createInvalidResponseError({
 	response,
 	method,
-	retryAttempt,
-	retryStrategyOptions,
+	retryContext,
 }: {
 	readonly response: AdapterResponse<AdapterPayload>;
 	readonly method: HttpMethod;
-	readonly retryAttempt: number;
-	readonly retryStrategyOptions: ResolvedRetryStrategyOptions;
+	readonly retryContext: RetryContext;
 }): Promise<KontentSdkError> {
 	const kontentErrorData = await tryExtractKontentErrorData(response);
 
@@ -286,8 +255,7 @@ async function createInvalidResponseError({
 				kontentErrorData: kontentErrorData,
 			}),
 			url: response.url,
-			retryAttempt,
-			retryStrategyOptions,
+			...retryContext,
 		},
 		details: extractInvalidResponseErrorDetails({ response, kontentErrorData }),
 	});
@@ -319,11 +287,11 @@ function extractInvalidResponseErrorDetails({
 function parseRequestBody({
 	requestBody,
 	url,
-	retryStrategyOptions,
+	retryContext,
 }: {
 	readonly requestBody: HttpRequestBody;
 	readonly url: URL;
-	readonly retryStrategyOptions: ResolvedRetryStrategyOptions;
+	readonly retryContext: RetryContext;
 }): TryCatchResult<AdapterRequestBody, KontentSdkError> {
 	return match(requestBody)
 		.returnType<TryCatchResult<AdapterRequestBody, KontentSdkError>>()
@@ -335,16 +303,16 @@ function parseRequestBody({
 			success: true,
 			data: blob,
 		}))
-		.otherwise((m) => stringifyJson({ url: url, retryStrategyOptions, json: m }));
+		.otherwise((m) => stringifyJson({ url: url, retryContext, json: m }));
 }
 
 function stringifyJson({
 	url,
-	retryStrategyOptions,
+	retryContext,
 	json,
 }: {
 	readonly url: URL;
-	readonly retryStrategyOptions: ResolvedRetryStrategyOptions;
+	readonly retryContext: RetryContext;
 	readonly json: JsonObject;
 }): TryCatchResult<string, KontentSdkError> {
 	const { success, data, error } = tryCatch(() => JSON.stringify(json));
@@ -362,8 +330,7 @@ function stringifyJson({
 			baseErrorData: {
 				message: "Failed to stringify body of the request.",
 				url: url,
-				retryStrategyOptions,
-				retryAttempt: 0,
+				...retryContext,
 			},
 			details: {
 				reason: "invalidBody",
@@ -401,11 +368,8 @@ function parseAndValidateRequest<TBody extends HttpRequestBody>({
 	readonly retryStrategyOptions: ResolvedRetryStrategyOptions;
 	readonly config: DefaultHttpServiceOptions | undefined;
 }): TryCatchResult<ParsedRequest, KontentSdkError> {
-	const {
-		success: urlParsedSuccess,
-		data: parsedUrl,
-		error: urlError,
-	} = parseUrl(options.url, { retryStrategyOptions, retryAttempt: 0 });
+	const retryContext: RetryContext = { retryStrategyOptions, retryAttempt: 0 };
+	const { success: urlParsedSuccess, data: parsedUrl, error: urlError } = parseUrl(options.url, retryContext);
 
 	if (!urlParsedSuccess) {
 		return {
@@ -418,7 +382,7 @@ function parseAndValidateRequest<TBody extends HttpRequestBody>({
 		success: requestBodyParsedSuccess,
 		data: parsedRequestBody,
 		error: requestBodyError,
-	} = parseRequestBody({ requestBody: options.body ?? null, url: parsedUrl, retryStrategyOptions });
+	} = parseRequestBody({ requestBody: options.body ?? null, url: parsedUrl, retryContext });
 
 	if (!requestBodyParsedSuccess) {
 		return {
