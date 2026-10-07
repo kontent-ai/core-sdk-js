@@ -2,6 +2,7 @@ import type { KontentSdkError } from "../../models/error.models.js";
 import type { JsonValue } from "../../models/json.models.js";
 import { isNonEmptyArray } from "../../utils/array.utils.js";
 import type { SchemaInput } from "../../utils/schema.utils.js";
+import { unwrapOrThrow } from "../../utils/try-catch.utils.js";
 import type { PagedFetchQuery, QueryResponse, SafeQueryResult, SdkConfig } from "../sdk-models.js";
 import { createBatchTransformResponses, createTransformError } from "./transform-utils.js";
 
@@ -43,20 +44,6 @@ export function transformPagedFetchQuery<
 		mapError,
 	});
 
-	const transformSingleOrThrow = async (
-		response: QueryResponse<TPayload, TMeta, TExtra>,
-	): Promise<QueryResponse<TTransformedPayload, TMeta, TExtra>> => {
-		const { success, data, error } = await batchTransformResponses([response]);
-		if (!success) {
-			throw error;
-		}
-
-		if (isNonEmptyArray(data)) {
-			return data[0];
-		}
-		throw mapError(createTransformError(new Error(emptyTransformResultMessage), response.meta.url));
-	};
-
 	const transformSingleSafely = async (
 		safeResult: SafeQueryResult<QueryResponse<TPayload, TMeta, TExtra>, TError>,
 	): Promise<SafeQueryResult<QueryResponse<TTransformedPayload, TMeta, TExtra>, TError>> => {
@@ -76,31 +63,33 @@ export function transformPagedFetchQuery<
 		};
 	};
 
+	const fetchPageSafe = async () => transformSingleSafely(await query.fetchPageSafe());
+	const fetchAllPagesSafe: PagedFetchQuery<TTransformedPayload, TError, TMeta, TExtra, TPagingExtra>["fetchAllPagesSafe"] = async (
+		config,
+	) => {
+		const result = await query.fetchAllPagesSafe(config);
+		if (!result.success) {
+			return { success: false as const, error: result.error };
+		}
+		const { success, data, error } = await batchTransformResponses(result.responses);
+		if (!success) {
+			return { success: false as const, error };
+		}
+		return { ...result, success: true, responses: data };
+	};
+
 	return {
-		fetchPage: async () => transformSingleOrThrow(await query.fetchPage()),
-		fetchPageSafe: async () => transformSingleSafely(await query.fetchPageSafe()),
+		fetchPage: async () => unwrapOrThrow(await fetchPageSafe()).response,
+		fetchPageSafe,
 		fetchAllPages: async (config) => {
 			const result = await query.fetchAllPages(config);
-			const { success, data, error } = await batchTransformResponses(result.responses);
-			if (!success) {
-				throw error;
-			}
-			return { ...result, responses: data };
+			const { data: responses } = unwrapOrThrow(await batchTransformResponses(result.responses));
+			return { ...result, responses };
 		},
-		fetchAllPagesSafe: async (config) => {
-			const result = await query.fetchAllPagesSafe(config);
-			if (!result.success) {
-				return { success: false as const, error: result.error };
-			}
-			const { success, data, error } = await batchTransformResponses(result.responses);
-			if (!success) {
-				return { success: false as const, error };
-			}
-			return { ...result, success: true, responses: data };
-		},
+		fetchAllPagesSafe,
 		pages: async function* (config) {
-			for await (const response of query.pages(config)) {
-				yield await transformSingleOrThrow(response);
+			for await (const safeResult of query.pagesSafe(config)) {
+				yield unwrapOrThrow(await transformSingleSafely(safeResult)).response;
 			}
 		},
 		pagesSafe: async function* (config) {

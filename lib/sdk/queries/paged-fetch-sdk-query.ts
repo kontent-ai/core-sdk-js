@@ -2,7 +2,7 @@ import { match, P } from "ts-pattern";
 import type { GetNextPageData, PagingConfig } from "../../http/http.models.js";
 import type { KontentSdkError } from "../../models/error.models.js";
 import type { JsonValue } from "../../models/json.models.js";
-import type { TryCatchResult } from "../../utils/try-catch.utils.js";
+import { type TryCatchResult, unwrapOrThrow } from "../../utils/try-catch.utils.js";
 import type {
 	FetchQueryRequest,
 	PagedFetchQuery,
@@ -39,41 +39,34 @@ export function createPagedFetchQuery<TPayload extends JsonValue, TError extends
 
 	const fetchQuery = createFetchQuery<TPayload, TError, TMeta, TExtra>(data);
 
+	const fetchAllPagesSafe = async (config?: PagingConfig) => {
+		const {
+			success,
+			data: responses,
+			error,
+		} = await fetchAllPageResponses<TPayload, TMeta, TExtra, TPagingExtra, TError>(getPagingData(config));
+		if (!success) {
+			return { success: false as const, error };
+		}
+		return { ...data.mapPagingExtraResponseProps(responses), success: true as const, responses };
+	};
+
 	return {
 		inspect: () => fetchQuery.inspect(),
-		fetchPage: async () => await fetchQuery.fetch(),
+		fetchPage: async () => unwrapOrThrow(await fetchQuery.fetchSafe()).response,
 		fetchPageSafe: async () => await fetchQuery.fetchSafe(),
 		fetchAllPages: async (config?: PagingConfig) => {
-			const {
-				success,
-				data: responses,
-				error,
-			} = await fetchAllPageResponses<TPayload, TMeta, TExtra, TPagingExtra, TError>(getPagingData(config));
-			if (!success) {
-				throw error;
-			}
+			const { data: responses } = unwrapOrThrow(
+				await fetchAllPageResponses<TPayload, TMeta, TExtra, TPagingExtra, TError>(getPagingData(config)),
+			);
 			return { ...data.mapPagingExtraResponseProps(responses), responses };
 		},
-		fetchAllPagesSafe: async (config?: PagingConfig) => {
-			const {
-				success,
-				data: responses,
-				error,
-			} = await fetchAllPageResponses<TPayload, TMeta, TExtra, TPagingExtra, TError>(getPagingData(config));
-			if (!success) {
-				return { success: false as const, error };
-			}
-			return { ...data.mapPagingExtraResponseProps(responses), success: true, responses };
-		},
+		fetchAllPagesSafe,
 		pagesSafe: (config?: PagingConfig) =>
 			createPagingQueryIterator<TPayload, TMeta, TExtra, TPagingExtra, TError>(getPagingData(config)),
 		pages: async function* (config?: PagingConfig) {
-			const iterator = createPagingQueryIterator<TPayload, TMeta, TExtra, TPagingExtra, TError>(getPagingData(config));
-			for await (const result of iterator) {
-				if (!result.success) {
-					throw result.error;
-				}
-				yield result.response;
+			for await (const result of createPagingQueryIterator<TPayload, TMeta, TExtra, TPagingExtra, TError>(getPagingData(config))) {
+				yield unwrapOrThrow(result).response;
 			}
 		},
 	};

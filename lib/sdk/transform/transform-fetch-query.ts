@@ -1,8 +1,9 @@
 import type { KontentSdkError } from "../../models/error.models.js";
 import type { JsonValue } from "../../models/json.models.js";
 import type { SchemaInput } from "../../utils/schema.utils.js";
+import { unwrapOrThrow } from "../../utils/try-catch.utils.js";
 import type { FetchQuery, QueryResponse, SdkConfig } from "../sdk-models.js";
-import { applyTransformOrThrow, applyTransformSafely, createTransformResponse } from "./transform-utils.js";
+import { applyTransformSafely, createTransformResponse } from "./transform-utils.js";
 
 export function transformFetchQuery<
 	TPayload extends JsonValue,
@@ -30,9 +31,11 @@ export function transformFetchQuery<
 		mapError,
 	});
 
+	const fetchSafe = async () => applyTransformSafely(await query.fetchSafe(), transformResponse);
+
 	return {
-		fetch: async () => applyTransformOrThrow(await query.fetch(), transformResponse),
-		fetchSafe: async () => applyTransformSafely(await query.fetchSafe(), transformResponse),
+		fetch: async () => unwrapOrThrow(await fetchSafe()).response,
+		fetchSafe,
 		inspect: query.inspect,
 	};
 }

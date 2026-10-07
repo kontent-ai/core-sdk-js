@@ -26,3 +26,12 @@ export function tryCatch<T>(fn: () => T): TryCatchResult<T> {
 		return { success: false, error };
 	}
 }
+
+export function unwrapOrThrow<TResult extends { readonly success: boolean; readonly error?: unknown }>(
+	result: TResult,
+): Extract<TResult, { readonly success: true }> {
+	if (!result.success) {
+		throw result.error;
+	}
+	return result as Extract<TResult, { readonly success: true }>;
+}

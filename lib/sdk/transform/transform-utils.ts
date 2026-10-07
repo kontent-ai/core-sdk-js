@@ -127,23 +127,6 @@ export function createBatchTransformResponses<
 	};
 }
 
-export async function applyTransformOrThrow<
-	TPayload extends JsonValue,
-	TTransformedPayload extends TPayload,
-	TError extends KontentSdkError,
-	TMeta,
-	TExtra,
->(
-	response: QueryResponse<TPayload, TMeta, TExtra>,
-	transformResponse: TransformResponseFn<TPayload, TTransformedPayload, TError, TMeta, TExtra>,
-): Promise<QueryResponse<TTransformedPayload, TMeta, TExtra>> {
-	const { success, data, error } = await transformResponse(response);
-	if (!success) {
-		throw error;
-	}
-	return data;
-}
-
 export async function applyTransformSafely<
 	TPayload extends JsonValue,
 	TTransformedPayload extends TPayload,

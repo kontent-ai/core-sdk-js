@@ -1,6 +1,7 @@
 import type { HttpRequestBody } from "../../http/http.models.js";
 import type { KontentSdkError } from "../../models/error.models.js";
 import type { JsonValue } from "../../models/json.models.js";
+import { unwrapOrThrow } from "../../utils/try-catch.utils.js";
 import { inspectQuery, resolveQuery } from "../resolve-query.js";
 import type { MutationQuery, MutationQueryRequest } from "../sdk-models.js";
 
@@ -16,12 +17,6 @@ export function createMutationQuery<
 	return {
 		inspect: () => inspectQuery(data),
 		executeSafe,
-		execute: async () => {
-			const { success, response, error } = await executeSafe();
-			if (!success) {
-				throw error;
-			}
-			return response;
-		},
+		execute: async () => unwrapOrThrow(await executeSafe()).response,
 	};
 }
