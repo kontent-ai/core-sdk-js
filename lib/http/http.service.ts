@@ -27,6 +27,7 @@ import { getDefaultHttpAdapter } from "./http.adapter.js";
 import type {
 	AdapterPayload,
 	AdapterRequestBody,
+	AdapterRequestOptions,
 	AdapterResponse,
 	DefaultHttpServiceOptions,
 	DownloadFileRequestOptions,
@@ -44,33 +45,9 @@ type ParsedRequest = {
 	readonly requestHeaders: readonly Header[];
 };
 
-type AdapterRequestData = {
-	readonly parsedUrl: URL;
-	readonly method: HttpMethod;
-	readonly requestHeaders: readonly Header[];
-	readonly parsedBody?: AdapterRequestBody;
-	readonly abortSignal: AbortSignal | undefined;
-};
-
 export function getDefaultHttpService(config?: DefaultHttpServiceOptions): HttpService {
 	const adapter = resolveHttpAdapter(config);
 	const retryStrategyOptions = resolveDefaultRetryStrategyOptions(config?.retryStrategy);
-
-	const executeWithAdapter = async ({
-		parsedUrl,
-		method,
-		requestHeaders,
-		parsedBody,
-		abortSignal,
-	}: AdapterRequestData): Promise<AdapterResponse<JsonValue>> => {
-		return await adapter.executeRequest({
-			url: parsedUrl,
-			method,
-			requestHeaders,
-			body: parsedBody ?? null,
-			abortSignal,
-		});
-	};
 
 	return {
 		request: async <TBody extends HttpRequestBody>(
@@ -80,7 +57,7 @@ export function getDefaultHttpService(config?: DefaultHttpServiceOptions): HttpS
 				config,
 				retryStrategyOptions,
 				options,
-				runAdapterFunc: executeWithAdapter,
+				runAdapterFunc: adapter.executeRequest,
 			});
 		},
 
@@ -92,13 +69,7 @@ export function getDefaultHttpService(config?: DefaultHttpServiceOptions): HttpS
 					...options,
 					method: "GET",
 				},
-				runAdapterFunc: async ({ parsedUrl, requestHeaders }) => {
-					return await adapter.downloadFile({
-						url: parsedUrl,
-						requestHeaders,
-						abortSignal: options.abortSignal,
-					});
-				},
+				runAdapterFunc: adapter.downloadFile,
 			});
 		},
 
@@ -107,7 +78,7 @@ export function getDefaultHttpService(config?: DefaultHttpServiceOptions): HttpS
 				config,
 				retryStrategyOptions,
 				options,
-				runAdapterFunc: executeWithAdapter,
+				runAdapterFunc: adapter.executeRequest,
 			});
 		},
 	};
@@ -128,7 +99,7 @@ async function processHttpRequest<TPayload extends AdapterPayload, TBody extends
 	config,
 	retryStrategyOptions,
 }: {
-	readonly runAdapterFunc: (data: AdapterRequestData) => Promise<AdapterResponse<TPayload>>;
+	readonly runAdapterFunc: (options: AdapterRequestOptions) => Promise<AdapterResponse<TPayload>>;
 	readonly config: DefaultHttpServiceOptions | undefined;
 	readonly retryStrategyOptions: ResolvedRetryStrategyOptions;
 	readonly options: HttpServiceRequestOptions<TBody>;
@@ -142,17 +113,21 @@ async function processHttpRequest<TPayload extends AdapterPayload, TBody extends
 		};
 	}
 
+	const adapterOptions: AdapterRequestOptions = {
+		url: parsedRequest.parsedUrl,
+		method: options.method,
+		requestHeaders: parsedRequest.requestHeaders,
+		body: parsedRequest.parsedBody,
+		abortSignal: options.abortSignal,
+	};
+
 	return await runWithRetry({
 		retryAttempt: 0,
 		abortSignal: options.abortSignal,
 		func: async (retryAttempt) => {
 			const responseOrError = await runAdapterRequest({
-				parsedUrl: parsedRequest.parsedUrl,
-				method: options.method,
-				requestHeaders: parsedRequest.requestHeaders,
-				parsedBody: parsedRequest.parsedBody,
-				runAdapterRequest: runAdapterFunc,
-				abortSignal: options.abortSignal,
+				adapterOptions,
+				runAdapterFunc,
 				retryAttempt,
 				retryStrategyOptions,
 			});
@@ -270,36 +245,19 @@ async function mapAdapterResponse<TPayload extends AdapterPayload, TBody extends
 }
 
 async function runAdapterRequest<TPayload extends AdapterPayload>({
-	parsedUrl,
-	method,
-	requestHeaders,
-	parsedBody,
-	runAdapterRequest,
-	abortSignal,
+	adapterOptions,
+	runAdapterFunc,
 	retryAttempt,
 	retryStrategyOptions,
 }: {
-	readonly runAdapterRequest: (data: AdapterRequestData) => Promise<AdapterResponse<TPayload>>;
-	readonly parsedUrl: URL;
-	readonly method: HttpMethod;
-	readonly requestHeaders: readonly Header[];
-	readonly parsedBody: AdapterRequestBody;
-	readonly abortSignal: AbortSignal | undefined;
+	readonly adapterOptions: AdapterRequestOptions;
+	readonly runAdapterFunc: (options: AdapterRequestOptions) => Promise<AdapterResponse<TPayload>>;
 	readonly retryAttempt: number;
 	readonly retryStrategyOptions: ResolvedRetryStrategyOptions;
 }): Promise<AdapterResponse<TPayload> | KontentSdkError> {
-	const { error, data } = await tryCatchAsync(
-		async () =>
-			await runAdapterRequest({
-				parsedUrl,
-				method,
-				requestHeaders,
-				parsedBody,
-				abortSignal,
-			}),
-	);
+	const { error, data } = await tryCatchAsync(async () => await runAdapterFunc(adapterOptions));
 
-	return data ?? createAdapterError({ url: parsedUrl, error, retryAttempt, retryStrategyOptions });
+	return data ?? createAdapterError({ url: adapterOptions.url, error, retryAttempt, retryStrategyOptions });
 }
 
 function isSuccessfulResponse(response: AdapterResponse<AdapterPayload>): boolean {
