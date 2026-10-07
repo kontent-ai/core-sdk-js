@@ -217,7 +217,7 @@ type MetadataMapperConfig<TPayload extends JsonValue, TBody extends HttpRequestB
 };
 
 type ExtraResponsePropsMapper<TPayload extends JsonValue, TBody extends HttpRequestBody, TExtra> = {
-	readonly mapExtraResponseProps: (response: HttpResponse<TPayload, TBody>["response"]) => TExtra;
+	readonly mapExtraResponseProps: (response: SuccessfulHttpResponse<TPayload, TBody>) => TExtra;
 };
 
 type ErrorMapper<TError extends KontentSdkError> = {

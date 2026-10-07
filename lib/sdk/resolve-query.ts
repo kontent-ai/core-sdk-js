@@ -145,7 +145,6 @@ async function executeQuery<TPayload extends JsonValue, TBody extends HttpReques
 				url: response.adapterResponse.url,
 				responseHeaders: response.adapterResponse.responseHeaders,
 				status: response.adapterResponse.status,
-				continuationToken: continuationTokenFromResponse,
 			},
 		},
 	};
