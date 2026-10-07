@@ -1,9 +1,9 @@
 import { match, P } from "ts-pattern";
-import type { GetNextPageData, PagingConfig } from "../../http/http.models.js";
+import type { SafeHttpResult } from "../../http/http.models.js";
 import type { KontentSdkError } from "../../models/error.models.js";
 import type { JsonValue } from "../../models/json.models.js";
 import { type TryCatchResult, unwrapOrThrow } from "../../utils/try-catch.utils.js";
-import type { FetchQueryRequest, PagedFetchQuery, QueryResponse, SafeQueryResult } from "../sdk-models.js";
+import type { FetchQueryRequest, GetNextPageData, PagedFetchQuery, PagingConfig, QueryResponse } from "../sdk-models.js";
 import { createFetchQuery } from "./fetch-sdk-query.js";
 
 type PagingInput<TPayload extends JsonValue, TError extends KontentSdkError, TMeta, TExtra> = FetchQueryRequest<
@@ -64,7 +64,7 @@ export function createPagedFetchQuery<TPayload extends JsonValue, TError extends
 
 async function* createPagingQueryIterator<TPayload extends JsonValue, TMeta, TExtra, TError extends KontentSdkError>(
 	data: PagingInput<TPayload, TError, TMeta, TExtra>,
-): AsyncGenerator<SafeQueryResult<QueryResponse<TPayload, TMeta, TExtra>, TError>> {
+): AsyncGenerator<SafeHttpResult<QueryResponse<TPayload, TMeta, TExtra>, TError>> {
 	let nextPage: NextPage = {};
 	let pageIndex: number = 0;
 

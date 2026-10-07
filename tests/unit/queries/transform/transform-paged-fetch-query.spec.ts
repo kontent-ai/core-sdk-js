@@ -1,8 +1,9 @@
 import { describe, expect, it } from "vitest";
 import * as z from "zod";
 import type { ErrorReason, KontentSdkError } from "../../../../lib/models/error.models.js";
+import type { SafeHttpResult } from "../../../../lib/public_api.js";
 import { createPagedFetchQuery } from "../../../../lib/sdk/queries/paged-fetch-sdk-query.js";
-import type { PagedFetchQuery, QueryResponse, SafeQueryResult } from "../../../../lib/sdk/sdk-models.js";
+import type { PagedFetchQuery, QueryResponse } from "../../../../lib/sdk/sdk-models.js";
 import { transformPagedFetchQuery } from "../../../../lib/sdk/transform/transform-paged-fetch-query.js";
 import { getTestHttpServiceWithJsonResponse, getTestSdkInfo } from "../../../../lib/testkit/testkit.utils.js";
 import { tryCatchAsync } from "../../../../lib/utils/try-catch.utils.js";
@@ -351,7 +352,7 @@ describe("transformPagedFetchQuery - pagesSafe async iterator applies transform 
 		mapError: (error) => error,
 	});
 
-	const collected: SafeQueryResult<QueryResponse<{ name: string; extra: string }, unknown, unknown>, KontentSdkError>[] = [];
+	const collected: SafeHttpResult<QueryResponse<{ name: string; extra: string }, unknown, unknown>, KontentSdkError>[] = [];
 	for await (const result of transformedQuery.pagesSafe()) {
 		collected.push(result);
 	}
@@ -382,7 +383,7 @@ describe("transformPagedFetchQuery - pagesSafe async iterator yields underlying 
 		mapError: (error) => error,
 	});
 
-	const collected: SafeQueryResult<QueryResponse<PagePayload, unknown, unknown>, KontentSdkError>[] = [];
+	const collected: SafeHttpResult<QueryResponse<PagePayload, unknown, unknown>, KontentSdkError>[] = [];
 	for await (const result of transformedQuery.pagesSafe()) {
 		collected.push(result);
 	}

@@ -1,10 +1,11 @@
+import type { SafeHttpResult } from "../../http/http.models.js";
 import type { KontentSdkError } from "../../models/error.models.js";
 import type { JsonValue } from "../../models/json.models.js";
 import { isNonEmptyArray as isArrayWithSomeData } from "../../utils/array.utils.js";
 import { createSdkError } from "../../utils/error.utils.js";
 import type { SchemaInput } from "../../utils/schema.utils.js";
 import { type TryCatchResult, tryCatch } from "../../utils/try-catch.utils.js";
-import type { QueryResponse, SafeQueryResult, SdkConfig } from "../sdk-models.js";
+import type { QueryResponse, SdkConfig } from "../sdk-models.js";
 import { validatePayloads } from "../sdk-utils.js";
 
 type TransformResponseFn<
@@ -134,9 +135,9 @@ export async function applyTransformSafely<
 	TMeta,
 	TExtra,
 >(
-	safeResult: SafeQueryResult<QueryResponse<TPayload, TMeta, TExtra>, TError>,
+	safeResult: SafeHttpResult<QueryResponse<TPayload, TMeta, TExtra>, TError>,
 	transformResponse: TransformResponseFn<TPayload, TTransformedPayload, TError, TMeta, TExtra>,
-): Promise<SafeQueryResult<QueryResponse<TTransformedPayload, TMeta, TExtra>, TError>> {
+): Promise<SafeHttpResult<QueryResponse<TTransformedPayload, TMeta, TExtra>, TError>> {
 	if (!safeResult.success) {
 		return { success: false, error: safeResult.error };
 	}

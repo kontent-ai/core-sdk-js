@@ -1,9 +1,8 @@
 import { describe, expect, it } from "vitest";
-import type { GetNextPageData } from "../../../../lib/http/http.models.js";
 import { getDefaultHttpService } from "../../../../lib/http/http.service.js";
 import type { JsonValue } from "../../../../lib/public_api.js";
 import { createPagedFetchQuery } from "../../../../lib/sdk/queries/paged-fetch-sdk-query.js";
-import type { QueryResponse } from "../../../../lib/sdk/sdk-models.js";
+import type { GetNextPageData, QueryResponse } from "../../../../lib/sdk/sdk-models.js";
 import { getNextPageUrl, getTestSdkInfo, preventInfinitePaging, stubFetchWithResponse } from "../../../../lib/testkit/testkit.utils.js";
 
 describe("Async pages iterator with unlimited max count", async () => {

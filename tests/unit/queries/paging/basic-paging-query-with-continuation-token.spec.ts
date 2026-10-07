@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
-import type { GetNextPageData } from "../../../../lib/http/http.models.js";
 import { getDefaultHttpService } from "../../../../lib/http/http.service.js";
 import { extractContinuationToken } from "../../../../lib/public_api.js";
 import { createPagedFetchQuery } from "../../../../lib/sdk/queries/paged-fetch-sdk-query.js";
+import type { GetNextPageData } from "../../../../lib/sdk/sdk-models.js";
 import { getTestSdkInfo, preventInfinitePaging, stubFetchWithResponse } from "../../../../lib/testkit/testkit.utils.js";
 import { createContinuationHeader, toFetchHeaders } from "../../../../lib/utils/header.utils.js";
 

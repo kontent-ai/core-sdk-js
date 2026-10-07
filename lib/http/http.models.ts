@@ -1,7 +1,8 @@
 import type { Header, HttpMethod, RetryStrategyOptions } from "../models/core.models.js";
+import type { KontentSdkError } from "../models/error.models.js";
 import type { JsonObject, JsonValue } from "../models/json.models.js";
 import type { LiteralUnionNumber } from "../models/utility.types.js";
-import type { QueryResponse, SafeQueryResult } from "../sdk/sdk-models.js";
+import type { Failure, Success } from "../utils/try-catch.utils.js";
 
 /**
  * Helper status codes for the HTTP service.
@@ -28,7 +29,11 @@ export type DefaultHttpServiceOptions = {
 
 export type HttpRequestBody = JsonObject | Blob | null;
 
-export type HttpResponse<TPayload extends AdapterPayload, TBody extends HttpRequestBody> = SafeQueryResult<{
+export type SafeHttpResult<TResponse, TError extends KontentSdkError = KontentSdkError> =
+	| Success<{ readonly response: TResponse }>
+	| Failure<{ readonly response?: never }, TError>;
+
+export type HttpResponse<TPayload extends AdapterPayload, TBody extends HttpRequestBody> = SafeHttpResult<{
 	readonly payload: TPayload;
 	readonly body?: TBody;
 	readonly method: HttpMethod;
@@ -97,20 +102,6 @@ export type AdapterRequestOptions = {
 };
 
 export type AdapterDownloadOptions = Pick<AdapterRequestOptions, "url" | "requestHeaders" | "abortSignal">;
-
-export type GetNextPageData<TPayload extends JsonValue, TMeta = unknown, TExtra = unknown> = (
-	response: QueryResponse<TPayload, TMeta, TExtra>,
-) => {
-	readonly continuationToken?: string | undefined;
-	readonly nextPageUrl?: string | undefined;
-};
-
-export type PagingConfig = {
-	/**
-	 * The maximum number of pages to fetch. If not provided or set to 0, the pagination will continue until the last page is reached.
-	 */
-	readonly maxPagesCount?: number;
-};
 
 /**
  * Defines the adapter responsible solely for executing HTTP requests.

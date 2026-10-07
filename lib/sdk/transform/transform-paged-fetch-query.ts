@@ -1,9 +1,10 @@
+import type { SafeHttpResult } from "../../http/http.models.js";
 import type { KontentSdkError } from "../../models/error.models.js";
 import type { JsonValue } from "../../models/json.models.js";
 import { isNonEmptyArray } from "../../utils/array.utils.js";
 import type { SchemaInput } from "../../utils/schema.utils.js";
 import { unwrapOrThrow } from "../../utils/try-catch.utils.js";
-import type { PagedFetchQuery, QueryResponse, SafeQueryResult, SdkConfig } from "../sdk-models.js";
+import type { PagedFetchQuery, QueryResponse, SdkConfig } from "../sdk-models.js";
 import { createBatchTransformResponses, createTransformError } from "./transform-utils.js";
 
 const emptyTransformResultMessage = "Transform returned no response for input";
@@ -45,8 +46,8 @@ export function transformPagedFetchQuery<
 	});
 
 	const transformSingleSafely = async (
-		safeResult: SafeQueryResult<QueryResponse<TPayload, TMeta, TExtra>, TError>,
-	): Promise<SafeQueryResult<QueryResponse<TTransformedPayload, TMeta, TExtra>, TError>> => {
+		safeResult: SafeHttpResult<QueryResponse<TPayload, TMeta, TExtra>, TError>,
+	): Promise<SafeHttpResult<QueryResponse<TTransformedPayload, TMeta, TExtra>, TError>> => {
 		if (!safeResult.success) {
 			return { success: false, error: safeResult.error };
 		}

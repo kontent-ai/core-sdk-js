@@ -3,7 +3,7 @@
  * to keep common code and behavior consistent.
  */
 
-import type { AdapterPayload, AdapterResponse, HttpRequestBody, HttpResponse, HttpService, PagingConfig } from "../http/http.models.js";
+import type { AdapterPayload, AdapterResponse, HttpRequestBody, HttpResponse, HttpService, SafeHttpResult } from "../http/http.models.js";
 import type { Header, HttpMethod, SdkInfo } from "../models/core.models.js";
 import type { KontentSdkError } from "../models/error.models.js";
 import type { JsonValue } from "../models/json.models.js";
@@ -64,7 +64,7 @@ export type FetchQuery<
 	TMeta = unknown,
 	TExtra = unknown,
 > = Query<TError> & {
-	readonly fetchSafe: () => Promise<SafeQueryResult<QueryResponse<TPayload, TMeta, TExtra>, TError>>;
+	readonly fetchSafe: () => Promise<SafeHttpResult<QueryResponse<TPayload, TMeta, TExtra>, TError>>;
 	readonly fetch: () => Promise<QueryResponse<TPayload, TMeta, TExtra>>;
 };
 
@@ -75,13 +75,13 @@ export type PagedFetchQuery<
 	TExtra = unknown,
 	TPagingExtra = unknown,
 > = Query<TError> & {
-	readonly fetchPageSafe: () => Promise<SafeQueryResult<QueryResponse<TPayload, TMeta, TExtra>, TError>>;
+	readonly fetchPageSafe: () => Promise<SafeHttpResult<QueryResponse<TPayload, TMeta, TExtra>, TError>>;
 	readonly fetchPage: () => Promise<QueryResponse<TPayload, TMeta, TExtra>>;
 	readonly fetchAllPagesSafe: (
 		config?: PagingConfig,
 	) => Promise<SafePagingQueryResult<QueryResponse<TPayload, TMeta, TExtra>, TError, TPagingExtra>>;
 	readonly fetchAllPages: (config?: PagingConfig) => Promise<PagingQueryResponse<QueryResponse<TPayload, TMeta, TExtra>, TPagingExtra>>;
-	readonly pagesSafe: (config?: PagingConfig) => AsyncGenerator<SafeQueryResult<QueryResponse<TPayload, TMeta, TExtra>, TError>>;
+	readonly pagesSafe: (config?: PagingConfig) => AsyncGenerator<SafeHttpResult<QueryResponse<TPayload, TMeta, TExtra>, TError>>;
 	readonly pages: (config?: PagingConfig) => AsyncGenerator<QueryResponse<TPayload, TMeta, TExtra>>;
 };
 
@@ -91,7 +91,7 @@ export type MutationQuery<
 	TMeta = unknown,
 	TExtra = unknown,
 > = Query<TError> & {
-	readonly executeSafe: () => Promise<SafeQueryResult<QueryResponse<TPayload, TMeta, TExtra>, TError>>;
+	readonly executeSafe: () => Promise<SafeHttpResult<QueryResponse<TPayload, TMeta, TExtra>, TError>>;
 	readonly execute: () => Promise<QueryResponse<TPayload, TMeta, TExtra>>;
 };
 
@@ -99,10 +99,6 @@ export type SuccessfulHttpResponse<TPayload extends AdapterPayload, TBody extend
 	HttpResponse<TPayload, TBody>,
 	{ readonly success: true }
 >["response"];
-
-export type SafeQueryResult<TPayload, TError extends KontentSdkError = KontentSdkError> =
-	| Success<{ readonly response: TPayload }>
-	| Failure<{ readonly response?: never }, TError>;
 
 export type SafePagingQueryResult<TPayload, TError extends KontentSdkError = KontentSdkError, TExtra = unknown> =
 	| Success<
@@ -116,6 +112,20 @@ export type SafePagingQueryResult<TPayload, TError extends KontentSdkError = Kon
 			} & { readonly [K in keyof TExtra]: never },
 			TError
 	  >;
+
+export type GetNextPageData<TPayload extends JsonValue, TMeta = unknown, TExtra = unknown> = (
+	response: QueryResponse<TPayload, TMeta, TExtra>,
+) => {
+	readonly continuationToken?: string | undefined;
+	readonly nextPageUrl?: string | undefined;
+};
+
+export type PagingConfig = {
+	/**
+	 * The maximum number of pages to fetch. If not provided or set to 0, the pagination will continue until the last page is reached.
+	 */
+	readonly maxPagesCount?: number;
+};
 
 export type PagingQueryResponse<TPayload, TExtra = unknown> = {
 	readonly responses: readonly TPayload[];

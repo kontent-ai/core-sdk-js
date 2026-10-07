@@ -1,4 +1,4 @@
-import type { HttpRequestBody, HttpService } from "../http/http.models.js";
+import type { HttpRequestBody, HttpService, SafeHttpResult } from "../http/http.models.js";
 import { getDefaultHttpService } from "../http/http.service.js";
 import type { Header, SdkInfo } from "../models/core.models.js";
 import type { ErrorDetailsFor, KontentSdkError } from "../models/error.models.js";
@@ -12,15 +12,7 @@ import {
 } from "../utils/header.utils.js";
 import type { TryCatchResult } from "../utils/try-catch.utils.js";
 import { parseUrl } from "../utils/url.utils.js";
-import type {
-	BaseUrl,
-	QueryInputData,
-	QueryInspection,
-	QueryResponse,
-	SafeQueryResult,
-	SdkConfig,
-	SuccessfulHttpResponse,
-} from "./sdk-models.js";
+import type { BaseUrl, QueryInputData, QueryInspection, QueryResponse, SdkConfig, SuccessfulHttpResponse } from "./sdk-models.js";
 import { validatePayloads } from "./sdk-utils.js";
 
 export function inspectQuery<TError extends KontentSdkError>(
@@ -57,7 +49,7 @@ export async function resolveQuery<
 	TMeta,
 	TExtra,
 	TError extends KontentSdkError,
->(data: QueryInputData<TPayload, TBody, TMeta, TExtra, TError>): Promise<SafeQueryResult<QueryResponse<TPayload, TMeta, TExtra>, TError>> {
+>(data: QueryInputData<TPayload, TBody, TMeta, TExtra, TError>): Promise<SafeHttpResult<QueryResponse<TPayload, TMeta, TExtra>, TError>> {
 	const { success: inspectionSuccess, data: inspectionData, error: inspectionError } = inspectQuery(data);
 
 	if (!inspectionSuccess) {
@@ -70,7 +62,7 @@ export async function resolveQuery<
 async function executeQuery<TPayload extends JsonValue, TBody extends HttpRequestBody, TMeta, TExtra, TError extends KontentSdkError>(
 	queryInspection: QueryInspection,
 	queryData: QueryInputData<TPayload, TBody, TMeta, TExtra, TError>,
-): Promise<SafeQueryResult<QueryResponse<TPayload, TMeta, TExtra>, TError>> {
+): Promise<SafeHttpResult<QueryResponse<TPayload, TMeta, TExtra>, TError>> {
 	const {
 		success,
 		response: jsonResponse,
