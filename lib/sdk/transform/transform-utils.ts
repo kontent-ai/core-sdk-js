@@ -43,7 +43,40 @@ export function createTransformError(error: unknown, url: URL): KontentSdkError 
 	});
 }
 
-export function createTransformResponse<
+async function transformAndValidate<TResult, TPayload extends JsonValue, TError extends KontentSdkError>({
+	config,
+	transformSchema,
+	mapError,
+	errorUrl,
+	transform,
+	getPayloads,
+}: {
+	readonly config: Pick<SdkConfig, "runtimeValidation">;
+	readonly transformSchema: SchemaInput<TPayload>;
+	readonly mapError: (error: KontentSdkError) => TError;
+	readonly errorUrl: URL;
+	readonly transform: () => TResult;
+	readonly getPayloads: (result: TResult) => readonly { readonly url: URL; readonly payload: TPayload }[];
+}): Promise<TryCatchResult<TResult, TError>> {
+	const { success, data, error } = tryCatch(transform);
+
+	if (!success) {
+		return { success: false, error: mapError(createTransformError(error, errorUrl)) };
+	}
+
+	const validationError = await validatePayloads({
+		runtimeValidation: config.runtimeValidation,
+		schema: transformSchema,
+		payloads: getPayloads(data),
+	});
+	if (validationError) {
+		return { success: false, error: mapError(validationError) };
+	}
+
+	return { success: true, data };
+}
+
+function createTransformResponse<
 	TPayload extends JsonValue,
 	TTransformedPayload extends TPayload,
 	TError extends KontentSdkError,
@@ -60,24 +93,15 @@ export function createTransformResponse<
 	readonly transformSchema: SchemaInput<TTransformedPayload>;
 	readonly mapError: (error: KontentSdkError) => TError;
 }): TransformResponseFn<TPayload, TTransformedPayload, TError, TMeta, TExtra> {
-	return async (response) => {
-		const { success, data: transformedResponse, error } = tryCatch(() => transform(response));
-
-		if (!success) {
-			return { success: false, error: mapError(createTransformError(error, response.meta.url)) };
-		}
-
-		const validationError = await validatePayloads({
-			runtimeValidation: config.runtimeValidation,
-			schema: transformSchema,
-			payloads: [{ url: transformedResponse.meta.url, payload: transformedResponse.payload }],
+	return (response) =>
+		transformAndValidate({
+			config,
+			transformSchema,
+			mapError,
+			errorUrl: response.meta.url,
+			transform: () => transform(response),
+			getPayloads: (transformed) => [{ url: transformed.meta.url, payload: transformed.payload }],
 		});
-		if (validationError) {
-			return { success: false, error: mapError(validationError) };
-		}
-
-		return { success: true, data: transformedResponse };
-	};
 }
 
 export function createBatchTransformResponses<
@@ -99,32 +123,21 @@ export function createBatchTransformResponses<
 	readonly transformSchema: SchemaInput<TTransformedPayload>;
 	readonly mapError: (error: KontentSdkError) => TError;
 }): BatchTransformResponsesFn<TPayload, TTransformedPayload, TError, TMeta, TExtra> {
-	return async (responses) => {
+	return (responses) => {
 		if (!isArrayWithSomeData(responses)) {
-			return { success: true, data: [] };
+			return Promise.resolve({ success: true, data: [] });
 		}
 
 		const [firstResponse] = responses;
 
-		const { success, data: transformedResponses, error } = tryCatch(() => transform(responses));
-
-		if (!success) {
-			return { success: false, error: mapError(createTransformError(error, firstResponse.meta.url)) };
-		}
-
-		const validationError = await validatePayloads({
-			runtimeValidation: config.runtimeValidation,
-			schema: transformSchema,
-			payloads: transformedResponses.map((transformedResponse) => ({
-				url: transformedResponse.meta.url,
-				payload: transformedResponse.payload,
-			})),
+		return transformAndValidate({
+			config,
+			transformSchema,
+			mapError,
+			errorUrl: firstResponse.meta.url,
+			transform: () => transform(responses),
+			getPayloads: (transformed) => transformed.map(({ meta, payload }) => ({ url: meta.url, payload })),
 		});
-		if (validationError) {
-			return { success: false, error: mapError(validationError) };
-		}
-
-		return { success: true, data: transformedResponses };
 	};
 }
 
