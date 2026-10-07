@@ -122,7 +122,6 @@ async function processHttpRequest<TPayload extends AdapterPayload, TBody extends
 	};
 
 	return await runWithRetry({
-		retryAttempt: 0,
 		abortSignal: options.abortSignal,
 		func: async (retryAttempt) => {
 			const retryContext: RetryContext = { retryStrategyOptions, retryAttempt };

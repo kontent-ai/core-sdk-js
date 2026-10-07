@@ -29,11 +29,10 @@ const defaultCanRetryAdapterError: NonNullable<RetryStrategyOptions["canRetryAda
 export async function runWithRetry<TPayload extends AdapterPayload, TBody extends HttpRequestBody>(data: {
 	readonly func: (retryAttempt: number) => Promise<HttpResponse<TPayload, TBody>>;
 	readonly retryStrategyOptions: ResolvedRetryStrategyOptions;
-	readonly retryAttempt: number;
 	readonly url: URL;
 	readonly abortSignal: AbortSignal | undefined;
 }): Promise<HttpResponse<TPayload, TBody>> {
-	let retryAttempt = data.retryAttempt;
+	let retryAttempt = 0;
 	let retryResult: RetryResult = { canRetry: true, retryInMs: 0 };
 
 	while (retryResult.canRetry) {

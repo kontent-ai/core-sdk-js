@@ -158,7 +158,6 @@ describe("runWithRetry - rate-limited request succeeds on retry", async () => {
 	const result = await runWithRetry({
 		func,
 		retryStrategyOptions: resolveDefaultRetryStrategyOptions({ maxRetries: 3 }),
-		retryAttempt: 0,
 		url,
 		abortSignal: undefined,
 	});
@@ -182,7 +181,6 @@ describe("runWithRetry - rate-limited request fails after max retries exceeded",
 	const result = await runWithRetry({
 		func,
 		retryStrategyOptions: resolveDefaultRetryStrategyOptions({ maxRetries }),
-		retryAttempt: 0,
 		url,
 		abortSignal: undefined,
 	});

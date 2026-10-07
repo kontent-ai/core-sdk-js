@@ -9,12 +9,8 @@ import type { AdapterDownloadOptions, AdapterPayload, AdapterRequestOptions, Ada
 
 export function getDefaultHttpAdapter(): Required<HttpAdapter> {
 	return {
-		executeRequest: async (options) => {
-			return await executeRequest(options);
-		},
-		downloadFile: async (options) => {
-			return await downloadFile(options);
-		},
+		executeRequest,
+		downloadFile,
 	};
 }
 
