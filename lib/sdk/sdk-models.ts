@@ -95,23 +95,6 @@ export type MutationQuery<
 	readonly execute: () => Promise<QueryResponse<TPayload, TMeta, TExtra>>;
 };
 
-export type PendingNextPageState =
-	| {
-			readonly hasNextPage: true;
-			readonly continuationToken: string;
-			readonly nextPageUrl?: never;
-	  }
-	| {
-			readonly hasNextPage: true;
-			readonly continuationToken?: never;
-			readonly nextPageUrl: string;
-	  }
-	| {
-			readonly hasNextPage: true;
-			readonly continuationToken?: never;
-			readonly nextPageUrl?: never;
-	  };
-
 export type SuccessfulHttpResponse<TPayload extends AdapterPayload, TBody extends HttpRequestBody> = Extract<
 	HttpResponse<TPayload, TBody>,
 	{ readonly success: true }
@@ -179,17 +162,6 @@ export type QueryInputData<TPayload extends JsonValue, TBody extends HttpRequest
 } & MetadataMapperConfig<TPayload, TBody, TMeta> &
 	ExtraResponsePropsMapper<TPayload, TBody, TExtra> &
 	ErrorMapper<TError>;
-
-export type PagingQueryInputData<
-	TPayload extends JsonValue,
-	TBody extends HttpRequestBody,
-	TMeta,
-	TExtra,
-	TPagingExtra,
-	TError extends KontentSdkError,
-> = QueryInputData<TPayload, TBody, TMeta, TExtra, TError> & {
-	readonly mapPagingExtraResponseProps: (responses: readonly QueryResponse<TPayload, TMeta, TExtra>[]) => TPagingExtra;
-};
 
 export type QueryInspection = {
 	readonly url: URL;
