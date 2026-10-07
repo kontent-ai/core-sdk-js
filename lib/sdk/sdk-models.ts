@@ -194,7 +194,14 @@ export type PagingQueryInputData<
 	readonly mapPagingExtraResponseProps: (responses: readonly QueryResponse<TPayload, TMeta, TExtra>[]) => TPagingExtra;
 };
 
-export type QueryInspection = Pick<
+export type QueryInspection = {
+	readonly url: URL;
+	readonly requestHeaders: readonly Header[];
+	readonly body: HttpRequestBody;
+	readonly method: HttpMethod;
+};
+
+export type QueryInspection2 = Pick<
 	ResolvedQueryData<JsonValue, HttpRequestBody, unknown, unknown, KontentSdkError>,
 	"url" | "requestHeaders" | "body" | "method"
 >;

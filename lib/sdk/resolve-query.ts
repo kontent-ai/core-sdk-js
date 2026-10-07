@@ -17,7 +17,6 @@ import type {
 	QueryInputData,
 	QueryInspection,
 	QueryResponse,
-	ResolvedQueryData,
 	SafeQueryResult,
 	SdkConfig,
 	SuccessfulHttpResponse,
@@ -59,78 +58,44 @@ export async function resolveQuery<
 	TExtra,
 	TError extends KontentSdkError,
 >(data: QueryInputData<TPayload, TBody, TMeta, TExtra, TError>): Promise<SafeQueryResult<QueryResponse<TPayload, TMeta, TExtra>, TError>> {
-	const { success, data: resolvedQueryData, error } = prepareQueryData(data);
-	if (!success) {
-		return { success: false, error };
-	}
-	return await executeQuery(resolvedQueryData);
-}
-
-function prepareQueryData<TPayload extends JsonValue, TBody extends HttpRequestBody, TMeta, TExtra, TError extends KontentSdkError>(
-	data: QueryInputData<TPayload, TBody, TMeta, TExtra, TError>,
-): TryCatchResult<ResolvedQueryData<TPayload, TBody, TMeta, TExtra, TError>, TError> {
 	const { success: inspectionSuccess, data: inspectionData, error: inspectionError } = inspectQuery(data);
 
 	if (!inspectionSuccess) {
 		return { success: false, error: inspectionError };
 	}
 
-	return {
-		success: true,
-		data: {
-			requestHeaders: inspectionData.requestHeaders,
-			url: inspectionData.url,
-			httpService: getHttpService(data.config),
-			body: data.body,
-			method: data.method,
-			abortSignal: data.abortSignal,
-			schema: data.schema,
-			responseValidation: data.config.runtimeValidation,
-			mapError: data.mapError,
-			mapMetadata: data.mapMetadata,
-			mapExtraResponseProps: data.mapExtraResponseProps,
-		},
-	};
+	return await executeQuery(inspectionData, data);
 }
 
-async function executeQuery<TPayload extends JsonValue, TBody extends HttpRequestBody, TMeta, TExtra, TError extends KontentSdkError>({
-	url,
-	requestHeaders,
-	httpService,
-	body,
-	method,
-	abortSignal,
-	schema,
-	responseValidation,
-	mapError,
-	mapMetadata,
-	mapExtraResponseProps,
-}: ResolvedQueryData<TPayload, TBody, TMeta, TExtra, TError>): Promise<SafeQueryResult<QueryResponse<TPayload, TMeta, TExtra>, TError>> {
+async function executeQuery<TPayload extends JsonValue, TBody extends HttpRequestBody, TMeta, TExtra, TError extends KontentSdkError>(
+	queryInspection: QueryInspection,
+	queryData: QueryInputData<TPayload, TBody, TMeta, TExtra, TError>,
+): Promise<SafeQueryResult<QueryResponse<TPayload, TMeta, TExtra>, TError>> {
 	const {
 		success,
 		response: jsonResponse,
 		error,
-	} = await httpService.request<TBody>({
-		body,
-		url,
-		method,
-		abortSignal,
-		requestHeaders,
+	} = await getHttpService(queryData.config).request<TBody>({
+		body: queryData.body,
+		url: queryInspection.url,
+		method: queryInspection.method,
+		abortSignal: queryData.abortSignal,
+		requestHeaders: queryInspection.requestHeaders,
 	});
 
 	if (!success) {
-		return { success: false, error: mapError(error) };
+		return { success: false, error: queryData.mapError(error) };
 	}
 
 	const response = trustQueryResponse<TPayload, TBody>(jsonResponse);
 
 	const validationError = await validatePayloads({
-		runtimeValidation: responseValidation,
-		schema,
+		runtimeValidation: queryData.config.runtimeValidation,
+		schema: queryData.schema,
 		payloads: [{ url: response.adapterResponse.url, payload: response.payload }],
 	});
 	if (validationError) {
-		return { success: false, error: mapError(validationError) };
+		return { success: false, error: queryData.mapError(validationError) };
 	}
 
 	const continuationTokenFromResponse = extractContinuationToken(response.adapterResponse.responseHeaders);
@@ -138,10 +103,10 @@ async function executeQuery<TPayload extends JsonValue, TBody extends HttpReques
 	return {
 		success: true,
 		response: {
-			...mapExtraResponseProps(response),
+			...queryData.mapExtraResponseProps(response),
 			payload: response.payload,
 			meta: {
-				...mapMetadata(response, { continuationToken: continuationTokenFromResponse }),
+				...queryData.mapMetadata(response, { continuationToken: continuationTokenFromResponse }),
 				url: response.adapterResponse.url,
 				responseHeaders: response.adapterResponse.responseHeaders,
 				status: response.adapterResponse.status,
