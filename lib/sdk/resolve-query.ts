@@ -117,7 +117,7 @@ function trustQueryResponse<TPayload extends JsonValue, TBody extends HttpReques
 	return response as SuccessfulHttpResponse<TPayload, TBody>;
 }
 
-export function resolveUrl<TError extends KontentSdkError>({
+function resolveUrl<TError extends KontentSdkError>({
 	url,
 	baseUrl,
 	mapError,

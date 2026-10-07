@@ -3,6 +3,7 @@ import type { SafeHttpResult } from "../../http/http.models.js";
 import type { KontentSdkError } from "../../models/error.models.js";
 import type { JsonValue } from "../../models/json.models.js";
 import { type TryCatchResult, unwrapOrThrow } from "../../utils/try-catch.utils.js";
+import { resolveQuery } from "../resolve-query.js";
 import type { FetchQueryRequest, GetNextPageData, PagedFetchQuery, PagingConfig, QueryResponse } from "../sdk-models.js";
 import { createFetchQuery } from "./fetch-sdk-query.js";
 
@@ -69,11 +70,19 @@ async function* createPagingQueryIterator<TPayload extends JsonValue, TMeta, TEx
 	let pageIndex: number = 0;
 
 	while (nextPage) {
-		const fetchResult = await createFetchQuery<TPayload, TError, TMeta, TExtra>({
+		const fetchResult: SafeHttpResult<QueryResponse<TPayload, TMeta, TExtra>, TError> = await resolveQuery<
+			TPayload,
+			null,
+			TMeta,
+			TExtra,
+			TError
+		>({
 			...data,
+			method: "GET",
+			body: null,
 			url: nextPage.nextPageUrl ?? data.url,
 			continuationToken: nextPage.continuationToken,
-		}).fetchSafe();
+		});
 
 		if (!fetchResult.success) {
 			yield { success: false, error: fetchResult.error };
