@@ -408,10 +408,7 @@ describe("transformPagedFetchQuery - pagesSafe async iterator yields transform f
 		mapError: (error) => error,
 	});
 
-	const collected: SafeQueryResult<QueryResponse<{ name: string; extra: string }, unknown, unknown>, KontentSdkError>[] = [];
-	for await (const result of transformedQuery.pagesSafe()) {
-		collected.push(result);
-	}
+	const collected = await Array.fromAsync(transformedQuery.pagesSafe());
 
 	it("Should yield exactly one result then stop", () => {
 		expect(collected).toHaveLength(1);
