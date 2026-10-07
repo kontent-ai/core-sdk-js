@@ -14,11 +14,15 @@ export function getEndpointUrl({
 	readonly path: string;
 	readonly baseUrl: BaseUrl;
 }): string {
-	return `${baseUrl.protocol}://${removeTrailingSlashes(baseUrl.host)}${removeDuplicateSlashes(`/${environmentId}/${path}`)}`;
+	return `${baseUrl.protocol}://${removeTrailingSlashes(baseUrl.host)}${removeDuplicateSlashesFromPath(`/${environmentId}/${path}`)}`;
 }
 
-function removeDuplicateSlashes(path: string): string {
-	return path.replace(/\/+/g, "/");
+// splits the path part from the query string / fragment, which may legitimately contain '//' (e.g. an encoded url value)
+const pathAndRestPattern = /^([^?#]*)(.*)$/s;
+
+function removeDuplicateSlashesFromPath(pathWithQuery: string): string {
+	const [, path = "", rest = ""] = pathAndRestPattern.exec(pathWithQuery) ?? [];
+	return `${path.replace(/\/+/g, "/")}${rest}`;
 }
 
 function removeTrailingSlashes(path: string): string {

@@ -33,6 +33,16 @@ describe("getEndpointUrl", () => {
 
 		expect(url).toBe("https://deliver.kontent.ai/env-id/items/123");
 	});
+
+	it("Should not normalize slashes in query string or fragment", () => {
+		const url = getEndpointUrl({
+			baseUrl: { protocol: "https", host: "deliver.kontent.ai" },
+			environmentId: "env-id",
+			path: "//items?url=https://x.com//a#frag//b",
+		});
+
+		expect(url).toBe("https://deliver.kontent.ai/env-id/items?url=https://x.com//a#frag//b");
+	});
 });
 
 describe("parseUrl", () => {

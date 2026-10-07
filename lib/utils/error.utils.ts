@@ -8,6 +8,7 @@ import {
 	type ErrorResponseData,
 	errorResponseDataSchema,
 	KontentSdkError,
+	kontentAiErrorBrands,
 	type ValidationError,
 } from "../models/error.models.js";
 
@@ -31,15 +32,15 @@ export function isKontent404Error(error: unknown): boolean {
 }
 
 export function isKontentSdkError(error: unknown): error is KontentSdkError {
-	return error instanceof KontentSdkError;
+	return error instanceof KontentSdkError || hasBrand(error, kontentAiErrorBrands.sdkError);
 }
 
 export function isAdapterParseError(error: unknown): error is AdapterParseError {
-	return error instanceof AdapterParseError;
+	return error instanceof AdapterParseError || hasBrand(error, kontentAiErrorBrands.adapterParseError);
 }
 
 export function isAdapterAbortError(error: unknown): error is AdapterAbortError {
-	return error instanceof AdapterAbortError;
+	return error instanceof AdapterAbortError || hasBrand(error, kontentAiErrorBrands.adapterAbortError);
 }
 
 export function toInvalidResponseMessage({
@@ -51,8 +52,8 @@ export function toInvalidResponseMessage({
 	readonly adapterResponse: AdapterResponse<AdapterPayload>;
 	readonly kontentErrorData: ErrorResponseData | undefined;
 }): string {
-	const details = kontentErrorResponse ? ` ${getKontentErrorResponseMessage(adapterResponse, kontentErrorResponse)}` : "";
-	return `Failed to execute '${method}' request '${adapterResponse.url.toString()}'.${details}`;
+	const kontentDetails = kontentErrorResponse ? ` ${getKontentErrorResponseMessage(kontentErrorResponse)}` : "";
+	return `Failed to execute '${method}' request '${adapterResponse.url.toString()}'. Request failed with status '${adapterResponse.status}' and status text '${adapterResponse.statusText}'.${kontentDetails}`;
 }
 
 /**
@@ -79,16 +80,20 @@ function getValidationErrorMessage(validationErrors?: readonly ValidationError[]
 	return validationErrors
 		.map((m) => {
 			const details: readonly string[] = [
-				m.path ? `path: ${m.path}` : undefined,
-				m.line ? `line: ${m.line}` : undefined,
-				m.position ? `position: ${m.position}` : undefined,
+				isDefined(m.path) ? `path: ${m.path}` : undefined,
+				isDefined(m.line) ? `line: ${m.line}` : undefined,
+				isDefined(m.position) ? `position: ${m.position}` : undefined,
 			].filter(isDefined);
 			return `${m.message}${details.length ? ` (${details.join(", ")})` : ""}`;
 		})
 		.join(", ");
 }
 
-function getKontentErrorResponseMessage(adapterResponse: AdapterResponse<AdapterPayload>, kontentErrorResponse: ErrorResponseData): string {
+function getKontentErrorResponseMessage(kontentErrorResponse: ErrorResponseData): string {
 	const validationErrorMessage = getValidationErrorMessage(kontentErrorResponse.validation_errors);
-	return `Request failed with status '${adapterResponse.status}' and status text '${adapterResponse.statusText}'. ${kontentErrorResponse.message}${validationErrorMessage ? ` ${validationErrorMessage}` : ""}`;
+	return `${kontentErrorResponse.message}${validationErrorMessage ? ` ${validationErrorMessage}` : ""}`;
+}
+
+function hasBrand(value: unknown, brand: symbol): boolean {
+	return typeof value === "object" && value !== null && Reflect.get(value, brand) === true;
 }

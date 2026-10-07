@@ -114,7 +114,7 @@ function resolveNextPage<TPayload extends JsonValue, TMeta, TExtra>({
 }): NextPage {
 	const { maxPagesCount } = pagingConfig;
 
-	if (maxPagesCount && maxPagesCount > 0 && maxPagesCount === pageIndex) {
+	if (maxPagesCount && maxPagesCount > 0 && pageIndex >= maxPagesCount) {
 		return undefined;
 	}
 

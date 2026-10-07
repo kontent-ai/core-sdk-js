@@ -175,24 +175,6 @@ export type QueryInspection = {
 	readonly method: HttpMethod;
 };
 
-export type QueryInspection2 = Pick<
-	ResolvedQueryData<JsonValue, HttpRequestBody, unknown, unknown, KontentSdkError>,
-	"url" | "requestHeaders" | "body" | "method"
->;
-
-export type ResolvedQueryData<TPayload extends JsonValue, TBody extends HttpRequestBody, TMeta, TExtra, TError extends KontentSdkError> = {
-	readonly url: URL;
-	readonly requestHeaders: readonly Header[];
-	readonly httpService: HttpService;
-	readonly body: TBody;
-	readonly method: HttpMethod;
-	readonly abortSignal?: AbortSignal | undefined;
-	readonly schema: SchemaInput<TPayload>;
-	readonly responseValidation: SdkConfig["runtimeValidation"];
-} & MetadataMapperConfig<TPayload, TBody, TMeta> &
-	ExtraResponsePropsMapper<TPayload, TBody, TExtra> &
-	ErrorMapper<TError>;
-
 type MetadataMapperConfig<TPayload extends JsonValue, TBody extends HttpRequestBody, TMeta> = {
 	readonly mapMetadata: MetadataMapper<TPayload, TBody, TMeta>;
 };
@@ -218,8 +200,6 @@ type RequestData<TBody extends HttpRequestBody> = {
 	readonly url: string | URL;
 	readonly body: TBody;
 	readonly requestHeaders?: readonly Header[];
-	readonly continuationToken?: string | undefined;
-	readonly authorizationApiKey?: string | undefined;
 };
 
 type MutationHttpMethod = PickStringLiteral<HttpMethod, "POST" | "PUT" | "PATCH" | "DELETE">;

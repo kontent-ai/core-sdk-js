@@ -225,9 +225,9 @@ async function runAdapterRequest<TPayload extends AdapterPayload>({
 	readonly runAdapterFunc: (options: AdapterRequestOptions) => Promise<AdapterResponse<TPayload>>;
 	readonly retryContext: RetryContext;
 }): Promise<AdapterResponse<TPayload> | KontentSdkError> {
-	const { error, data } = await tryCatchAsync(async () => await runAdapterFunc(adapterOptions));
+	const { success, error, data } = await tryCatchAsync(async () => await runAdapterFunc(adapterOptions));
 
-	return data ?? createAdapterError({ url: adapterOptions.url, error, retryContext });
+	return success ? data : createAdapterError({ url: adapterOptions.url, error, retryContext });
 }
 
 function isSuccessfulResponse(response: AdapterResponse<AdapterPayload>): boolean {

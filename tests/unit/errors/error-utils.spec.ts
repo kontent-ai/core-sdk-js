@@ -1,13 +1,22 @@
 import { describe, expect, it } from "vitest";
 import type { AdapterResponse } from "../../../lib/http/http.models.js";
 import { getDefaultHttpService } from "../../../lib/http/http.service.js";
-import type { ErrorReason, ErrorResponseData } from "../../../lib/models/error.models.js";
+import {
+	AdapterAbortError,
+	AdapterParseError,
+	type ErrorReason,
+	type ErrorResponseData,
+	kontentAiErrorBrands,
+} from "../../../lib/models/error.models.js";
 import { stubFetchWithResponse } from "../../../lib/testkit/testkit.utils.js";
 import {
 	createSdkError,
+	isAdapterAbortError,
+	isAdapterParseError,
 	isFetchAbortError,
 	isKontent404Error,
 	isKontentErrorResponseData,
+	isKontentSdkError,
 	toInvalidResponseMessage,
 } from "../../../lib/utils/error.utils.js";
 
@@ -30,6 +39,36 @@ describe("isAbortError", () => {
 
 	it("Should return true when error is a DOMException with name 'AbortError'", () => {
 		expect(isFetchAbortError(new DOMException("The operation was aborted.", "AbortError"))).toBe(true);
+	});
+});
+
+describe("Error type guards across package copies", () => {
+	// simulates an error created by a different copy / version of the core SDK, where `instanceof` fails
+	const createForeignError = (brand: symbol): Error => Object.assign(new Error("foreign"), { [brand]: true });
+
+	it.each([
+		{ guard: isKontentSdkError, brand: kontentAiErrorBrands.sdkError },
+		{ guard: isAdapterAbortError, brand: kontentAiErrorBrands.adapterAbortError },
+		{ guard: isAdapterParseError, brand: kontentAiErrorBrands.adapterParseError },
+	])("Should recognize branded error from another package copy ($guard.name)", ({ guard, brand }) => {
+		expect(guard(createForeignError(brand))).toBe(true);
+	});
+
+	it.each([
+		{ guard: isKontentSdkError, name: "KontentSdkError" },
+		{ guard: isAdapterAbortError, name: "AdapterAbortError" },
+		{ guard: isAdapterParseError, name: "AdapterParseError" },
+	])("Should not recognize unbranded error with the same name ($name)", ({ guard, name }) => {
+		expect(guard(Object.assign(new Error("foreign"), { name }))).toBe(false);
+	});
+
+	it.each([null, undefined, "error", 42])("Should return false for non-object value '%s'", (value) => {
+		expect(isKontentSdkError(value)).toBe(false);
+	});
+
+	it("Should recognize instances created by this package", () => {
+		expect(isAdapterAbortError(new AdapterAbortError({ message: "" }))).toBe(true);
+		expect(isAdapterParseError(new AdapterParseError({ message: "" }))).toBe(true);
 	});
 });
 
@@ -198,7 +237,7 @@ const adapterResponse: AdapterResponse<null> = {
 };
 
 describe("toInvalidResponseMessage", () => {
-	it("Should return base message when no kontentErrorResponse is provided", () => {
+	it("Should include status and statusText when no kontentErrorResponse is provided", () => {
 		expect(
 			toInvalidResponseMessage({
 				method: "GET",
@@ -206,7 +245,28 @@ describe("toInvalidResponseMessage", () => {
 				adapterResponse,
 				kontentErrorData: undefined,
 			}),
-		).toStrictEqual(`Failed to execute 'GET' request '${testUrl.toString()}'.`);
+		).toStrictEqual(
+			`Failed to execute 'GET' request '${testUrl.toString()}'. Request failed with status '422' and status text 'Unprocessable Entity'.`,
+		);
+	});
+
+	it("Should include validation error fields with zero values", () => {
+		const kontentErrorResponse: ErrorResponseData = {
+			message: "Validation failed.",
+			request_id: "abc-123",
+			error_code: 200,
+			validation_errors: [{ message: "Invalid value.", line: 0, position: 0 }],
+		};
+
+		expect(
+			toInvalidResponseMessage({
+				method: "GET",
+				adapterResponse,
+				kontentErrorData: kontentErrorResponse,
+			}),
+		).toStrictEqual(
+			`Failed to execute 'GET' request '${testUrl.toString()}'. Request failed with status '422' and status text 'Unprocessable Entity'. Validation failed. Invalid value. (line: 0, position: 0)`,
+		);
 	});
 
 	it("Should include status, statusText and API message when kontentErrorResponse is provided", () => {

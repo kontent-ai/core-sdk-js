@@ -69,8 +69,20 @@ export type BaseErrorData = {
 	readonly retryAttempt: number | undefined;
 };
 
+/**
+ * Brands identify SDK errors even when they come from a different copy / version of this package
+ * (e.g. Delivery and Management SDKs each bundling their own core SDK), where `instanceof` fails.
+ * `Symbol.for` returns the same symbol across copies.
+ */
+export const kontentAiErrorBrands = {
+	sdkError: Symbol.for("kontentAi.KontentSdkError"),
+	adapterAbortError: Symbol.for("kontentAi.AdapterAbortError"),
+	adapterParseError: Symbol.for("kontentAi.AdapterParseError"),
+} as const;
+
 export class KontentSdkError<TDetails extends ErrorDetails = ErrorDetails> extends Error implements BaseErrorData {
 	override readonly name = "KontentSdkError";
+	readonly [kontentAiErrorBrands.sdkError] = true;
 	readonly details: TDetails;
 	readonly url: string | URL;
 	readonly retryStrategyOptions: ResolvedRetryStrategyOptions | undefined;
@@ -99,6 +111,7 @@ export class KontentSdkError<TDetails extends ErrorDetails = ErrorDetails> exten
  */
 export class AdapterAbortError extends Error {
 	override readonly name = "AdapterAbortError";
+	readonly [kontentAiErrorBrands.adapterAbortError] = true;
 
 	constructor({ message, error }: { readonly message: string; readonly error?: unknown }) {
 		super(message, { cause: error });
@@ -112,6 +125,7 @@ export class AdapterAbortError extends Error {
  */
 export class AdapterParseError extends Error {
 	override readonly name = "AdapterParseError";
+	readonly [kontentAiErrorBrands.adapterParseError] = true;
 
 	constructor({ message, error }: { readonly message: string; readonly error?: unknown }) {
 		super(message, { cause: error });

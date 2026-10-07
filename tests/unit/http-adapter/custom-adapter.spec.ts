@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { AdapterResponse } from "../../../lib/http/http.models.js";
 import { getDefaultHttpService } from "../../../lib/http/http.service.js";
 import type { Header, KnownHeaderName } from "../../../lib/models/core.models.js";
+import { type ErrorReason, kontentAiErrorBrands } from "../../../lib/models/error.models.js";
 import type { JsonValue } from "../../../lib/models/json.models.js";
 import { getFakeBlob } from "../../../lib/testkit/testkit.utils.js";
 
@@ -133,5 +134,22 @@ describe("Custom adapter", () => {
 		it("Json response should be equal to provided json", () => {
 			expect(JSON.stringify(response?.payload)).toStrictEqual(JSON.stringify(jsonResponse));
 		});
+	});
+});
+
+describe("Custom adapter - errors from another core SDK copy", () => {
+	it("Should map a branded abort error that fails 'instanceof' to the 'aborted' reason", async () => {
+		const foreignAbortError = Object.assign(new Error("Aborted by adapter"), { [kontentAiErrorBrands.adapterAbortError]: true });
+
+		const httpService = getDefaultHttpService({
+			adapter: {
+				executeRequest: async () => await Promise.reject(foreignAbortError),
+			},
+		});
+
+		const { success, error } = await httpService.request({ url: "https://domain.com", method: "GET" });
+
+		expect(success).toBe(false);
+		expect(error?.details.reason).toStrictEqual("aborted" satisfies ErrorReason);
 	});
 });
