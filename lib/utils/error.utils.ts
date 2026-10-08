@@ -3,8 +3,6 @@ import type { HttpMethod } from "../models/core.models.js";
 import {
 	AdapterAbortError,
 	AdapterParseError,
-	type BaseErrorData,
-	type ErrorDetails,
 	type ErrorResponseData,
 	errorResponseDataSchema,
 	KontentSdkError,
@@ -13,19 +11,6 @@ import {
 } from "../models/error.models.js";
 
 import { isDefined } from "./core.utils.js";
-
-export function createSdkError<TDetails extends ErrorDetails>({
-	baseErrorData,
-	details,
-}: {
-	readonly baseErrorData: BaseErrorData;
-	readonly details: TDetails;
-}): KontentSdkError<TDetails> {
-	return new KontentSdkError({
-		baseErrorData,
-		details,
-	});
-}
 
 export function isKontent404Error(error: unknown): boolean {
 	return isKontentSdkError(error) && error.details.reason === "notFound";

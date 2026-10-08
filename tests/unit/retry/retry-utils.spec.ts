@@ -2,8 +2,8 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import type { HttpResponse } from "../../../lib/http/http.models.js";
 import { getDefaultHttpService } from "../../../lib/http/http.service.js";
 import type { KnownHeaderName, RetryStrategyOptions } from "../../../lib/models/core.models.js";
+import { KontentSdkError } from "../../../lib/models/error.models.js";
 import { sleep } from "../../../lib/utils/core.utils.js";
-import { createSdkError } from "../../../lib/utils/error.utils.js";
 import { resolveDefaultRetryStrategyOptions, runWithRetry } from "../../../lib/utils/retry.utils.js";
 
 const url = new URL("https://domain.com");
@@ -18,15 +18,18 @@ const successResponse: HttpResponse<null, null> = {
 	},
 };
 
-const rateLimitError = createSdkError({
+const rateLimitError = new KontentSdkError({
 	baseErrorData: { message: "Rate limited", url: url.toString(), retryStrategyOptions: undefined, retryAttempt: 0 },
 	details: {
 		reason: "invalidResponse",
-		status: 429,
-		statusText: "Too Many Requests",
-		responseHeaders: [],
 		kontentErrorResponse: undefined,
-		adapterResponse: undefined,
+		adapterResponse: {
+			status: 429,
+			statusText: "Too Many Requests",
+			responseHeaders: [],
+			url: new URL("https://domain.com"),
+			payload: null,
+		},
 	},
 });
 
@@ -82,15 +85,18 @@ describe("getDelayBetweenRetriesMs - Retry-After header present", () => {
 	const { getDelayBetweenRetriesMs } = resolveDefaultRetryStrategyOptions();
 
 	it("Should return the header value converted from seconds to milliseconds", () => {
-		const error = createSdkError({
+		const error = new KontentSdkError({
 			baseErrorData: { message: "Rate limited", url: url.toString(), retryStrategyOptions: undefined, retryAttempt: 0 },
 			details: {
 				reason: "invalidResponse",
-				status: 429,
-				statusText: "Too Many Requests",
-				responseHeaders: [{ name: "Retry-After" satisfies KnownHeaderName, value: "3" }],
 				kontentErrorResponse: undefined,
-				adapterResponse: undefined,
+				adapterResponse: {
+					status: 429,
+					statusText: "Too Many Requests",
+					responseHeaders: [{ name: "Retry-After" satisfies KnownHeaderName, value: "3" }],
+					url: new URL("https://domain.com"),
+					payload: null,
+				},
 			},
 		});
 
@@ -98,15 +104,18 @@ describe("getDelayBetweenRetriesMs - Retry-After header present", () => {
 	});
 
 	it("Should return 0 when no Retry-After header is present", () => {
-		const error = createSdkError({
+		const error = new KontentSdkError({
 			baseErrorData: { message: "Rate limited", url: url.toString(), retryStrategyOptions: undefined, retryAttempt: 0 },
 			details: {
 				reason: "invalidResponse",
-				status: 429,
-				statusText: "Too Many Requests",
-				responseHeaders: [],
 				kontentErrorResponse: undefined,
-				adapterResponse: undefined,
+				adapterResponse: {
+					status: 429,
+					statusText: "Too Many Requests",
+					responseHeaders: [],
+					url: new URL("https://domain.com"),
+					payload: null,
+				},
 			},
 		});
 
@@ -117,15 +126,18 @@ describe("getDelayBetweenRetriesMs - Retry-After header present", () => {
 describe("getDelayBetweenRetriesMs - maxRetryDelayMs clamp", () => {
 	it("Should clamp a delay larger than maxRetryDelayMs", () => {
 		const { getDelayBetweenRetriesMs } = resolveDefaultRetryStrategyOptions({ maxRetryDelayMs: 5000 });
-		const error = createSdkError({
+		const error = new KontentSdkError({
 			baseErrorData: { message: "Rate limited", url: url.toString(), retryStrategyOptions: undefined, retryAttempt: 0 },
 			details: {
 				reason: "invalidResponse",
-				status: 429,
-				statusText: "Too Many Requests",
-				responseHeaders: [{ name: "Retry-After" satisfies KnownHeaderName, value: "60" }],
 				kontentErrorResponse: undefined,
-				adapterResponse: undefined,
+				adapterResponse: {
+					status: 429,
+					statusText: "Too Many Requests",
+					responseHeaders: [{ name: "Retry-After" satisfies KnownHeaderName, value: "60" }],
+					url: new URL("https://domain.com"),
+					payload: null,
+				},
 			},
 		});
 
@@ -134,15 +146,18 @@ describe("getDelayBetweenRetriesMs - maxRetryDelayMs clamp", () => {
 
 	it("Should not affect a delay smaller than maxRetryDelayMs", () => {
 		const { getDelayBetweenRetriesMs } = resolveDefaultRetryStrategyOptions({ maxRetryDelayMs: 5000 });
-		const error = createSdkError({
+		const error = new KontentSdkError({
 			baseErrorData: { message: "Rate limited", url: url.toString(), retryStrategyOptions: undefined, retryAttempt: 0 },
 			details: {
 				reason: "invalidResponse",
-				status: 429,
-				statusText: "Too Many Requests",
-				responseHeaders: [{ name: "Retry-After" satisfies KnownHeaderName, value: "3" }],
 				kontentErrorResponse: undefined,
-				adapterResponse: undefined,
+				adapterResponse: {
+					status: 429,
+					statusText: "Too Many Requests",
+					responseHeaders: [{ name: "Retry-After" satisfies KnownHeaderName, value: "3" }],
+					url: new URL("https://domain.com"),
+					payload: null,
+				},
 			},
 		});
 

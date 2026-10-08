@@ -102,7 +102,7 @@ const { success, response, error } = await httpService.request({
 if (!success) {
   switch (error.details.reason) {
     case "unauthorized":
-      // error.details includes: status, statusText, responseHeaders, kontentErrorResponse
+      // error.details includes: adapterResponse (status, statusText, responseHeaders, payload), kontentErrorResponse
       console.error("Check your API key:", error.details.kontentErrorResponse?.message);
       break;
     case "notFound":
@@ -110,7 +110,7 @@ if (!success) {
       break;
     case "invalidResponse":
       // Any non-2xx response that isn't 401 or 404
-      console.error(`HTTP ${error.details.status}:`, error.details.kontentErrorResponse?.message);
+      console.error(`HTTP ${error.details.adapterResponse.status}:`, error.details.kontentErrorResponse?.message);
       break;
     case "invalidResponseBody":
       // The response body could not be read (e.g. the response claimed to be JSON, but wasn't valid JSON)

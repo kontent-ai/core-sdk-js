@@ -136,11 +136,7 @@ export type FetchQueryRequest<
 	TError extends KontentSdkError = KontentSdkError,
 	TMeta = unknown,
 	TExtra = unknown,
-> = Pick<
-	QueryInputData<TPayload, null, TMeta, TExtra, TError>,
-	"config" | "schema" | "sdkInfo" | "mapMetadata" | "abortSignal" | "mapError" | "mapExtraResponseProps"
-> &
-	RequestDataWithoutBody;
+> = QueryRequestBase<TPayload, null, TMeta, TExtra, TError> & Omit<RequestData<null>, "body">;
 
 export type MutationQueryRequest<
 	TPayload extends JsonValue,
@@ -148,25 +144,20 @@ export type MutationQueryRequest<
 	TError extends KontentSdkError = KontentSdkError,
 	TMeta = unknown,
 	TExtra = unknown,
-> = Pick<
-	QueryInputData<TPayload, TBody, TMeta, TExtra, TError>,
-	"config" | "schema" | "sdkInfo" | "mapMetadata" | "abortSignal" | "mapError" | "mapExtraResponseProps"
-> & { readonly method: MutationHttpMethod } & RequestData<TBody>;
+> = QueryRequestBase<TPayload, TBody, TMeta, TExtra, TError> & RequestData<TBody> & { readonly method: MutationHttpMethod };
 
-export type QueryInputData<TPayload extends JsonValue, TBody extends HttpRequestBody, TMeta, TExtra, TError extends KontentSdkError> = {
-	readonly method: HttpMethod;
-	readonly config: SdkConfig;
-	readonly schema: SchemaInput<TPayload>;
-	readonly sdkInfo: SdkInfo;
-	readonly abortSignal?: AbortSignal | undefined;
-	readonly url: string | URL;
-	readonly body: TBody;
-	readonly requestHeaders?: readonly Header[];
-	readonly continuationToken?: string | undefined;
-	readonly authorizationApiKey?: string | undefined;
-} & MetadataMapperConfig<TPayload, TBody, TMeta> &
-	ExtraResponsePropsMapper<TPayload, TBody, TExtra> &
-	ErrorMapper<TError>;
+export type QueryInputData<
+	TPayload extends JsonValue,
+	TBody extends HttpRequestBody,
+	TMeta,
+	TExtra,
+	TError extends KontentSdkError,
+> = QueryRequestBase<TPayload, TBody, TMeta, TExtra, TError> &
+	RequestData<TBody> & {
+		readonly method: HttpMethod;
+		readonly continuationToken?: string | undefined;
+		readonly authorizationApiKey?: string | undefined;
+	};
 
 export type QueryInspection = {
 	readonly url: URL;
@@ -175,26 +166,21 @@ export type QueryInspection = {
 	readonly method: HttpMethod;
 };
 
-type MetadataMapperConfig<TPayload extends JsonValue, TBody extends HttpRequestBody, TMeta> = {
-	readonly mapMetadata: MetadataMapper<TPayload, TBody, TMeta>;
-};
-
-type ExtraResponsePropsMapper<TPayload extends JsonValue, TBody extends HttpRequestBody, TExtra> = {
+type QueryMappers<TPayload extends JsonValue, TBody extends HttpRequestBody, TMeta, TExtra, TError extends KontentSdkError> = {
+	readonly mapMetadata: (
+		response: SuccessfulHttpResponse<TPayload, TBody>,
+		context: { readonly continuationToken: string | undefined },
+	) => TMeta;
 	readonly mapExtraResponseProps: (response: SuccessfulHttpResponse<TPayload, TBody>) => TExtra;
-};
-
-type ErrorMapper<TError extends KontentSdkError> = {
 	readonly mapError: (error: KontentSdkError) => TError;
 };
 
-type MetadataMapper<TPayload extends JsonValue, TBody extends HttpRequestBody, TMeta> = (
-	response: SuccessfulHttpResponse<TPayload, TBody>,
-	data: MetadataContext,
-) => TMeta;
-
-type MetadataContext = {
-	readonly continuationToken: string | undefined;
-};
+type QueryRequestBase<TPayload extends JsonValue, TBody extends HttpRequestBody, TMeta, TExtra, TError extends KontentSdkError> = {
+	readonly config: SdkConfig;
+	readonly schema: SchemaInput<TPayload>;
+	readonly sdkInfo: SdkInfo;
+	readonly abortSignal?: AbortSignal | undefined;
+} & QueryMappers<TPayload, TBody, TMeta, TExtra, TError>;
 
 type RequestData<TBody extends HttpRequestBody> = {
 	readonly url: string | URL;
@@ -203,5 +189,3 @@ type RequestData<TBody extends HttpRequestBody> = {
 };
 
 type MutationHttpMethod = PickStringLiteral<HttpMethod, "POST" | "PUT" | "PATCH" | "DELETE">;
-
-type RequestDataWithoutBody = Omit<RequestData<null>, "body">;

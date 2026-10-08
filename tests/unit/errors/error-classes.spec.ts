@@ -49,11 +49,14 @@ describe("KontentSdkError cause", () => {
 			baseErrorData,
 			details: {
 				reason: "notFound",
-				status: 404,
-				statusText: "Not Found",
-				responseHeaders: [],
 				kontentErrorResponse: undefined,
-				adapterResponse: undefined,
+				adapterResponse: {
+					status: 404,
+					statusText: "Not Found",
+					responseHeaders: [],
+					url: new URL("https://domain.com"),
+					payload: null,
+				},
 			},
 		});
 

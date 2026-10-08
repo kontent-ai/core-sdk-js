@@ -24,7 +24,7 @@ describe("Unauthorized error", async () => {
 
 	it("Error status should be 401", () => {
 		if (error?.details.reason === "unauthorized") {
-			expect(error.details.status).toBe(401);
+			expect(error.details.adapterResponse.status).toBe(401);
 		} else {
 			throw new Error("Error reason is not unauthorized");
 		}

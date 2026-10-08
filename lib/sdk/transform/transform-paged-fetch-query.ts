@@ -1,12 +1,16 @@
 import type { SafeHttpResult } from "../../http/http.models.js";
 import type { KontentSdkError } from "../../models/error.models.js";
 import type { JsonValue } from "../../models/json.models.js";
-import type { SchemaInput } from "../../utils/schema.utils.js";
-import { type TryCatchResult, unwrapOrThrow } from "../../utils/try-catch.utils.js";
-import type { PagedFetchQuery, QueryResponse, SdkConfig } from "../sdk-models.js";
-import { applyTransformSafely, createBatchTransformResponses, createSafeAndUnsafe, createTransformError } from "./transform-utils.js";
-
-const emptyTransformResultMessage = "Transform returned no response for input";
+import { unwrapOrThrow } from "../../utils/try-catch.utils.js";
+import type { PagedFetchQuery, QueryResponse } from "../sdk-models.js";
+import { unwrapResults } from "../sdk-utils.js";
+import {
+	applyTransformSafely,
+	type BatchTransformOptions,
+	createBatchTransformResponses,
+	createSafeAndUnsafe,
+	toSingleTransform,
+} from "./transform-utils.js";
 
 export function transformPagedFetchQuery<
 	TPayload extends JsonValue,
@@ -17,46 +21,18 @@ export function transformPagedFetchQuery<
 	TPagingExtra,
 >({
 	query,
-	transform,
-	transformSchema,
-	mapError,
-	config,
-}: {
-	readonly config: Pick<SdkConfig, "runtimeValidation">;
+	...options
+}: BatchTransformOptions<TPayload, TTransformedPayload, TError, TMeta, TExtra> & {
 	readonly query: PagedFetchQuery<TPayload, TError, TMeta, TExtra, TPagingExtra>;
-	readonly transform: (
-		responses: readonly QueryResponse<TPayload, TMeta, TExtra>[],
-	) => readonly QueryResponse<TTransformedPayload, TMeta, TExtra>[];
-	readonly transformSchema: SchemaInput<TTransformedPayload>;
-	readonly mapError: (error: KontentSdkError) => TError;
 }): PagedFetchQuery<TTransformedPayload, TError, TMeta, TExtra, TPagingExtra> {
-	const batchTransformResponses = createBatchTransformResponses<TPayload, TTransformedPayload, TError, TMeta, TExtra>({
-		config,
-		transform,
-		transformSchema,
-		mapError,
-	});
-
-	const transformSingle = async (
-		response: QueryResponse<TPayload, TMeta, TExtra>,
-	): Promise<TryCatchResult<QueryResponse<TTransformedPayload, TMeta, TExtra>, TError>> => {
-		const result = await batchTransformResponses([response]);
-		if (!result.success) {
-			return result;
-		}
-		const [first] = result.data;
-		return first
-			? { success: true, data: first }
-			: { success: false, error: mapError(createTransformError(new Error(emptyTransformResultMessage), response.meta.url)) };
-	};
-
-	const transformSingleSafely = async (safeResult: SafeHttpResult<QueryResponse<TPayload, TMeta, TExtra>, TError>) =>
-		applyTransformSafely(safeResult, transformSingle);
+	const batchTransformResponses = createBatchTransformResponses(options);
+	const transformSingle = toSingleTransform({ batchTransform: batchTransformResponses, mapError: options.mapError });
 
 	const { safe: fetchPageSafe, unsafe: fetchPage } = createSafeAndUnsafe({
 		querySafe: query.fetchPageSafe,
 		transformResponse: transformSingle,
 	});
+
 	const fetchAllPagesSafe: PagedFetchQuery<TTransformedPayload, TError, TMeta, TExtra, TPagingExtra>["fetchAllPagesSafe"] = async (
 		config,
 	) => {
@@ -71,6 +47,18 @@ export function transformPagedFetchQuery<
 		return { ...result, success: true, responses: data };
 	};
 
+	const pagesSafe = async function* (
+		config: Parameters<PagedFetchQuery<TPayload, TError, TMeta, TExtra, TPagingExtra>["pagesSafe"]>[0],
+	): AsyncGenerator<SafeHttpResult<QueryResponse<TTransformedPayload, TMeta, TExtra>, TError>> {
+		for await (const safeResult of query.pagesSafe(config)) {
+			const result = await applyTransformSafely(safeResult, transformSingle);
+			yield result;
+			if (!result.success) {
+				return;
+			}
+		}
+	};
+
 	return {
 		fetchPage,
 		fetchPageSafe,
@@ -80,20 +68,8 @@ export function transformPagedFetchQuery<
 			return { ...result, responses };
 		},
 		fetchAllPagesSafe,
-		pages: async function* (config) {
-			for await (const safeResult of query.pagesSafe(config)) {
-				yield unwrapOrThrow(await transformSingleSafely(safeResult)).response;
-			}
-		},
-		pagesSafe: async function* (config) {
-			for await (const safeResult of query.pagesSafe(config)) {
-				const result = await transformSingleSafely(safeResult);
-				yield result;
-				if (!result.success) {
-					return;
-				}
-			}
-		},
+		pages: (config) => unwrapResults(pagesSafe(config)),
+		pagesSafe,
 		inspect: query.inspect,
 	};
 }

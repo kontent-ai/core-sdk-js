@@ -1,8 +1,7 @@
 import type { KontentSdkError } from "../../models/error.models.js";
 import type { JsonValue } from "../../models/json.models.js";
-import type { SchemaInput } from "../../utils/schema.utils.js";
-import type { MutationQuery, QueryResponse, SdkConfig } from "../sdk-models.js";
-import { createTransformedQueryMethods } from "./transform-utils.js";
+import type { MutationQuery } from "../sdk-models.js";
+import { createTransformedQueryMethods, type TransformOptions } from "./transform-utils.js";
 
 export function transformMutationQuery<
 	TPayload extends JsonValue,
@@ -12,24 +11,11 @@ export function transformMutationQuery<
 	TExtra,
 >({
 	query,
-	transform,
-	transformSchema,
-	mapError,
-	config,
-}: {
-	readonly config: Pick<SdkConfig, "runtimeValidation">;
+	...options
+}: TransformOptions<TPayload, TTransformedPayload, TError, TMeta, TExtra> & {
 	readonly query: MutationQuery<TPayload, TError, TMeta, TExtra>;
-	readonly transform: (response: QueryResponse<TPayload, TMeta, TExtra>) => QueryResponse<TTransformedPayload, TMeta, TExtra>;
-	readonly transformSchema: SchemaInput<TTransformedPayload>;
-	readonly mapError: (error: KontentSdkError) => TError;
 }): MutationQuery<TTransformedPayload, TError, TMeta, TExtra> {
-	const { safe, unsafe } = createTransformedQueryMethods({
-		config,
-		transform,
-		transformSchema,
-		mapError,
-		querySafe: query.executeSafe,
-	});
+	const { safe, unsafe } = createTransformedQueryMethods({ ...options, querySafe: query.executeSafe });
 
 	return {
 		execute: unsafe,

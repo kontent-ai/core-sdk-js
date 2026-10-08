@@ -1,9 +1,8 @@
 import { match, P } from "ts-pattern";
 import type { AdapterPayload, HttpRequestBody, HttpResponse } from "../http/http.models.js";
 import type { ResolvedRetryStrategyOptions, RetryStrategyOptions } from "../models/core.models.js";
-import type { ErrorDetailsFor, KontentSdkError } from "../models/error.models.js";
+import { type ErrorDetailsFor, KontentSdkError } from "../models/error.models.js";
 import { sleep } from "./core.utils.js";
-import { createSdkError } from "./error.utils.js";
 import { getRetryAfterHeaderValue } from "./header.utils.js";
 
 const defaultMaxRetries: NonNullable<RetryStrategyOptions["maxRetries"]> = 3;
@@ -80,7 +79,7 @@ function createAbortError({
 	readonly retryStrategyOptions: ResolvedRetryStrategyOptions;
 	readonly retryAttempt: number;
 }): KontentSdkError<ErrorDetailsFor<"aborted">> {
-	return createSdkError({
+	return new KontentSdkError({
 		baseErrorData: {
 			message: "The request was aborted while waiting before the next retry attempt.",
 			url: url.toString(),
@@ -110,7 +109,7 @@ function canRetryError({
 
 	return match(error)
 		.returnType<boolean>()
-		.with({ details: { status: 429 } }, () => true)
+		.with({ details: { adapterResponse: { status: 429 } } }, () => true)
 		.with({ details: { kontentErrorResponse: P.nonNullable } }, () => {
 			// The request is clearly invalid as we got an error response from the Kontent.ai API
 			return false;
@@ -142,8 +141,8 @@ function canRetryError({
 function getRetryMsFromHeaders({ error }: { readonly error: KontentSdkError }): number {
 	return match(error)
 		.returnType<number>()
-		.with({ details: { responseHeaders: P.nonNullable } }, (m) => {
-			const retryAfterHeaderValue = getRetryAfterHeaderValue(m.details.responseHeaders);
+		.with({ details: { adapterResponse: P.nonNullable } }, (m) => {
+			const retryAfterHeaderValue = getRetryAfterHeaderValue(m.details.adapterResponse.responseHeaders);
 			if (retryAfterHeaderValue) {
 				return retryAfterHeaderValue * 1000;
 			}

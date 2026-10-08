@@ -33,7 +33,7 @@ describe("Download file - Kontent JSON error response", async () => {
 		if (error?.details.reason !== ("notFound" satisfies ErrorReason)) {
 			throw new Error("Expected a 'notFound' error");
 		}
-		expect(error.details.adapterResponse?.payload).toBeInstanceOf(Blob);
+		expect(error.details.adapterResponse.payload).toBeInstanceOf(Blob);
 	});
 });
 

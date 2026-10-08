@@ -1,11 +1,22 @@
 import { type $ZodType, safeParseAsync } from "zod/v4/core";
-import type { KontentSdkError } from "../models/error.models.js";
+import type { SafeHttpResult } from "../http/http.models.js";
+import { KontentSdkError } from "../models/error.models.js";
 import type { JsonValue } from "../models/json.models.js";
 import { isDefined } from "../utils/core.utils.js";
-import { createSdkError } from "../utils/error.utils.js";
 import { resolveSchema, type SchemaInput } from "../utils/schema.utils.js";
-import type { Failure } from "../utils/try-catch.utils.js";
+import { unwrapOrThrow } from "../utils/try-catch.utils.js";
 import type { PagedFetchQuery, Query, SdkConfig } from "./sdk-models.js";
+
+/**
+ * Turns an iterator of safe results into an iterator of responses that throws on the first failure.
+ */
+export async function* unwrapResults<TResponse, TError extends KontentSdkError>(
+	results: AsyncIterable<SafeHttpResult<TResponse, TError>>,
+): AsyncGenerator<TResponse> {
+	for await (const result of results) {
+		yield unwrapOrThrow(result).response;
+	}
+}
 
 /**
  * Checks if a query is a paging query.
@@ -31,30 +42,27 @@ export async function validatePayload<TPayload extends JsonValue>({
 	readonly url: URL;
 	readonly payload: TPayload;
 	readonly schema: $ZodType<TPayload>;
-}): Promise<Failure<{ readonly response?: never }, KontentSdkError> | undefined> {
+}): Promise<KontentSdkError | undefined> {
 	const { success, error } = await safeParseAsync(schema, payload);
 
-	if (!success) {
-		return {
-			success: false,
-			error: createSdkError({
-				baseErrorData: {
-					message: `Failed to parse response payload for '${url.toString()}'`,
-					url,
-					retryStrategyOptions: undefined,
-					retryAttempt: undefined,
-				},
-				details: {
-					reason: "schemaMismatch",
-					zodError: error,
-					payload,
-					url,
-				},
-			}),
-		};
+	if (success) {
+		return undefined;
 	}
 
-	return undefined;
+	return new KontentSdkError({
+		baseErrorData: {
+			message: `Failed to parse response payload for '${url.toString()}'`,
+			url: url.toString(),
+			retryStrategyOptions: undefined,
+			retryAttempt: undefined,
+		},
+		details: {
+			reason: "schemaMismatch",
+			zodError: error,
+			payload,
+			url,
+		},
+	});
 }
 
 /**
@@ -83,5 +91,5 @@ export async function validatePayloads<TPayload extends JsonValue>({
 	const results = await Promise.all(
 		payloads.map(async ({ url, payload }) => await validatePayload({ url, payload, schema: resolvedSchema })),
 	);
-	return results.find(isDefined)?.error;
+	return results.find(isDefined);
 }

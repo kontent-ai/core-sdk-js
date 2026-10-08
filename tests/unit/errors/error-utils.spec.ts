@@ -6,11 +6,11 @@ import {
 	AdapterParseError,
 	type ErrorReason,
 	type ErrorResponseData,
+	KontentSdkError,
 	kontentAiErrorBrands,
 } from "../../../lib/models/error.models.js";
 import { stubFetchWithResponse } from "../../../lib/testkit/testkit.utils.js";
 import {
-	createSdkError,
 	isAdapterAbortError,
 	isAdapterParseError,
 	isFetchAbortError,
@@ -76,7 +76,7 @@ describe("isKontent404Error", () => {
 	it("Should evaluate to true when error is a Kontent AI not found error", () => {
 		expect(
 			isKontent404Error(
-				createSdkError({
+				new KontentSdkError({
 					baseErrorData: {
 						message: "",
 						url: "",
@@ -85,11 +85,14 @@ describe("isKontent404Error", () => {
 					},
 					details: {
 						reason: "notFound",
-						status: 404,
-						statusText: "",
-						responseHeaders: [],
 						kontentErrorResponse: undefined,
-						adapterResponse: undefined,
+						adapterResponse: {
+							status: 404,
+							statusText: "",
+							responseHeaders: [],
+							url: new URL("https://domain.com"),
+							payload: null,
+						},
 					},
 				}),
 			),
@@ -99,7 +102,7 @@ describe("isKontent404Error", () => {
 	it("Should evaluate to false when error is not a Kontent AI not found error", () => {
 		expect(
 			isKontent404Error(
-				createSdkError({
+				new KontentSdkError({
 					baseErrorData: {
 						message: "",
 						url: "",
@@ -108,11 +111,14 @@ describe("isKontent404Error", () => {
 					},
 					details: {
 						reason: "invalidResponse",
-						status: 404,
-						statusText: "",
-						responseHeaders: [],
 						kontentErrorResponse: undefined,
-						adapterResponse: undefined,
+						adapterResponse: {
+							status: 404,
+							statusText: "",
+							responseHeaders: [],
+							url: new URL("https://domain.com"),
+							payload: null,
+						},
 					},
 				}),
 			),
@@ -182,7 +188,7 @@ describe("Invalid response error - adapterResponse attachment", () => {
 		}
 
 		expect(error.details.kontentErrorResponse).toBeDefined();
-		expect(error.details.adapterResponse?.payload).toStrictEqual(jsonResponse);
+		expect(error.details.adapterResponse.payload).toStrictEqual(jsonResponse);
 	});
 
 	it("Should attach the raw adapterResponse even when the error body does not conform to the Kontent error schema", async () => {
@@ -197,7 +203,7 @@ describe("Invalid response error - adapterResponse attachment", () => {
 		}
 
 		expect(error.details.kontentErrorResponse).toBeUndefined();
-		expect(error.details.adapterResponse?.payload).toStrictEqual(nonConformingPayload);
+		expect(error.details.adapterResponse.payload).toStrictEqual(nonConformingPayload);
 	});
 });
 

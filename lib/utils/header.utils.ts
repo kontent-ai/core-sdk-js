@@ -35,8 +35,16 @@ export function findHeaderByName(headers: readonly Header[], name: KnownHeaderNa
 /**
  * Header names are case-insensitive in HTTP, so they must always be compared this way.
  */
-export function isSameHeaderName(a: string, b: string): boolean {
+function isSameHeaderName(a: string, b: string): boolean {
 	return a.toLowerCase() === b.toLowerCase();
+}
+
+/**
+ * Merges header lists in order. When multiple headers share a name (case-insensitive), the last one wins.
+ */
+export function mergeHeaders(...headerLists: readonly (readonly Header[])[]): readonly Header[] {
+	const lastByLowercasedName = new Map(headerLists.flat().map((header) => [header.name.toLowerCase(), header]));
+	return Array.from(lastByLowercasedName.values());
 }
 
 export function getRetryAfterHeaderValue(headers: readonly Header[]): number | undefined {

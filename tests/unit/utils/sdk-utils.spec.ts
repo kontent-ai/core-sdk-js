@@ -105,7 +105,7 @@ describe("parseResponse", () => {
 			schema: zMini.readonly(zMini.object({ name: zMini.string().check(zMini.minLength(50)) })),
 		});
 
-		expect(result?.success).toBe(false);
+		expect(result?.details.reason).toBe("schemaMismatch" satisfies ErrorReason);
 	});
 });
 
@@ -156,6 +156,6 @@ describe("validatePayloads", () => {
 		});
 
 		expect(result?.details.reason).toBe("schemaMismatch" satisfies ErrorReason);
-		expect(result?.url).toStrictEqual(invalidPayloadA.url);
+		expect(result?.url).toStrictEqual(invalidPayloadA.url.toString());
 	});
 });

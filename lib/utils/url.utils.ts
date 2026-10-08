@@ -1,6 +1,5 @@
-import type { BaseErrorData, ErrorDetailsFor, KontentSdkError } from "../models/error.models.js";
+import { type BaseErrorData, type ErrorDetailsFor, KontentSdkError } from "../models/error.models.js";
 import type { BaseUrl } from "../sdk/sdk-models.js";
-import { createSdkError } from "./error.utils.js";
 import { type TryCatchResult, tryCatch } from "./try-catch.utils.js";
 
 export type RetryContext = Pick<BaseErrorData, "retryStrategyOptions" | "retryAttempt">;
@@ -17,12 +16,11 @@ export function getEndpointUrl({
 	return `${baseUrl.protocol}://${removeTrailingSlashes(baseUrl.host)}${removeDuplicateSlashesFromPath(`/${environmentId}/${path}`)}`;
 }
 
-// splits the path part from the query string / fragment, which may legitimately contain '//' (e.g. an encoded url value)
-const pathAndRestPattern = /^([^?#]*)(.*)$/s;
+// matches only the path part, as the query string / fragment may legitimately contain '//' (e.g. an encoded url value)
+const pathPartPattern = /^[^?#]*/;
 
 function removeDuplicateSlashesFromPath(pathWithQuery: string): string {
-	const [, path = "", rest = ""] = pathAndRestPattern.exec(pathWithQuery) ?? [];
-	return `${path.replace(/\/+/g, "/")}${rest}`;
+	return pathWithQuery.replace(pathPartPattern, (path) => path.replace(/\/+/g, "/"));
 }
 
 function removeTrailingSlashes(path: string): string {
@@ -59,7 +57,7 @@ function createInvalidUrlError({
 	readonly error: unknown;
 	readonly retryContext: RetryContext | undefined;
 }): KontentSdkError<ErrorDetailsFor<"invalidUrl">> {
-	return createSdkError({
+	return new KontentSdkError({
 		baseErrorData: {
 			message: `Failed to parse url '${url}'.`,
 			url,

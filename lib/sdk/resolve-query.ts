@@ -8,7 +8,7 @@ import {
 	createContinuationHeader,
 	createSdkIdHeader,
 	extractContinuationToken,
-	isSameHeaderName,
+	mergeHeaders,
 } from "../utils/header.utils.js";
 import type { TryCatchResult } from "../utils/try-catch.utils.js";
 import { parseUrl } from "../utils/url.utils.js";
@@ -186,8 +186,5 @@ function getCombinedRequestHeaders({
 		...(authorizationApiKey ? [createAuthorizationHeader(authorizationApiKey)] : []),
 	];
 
-	return [
-		...requestHeaders.filter((header) => !sdkHeaders.some((sdkHeader) => isSameHeaderName(header.name, sdkHeader.name))),
-		...sdkHeaders,
-	];
+	return mergeHeaders(requestHeaders, sdkHeaders);
 }

@@ -1,12 +1,17 @@
 import { match, P } from "ts-pattern";
 import { coreSdkInfo } from "../core-sdk-info.js";
 import type { Header, HttpMethod, KnownHeaderName, ResolvedRetryStrategyOptions } from "../models/core.models.js";
-import type { ErrorDetails, ErrorDetailsFor, ErrorReason, ErrorResponseData, KontentSdkError } from "../models/error.models.js";
+import {
+	type ErrorDetails,
+	type ErrorDetailsFor,
+	type ErrorReason,
+	type ErrorResponseData,
+	KontentSdkError,
+} from "../models/error.models.js";
 import type { JsonObject, JsonValue } from "../models/json.models.js";
 import type { PickStringLiteral } from "../models/utility.types.js";
 import { isBlob, isDefined } from "../utils/core.utils.js";
 import {
-	createSdkError,
 	isAdapterAbortError,
 	isAdapterParseError,
 	isKontentErrorResponseData,
@@ -19,6 +24,7 @@ import {
 	findHeaderByName,
 	isApplicationJsonResponseType,
 	jsonContentType,
+	mergeHeaders,
 } from "../utils/header.utils.js";
 import { resolveDefaultRetryStrategyOptions, runWithRetry } from "../utils/retry.utils.js";
 import { type TryCatchResult, tryCatch, tryCatchAsync } from "../utils/try-catch.utils.js";
@@ -178,8 +184,8 @@ function createAdapterError({
 			details: { reason: "adapterError", originalError: error },
 		}));
 
-	return createSdkError({
-		baseErrorData: { message, url, ...retryContext },
+	return new KontentSdkError({
+		baseErrorData: { message, url: url.toString(), ...retryContext },
 		details,
 	});
 }
@@ -245,14 +251,14 @@ async function createInvalidResponseError({
 }): Promise<KontentSdkError> {
 	const kontentErrorData = await tryExtractKontentErrorData(response);
 
-	return createSdkError({
+	return new KontentSdkError({
 		baseErrorData: {
 			message: toInvalidResponseMessage({
 				adapterResponse: response,
 				method: method,
 				kontentErrorData: kontentErrorData,
 			}),
-			url: response.url,
+			url: response.url.toString(),
 			...retryContext,
 		},
 		details: extractInvalidResponseErrorDetails({ response, kontentErrorData }),
@@ -274,9 +280,6 @@ function extractInvalidResponseErrorDetails({
 
 	return {
 		reason,
-		responseHeaders: response.responseHeaders,
-		status: response.status,
-		statusText: response.statusText,
 		kontentErrorResponse: kontentErrorData,
 		adapterResponse: response,
 	};
@@ -324,10 +327,10 @@ function stringifyJson({
 
 	return {
 		success: false,
-		error: createSdkError({
+		error: new KontentSdkError({
 			baseErrorData: {
 				message: "Failed to stringify body of the request.",
-				url: url,
+				url: url.toString(),
 				...retryContext,
 			},
 			details: {
@@ -412,7 +415,7 @@ function buildRequestHeaders({
 	readonly optionHeaders: readonly Header[] | undefined;
 	readonly body: HttpRequestBody;
 }): readonly Header[] {
-	const combinedHeaders: readonly Header[] = dedupeHeadersByName([...(configHeaders ?? []), ...(optionHeaders ?? [])]);
+	const combinedHeaders = mergeHeaders(configHeaders ?? [], optionHeaders ?? []);
 	const existingContentTypeHeader = findHeaderByName(combinedHeaders, "Content-Type");
 	const existingSdkVersionHeader = findHeaderByName(combinedHeaders, "X-KC-SDKID");
 
@@ -425,11 +428,6 @@ function buildRequestHeaders({
 	const contentLengthHeader = isBlob(body) ? createDefaultContentLengthHeader(body) : undefined;
 
 	return [...combinedHeaders, ...[contentTypeHeader, contentLengthHeader, sdkVersionHeader].filter(isDefined)];
-}
-
-function dedupeHeadersByName(headers: readonly Header[]): readonly Header[] {
-	const lastByLowercasedName = new Map(headers.map((header) => [header.name.toLowerCase(), header]));
-	return Array.from(lastByLowercasedName.values());
 }
 
 function createDefaultContentTypeHeader(body: Blob | JsonValue): Header {

@@ -56,7 +56,7 @@ export type BaseErrorData = {
 	/**
 	 * The URL of the request.
 	 */
-	readonly url: string | URL;
+	readonly url: string;
 
 	/**
 	 * Used retry strategy.
@@ -84,7 +84,7 @@ export class KontentSdkError<TDetails extends ErrorDetails = ErrorDetails> exten
 	override readonly name = "KontentSdkError";
 	readonly [kontentAiErrorBrands.sdkError] = true;
 	readonly details: TDetails;
-	readonly url: string | URL;
+	readonly url: string;
 	readonly retryStrategyOptions: ResolvedRetryStrategyOptions | undefined;
 	readonly retryAttempt: number | undefined;
 
@@ -136,8 +136,8 @@ export type ErrorDetailsFor<TReason extends ErrorReason> = Extract<ErrorDetails,
 
 type ErrorWithKontentResponse = {
 	readonly kontentErrorResponse: ErrorResponseData | undefined;
-	readonly adapterResponse: AdapterResponse<AdapterPayload> | undefined;
-} & Pick<AdapterResponse<AdapterPayload>, "responseHeaders" | "status" | "statusText">;
+	readonly adapterResponse: AdapterResponse<AdapterPayload>;
+};
 
 type ErrorWithOriginalError = {
 	readonly originalError: unknown;

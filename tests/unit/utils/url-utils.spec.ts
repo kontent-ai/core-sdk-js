@@ -43,6 +43,36 @@ describe("getEndpointUrl", () => {
 
 		expect(url).toBe("https://deliver.kontent.ai/env-id/items?url=https://x.com//a#frag//b");
 	});
+
+	it("Should not normalize slashes in a fragment without a query string", () => {
+		const url = getEndpointUrl({
+			baseUrl: { protocol: "https", host: "deliver.kontent.ai" },
+			environmentId: "env-id",
+			path: "items//123#a//b",
+		});
+
+		expect(url).toBe("https://deliver.kontent.ai/env-id/items/123#a//b");
+	});
+
+	it("Should keep a query string that directly follows the environment id", () => {
+		const url = getEndpointUrl({
+			baseUrl: { protocol: "https", host: "deliver.kontent.ai" },
+			environmentId: "env-id",
+			path: "?a=//b",
+		});
+
+		expect(url).toBe("https://deliver.kontent.ai/env-id/?a=//b");
+	});
+
+	it("Should use the provided protocol", () => {
+		const url = getEndpointUrl({
+			baseUrl: { protocol: "http", host: "localhost:3000" },
+			environmentId: "env-id",
+			path: "items",
+		});
+
+		expect(url).toBe("http://localhost:3000/env-id/items");
+	});
 });
 
 describe("parseUrl", () => {
@@ -65,6 +95,15 @@ describe("parseUrl", () => {
 		expect(error?.message).toBe(`Failed to parse url '${invalidUrl}'.`);
 		expect(error?.retryAttempt).toBeUndefined();
 		expect(error?.retryStrategyOptions).toBeUndefined();
+	});
+
+	it("Should set the invalid url and the original parse error on the error", () => {
+		const { success, error } = parseUrl(invalidUrl);
+
+		expect(success).toBe(false);
+		expect(error?.url).toBe(invalidUrl);
+		expect(error?.details.originalError).toBeInstanceOf(TypeError);
+		expect(error?.cause).toBe(error?.details.originalError);
 	});
 
 	it("Should carry the provided retry context on the error", () => {
