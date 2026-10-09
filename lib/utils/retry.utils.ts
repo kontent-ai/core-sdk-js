@@ -7,9 +7,7 @@ import { getRetryAfterHeaderValue } from "./header.utils.js";
 
 const defaultMaxRetries: NonNullable<RetryStrategyOptions["maxRetries"]> = 3;
 
-const defaultCanRetryAdapterError: NonNullable<RetryStrategyOptions["canRetryAdapterError"]> = (_error) => {
-	return false;
-};
+const defaultCanRetryAdapterError: NonNullable<RetryStrategyOptions["canRetryAdapterError"]> = () => false;
 
 export async function runWithRetry<TPayload extends AdapterPayload, TBody extends HttpRequestBody>(data: {
 	readonly func: (retryAttempt: number) => Promise<HttpResponse<TPayload, TBody>>;
@@ -52,7 +50,7 @@ export function resolveDefaultRetryStrategyOptions(options?: RetryStrategyOption
 	const maxRetries: number = options?.maxRetries ?? defaultMaxRetries;
 	const maxRetryDelayMs = options?.maxRetryDelayMs;
 
-	const resolvedOptions: ResolvedRetryStrategyOptions = {
+	return {
 		maxRetries: maxRetries,
 		getDelayBetweenRetriesMs: (error) => {
 			const delayMs = getRetryMsFromHeaders({ error });
@@ -66,8 +64,6 @@ export function resolveDefaultRetryStrategyOptions(options?: RetryStrategyOption
 			})
 			.otherwise((m) => m),
 	};
-
-	return resolvedOptions;
 }
 
 function createAbortError({
