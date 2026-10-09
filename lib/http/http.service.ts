@@ -7,6 +7,7 @@ import {
 	type ErrorReason,
 	type ErrorResponseData,
 	KontentSdkError,
+	type RetryContext,
 } from "../models/error.models.js";
 import type { JsonObject, JsonValue } from "../models/json.models.js";
 import type { PickStringLiteral } from "../models/utility.types.js";
@@ -28,7 +29,7 @@ import {
 } from "../utils/header.utils.js";
 import { resolveDefaultRetryStrategyOptions, runWithRetry } from "../utils/retry.utils.js";
 import { type TryCatchResult, tryCatch, tryCatchAsync } from "../utils/try-catch.utils.js";
-import { parseUrl, type RetryContext } from "../utils/url.utils.js";
+import { parseUrl } from "../utils/url.utils.js";
 import { getDefaultHttpAdapter } from "./http.adapter.js";
 import type {
 	AdapterPayload,

@@ -70,6 +70,11 @@ export type BaseErrorData = {
 };
 
 /**
+ * The retry state of the request an error belongs to.
+ */
+export type RetryContext = Pick<BaseErrorData, "retryStrategyOptions" | "retryAttempt">;
+
+/**
  * Brands identify SDK errors even when they come from a different copy / version of this package
  * (e.g. Delivery and Management SDKs each bundling their own core SDK), where `instanceof` fails.
  * `Symbol.for` returns the same symbol across copies.

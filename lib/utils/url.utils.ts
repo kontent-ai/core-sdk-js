@@ -1,8 +1,6 @@
-import { type BaseErrorData, type ErrorDetailsFor, KontentSdkError } from "../models/error.models.js";
+import { type ErrorDetailsFor, KontentSdkError, type RetryContext } from "../models/error.models.js";
 import type { BaseUrl } from "../sdk/sdk-models.js";
 import { type TryCatchResult, tryCatch } from "./try-catch.utils.js";
-
-export type RetryContext = Pick<BaseErrorData, "retryStrategyOptions" | "retryAttempt">;
 
 export function getEndpointUrl({
 	environmentId,
