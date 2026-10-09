@@ -8,13 +8,30 @@ import type { FetchQueryRequest, GetNextPageData, PagedFetchQuery, PagingConfig,
 import { unwrapResults } from "../sdk-utils.js";
 import { createFetchQuery } from "./fetch-sdk-query.js";
 
-type PagingInput<TPayload extends JsonValue, TError extends KontentSdkError, TMeta, TExtra> = FetchQueryRequest<
+type PagedQueryBaseInput<TPayload extends JsonValue, TError extends KontentSdkError, TMeta, TExtra> = FetchQueryRequest<
 	TPayload,
 	TError,
 	TMeta,
 	TExtra
 > & {
 	readonly getNextPageData: GetNextPageData<TPayload, TMeta, TExtra>;
+};
+
+type PagedFetchQueryInput<TPayload extends JsonValue, TError extends KontentSdkError, TMeta, TExtra, TPagingExtra> = PagedQueryBaseInput<
+	TPayload,
+	TError,
+	TMeta,
+	TExtra
+> & {
+	readonly mapPagingExtraResponseProps: (responses: readonly QueryResponse<TPayload, TMeta, TExtra>[]) => TPagingExtra;
+};
+
+type PagingInput<TPayload extends JsonValue, TError extends KontentSdkError, TMeta, TExtra> = PagedQueryBaseInput<
+	TPayload,
+	TError,
+	TMeta,
+	TExtra
+> & {
 	readonly pagingConfig: PagingConfig;
 };
 
@@ -26,34 +43,31 @@ type NextPage =
 	| undefined;
 
 export function createPagedFetchQuery<TPayload extends JsonValue, TError extends KontentSdkError, TMeta, TExtra, TPagingExtra>(
-	data: FetchQueryRequest<TPayload, TError, TMeta, TExtra> & {
-		readonly getNextPageData: GetNextPageData<TPayload, TMeta, TExtra>;
-		readonly mapPagingExtraResponseProps: (response: readonly QueryResponse<TPayload, TMeta, TExtra>[]) => TPagingExtra;
-	},
+	data: PagedFetchQueryInput<TPayload, TError, TMeta, TExtra, TPagingExtra>,
 ): PagedFetchQuery<TPayload, TError, TMeta, TExtra, TPagingExtra> {
 	const getPagingData = (config?: PagingConfig): PagingInput<TPayload, TError, TMeta, TExtra> => ({
 		...data,
 		pagingConfig: config ?? {},
 	});
 
-	const fetchQuery = createFetchQuery<TPayload, TError, TMeta, TExtra>(data);
+	const fetchQuery = createFetchQuery(data);
 
 	const fetchAllPagesSafe = async (config?: PagingConfig) => {
-		const { success, data: responses, error } = await fetchAllPageResponses<TPayload, TMeta, TExtra, TError>(getPagingData(config));
+		const { success, data: responses, error } = await fetchAllPageResponses(getPagingData(config));
 		if (!success) {
 			return { success: false as const, error };
 		}
 		return { ...data.mapPagingExtraResponseProps(responses), success: true as const, responses };
 	};
 
-	const pagesSafe = (config?: PagingConfig) => createPagingQueryIterator<TPayload, TMeta, TExtra, TError>(getPagingData(config));
+	const pagesSafe = (config?: PagingConfig) => createPagingQueryIterator(getPagingData(config));
 
 	return {
 		inspect: fetchQuery.inspect,
 		fetchPage: fetchQuery.fetch,
 		fetchPageSafe: fetchQuery.fetchSafe,
 		fetchAllPages: async (config?: PagingConfig) => {
-			const { data: responses } = unwrapOrThrow(await fetchAllPageResponses<TPayload, TMeta, TExtra, TError>(getPagingData(config)));
+			const { data: responses } = unwrapOrThrow(await fetchAllPageResponses(getPagingData(config)));
 			return { ...data.mapPagingExtraResponseProps(responses), responses };
 		},
 		fetchAllPagesSafe,
@@ -69,13 +83,7 @@ async function* createPagingQueryIterator<TPayload extends JsonValue, TMeta, TEx
 	let pageIndex: number = 0;
 
 	while (nextPage) {
-		const fetchResult: SafeHttpResult<QueryResponse<TPayload, TMeta, TExtra>, TError> = await resolveQuery<
-			TPayload,
-			null,
-			TMeta,
-			TExtra,
-			TError
-		>({
+		const fetchResult: SafeHttpResult<QueryResponse<TPayload, TMeta, TExtra>, TError> = await resolveQuery({
 			...data,
 			method: "GET",
 			body: null,
@@ -83,12 +91,12 @@ async function* createPagingQueryIterator<TPayload extends JsonValue, TMeta, TEx
 			continuationToken: nextPage.continuationToken,
 		});
 
+		yield fetchResult;
+
+		// stop iterator when response failed
 		if (!fetchResult.success) {
-			yield { success: false, error: fetchResult.error };
 			return;
 		}
-
-		yield fetchResult;
 
 		pageIndex++;
 		nextPage = resolveNextPage({
@@ -129,7 +137,7 @@ async function fetchAllPageResponses<TPayload extends JsonValue, TMeta, TExtra, 
 ): Promise<TryCatchResult<readonly QueryResponse<TPayload, TMeta, TExtra>[], TError>> {
 	const responses: QueryResponse<TPayload, TMeta, TExtra>[] = [];
 
-	for await (const result of createPagingQueryIterator<TPayload, TMeta, TExtra, TError>(data)) {
+	for await (const result of createPagingQueryIterator(data)) {
 		if (!result.success) {
 			return { success: false, error: result.error };
 		}
