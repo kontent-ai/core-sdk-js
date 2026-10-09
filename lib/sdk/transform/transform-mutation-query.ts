@@ -1,7 +1,9 @@
 import type { KontentSdkError } from "../../models/error.models.js";
 import type { JsonValue } from "../../models/json.models.js";
+import { unwrapOrThrow } from "../../utils/try-catch.utils.js";
 import type { MutationQuery } from "../sdk-models.js";
-import { createSafeAndUnsafeWithTransform, type TransformOptions, transformSingleResponse } from "./transform-utils.js";
+import type { TransformOptions } from "./transform.models.js";
+import { transformSafeResult } from "./transform-utils.js";
 
 export function transformMutationQuery<
 	TPayload extends JsonValue,
@@ -15,14 +17,11 @@ export function transformMutationQuery<
 }: TransformOptions<TPayload, TTransformedPayload, TError, TMeta, TExtra> & {
 	readonly query: MutationQuery<TPayload, TError, TMeta, TExtra>;
 }): MutationQuery<TTransformedPayload, TError, TMeta, TExtra> {
-	const { safe, unsafe } = createSafeAndUnsafeWithTransform({
-		querySafe: query.executeSafe,
-		transformResponse: transformSingleResponse(options),
-	});
+	const executeSafe = async () => await transformSafeResult(options, await query.executeSafe());
 
 	return {
-		execute: unsafe,
-		executeSafe: safe,
 		inspect: query.inspect,
+		executeSafe,
+		execute: async () => unwrapOrThrow(await executeSafe()).response,
 	};
 }

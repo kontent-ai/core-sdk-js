@@ -2,15 +2,12 @@ import type { SafeHttpResult } from "../../http/http.models.js";
 import type { KontentSdkError } from "../../models/error.models.js";
 import type { JsonValue } from "../../models/json.models.js";
 import { unwrapOrThrow } from "../../utils/try-catch.utils.js";
-import type { PagedFetchQuery, QueryResponse } from "../sdk-models.js";
+import type { PagedFetchQuery, PagingConfig, QueryResponse } from "../sdk-models.js";
 import { unwrapResults } from "../sdk-utils.js";
-import {
-	applyTransformSafely,
-	type BatchTransformOptions,
-	createSafeAndUnsafeWithTransform,
-	toSingleTransform,
-	transformBatchResponses,
-} from "./transform-utils.js";
+import type { PagedTransformOptions, TransformOptions } from "./transform.models.js";
+import { transformResponses, transformSafeResult } from "./transform-utils.js";
+
+const emptyTransformResultMessage = "Transform returned no response for input";
 
 export function transformPagedFetchQuery<
 	TPayload extends JsonValue,
@@ -22,25 +19,22 @@ export function transformPagedFetchQuery<
 >({
 	query,
 	...options
-}: BatchTransformOptions<TPayload, TTransformedPayload, TError, TMeta, TExtra> & {
+}: PagedTransformOptions<TPayload, TTransformedPayload, TError, TMeta, TExtra> & {
 	readonly query: PagedFetchQuery<TPayload, TError, TMeta, TExtra, TPagingExtra>;
 }): PagedFetchQuery<TTransformedPayload, TError, TMeta, TExtra, TPagingExtra> {
-	const batchTransformResponses = transformBatchResponses(options);
-	const transformSingle = toSingleTransform({ batchTransform: batchTransformResponses, mapError: options.mapError });
+	// single-page methods apply the batch transform to one page at a time
+	const singleOptions = toSingleTransformOptions(options);
 
-	const { safe: fetchPageSafe, unsafe: fetchPage } = createSafeAndUnsafeWithTransform({
-		querySafe: query.fetchPageSafe,
-		transformResponse: transformSingle,
-	});
+	const fetchPageSafe = async () => await transformSafeResult(singleOptions, await query.fetchPageSafe());
 
 	const fetchAllPagesSafe: PagedFetchQuery<TTransformedPayload, TError, TMeta, TExtra, TPagingExtra>["fetchAllPagesSafe"] = async (
 		config,
 	) => {
 		const result = await query.fetchAllPagesSafe(config);
 		if (!result.success) {
-			return { success: false as const, error: result.error };
+			return result;
 		}
-		const { success, data, error } = await batchTransformResponses(result.responses);
+		const { success, data, error } = await transformResponses(options, result.responses);
 		if (!success) {
 			return { success: false as const, error };
 		}
@@ -48,10 +42,10 @@ export function transformPagedFetchQuery<
 	};
 
 	const pagesSafe = async function* (
-		config: Parameters<PagedFetchQuery<TPayload, TError, TMeta, TExtra, TPagingExtra>["pagesSafe"]>[0],
+		config?: PagingConfig,
 	): AsyncGenerator<SafeHttpResult<QueryResponse<TTransformedPayload, TMeta, TExtra>, TError>> {
 		for await (const safeResult of query.pagesSafe(config)) {
-			const result = await applyTransformSafely(safeResult, transformSingle);
+			const result = await transformSafeResult(singleOptions, safeResult);
 			yield result;
 			if (!result.success) {
 				return;
@@ -60,16 +54,50 @@ export function transformPagedFetchQuery<
 	};
 
 	return {
-		fetchPage,
+		inspect: query.inspect,
 		fetchPageSafe,
+		fetchPage: async () => unwrapOrThrow(await fetchPageSafe()).response,
+		fetchAllPagesSafe,
 		fetchAllPages: async (config) => {
 			const result = await query.fetchAllPages(config);
-			const { data: responses } = unwrapOrThrow(await batchTransformResponses(result.responses));
+			const { data: responses } = unwrapOrThrow(await transformResponses(options, result.responses));
 			return { ...result, responses };
 		},
-		fetchAllPagesSafe,
-		pages: (config) => unwrapResults(pagesSafe(config)),
 		pagesSafe,
-		inspect: query.inspect,
+		pages: (config) => unwrapResults(pagesSafe(config)),
+	};
+}
+
+/**
+ * Adapts a batch transform to a single response. Throws when the transform returns no response for it,
+ * which `transformSafeResult` reports as a `transformError`.
+ */
+function toSingleTransformOptions<
+	TPayload extends JsonValue,
+	TTransformedPayload extends TPayload,
+	TError extends KontentSdkError,
+	TMeta,
+	TExtra,
+>({
+	transform,
+	...options
+}: PagedTransformOptions<TPayload, TTransformedPayload, TError, TMeta, TExtra>): TransformOptions<
+	TPayload,
+	TTransformedPayload,
+	TError,
+	TMeta,
+	TExtra
+> {
+	return {
+		...options,
+		transform: (response) => {
+			const [transformedResponse] = transform([response]);
+
+			if (!transformedResponse) {
+				throw new Error(emptyTransformResultMessage);
+			}
+
+			return transformedResponse;
+		},
 	};
 }

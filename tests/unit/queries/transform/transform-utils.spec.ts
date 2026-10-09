@@ -1,21 +1,23 @@
 import { describe, expect, it } from "vitest";
-import { transformBatchResponses } from "../../../../lib/sdk/transform/transform-utils.js";
+import { transformResponses } from "../../../../lib/sdk/transform/transform-utils.js";
 
-describe("createBatchTransformResponses - returns empty data when given no responses", async () => {
+describe("transformResponses - returns empty data when given no responses", async () => {
 	let transformCalled = false;
-	const batch = transformBatchResponses({
-		config: { runtimeValidation: { validateResponses: false } },
-		transform: (responses) => {
-			transformCalled = true;
-			return responses;
-		},
-		transformSchema: () => {
-			throw new Error("schema should not be loaded for empty input");
-		},
-		mapError: (error) => error,
-	});
 
-	const result = await batch([]);
+	const result = await transformResponses(
+		{
+			config: { runtimeValidation: { validateResponses: false } },
+			transform: (responses) => {
+				transformCalled = true;
+				return responses;
+			},
+			transformSchema: () => {
+				throw new Error("schema should not be loaded for empty input");
+			},
+			mapError: (error) => error,
+		},
+		[],
+	);
 
 	it("Should return success", () => {
 		expect(result.success).toBe(true);

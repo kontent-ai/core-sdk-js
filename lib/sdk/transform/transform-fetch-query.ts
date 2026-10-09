@@ -1,7 +1,9 @@
 import type { KontentSdkError } from "../../models/error.models.js";
 import type { JsonValue } from "../../models/json.models.js";
+import { unwrapOrThrow } from "../../utils/try-catch.utils.js";
 import type { FetchQuery } from "../sdk-models.js";
-import { createSafeAndUnsafeWithTransform, type TransformOptions, transformSingleResponse } from "./transform-utils.js";
+import type { TransformOptions } from "./transform.models.js";
+import { transformSafeResult } from "./transform-utils.js";
 
 export function transformFetchQuery<
 	TPayload extends JsonValue,
@@ -15,14 +17,11 @@ export function transformFetchQuery<
 }: TransformOptions<TPayload, TTransformedPayload, TError, TMeta, TExtra> & {
 	readonly query: FetchQuery<TPayload, TError, TMeta, TExtra>;
 }): FetchQuery<TTransformedPayload, TError, TMeta, TExtra> {
-	const { safe, unsafe } = createSafeAndUnsafeWithTransform({
-		querySafe: query.fetchSafe,
-		transformResponse: transformSingleResponse(options),
-	});
+	const fetchSafe = async () => await transformSafeResult(options, await query.fetchSafe());
 
 	return {
-		fetch: unsafe,
-		fetchSafe: safe,
 		inspect: query.inspect,
+		fetchSafe,
+		fetch: async () => unwrapOrThrow(await fetchSafe()).response,
 	};
 }

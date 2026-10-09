@@ -451,6 +451,7 @@ describe("transformPagedFetchQuery - runtime validation fails when transformed p
 	});
 
 	const { success, error } = await transformedQuery.fetchPageSafe();
+	const allPagesResult = await transformedQuery.fetchAllPagesSafe();
 
 	it("Should not succeed", () => {
 		expect(success).toBe(false);
@@ -458,6 +459,14 @@ describe("transformPagedFetchQuery - runtime validation fails when transformed p
 
 	it("Should return error with schemaMismatch reason", () => {
 		expect(error?.details.reason).toBe("schemaMismatch" satisfies ErrorReason);
+	});
+
+	it("Should not succeed when fetching all pages", () => {
+		expect(allPagesResult.success).toBe(false);
+	});
+
+	it("Should return error with schemaMismatch reason when fetching all pages", () => {
+		expect(allPagesResult.error?.details.reason).toBe("schemaMismatch" satisfies ErrorReason);
 	});
 });
 
