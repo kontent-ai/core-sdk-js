@@ -31,13 +31,13 @@ export function isAdapterAbortError(error: unknown): error is AdapterAbortError 
 export function toInvalidResponseMessage({
 	method,
 	adapterResponse,
-	kontentErrorData: kontentErrorResponse,
+	kontentErrorData,
 }: {
 	readonly method: HttpMethod;
 	readonly adapterResponse: AdapterResponse<AdapterPayload>;
 	readonly kontentErrorData: ErrorResponseData | undefined;
 }): string {
-	const kontentDetails = kontentErrorResponse ? ` ${getKontentErrorResponseMessage(kontentErrorResponse)}` : "";
+	const kontentDetails = kontentErrorData ? ` ${getKontentErrorResponseMessage(kontentErrorData)}` : "";
 	return `Failed to execute '${method}' request '${adapterResponse.url.toString()}'. Request failed with status '${adapterResponse.status}' and status text '${adapterResponse.statusText}'.${kontentDetails}`;
 }
 

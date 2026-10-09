@@ -7,9 +7,9 @@ import { unwrapResults } from "../sdk-utils.js";
 import {
 	applyTransformSafely,
 	type BatchTransformOptions,
-	createBatchTransformResponses,
-	createSafeAndUnsafe,
+	createSafeAndUnsafeWithTransform,
 	toSingleTransform,
+	transformBatchResponses,
 } from "./transform-utils.js";
 
 export function transformPagedFetchQuery<
@@ -25,10 +25,10 @@ export function transformPagedFetchQuery<
 }: BatchTransformOptions<TPayload, TTransformedPayload, TError, TMeta, TExtra> & {
 	readonly query: PagedFetchQuery<TPayload, TError, TMeta, TExtra, TPagingExtra>;
 }): PagedFetchQuery<TTransformedPayload, TError, TMeta, TExtra, TPagingExtra> {
-	const batchTransformResponses = createBatchTransformResponses(options);
+	const batchTransformResponses = transformBatchResponses(options);
 	const transformSingle = toSingleTransform({ batchTransform: batchTransformResponses, mapError: options.mapError });
 
-	const { safe: fetchPageSafe, unsafe: fetchPage } = createSafeAndUnsafe({
+	const { safe: fetchPageSafe, unsafe: fetchPage } = createSafeAndUnsafeWithTransform({
 		querySafe: query.fetchPageSafe,
 		transformResponse: transformSingle,
 	});

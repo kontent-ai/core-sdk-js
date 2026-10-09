@@ -9,36 +9,41 @@ const defaultMaxRetries: NonNullable<RetryStrategyOptions["maxRetries"]> = 3;
 
 const defaultCanRetryAdapterError: NonNullable<RetryStrategyOptions["canRetryAdapterError"]> = () => false;
 
-export async function runWithRetry<TPayload extends AdapterPayload, TBody extends HttpRequestBody>(data: {
+export async function runWithRetry<TPayload extends AdapterPayload, TBody extends HttpRequestBody>({
+	func,
+	retryStrategyOptions,
+	url,
+	abortSignal,
+}: {
 	readonly func: (retryAttempt: number) => Promise<HttpResponse<TPayload, TBody>>;
 	readonly retryStrategyOptions: ResolvedRetryStrategyOptions;
 	readonly url: URL;
 	readonly abortSignal: AbortSignal | undefined;
 }): Promise<HttpResponse<TPayload, TBody>> {
 	const runRequest = async (retryAttempt: number): Promise<HttpResponse<TPayload, TBody>> => {
-		const { success, response, error } = await data.func(retryAttempt);
+		const { success, response, error } = await func(retryAttempt);
 
 		if (success) {
 			return { success: true, response: response };
 		}
 
-		if (!canRetryError({ error, retryAttempt, retryStrategyOptions: data.retryStrategyOptions })) {
+		if (!canRetryError({ error, retryAttempt, retryStrategyOptions })) {
 			return { success: false, error };
 		}
 
-		const retryInMs = data.retryStrategyOptions.getDelayBetweenRetriesMs(error);
+		const retryInMs = retryStrategyOptions.getDelayBetweenRetriesMs(error);
 
 		// wait before the next retry or if the abort signal is aborted, return the error
-		await sleep(retryInMs, data.abortSignal);
-		if (data.abortSignal?.aborted) {
+		await sleep(retryInMs, abortSignal);
+		if (abortSignal?.aborted) {
 			return {
 				success: false,
-				error: createAbortError({ url: data.url, retryStrategyOptions: data.retryStrategyOptions, retryAttempt }),
+				error: createAbortError({ url, retryStrategyOptions, retryAttempt }),
 			};
 		}
 
 		// log retry attempt when available
-		data.retryStrategyOptions.logRetryAttempt?.(retryAttempt + 1, data.url.toString(), retryInMs);
+		retryStrategyOptions.logRetryAttempt?.(retryAttempt + 1, url.toString(), retryInMs);
 
 		return await runRequest(retryAttempt + 1);
 	};
@@ -53,7 +58,7 @@ export function resolveDefaultRetryStrategyOptions(options?: RetryStrategyOption
 	return {
 		maxRetries: maxRetries,
 		getDelayBetweenRetriesMs: (error) => {
-			const delayMs = getRetryMsFromHeaders({ error });
+			const delayMs = getRetryMsFromHeaders(error);
 			return maxRetryDelayMs === undefined ? delayMs : Math.min(delayMs, maxRetryDelayMs);
 		},
 		canRetryAdapterError: options?.canRetryAdapterError ?? defaultCanRetryAdapterError,
@@ -134,15 +139,12 @@ function canRetryError({
 		.exhaustive();
 }
 
-function getRetryMsFromHeaders({ error }: { readonly error: KontentSdkError }): number {
+function getRetryMsFromHeaders(error: KontentSdkError): number {
 	return match(error)
 		.returnType<number>()
-		.with({ details: { adapterResponse: P.nonNullable } }, (m) => {
-			const retryAfterHeaderValue = getRetryAfterHeaderValue(m.details.adapterResponse.responseHeaders);
-			if (retryAfterHeaderValue) {
-				return retryAfterHeaderValue * 1000;
-			}
-			return 0;
-		})
+		.with(
+			{ details: { adapterResponse: P.nonNullable } },
+			(m) => (getRetryAfterHeaderValue(m.details.adapterResponse.responseHeaders) ?? 0) * 1000,
+		)
 		.otherwise(() => 0);
 }

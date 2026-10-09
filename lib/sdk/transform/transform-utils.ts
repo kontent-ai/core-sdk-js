@@ -1,7 +1,6 @@
 import type { SafeHttpResult } from "../../http/http.models.js";
 import { KontentSdkError } from "../../models/error.models.js";
 import type { JsonValue } from "../../models/json.models.js";
-import { isNonEmptyArray } from "../../utils/array.utils.js";
 import type { SchemaInput } from "../../utils/schema.utils.js";
 import { type TryCatchResult, tryCatch, unwrapOrThrow } from "../../utils/try-catch.utils.js";
 import type { QueryResponse, SdkConfig } from "../sdk-models.js";
@@ -54,6 +53,16 @@ type TransformResponseFn<
 	response: QueryResponse<TPayload, TMeta, TExtra>,
 ) => Promise<TryCatchResult<QueryResponse<TTransformedPayload, TMeta, TExtra>, TError>>;
 
+type BatchTransformResponsesFn<
+	TPayload extends JsonValue,
+	TTransformedPayload extends TPayload,
+	TError extends KontentSdkError,
+	TMeta,
+	TExtra,
+> = (
+	responses: readonly QueryResponse<TPayload, TMeta, TExtra>[],
+) => Promise<TryCatchResult<readonly QueryResponse<TTransformedPayload, TMeta, TExtra>[], TError>>;
+
 export function createTransformError(error: unknown, url: URL): KontentSdkError {
 	return new KontentSdkError({
 		baseErrorData: {
@@ -72,7 +81,7 @@ export function createTransformError(error: unknown, url: URL): KontentSdkError 
 /**
  * Transforms the responses in a single call and validates the transformed payloads against `transformSchema`.
  */
-export function createBatchTransformResponses<
+export function transformBatchResponses<
 	TPayload extends JsonValue,
 	TTransformedPayload extends TPayload,
 	TError extends KontentSdkError,
@@ -83,15 +92,20 @@ export function createBatchTransformResponses<
 	transform,
 	transformSchema,
 	mapError,
-}: BatchTransformOptions<TPayload, TTransformedPayload, TError, TMeta, TExtra>): (
-	responses: readonly QueryResponse<TPayload, TMeta, TExtra>[],
-) => Promise<TryCatchResult<readonly QueryResponse<TTransformedPayload, TMeta, TExtra>[], TError>> {
+}: BatchTransformOptions<TPayload, TTransformedPayload, TError, TMeta, TExtra>): BatchTransformResponsesFn<
+	TPayload,
+	TTransformedPayload,
+	TError,
+	TMeta,
+	TExtra
+> {
 	return async (responses) => {
-		if (!isNonEmptyArray(responses)) {
+		const firstResponse = responses[0];
+
+		if (!firstResponse) {
 			return { success: true, data: [] };
 		}
 
-		const [firstResponse] = responses;
 		const { success, data, error } = tryCatch(() => transform(responses));
 
 		if (!success) {
@@ -110,17 +124,15 @@ export function createBatchTransformResponses<
 /**
  * Transforms a single response and validates the transformed payload against `transformSchema`.
  */
-function createSingleTransformResponse<
+export function transformSingleResponse<
 	TPayload extends JsonValue,
 	TTransformedPayload extends TPayload,
 	TError extends KontentSdkError,
 	TMeta,
 	TExtra,
 >({
-	config,
 	transform,
-	transformSchema,
-	mapError,
+	...options
 }: TransformOptions<TPayload, TTransformedPayload, TError, TMeta, TExtra>): TransformResponseFn<
 	TPayload,
 	TTransformedPayload,
@@ -128,20 +140,10 @@ function createSingleTransformResponse<
 	TMeta,
 	TExtra
 > {
-	return async (response) => {
-		const { success, data, error } = tryCatch(() => transform(response));
-
-		if (!success) {
-			return { success: false, error: mapError(createTransformError(error, response.meta.url)) };
-		}
-
-		const validationError = await validateTransformedResponses({ config, transformSchema, mapError, responses: [data] });
-		if (validationError) {
-			return { success: false, error: validationError };
-		}
-
-		return { success: true, data };
-	};
+	return toSingleTransform({
+		batchTransform: transformBatchResponses({ ...options, transform: (responses) => responses.map(transform) }),
+		mapError: options.mapError,
+	});
 }
 
 /**
@@ -177,7 +179,7 @@ export function toSingleTransform<
 	batchTransform,
 	mapError,
 }: {
-	readonly batchTransform: ReturnType<typeof createBatchTransformResponses<TPayload, TTransformedPayload, TError, TMeta, TExtra>>;
+	readonly batchTransform: BatchTransformResponsesFn<TPayload, TTransformedPayload, TError, TMeta, TExtra>;
 	readonly mapError: (error: KontentSdkError) => TError;
 }): TransformResponseFn<TPayload, TTransformedPayload, TError, TMeta, TExtra> {
 	return async (response) => {
@@ -194,27 +196,9 @@ export function toSingleTransform<
 }
 
 /**
- * Creates the safe & throwing query methods that transform the response of a single-response (fetch / mutation) query.
+ * Creates the safe & throwing query methods that transform the response of a single-response query.
  */
-export function createTransformedQueryMethods<
-	TPayload extends JsonValue,
-	TTransformedPayload extends TPayload,
-	TError extends KontentSdkError,
-	TMeta,
-	TExtra,
->({
-	querySafe,
-	...options
-}: TransformOptions<TPayload, TTransformedPayload, TError, TMeta, TExtra> & {
-	readonly querySafe: () => Promise<SafeHttpResult<QueryResponse<TPayload, TMeta, TExtra>, TError>>;
-}): ReturnType<typeof createSafeAndUnsafe<TPayload, TTransformedPayload, TError, TMeta, TExtra>> {
-	return createSafeAndUnsafe({
-		querySafe,
-		transformResponse: createSingleTransformResponse(options),
-	});
-}
-
-export function createSafeAndUnsafe<
+export function createSafeAndUnsafeWithTransform<
 	TPayload extends JsonValue,
 	TTransformedPayload extends TPayload,
 	TError extends KontentSdkError,

@@ -1,7 +1,6 @@
 import type { Header } from "../models/core.models.js";
 import { AdapterAbortError, AdapterParseError } from "../models/error.models.js";
 import type { JsonValue } from "../models/json.models.js";
-import { runWithAbortSignal } from "../utils/abort.utils.js";
 import { isFetchAbortError } from "../utils/error.utils.js";
 import { isApplicationJsonResponseType, toFetchHeaders, toSdkHeaders } from "../utils/header.utils.js";
 import { tryCatchAsync } from "../utils/try-catch.utils.js";
@@ -85,34 +84,24 @@ async function parseResponse<TPayload extends AdapterPayload>({
 	readonly parseFunc: () => Promise<TPayload>;
 	readonly abortSignal: AbortSignal | undefined;
 }): Promise<TPayload> {
-	const runParseFunc = async (): Promise<TPayload> => {
-		const { success, data, error } = await tryCatchAsync(async () => {
-			return await parseFunc();
-		});
+	if (abortSignal?.aborted) {
+		throw new AdapterAbortError({ message: "Request was aborted before parsing the response.", error: abortSignal.reason });
+	}
 
-		if (!success) {
-			// this is to notify the HttpService that the response is not valid JSON or BLOB
-			// HttpService will then convert the error to a KontentSdkError with the reason "invalidResponseBody"
-			throw new AdapterParseError({ message: "Failed to parse the response.", error });
-		}
+	const { success, data, error } = await tryCatchAsync(parseFunc);
 
+	if (success) {
 		return data;
-	};
-
-	if (!abortSignal) {
-		return await runParseFunc();
 	}
 
-	const { isAborted, data } = await runWithAbortSignal<TPayload>({
-		func: runParseFunc,
-		abortSignal: abortSignal,
-	});
-
-	if (isAborted) {
-		throw new AdapterAbortError({ message: "Request was aborted while parsing the response." });
+	// fetch errors the response body stream once its signal is aborted, so a failed parse of an aborted request is an abort
+	if (abortSignal?.aborted) {
+		throw new AdapterAbortError({ message: "Request was aborted while parsing the response.", error });
 	}
 
-	return data;
+	// this is to notify the HttpService that the response is not valid JSON or BLOB
+	// HttpService will then convert the error to a KontentSdkError with the reason "invalidResponseBody"
+	throw new AdapterParseError({ message: "Failed to parse the response.", error });
 }
 
 function createAdapterResponse<TPayload extends AdapterPayload>({

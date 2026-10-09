@@ -12,13 +12,7 @@ import {
 import type { JsonObject, JsonValue } from "../models/json.models.js";
 import type { PickStringLiteral } from "../models/utility.types.js";
 import { isBlob, isDefined } from "../utils/core.utils.js";
-import {
-	isAdapterAbortError,
-	isAdapterParseError,
-	isKontentErrorResponseData,
-	isKontentSdkError,
-	toInvalidResponseMessage,
-} from "../utils/error.utils.js";
+import { isAdapterAbortError, isAdapterParseError, isKontentErrorResponseData, toInvalidResponseMessage } from "../utils/error.utils.js";
 import {
 	binaryContentType,
 	createSdkIdHeader,
@@ -45,6 +39,8 @@ import type {
 	HttpServiceRequestOptions,
 	UploadFileRequestOptions,
 } from "./http.models.js";
+
+type AdapterErrorDetails = ErrorDetailsFor<"adapterError" | "aborted" | "invalidResponseBody">;
 
 type ParsedRequest = {
 	readonly parsedUrl: URL;
@@ -92,12 +88,7 @@ export function getDefaultHttpService(config?: DefaultHttpServiceOptions): HttpS
 }
 
 function resolveHttpAdapter(config?: DefaultHttpServiceOptions): Required<HttpAdapter> {
-	const defaultAdapter = getDefaultHttpAdapter();
-
-	return {
-		downloadFile: config?.adapter?.downloadFile ?? defaultAdapter.downloadFile,
-		executeRequest: config?.adapter?.executeRequest ?? defaultAdapter.executeRequest,
-	};
+	return { ...getDefaultHttpAdapter(), ...config?.adapter };
 }
 
 async function processHttpRequest<TPayload extends AdapterPayload, TBody extends HttpRequestBody>({
@@ -132,16 +123,12 @@ async function processHttpRequest<TPayload extends AdapterPayload, TBody extends
 		abortSignal: options.abortSignal,
 		func: async (retryAttempt) => {
 			const retryContext: RetryContext = { retryStrategyOptions, retryAttempt };
-			const responseOrError = await runAdapterRequest({
-				adapterOptions,
-				runAdapterFunc,
-				retryContext,
-			});
+			const { success, data: response, error } = await tryCatchAsync(async () => await runAdapterFunc(adapterOptions));
 
-			if (isKontentSdkError(responseOrError)) {
+			if (!success) {
 				return {
 					success: false,
-					error: responseOrError,
+					error: createAdapterError({ url: adapterOptions.url, error, retryContext }),
 				};
 			}
 
@@ -149,7 +136,7 @@ async function processHttpRequest<TPayload extends AdapterPayload, TBody extends
 				retryContext,
 				method: options.method,
 				requestHeaders: parsedRequest.requestHeaders,
-				response: responseOrError,
+				response,
 				requestBody: options.body,
 			});
 		},
@@ -166,11 +153,11 @@ function createAdapterError({
 	readonly url: URL;
 	readonly error: unknown;
 	readonly retryContext: RetryContext;
-}): KontentSdkError<ErrorDetailsFor<"adapterError" | "aborted" | "invalidResponseBody">> {
+}): KontentSdkError<AdapterErrorDetails> {
 	const { message, details } = match(error)
 		.returnType<{
 			readonly message: string;
-			readonly details: ErrorDetailsFor<"adapterError" | "aborted" | "invalidResponseBody">;
+			readonly details: AdapterErrorDetails;
 		}>()
 		.when(isAdapterAbortError, (abortError) => ({
 			message: `Adapter has aborted the request for url '${url.toString()}'. See the error object for more details.`,
@@ -221,20 +208,6 @@ async function mapAdapterResponse<TPayload extends AdapterPayload, TBody extends
 			...(requestBody === undefined ? {} : { body: requestBody }),
 		},
 	};
-}
-
-async function runAdapterRequest<TPayload extends AdapterPayload>({
-	adapterOptions,
-	runAdapterFunc,
-	retryContext,
-}: {
-	readonly adapterOptions: AdapterRequestOptions;
-	readonly runAdapterFunc: (options: AdapterRequestOptions) => Promise<AdapterResponse<TPayload>>;
-	readonly retryContext: RetryContext;
-}): Promise<AdapterResponse<TPayload> | KontentSdkError> {
-	const { success, error, data } = await tryCatchAsync(async () => await runAdapterFunc(adapterOptions));
-
-	return success ? data : createAdapterError({ url: adapterOptions.url, error, retryContext });
 }
 
 function isSuccessfulResponse(response: AdapterResponse<AdapterPayload>): boolean {

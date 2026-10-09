@@ -126,23 +126,18 @@ function resolveUrl<TError extends KontentSdkError>({
 	readonly baseUrl: BaseUrl | undefined;
 	readonly mapError: (error: KontentSdkError<ErrorDetailsFor<"invalidUrl">>) => TError;
 }): TryCatchResult<URL, TError> {
-	const { success, data: parsedUrl, error } = parseUrl(url);
+	const result = parseUrlWithBase(url, baseUrl);
 
-	if (!success) {
-		return { success: false, error: mapError(error) };
-	}
+	return result.success ? result : { success: false, error: mapError(result.error) };
+}
 
-	if (!baseUrl) {
-		return { success: true, data: parsedUrl };
-	}
+function parseUrlWithBase(
+	url: string | URL,
+	baseUrl: BaseUrl | undefined,
+): TryCatchResult<URL, KontentSdkError<ErrorDetailsFor<"invalidUrl">>> {
+	const parsedUrl = parseUrl(url);
 
-	const { success: baseUrlSuccess, data: urlWithBaseUrl, error: baseUrlError } = setBaseUrl(parsedUrl, baseUrl);
-
-	if (!baseUrlSuccess) {
-		return { success: false, error: mapError(baseUrlError) };
-	}
-
-	return { success: true, data: urlWithBaseUrl };
+	return parsedUrl.success && baseUrl ? setBaseUrl(parsedUrl.data, baseUrl) : parsedUrl;
 }
 
 function setBaseUrl(url: URL, baseUrl: BaseUrl): TryCatchResult<URL, KontentSdkError<ErrorDetailsFor<"invalidUrl">>> {
@@ -154,7 +149,7 @@ function setBaseUrl(url: URL, baseUrl: BaseUrl): TryCatchResult<URL, KontentSdkE
 		return { success: false, error };
 	}
 
-	const clonedUrl = new URL(url.toString());
+	const clonedUrl = new URL(url);
 	clonedUrl.protocol = parsedBaseUrl.protocol;
 	clonedUrl.host = parsedBaseUrl.host;
 

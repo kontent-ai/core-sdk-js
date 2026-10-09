@@ -14,7 +14,7 @@ const upperBoundLimitForInfinitePaging = 50;
  * A factory is required because the body of a `Response` can only be read once, so each `fetch` call needs a fresh instance.
  */
 export function stubFetchWithResponse(getResponse: () => Response): void {
-	vi.stubGlobal("fetch" satisfies keyof typeof globalThis, async () => await Promise.resolve(getResponse()));
+	vi.stubGlobal("fetch" satisfies keyof typeof globalThis, async () => getResponse());
 }
 
 export function getFakeBlob(): Blob {

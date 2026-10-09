@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { createBatchTransformResponses } from "../../../../lib/sdk/transform/transform-utils.js";
+import { transformBatchResponses } from "../../../../lib/sdk/transform/transform-utils.js";
 
 describe("createBatchTransformResponses - returns empty data when given no responses", async () => {
 	let transformCalled = false;
-	const batch = createBatchTransformResponses({
+	const batch = transformBatchResponses({
 		config: { runtimeValidation: { validateResponses: false } },
 		transform: (responses) => {
 			transformCalled = true;
