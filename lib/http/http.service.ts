@@ -149,7 +149,7 @@ async function processHttpRequest<TPayload extends AdapterPayload, TBody extends
 				method: options.method,
 				requestHeaders: parsedRequest.requestHeaders,
 				response: responseOrError,
-				...(options.body === undefined ? {} : { requestBody: options.body }),
+				requestBody: options.body,
 			});
 		},
 		url: parsedRequest.parsedUrl,
@@ -200,7 +200,7 @@ async function mapAdapterResponse<TPayload extends AdapterPayload, TBody extends
 	readonly response: AdapterResponse<TPayload>;
 	readonly method: HttpMethod;
 	readonly requestHeaders: readonly Header[];
-	readonly requestBody?: TBody;
+	readonly requestBody: TBody | undefined;
 	readonly retryContext: RetryContext;
 }): Promise<HttpResponse<TPayload, TBody>> {
 	if (!isSuccessfulResponse(response)) {
@@ -379,11 +379,13 @@ function parseAndValidateRequest<TBody extends HttpRequestBody>({
 		};
 	}
 
+	const bodyOrNull = options.body ?? null;
+
 	const {
 		success: requestBodyParsedSuccess,
 		data: parsedRequestBody,
 		error: requestBodyError,
-	} = parseRequestBody({ requestBody: options.body ?? null, url: parsedUrl, retryContext });
+	} = parseRequestBody({ requestBody: bodyOrNull, url: parsedUrl, retryContext });
 
 	if (!requestBodyParsedSuccess) {
 		return {
@@ -400,7 +402,7 @@ function parseAndValidateRequest<TBody extends HttpRequestBody>({
 			requestHeaders: buildRequestHeaders({
 				configHeaders: config?.requestHeaders,
 				optionHeaders: options.requestHeaders,
-				body: options.body ?? null,
+				body: bodyOrNull,
 			}),
 		},
 	};
