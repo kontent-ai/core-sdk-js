@@ -1,3 +1,5 @@
+import { abortEventName } from "./core.utils.js";
+
 type AbortResult<TData> =
 	| {
 			readonly isAborted: false;
@@ -21,28 +23,19 @@ export async function runWithAbortSignal<T>({
 		};
 	}
 
-	const listenerName = "abort";
-
 	return await new Promise<AbortResult<T>>((resolve, reject) => {
 		const onAbort = () => {
-			cleanup();
 			resolve({ isAborted: true });
 		};
-		const cleanup = () => {
-			abortSignal.removeEventListener(listenerName, onAbort);
-		};
-		abortSignal.addEventListener(listenerName, onAbort);
+		abortSignal.addEventListener(abortEventName, onAbort, { once: true });
 
+		// errors of func are forwarded as is; the listener is removed once func settles
 		func()
-			.then((result) => {
-				resolve({ isAborted: false, data: result });
-			})
-			.catch((error) => {
-				// forward any error that occurs during the execution of the function
-				reject(error);
-			})
+			.then((data) => {
+				resolve({ isAborted: false, data });
+			}, reject)
 			.finally(() => {
-				cleanup();
+				abortSignal.removeEventListener(abortEventName, onAbort);
 			});
 	});
 }
