@@ -1,12 +1,28 @@
-{
-	"$schema": "./node_modules/oxlint/configuration_schema.json",
-	"plugins": ["typescript"],
-	"jsPlugins": ["./oxlint-plugins/zod-imports.mjs"],
-	"categories": {
-		"correctness": "off"
+import { extname } from "node:path";
+import { fileURLToPath } from "node:url";
+import type { OxlintConfig } from "oxlint";
+
+const pluginFileBaseName = "kontent.oxlint-plugin";
+
+/**
+ * Resolves the plugin next to this module, keeping this module's extension so it works
+ * both from source (`.ts`, via Node type stripping) and from compiled output (`.js`).
+ */
+const resolvePluginPath = (): string => fileURLToPath(new URL(`./${pluginFileBaseName}${extname(import.meta.url)}`, import.meta.url));
+
+/**
+ * Shared oxlint configuration for Kontent.ai SDKs.
+ *
+ * Use in `oxlint.config.ts`: `export default defineConfig({ extends: [kontentOxlintConfig] })`
+ */
+export const kontentOxlintConfig = {
+	plugins: ["typescript"],
+	jsPlugins: [resolvePluginPath()],
+	categories: {
+		correctness: "off",
 	},
-	"ignorePatterns": ["dist/**"],
-	"rules": {
+	ignorePatterns: ["dist/**"],
+	rules: {
 		"no-duplicate-imports": "error",
 		"no-promise-executor-return": "error",
 		"no-unexpected-multiline": "error",
@@ -36,6 +52,6 @@
 		"typescript/no-mixed-enums": "error",
 		"typescript/no-unsafe-enum-comparison": "error",
 
-		"kontent/no-named-zod-import": "error"
-	}
-}
+		"kontent/no-named-zod-import": "error",
+	},
+} as const satisfies OxlintConfig;

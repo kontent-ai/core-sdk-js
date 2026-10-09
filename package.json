@@ -50,11 +50,15 @@
 		"update:version": "tsx ./scripts/update-version.ts"
 	},
 	"peerDependencies": {
+		"oxlint": "^1",
 		"ts-pattern": "^5",
 		"vitest": "^5",
 		"zod": "^4"
 	},
 	"peerDependenciesMeta": {
+		"oxlint": {
+			"optional": true
+		},
 		"vitest": {
 			"optional": true
 		}

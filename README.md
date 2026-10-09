@@ -172,3 +172,21 @@ const httpService = getDefaultHttpService({
   },
 });
 ```
+
+---
+
+## Shared oxlint Config
+
+SDKs built on top of the core package can reuse its [oxlint](https://oxc.rs/docs/guide/usage/linter) rules and the `kontent` JS plugin. Install `oxlint` and `oxlint-tsgolint` (required for `--type-aware`) as dev dependencies and extend the shared config in `oxlint.config.ts`:
+
+```typescript
+import { kontentOxlintConfig } from "@kontent-ai/core-sdk/devkit";
+import { defineConfig } from "oxlint";
+
+export default defineConfig({
+  extends: [kontentOxlintConfig],
+  rules: {
+    // add or override rules here
+  },
+});
+```
