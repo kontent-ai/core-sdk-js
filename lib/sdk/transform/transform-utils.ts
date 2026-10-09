@@ -98,17 +98,70 @@ export function createBatchTransformResponses<
 			return { success: false, error: mapError(createTransformError(error, firstResponse.meta.url)) };
 		}
 
-		const validationError = await validatePayloads({
-			runtimeValidation: config.runtimeValidation,
-			schema: transformSchema,
-			payloads: data.map(({ meta, payload }) => ({ url: meta.url, payload })),
-		});
+		const validationError = await validateTransformedResponses({ config, transformSchema, mapError, responses: data });
 		if (validationError) {
-			return { success: false, error: mapError(validationError) };
+			return { success: false, error: validationError };
 		}
 
 		return { success: true, data };
 	};
+}
+
+/**
+ * Transforms a single response and validates the transformed payload against `transformSchema`.
+ */
+function createSingleTransformResponse<
+	TPayload extends JsonValue,
+	TTransformedPayload extends TPayload,
+	TError extends KontentSdkError,
+	TMeta,
+	TExtra,
+>({
+	config,
+	transform,
+	transformSchema,
+	mapError,
+}: TransformOptions<TPayload, TTransformedPayload, TError, TMeta, TExtra>): TransformResponseFn<
+	TPayload,
+	TTransformedPayload,
+	TError,
+	TMeta,
+	TExtra
+> {
+	return async (response) => {
+		const { success, data, error } = tryCatch(() => transform(response));
+
+		if (!success) {
+			return { success: false, error: mapError(createTransformError(error, response.meta.url)) };
+		}
+
+		const validationError = await validateTransformedResponses({ config, transformSchema, mapError, responses: [data] });
+		if (validationError) {
+			return { success: false, error: validationError };
+		}
+
+		return { success: true, data };
+	};
+}
+
+/**
+ * Validates the transformed payloads against `transformSchema`, returning the mapped error of the first mismatch.
+ */
+async function validateTransformedResponses<TTransformedPayload extends JsonValue, TError extends KontentSdkError, TMeta, TExtra>({
+	config,
+	transformSchema,
+	mapError,
+	responses,
+}: TransformBaseOptions<TTransformedPayload, TError> & {
+	readonly responses: readonly QueryResponse<TTransformedPayload, TMeta, TExtra>[];
+}): Promise<TError | undefined> {
+	const validationError = await validatePayloads({
+		runtimeValidation: config.runtimeValidation,
+		schema: transformSchema,
+		payloads: responses.map(({ meta, payload }) => ({ url: meta.url, payload })),
+	});
+
+	return validationError ? mapError(validationError) : undefined;
 }
 
 /**
@@ -151,17 +204,13 @@ export function createTransformedQueryMethods<
 	TExtra,
 >({
 	querySafe,
-	transform,
 	...options
 }: TransformOptions<TPayload, TTransformedPayload, TError, TMeta, TExtra> & {
 	readonly querySafe: () => Promise<SafeHttpResult<QueryResponse<TPayload, TMeta, TExtra>, TError>>;
 }): ReturnType<typeof createSafeAndUnsafe<TPayload, TTransformedPayload, TError, TMeta, TExtra>> {
 	return createSafeAndUnsafe({
 		querySafe,
-		transformResponse: toSingleTransform({
-			batchTransform: createBatchTransformResponses({ ...options, transform: (responses) => responses.map(transform) }),
-			mapError: options.mapError,
-		}),
+		transformResponse: createSingleTransformResponse(options),
 	});
 }
 
@@ -200,7 +249,7 @@ export async function applyTransformSafely<
 	transformResponse: TransformResponseFn<TPayload, TTransformedPayload, TError, TMeta, TExtra>,
 ): Promise<SafeHttpResult<QueryResponse<TTransformedPayload, TMeta, TExtra>, TError>> {
 	if (!safeResult.success) {
-		return { success: false, error: safeResult.error };
+		return safeResult;
 	}
 
 	const { success, data, error } = await transformResponse(safeResult.response);
