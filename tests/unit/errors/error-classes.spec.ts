@@ -1,5 +1,5 @@
+import * as z from "@zod/mini";
 import { describe, expect, it } from "vitest";
-import * as z from "zod";
 import { AdapterAbortError, AdapterParseError, type BaseErrorData, KontentSdkError } from "../../../lib/models/error.models.js";
 
 const baseErrorData: BaseErrorData = {

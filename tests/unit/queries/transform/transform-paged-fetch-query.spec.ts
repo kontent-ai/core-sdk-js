@@ -1,5 +1,5 @@
+import * as z from "@zod/mini";
 import { describe, expect, it } from "vitest";
-import * as z from "zod";
 import type { ErrorReason, KontentSdkError } from "../../../../lib/models/error.models.js";
 import type { SafeHttpResult } from "../../../../lib/public_api.js";
 import { createPagedFetchQuery } from "../../../../lib/sdk/queries/paged-fetch-sdk-query.js";
@@ -45,7 +45,7 @@ const buildBaseQuery = (options?: {
 	});
 };
 
-const transformSchema = z.object({ name: z.string(), extra: z.string() }).readonly();
+const transformSchema = z.readonly(z.object({ name: z.string(), extra: z.string() }));
 
 describe("transformPagedFetchQuery - fetchPage applies transform that adds extra property", async () => {
 	const transformedQuery = transformPagedFetchQuery({
@@ -446,7 +446,7 @@ describe("transformPagedFetchQuery - runtime validation fails when transformed p
 		config: { runtimeValidation: { validateResponses: true } },
 		query: buildBaseQuery(),
 		transform: (responses) => responses.map((r) => ({ ...r, payload: { ...r.payload, extra: extraValue } })),
-		transformSchema: z.object({ name: z.string(), extra: z.string().min(50) }).readonly(),
+		transformSchema: z.readonly(z.object({ name: z.string(), extra: z.string().check(z.minLength(50)) })),
 		mapError: (error) => error,
 	});
 

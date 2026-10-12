@@ -1,4 +1,4 @@
-import { type $ZodType, safeParseAsync } from "zod/v4/core";
+import * as z from "@zod/mini";
 import type { SafeHttpResult } from "../http/http.models.js";
 import { KontentSdkError } from "../models/error.models.js";
 import type { JsonValue } from "../models/json.models.js";
@@ -41,9 +41,9 @@ export async function validatePayload<TPayload extends JsonValue>({
 }: {
 	readonly url: URL;
 	readonly payload: TPayload;
-	readonly schema: $ZodType<TPayload>;
+	readonly schema: z.core.$ZodType<TPayload>;
 }): Promise<KontentSdkError | undefined> {
-	const { success, error } = await safeParseAsync(schema, payload);
+	const { success, error } = await z.safeParseAsync(schema, payload);
 
 	if (success) {
 		return undefined;

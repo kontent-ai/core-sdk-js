@@ -1,5 +1,5 @@
+import * as z from "@zod/mini";
 import { describe, expect, it } from "vitest";
-import * as z from "zod";
 import { resolveSchema } from "../../../lib/utils/schema.utils.js";
 
 describe("resolveSchema - returns undefined when input is undefined", async () => {
@@ -11,7 +11,7 @@ describe("resolveSchema - returns undefined when input is undefined", async () =
 });
 
 describe("resolveSchema - returns the schema unchanged when given a schema directly", async () => {
-	const schema = z.object({ name: z.string() }).readonly();
+	const schema = z.readonly(z.object({ name: z.string() }));
 	const resolved = await resolveSchema(schema);
 
 	it("Should return the same schema reference", () => {
@@ -20,19 +20,10 @@ describe("resolveSchema - returns the schema unchanged when given a schema direc
 });
 
 describe("resolveSchema - awaits the loader function and returns the schema", async () => {
-	const schema = z.object({ name: z.string() }).readonly();
+	const schema = z.readonly(z.object({ name: z.string() }));
 	const resolved = await resolveSchema(async () => schema);
 
 	it("Should return the schema returned by the loader", () => {
-		expect(resolved).toBe(schema);
-	});
-});
-
-describe("resolveSchema - also accepts a zod/mini schema", async () => {
-	const schema = z.readonly(z.object({ name: z.string() }));
-	const resolved = await resolveSchema(schema);
-
-	it("Should return the same schema reference", () => {
 		expect(resolved).toBe(schema);
 	});
 });

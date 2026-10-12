@@ -14,9 +14,9 @@ type OxlintPlugin = {
 const kontentOxlintPluginName = "kontent";
 const noNamedZodImportRuleName = "no-named-zod-import";
 
-const noNamedZodImportSelector = "ImportDeclaration[source.value=/^zod(\\/mini)?$/] > ImportSpecifier[imported.name='z']";
+const noNamedZodImportSelector = "ImportDeclaration[source.value=/^(zod(\\/mini)?|@zod\\/mini)$/] > ImportSpecifier[imported.name='z']";
 const noNamedZodImportMessage =
-	'Use `import * as z from "zod"` instead. The named `{ z }` import defeats esbuild\'s namespace tree-shaking and pulls ~280 kB of zod locales into consumer bundles.';
+	'Use `import * as z from "@zod/mini"` instead. The named `{ z }` import defeats esbuild\'s namespace tree-shaking and pulls ~280 kB of zod locales into consumer bundles.';
 
 const noNamedZodImportRule: OxlintRule = {
 	create: (context) => ({

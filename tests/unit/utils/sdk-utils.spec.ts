@@ -1,5 +1,5 @@
+import * as z from "@zod/mini";
 import { describe, expect, it, vi } from "vitest";
-import * as zMini from "zod";
 import type { ErrorReason } from "../../../lib/models/error.models.js";
 import type { JsonValue } from "../../../lib/public_api.js";
 import type { PagedFetchQuery } from "../../../lib/sdk/sdk-models.js";
@@ -92,7 +92,7 @@ describe("parseResponse", () => {
 		const result = await validatePayload({
 			url: new URL("https://example.com"),
 			payload: { name: "test" },
-			schema: zMini.readonly(zMini.object({ name: zMini.string() })),
+			schema: z.readonly(z.object({ name: z.string() })),
 		});
 
 		expect(result).toBeUndefined();
@@ -102,7 +102,7 @@ describe("parseResponse", () => {
 		const result = await validatePayload({
 			url: new URL("https://example.com"),
 			payload: { name: "test" },
-			schema: zMini.readonly(zMini.object({ name: zMini.string().check(zMini.minLength(50)) })),
+			schema: z.readonly(z.object({ name: z.string().check(z.minLength(50)) })),
 		});
 
 		expect(result?.details.reason).toBe("schemaMismatch" satisfies ErrorReason);
@@ -111,7 +111,7 @@ describe("parseResponse", () => {
 
 describe("validatePayloads", () => {
 	// names shorter than 5 characters are type-correct but fail the schema at runtime
-	const nameSchema = zMini.readonly(zMini.object({ name: zMini.string().check(zMini.minLength(5)) }));
+	const nameSchema = z.readonly(z.object({ name: z.string().check(z.minLength(5)) }));
 	const validPayload = { url: new URL("https://example.com/0"), payload: { name: "valid" } };
 	const invalidPayloadA = { url: new URL("https://example.com/1"), payload: { name: "a" } };
 	const invalidPayloadB = { url: new URL("https://example.com/2"), payload: { name: "b" } };

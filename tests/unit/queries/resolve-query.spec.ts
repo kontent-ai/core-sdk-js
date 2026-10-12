@@ -1,5 +1,5 @@
+import * as z from "@zod/mini";
 import { describe, expect, it, vi } from "vitest";
-import * as z from "zod";
 import type { HttpService } from "../../../lib/http/http.models.js";
 import type { Header, KnownHeaderName } from "../../../lib/models/core.models.js";
 import type { ErrorReason } from "../../../lib/models/error.models.js";
@@ -26,7 +26,7 @@ describe("resolveQuery - invalid baseUrl host", async () => {
 });
 
 describe("resolveQuery - valid response matching zod schema", async () => {
-	const schema = z.object({ name: z.string() }).readonly();
+	const schema = z.readonly(z.object({ name: z.string() }));
 	const jsonResponse = { name: "test" };
 
 	const { success, response } = await resolveQuery({
@@ -54,7 +54,7 @@ describe("resolveQuery - valid response matching zod schema", async () => {
 });
 
 describe("resolveQuery - response not matching zod schema", async () => {
-	const schema = z.object({ name: z.string() }).readonly();
+	const schema = z.readonly(z.object({ name: z.string() }));
 
 	const { error } = await resolveQuery({
 		method: "GET",
