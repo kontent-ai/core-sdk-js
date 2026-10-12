@@ -190,3 +190,10 @@ export default defineConfig({
   },
 });
 ```
+
+The `kontent` plugin provides these rules (both enabled as `error` in `kontentOxlintConfig`):
+
+| Rule | What it enforces |
+| --- | --- |
+| `kontent/no-named-zod-import` | Import zod as a namespace (`import * as z from "@zod/mini"`), not as `import { z }`, which defeats tree-shaking. |
+| `kontent/no-static-schema-import` | Schema modules (`*.schema.js` / `*.schemas.js`) are loaded with a dynamic `await import(...)`, not a static import or re-export, so they stay out of the main bundle. Type-only imports are allowed. |

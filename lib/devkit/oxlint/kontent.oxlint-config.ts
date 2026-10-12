@@ -53,5 +53,6 @@ export const kontentOxlintConfig = {
 		"typescript/no-unsafe-enum-comparison": "error",
 
 		"kontent/no-named-zod-import": "error",
+		"kontent/no-static-schema-import": "error",
 	},
 } as const satisfies OxlintConfig;
