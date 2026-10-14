@@ -34,7 +34,7 @@ export function isPagingQuery<TPayload extends JsonValue, TError extends Kontent
 	);
 }
 
-export async function validatePayload<TPayload extends JsonValue>({
+async function validatePayload<TPayload extends JsonValue>({
 	url,
 	payload,
 	schema,

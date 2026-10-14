@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 import type { ErrorReason } from "../../../lib/models/error.models.js";
 import type { JsonValue } from "../../../lib/public_api.js";
 import type { PagedFetchQuery } from "../../../lib/sdk/sdk-models.js";
-import { isPagingQuery, validatePayload, validatePayloads } from "../../../lib/sdk/sdk-utils.js";
+import { isPagingQuery, validatePayloads } from "../../../lib/sdk/sdk-utils.js";
 
 describe("isPagingQuery", () => {
 	it("Should return true for object with paging query shape", () => {
@@ -84,28 +84,6 @@ describe("isPagingQuery", () => {
 
 		expect(isPagingQuery(missingPagesQuery)).toBe(false);
 		expect(isPagingQuery(missingFetchAllPagesQuery)).toBe(false);
-	});
-});
-
-describe("parseResponse", () => {
-	it("Should accept a zod/mini schema and succeed for a matching payload", async () => {
-		const result = await validatePayload({
-			url: new URL("https://example.com"),
-			payload: { name: "test" },
-			schema: z.readonly(z.object({ name: z.string() })),
-		});
-
-		expect(result).toBeUndefined();
-	});
-
-	it("Should accept a zod/mini schema and report a failure for a mismatching payload", async () => {
-		const result = await validatePayload({
-			url: new URL("https://example.com"),
-			payload: { name: "test" },
-			schema: z.readonly(z.object({ name: z.string().check(z.minLength(50)) })),
-		});
-
-		expect(result?.details.reason).toBe("schemaMismatch" satisfies ErrorReason);
 	});
 });
 
