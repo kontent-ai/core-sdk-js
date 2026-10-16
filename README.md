@@ -96,21 +96,27 @@ Each query exposes two variants: a safe variant (e.g. `fetchSafe`, `executeSafe`
 ```typescript
 const { success, response, error } = await httpService.request({
   url: "https://manage.kontent.ai/v2/projects/...",
-  method: "GET"
+  method: "GET",
 });
 
 if (!success) {
   switch (error.details.reason) {
     case "unauthorized":
       // error.details includes: adapterResponse (status, statusText, responseHeaders, payload), kontentErrorResponse
-      console.error("Check your API key:", error.details.kontentErrorResponse?.message);
+      console.error(
+        "Check your API key:",
+        error.details.kontentErrorResponse?.message,
+      );
       break;
     case "notFound":
       console.error("Resource not found:", error.url);
       break;
     case "invalidResponse":
       // Any non-2xx response that isn't 401 or 404
-      console.error(`HTTP ${error.details.adapterResponse.status}:`, error.details.kontentErrorResponse?.message);
+      console.error(
+        `HTTP ${error.details.adapterResponse.status}:`,
+        error.details.kontentErrorResponse?.message,
+      );
       break;
     case "invalidResponseBody":
       // The response body could not be read (e.g. the response claimed to be JSON, but wasn't valid JSON)
@@ -130,7 +136,11 @@ if (!success) {
       break;
     case "schemaMismatch":
       // The response payload does not match the expected Zod schema (only with runtime validation enabled)
-      console.error("Unexpected response shape for", error.details.url, error.details.zodError);
+      console.error(
+        "Unexpected response shape for",
+        error.details.url,
+        error.details.zodError,
+      );
       break;
     case "aborted":
       // The request was cancelled through its AbortSignal (including AbortSignal.timeout()).
@@ -172,28 +182,3 @@ const httpService = getDefaultHttpService({
   },
 });
 ```
-
----
-
-## Shared oxlint Config
-
-SDKs built on top of the core package can reuse its [oxlint](https://oxc.rs/docs/guide/usage/linter) rules and the `kontent` JS plugin. Install `oxlint` and `oxlint-tsgolint` (required for `--type-aware`) as dev dependencies and extend the shared config in `oxlint.config.ts`:
-
-```typescript
-import { kontentOxlintConfig } from "@kontent-ai/core-sdk/devkit";
-import { defineConfig } from "oxlint";
-
-export default defineConfig({
-  extends: [kontentOxlintConfig],
-  rules: {
-    // add or override rules here
-  },
-});
-```
-
-The `kontent` plugin provides these rules (both enabled as `error` in `kontentOxlintConfig`):
-
-| Rule | What it enforces |
-| --- | --- |
-| `kontent/no-named-zod-import` | Import zod as a namespace (`import * as z from "@zod/mini"`), not as `import { z }`, which defeats tree-shaking. |
-| `kontent/no-static-schema-import` | Schema modules (`*.schema.js` / `*.schemas.js`) are loaded with a dynamic `await import(...)`, not a static import or re-export, so they stay out of the main bundle. Type-only imports are allowed. |
