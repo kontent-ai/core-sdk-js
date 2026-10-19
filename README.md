@@ -15,7 +15,7 @@ The **Core SDK** provides foundational functionality leveraged by dependent Kont
 
 Before using this package, make sure your environment matches the published package requirements:
 
-- Node.js `>=22`
+- Node.js `>=24`
 - ESM-compatible runtime, because the package is published as an ES module
 - Peer dependencies: `zod` and `ts-pattern`
 - `vitest` (^5), only if you use the `@kontent-ai/core-sdk/testkit` entry point
