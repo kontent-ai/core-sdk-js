@@ -297,38 +297,6 @@ describe("createMutationQuery with invalid URL propagates error through executeS
 	});
 });
 
-describe("createFetchQuery with invalid URL propagates error through fetchSafe", async () => {
-	const { success, error } = await createFetchQuery({
-		...baseQueryConfig,
-		url: "not-a-valid-url",
-	}).fetchSafe();
-
-	it("Should not succeed", () => {
-		expect(success).toBe(false);
-	});
-
-	it("Error should be defined", () => {
-		expect(error).toBeDefined();
-	});
-});
-
-describe("createMutationQuery with invalid URL propagates error through executeSafe", async () => {
-	const { success, error } = await createMutationQuery({
-		...baseQueryConfig,
-		method: "POST",
-		body: null,
-		url: "not-a-valid-url",
-	}).executeSafe();
-
-	it("Should not succeed", () => {
-		expect(success).toBe(false);
-	});
-
-	it("Error should be defined", () => {
-		expect(error).toBeDefined();
-	});
-});
-
 for (const unsafeQuery of unsafeQueries) {
 	describe(`Safety testing for ${unsafeQuery.name} query`, () => {
 		const { unsafeQueries, succeedingUnsafeQueries, safeQueries, succeedingSafeQueries } = unsafeQuery.getQueries();

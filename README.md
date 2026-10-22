@@ -14,7 +14,6 @@ The **Core SDK** provides foundational functionality leveraged by dependent Kont
 ## Requirements
 
 Before using this package, make sure your environment matches the published package requirements:
-
 - Node.js `>=24`
 - ESM-compatible runtime, because the package is published as an ES module
 - Peer dependencies: `zod` and `ts-pattern`
@@ -41,7 +40,6 @@ The `HttpService` returns response payloads as `JsonValue` (or `Blob` for downlo
 ## Customization Options
 
 The `HttpService` comes with several built-in capabilities, such as:
-
 - **Retry policies**
 - **Request parsing and validation** (URL parsing, body serialization)
 - **Automatic header and tracking management**
@@ -58,7 +56,6 @@ However, if your goal is to retain the core features (e.g., retry policies, requ
 Below is an example demonstrating how to provide your own HTTP client by implementing a custom `HttpAdapter`. Both `executeRequest` and `downloadFile` are optional, so you only need to implement the methods you want to override.
 
 If you want the SDK to preserve specific `error.details.reason` values for custom adapters, throw:
-
 - `AdapterAbortError` when the request is aborted
 - `AdapterParseError` when the response cannot be parsed as JSON or `Blob`
 
@@ -171,14 +168,14 @@ For transport-level failures (network errors, connection timeouts), you can cont
 
 ```typescript
 const httpService = getDefaultHttpService({
-  retryStrategy: {
-    maxRetries: 3,
-    canRetryAdapterError: (error) => {
-      // `error` is typed as KontentSdkError<ErrorDetailsFor<"adapterError">>
-      // Return true to retry, false to stop
-      return true;
-    },
-    logRetryAttempt: "logToConsole",
-  },
+	retryStrategy: {
+		maxRetries: 3,
+		canRetryAdapterError: (error) => {
+			// `error` is typed as KontentSdkError<ErrorDetailsFor<"adapterError">>
+			// Return true to retry, false to stop
+			return true;
+		},
+		logRetryAttempt: "logToConsole",
+	},
 });
 ```
