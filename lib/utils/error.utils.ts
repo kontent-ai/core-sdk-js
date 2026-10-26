@@ -1,16 +1,30 @@
+import { isMatching, P } from "ts-pattern";
 import type { AdapterPayload, AdapterResponse } from "../http/http.models.js";
 import type { HttpMethod } from "../models/core.models.js";
 import {
 	AdapterAbortError,
 	AdapterParseError,
 	type ErrorResponseData,
-	errorResponseDataSchema,
 	KontentSdkError,
 	kontentAiErrorBrands,
 	type ValidationError,
 } from "../models/error.models.js";
 
 import { isDefined } from "./core.utils.js";
+
+const errorResponseDataPattern = {
+	message: P.string,
+	request_id: P.string,
+	error_code: P.number,
+	validation_errors: P.optional(
+		P.array({
+			message: P.string,
+			path: P.optional(P.string),
+			line: P.optional(P.number),
+			position: P.optional(P.number),
+		}),
+	),
+};
 
 export function isKontent404Error(error: unknown): boolean {
 	return isKontentSdkError(error) && error.details.reason === "notFound";
@@ -45,7 +59,7 @@ export function toInvalidResponseMessage({
  * Checks if the given JSON value is a Kontent API error response data.
  */
 export function isKontentErrorResponseData(payload: unknown): payload is ErrorResponseData {
-	return errorResponseDataSchema.safeParse(payload).success;
+	return isMatching(errorResponseDataPattern, payload);
 }
 
 /**

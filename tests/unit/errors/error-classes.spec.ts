@@ -1,4 +1,4 @@
-import * as z from "@zod/mini";
+import type { StandardSchemaV1 } from "@standard-schema/spec";
 import { describe, expect, it } from "vitest";
 import { AdapterAbortError, AdapterParseError, type BaseErrorData, KontentSdkError } from "../../../lib/models/error.models.js";
 
@@ -31,17 +31,14 @@ describe("KontentSdkError cause", () => {
 		expect(error.cause).toBe(originalError);
 	});
 
-	it("Should set cause to the zod error when response parsing failed", () => {
-		const { error: zodError } = z.string().safeParse(1);
-		if (!zodError) {
-			throw new Error("Expected the zod parse to fail");
-		}
+	it("Should set cause to the schema issues when response parsing failed", () => {
+		const issues: readonly StandardSchemaV1.Issue[] = [{ message: "Expected string, received number" }];
 		const error = new KontentSdkError({
 			baseErrorData,
-			details: { reason: "schemaMismatch", zodError, payload: 1, url: new URL("https://domain.com") },
+			details: { reason: "schemaMismatch", issues, payload: 1, url: new URL("https://domain.com") },
 		});
 
-		expect(error.cause).toBe(zodError);
+		expect(error.cause).toBe(issues);
 	});
 
 	it("Should not set cause when there is no underlying error", () => {

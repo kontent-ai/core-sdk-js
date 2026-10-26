@@ -35,22 +35,15 @@ export {
 	type ErrorDetailsFor,
 	type ErrorReason,
 	type ErrorResponseData,
-	errorResponseDataSchema,
 	KontentSdkError,
 	type ValidationError,
-	validationErrorSchema,
 } from "./models/error.models.js";
-export { type JsonArray, type JsonObject, type JsonValue, jsonValueSchema } from "./models/json.models.js";
+export type { JsonArray, JsonObject, JsonValue } from "./models/json.models.js";
 export type { EmptyObject, LiteralUnion, LiteralUnionNumber, PickStringLiteral } from "./models/utility.types.js";
 export { createFetchQuery } from "./sdk/queries/fetch-sdk-query.js";
 export { createMutationQuery } from "./sdk/queries/mutation-sdk-query.js";
 export { createPagedFetchQuery } from "./sdk/queries/paged-fetch-sdk-query.js";
-export {
-	codenameOf,
-	kontentUuidSchema,
-	nilUuid,
-	strictCodenameSchema,
-} from "./sdk/sdk-config.js";
+export { nilUuid } from "./sdk/sdk-config.js";
 export type {
 	BaseUrl,
 	FetchQuery,

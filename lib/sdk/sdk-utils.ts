@@ -1,4 +1,4 @@
-import * as z from "@zod/mini";
+import type { StandardSchemaV1 } from "@standard-schema/spec";
 import type { SafeHttpResult } from "../http/http.models.js";
 import { KontentSdkError } from "../models/error.models.js";
 import type { JsonValue } from "../models/json.models.js";
@@ -41,11 +41,11 @@ async function validatePayload<TPayload extends JsonValue>({
 }: {
 	readonly url: URL;
 	readonly payload: TPayload;
-	readonly schema: z.core.$ZodType<TPayload>;
+	readonly schema: StandardSchemaV1<unknown, TPayload>;
 }): Promise<KontentSdkError | undefined> {
-	const { success, error } = await z.safeParseAsync(schema, payload);
+	const { issues } = await schema["~standard"].validate(payload);
 
-	if (success) {
+	if (!issues) {
 		return undefined;
 	}
 
@@ -58,7 +58,7 @@ async function validatePayload<TPayload extends JsonValue>({
 		},
 		details: {
 			reason: "schemaMismatch",
-			zodError: error,
+			issues,
 			payload,
 			url,
 		},

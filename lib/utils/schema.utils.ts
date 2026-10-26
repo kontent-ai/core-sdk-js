@@ -1,8 +1,8 @@
-import type * as z from "@zod/mini";
+import type { StandardSchemaV1 } from "@standard-schema/spec";
 
-export type SchemaInput<T> = (() => Promise<z.core.$ZodType<T>>) | z.core.$ZodType<T> | undefined;
+export type SchemaInput<T> = (() => Promise<StandardSchemaV1<unknown, T>>) | StandardSchemaV1<unknown, T> | undefined;
 
-export async function resolveSchema<T>(input: SchemaInput<T>): Promise<z.core.$ZodType<T> | undefined> {
+export async function resolveSchema<T>(input: SchemaInput<T>): Promise<StandardSchemaV1<unknown, T> | undefined> {
 	if (input === undefined) {
 		return undefined;
 	}

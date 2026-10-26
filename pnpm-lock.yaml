@@ -20,6 +20,9 @@ importers:
             "@kontent-ai/oxlint-config":
                 specifier: 0.0.4
                 version: 0.0.4(oxlint-tsgolint@7.0.2004)(oxlint@1.89.0(oxlint-tsgolint@7.0.2004))
+            "@standard-schema/spec":
+                specifier: 1.1.0
+                version: 1.1.0
             "@types/node":
                 specifier: 26.6.5
                 version: 26.6.5
@@ -814,6 +817,9 @@ packages:
 
     "@rolldown/pluginutils@1.0.1":
         resolution: { integrity: sha512-2j9bGt5Jh8hj+vPtgzPtl72j0yRxHAyumoo6TNfAjsLB04UtpSvPbPcDcBMxz7n+9CYB0c1GxQFxYRg2jimqGw== }
+
+    "@standard-schema/spec@1.1.0":
+        resolution: { integrity: sha512-l2aFy5jALhniG5HgqrD6jXLi/rUWrKvqN/qJx6yoJsgKhblVd+iqqU4RCXavm/jPityDo5TCvKMnpjKnOriy0w== }
 
     "@tybys/wasm-util@0.10.4":
         resolution: { integrity: sha512-W3c4gRigFS0T/Ma4qIYF3GDAc5AQdHb1yL5znJT1Zv1YaD9Kitx656wBjvr19qbiosmZT8lWDM5BEMynUqX65A== }
@@ -1763,6 +1769,8 @@ snapshots:
         optional: true
 
     "@rolldown/pluginutils@1.0.1": {}
+
+    "@standard-schema/spec@1.1.0": {}
 
     "@tybys/wasm-util@0.10.4":
         dependencies:

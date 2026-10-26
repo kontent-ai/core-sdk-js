@@ -1,30 +1,22 @@
-import * as z from "@zod/mini";
+import type { StandardSchemaV1 } from "@standard-schema/spec";
 import { match, P } from "ts-pattern";
 import type { AdapterPayload, AdapterResponse } from "../http/http.models.js";
 import type { ResolvedRetryStrategyOptions } from "./core.models.js";
 import type { JsonValue } from "./json.models.js";
 
-export const validationErrorSchema = z.readonly(
-	z.object({
-		message: z.string(),
-		path: z.optional(z.string()),
-		line: z.optional(z.number()),
-		position: z.optional(z.number()),
-	}),
-);
+export type ValidationError = {
+	readonly message: string;
+	readonly path?: string | undefined;
+	readonly line?: number | undefined;
+	readonly position?: number | undefined;
+};
 
-export type ValidationError = z.infer<typeof validationErrorSchema>;
-
-export const errorResponseDataSchema = z.readonly(
-	z.object({
-		message: z.string(),
-		request_id: z.string(),
-		error_code: z.number(),
-		validation_errors: z.optional(z.readonly(z.array(validationErrorSchema))),
-	}),
-);
-
-export type ErrorResponseData = z.infer<typeof errorResponseDataSchema>;
+export type ErrorResponseData = {
+	readonly message: string;
+	readonly request_id: string;
+	readonly error_code: number;
+	readonly validation_errors?: readonly ValidationError[] | undefined;
+};
 
 export type ErrorReason = ErrorDetails["reason"];
 
@@ -41,7 +33,7 @@ export type ErrorDetails =
 	| ReasonData<
 			"schemaMismatch",
 			{
-				readonly zodError: z.core.$ZodError;
+				readonly issues: readonly StandardSchemaV1.Issue[];
 				readonly payload: JsonValue;
 				readonly url: URL;
 			}
@@ -160,6 +152,6 @@ function getErrorOptions(details: ErrorDetails): ErrorOptions | undefined {
 	return match(details)
 		.returnType<ErrorOptions | undefined>()
 		.with({ originalError: P.nonNullable }, (m) => ({ cause: m.originalError }))
-		.with({ reason: "schemaMismatch" }, (m) => ({ cause: m.zodError }))
+		.with({ reason: "schemaMismatch" }, (m) => ({ cause: m.issues }))
 		.otherwise(() => undefined);
 }

@@ -16,7 +16,8 @@ The **Core SDK** provides foundational functionality leveraged by dependent Kont
 Before using this package, make sure your environment matches the published package requirements:
 - Node.js `>=24`
 - ESM-compatible runtime, because the package is published as an ES module
-- Peer dependencies: `zod` and `ts-pattern`
+- Peer dependencies: `@standard-schema/spec` (types only) and `ts-pattern`
+- `@zod/mini` (^4), only if you use the `@kontent-ai/core-sdk/schema` entry point
 - `vitest` (^5), only if you use the `@kontent-ai/core-sdk/testkit` entry point
 
 With modern package managers such as npm, peer dependencies are typically installed automatically, so you usually only need:
@@ -33,7 +34,19 @@ The SDK includes a default implementation of the `HttpService` and `HttpAdapter`
 
 These implementations are designed to work out-of-the-box but are also fully customizable. Developers may replace them with custom versions to extend or override the default behavior, depending on specific application requirements.
 
-The `HttpService` returns response payloads as `JsonValue` (or `Blob` for downloads), because it cannot know their shape. Typed payloads come from the query helpers (`createFetchQuery`, `createPagedFetchQuery`, `createMutationQuery`), which can validate the payload against the query's Zod schema when runtime validation is enabled.
+The `HttpService` returns response payloads as `JsonValue` (or `Blob` for downloads), because it cannot know their shape. Typed payloads come from the query helpers (`createFetchQuery`, `createPagedFetchQuery`, `createMutationQuery`), which can validate the payload against the query's schema when runtime validation is enabled.
+
+---
+
+## Schemas
+
+Query helpers accept any [Standard Schema](https://standardschema.dev) compliant schema (`StandardSchemaV1` from `@standard-schema/spec`), such as Zod, Valibot or ArkType. The main entry point does not depend on any schema library.
+
+Shared Kontent.ai schemas built with Zod Mini (`jsonValueSchema`, `kontentUuidSchema`, `strictCodenameSchema`, `codenameOf`, `errorResponseDataSchema`, `validationErrorSchema`) are available from a separate entry point, which requires `@zod/mini`:
+
+```typescript
+import { codenameOf, kontentUuidSchema } from "@kontent-ai/core-sdk/schema";
+```
 
 ---
 
@@ -132,11 +145,11 @@ if (!success) {
       console.error("Invalid body:", error.details.originalError);
       break;
     case "schemaMismatch":
-      // The response payload does not match the expected Zod schema (only with runtime validation enabled)
+      // The response payload does not match the expected schema (only with runtime validation enabled)
       console.error(
         "Unexpected response shape for",
         error.details.url,
-        error.details.zodError,
+        error.details.issues,
       );
       break;
     case "aborted":
@@ -152,7 +165,7 @@ if (!success) {
   return;
 }
 
-// response.payload is a JsonValue here, use a query helper with a Zod schema for a typed payload
+// response.payload is a JsonValue here, use a query helper with a schema for a typed payload
 console.log(response.payload);
 ```
 

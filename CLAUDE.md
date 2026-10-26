@@ -22,12 +22,13 @@
 ## Libraries
 
 - Use **ts-pattern** for non-trivial `switch`/`if-else` chains — anything beyond a simple 2-branch condition should use `match()` from `ts-pattern`
-- Use **Zod Mini** (`import * as z from "@zod/mini"`, functional API: `z.optional(...)`, `z.readonly(...)`, `.check(z.minLength(...))`) to define schemas for all API response payloads and API endpoint inputs — the Zod schema is the source of truth; TypeScript types are always derived via `z.infer<>`, never written by hand alongside a schema
-- Shared utilities that accept a schema from a caller (`resolveSchema`, `parseResponse`) type it against Zod's flavor-agnostic core type (`z.core.$ZodType` via `import type * as z from "@zod/mini"`), not `zod`'s or `zod/mini`'s own `ZodType`/`ZodMiniType` — this lets consumers (e.g. delivery/management SDKs) pass a schema built with either `zod` or `zod/mini`, so this package never forces a bundle-size/DX tradeoff onto them
+- The main entry point (everything outside `lib/schema/**` and `lib/schema_api.ts`) must never import zod or expose zod types (enforced by biome `noRestrictedImports`); utilities that accept a schema from a caller (`resolveSchema`, `validatePayloads`) type it as `StandardSchemaV1` from `@standard-schema/spec` (`import type`), so consumers can pass a schema built with any Standard Schema library and this package never forces a schema library into their bundle
+- Shared Kontent.ai schemas use **Zod Mini** (`import * as z from "@zod/mini"`, functional API: `z.optional(...)`, `z.readonly(...)`, `.check(z.minLength(...))`) and live only in `lib/schema/**`, exported from `lib/schema_api.ts` (`@kontent-ai/core-sdk/schema`); `@zod/mini` is an optional peer dependency used only by that entry point and tests
+- Payload types used by the main entry point (e.g. `ErrorResponseData`) are hand-written; their zod schema in `lib/schema/**` must be checked against them with `satisfies z.ZodMiniType<T>` so the two cannot drift
 
 ## Exports
 
-- All API queries and API-related models must be exported from `lib/public_api.ts` — nothing is part of the public API unless it appears there
+- All API queries and API-related models must be exported from `lib/public_api.ts` (shared zod schemas from `lib/schema_api.ts`) — nothing is part of the public API unless it appears there
 
 # Tooling
 

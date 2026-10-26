@@ -45,7 +45,7 @@ export type SdkConfig<TExtendedConfig = unknown> = {
 	 */
 	readonly runtimeValidation?: {
 		/**
-		 * When enabled, the response data will be validated against the expected Zod schema from which the types
+		 * When enabled, the response data will be validated against the expected Standard Schema from which the types
 		 * this library are based on. This ensures that you are working with the correct data types.
 		 *
 		 * @default false

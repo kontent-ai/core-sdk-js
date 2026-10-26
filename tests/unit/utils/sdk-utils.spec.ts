@@ -1,3 +1,4 @@
+import type { StandardSchemaV1 } from "@standard-schema/spec";
 import * as z from "@zod/mini";
 import { describe, expect, it, vi } from "vitest";
 import type { ErrorReason } from "../../../lib/models/error.models.js";
@@ -135,5 +136,28 @@ describe("validatePayloads", () => {
 
 		expect(result?.details.reason).toBe("schemaMismatch" satisfies ErrorReason);
 		expect(result?.url).toStrictEqual(invalidPayloadA.url.toString());
+	});
+
+	it("Should validate with any Standard Schema implementation and expose its issues", async () => {
+		const issue: StandardSchemaV1.Issue = { message: "Name is too short", path: ["name"] };
+		const handWrittenSchema: StandardSchemaV1<unknown, { readonly name: string }> = {
+			"~standard": {
+				version: 1,
+				vendor: "test",
+				validate: (value) =>
+					typeof value === "object" && value !== null && "name" in value && value.name === "valid"
+						? { value: { name: value.name } }
+						: { issues: [issue] },
+			},
+		};
+
+		const result = await validatePayloads({
+			runtimeValidation: { validateResponses: true },
+			schema: handWrittenSchema,
+			payloads: [validPayload, invalidPayloadA],
+		});
+
+		expect(result?.details.reason).toBe("schemaMismatch" satisfies ErrorReason);
+		expect(result?.details.reason === "schemaMismatch" && result.details.issues).toStrictEqual([issue]);
 	});
 });

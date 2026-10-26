@@ -30,6 +30,27 @@
 			}
 		}
 	},
+	"overrides": [
+		{
+			"includes": ["lib/**", "!lib/schema/**", "!lib/schema_api.ts"],
+			"linter": {
+				"rules": {
+					"style": {
+						"noRestrictedImports": {
+							"level": "error",
+							"options": {
+								"paths": {
+									"@zod/mini": "Zod may only be used in lib/schema, type caller schemas with StandardSchemaV1 instead.",
+									"zod": "Zod may only be used in lib/schema, type caller schemas with StandardSchemaV1 instead.",
+									"zod/mini": "Zod may only be used in lib/schema, type caller schemas with StandardSchemaV1 instead."
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	],
 	"files": {
 		"includes": ["lib/**/*.ts", "tests/**/*.ts", "scripts/**/*.ts", "**/*.json", "!dist/**/*"]
 	}

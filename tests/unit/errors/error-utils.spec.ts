@@ -171,6 +171,32 @@ describe("isKontentErrorResponseData", () => {
 			} satisfies Omit<ErrorResponseData, "error_code">),
 		).toBe(false);
 	});
+
+	it("Should return true when error JSON contains valid validation errors", () => {
+		expect(
+			isKontentErrorResponseData({
+				message: "Error message",
+				request_id: "123",
+				error_code: 0,
+				validation_errors: [{ message: "Invalid value", path: "elements.title", line: 1, position: 2 }, { message: "Missing" }],
+			} satisfies ErrorResponseData),
+		).toBe(true);
+	});
+
+	it.each([
+		{ validation_errors: "not an array" },
+		{ validation_errors: [{ path: "elements.title" }] },
+		{ validation_errors: [{ message: "Invalid value", line: "1" }] },
+	])("Should return false when validation errors are invalid ($validation_errors)", ({ validation_errors }) => {
+		expect(
+			isKontentErrorResponseData({
+				message: "Error message",
+				request_id: "123",
+				error_code: 0,
+				validation_errors,
+			}),
+		).toBe(false);
+	});
 });
 
 const testUrl = new URL("https://domain.com");

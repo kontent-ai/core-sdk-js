@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { codenameOf, strictCodenameSchema } from "../../../lib/sdk/sdk-config.js";
+import { codenameOf, strictCodenameSchema } from "../../../lib/schema_api.js";
 
 describe("codenameOf", () => {
 	it("Should accept any string regardless of the type hint", () => {

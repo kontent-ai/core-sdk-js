@@ -29,6 +29,10 @@
 		"./testkit": {
 			"types": "./dist/testkit_api.d.ts",
 			"default": "./dist/testkit_api.js"
+		},
+		"./schema": {
+			"types": "./dist/schema_api.d.ts",
+			"default": "./dist/schema_api.js"
 		}
 	},
 	"type": "module",
@@ -55,11 +59,15 @@
 		"bump:major": "pnpm run build && npm version major -m \"v%s\" && pnpm run build:ts && git push --follow-tags"
 	},
 	"peerDependencies": {
+		"@standard-schema/spec": "^1",
+		"@zod/mini": "^4",
 		"ts-pattern": "^5",
-		"vitest": "^5",
-		"@zod/mini": "^4"
+		"vitest": "^5"
 	},
 	"peerDependenciesMeta": {
+		"@zod/mini": {
+			"optional": true
+		},
 		"vitest": {
 			"optional": true
 		}
@@ -68,12 +76,13 @@
 		"@biomejs/biome": "2.6.2",
 		"@kontent-ai/biome-config": "0.7.3",
 		"@kontent-ai/oxlint-config": "0.0.4",
+		"@standard-schema/spec": "1.1.0",
 		"@types/node": "26.6.5",
 		"@vitest/coverage-v8": "5.0.5",
 		"@zod/mini": "4.6.7",
 		"knip": "6.42.1",
 		"oxlint": "1.89.0",
-		"oxlint-tsgolint": "7.0.2004",
+		"oxlint-tsgolint": "7.0.2005",
 		"tsx": "4.23.15",
 		"typescript": "7.0.2",
 		"vitest": "5.0.5"
