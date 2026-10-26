@@ -1,0 +1,321 @@
+import { afterEach, describe, expect, it, vi } from "vitest";
+import type { HttpResponse } from "../../../../lib/main/http/http.models.js";
+import { getDefaultHttpService } from "../../../../lib/main/http/http.service.js";
+import type { KnownHeaderName, RetryStrategyOptions } from "../../../../lib/main/models/core.models.js";
+import { KontentSdkError } from "../../../../lib/main/models/error.models.js";
+import { sleep } from "../../../../lib/main/utils/core.utils.js";
+import { resolveDefaultRetryStrategyOptions, runWithRetry } from "../../../../lib/main/utils/retry.utils.js";
+
+const url = new URL("https://domain.com");
+
+const successResponse: HttpResponse<null, null> = {
+	success: true,
+	response: {
+		payload: null,
+		method: "GET",
+		requestHeaders: [],
+		adapterResponse: { status: 200, statusText: "OK", responseHeaders: [], url, payload: null },
+	},
+};
+
+const rateLimitError = new KontentSdkError({
+	baseErrorData: { message: "Rate limited", url: url.toString(), retryStrategyOptions: undefined, retryAttempt: 0 },
+	details: {
+		reason: "invalidResponse",
+		kontentErrorResponse: undefined,
+		adapterResponse: {
+			status: 429,
+			statusText: "Too Many Requests",
+			responseHeaders: [],
+			url: new URL("https://domain.com"),
+			payload: null,
+		},
+	},
+});
+
+describe("resolveDefaultRetryStrategyOptions - logRetryAttempt: undefined", () => {
+	const resolved = resolveDefaultRetryStrategyOptions();
+
+	it("Should resolve logRetryAttempt to undefined when not provided", () => {
+		expect(resolved.logRetryAttempt).toBeUndefined();
+	});
+});
+
+describe("resolveDefaultRetryStrategyOptions - logRetryAttempt: custom function", () => {
+	const customLog = vi.fn();
+	const resolved = resolveDefaultRetryStrategyOptions({ logRetryAttempt: customLog });
+
+	it("Should pass the custom function through unchanged", () => {
+		expect(resolved.logRetryAttempt).toBe(customLog);
+	});
+
+	it("Should call the custom function with retryAttempt, url and retryInMs when invoked", () => {
+		resolved.logRetryAttempt?.(1, "https://domain.com", 500);
+		expect(customLog).toHaveBeenCalledOnce();
+		expect(customLog).toHaveBeenCalledWith(1, "https://domain.com", 500);
+	});
+});
+
+describe("resolveDefaultRetryStrategyOptions - logRetryAttempt: 'logToConsole'", () => {
+	afterEach(() => {
+		vi.restoreAllMocks();
+	});
+
+	it("Should call console.warn with the formatted message when invoked", () => {
+		const warnSpy = vi.spyOn(console, "warn" satisfies keyof Console).mockImplementation(() => {});
+		const resolved = resolveDefaultRetryStrategyOptions({ maxRetries: 5, logRetryAttempt: "logToConsole" });
+
+		resolved.logRetryAttempt?.(2, "https://domain.com", 1000);
+
+		expect(warnSpy).toHaveBeenCalledOnce();
+		expect(warnSpy).toHaveBeenCalledWith(
+			"Retry attempt '2' from a maximum of '5' retries after waiting '1000' ms. Requested url: 'https://domain.com'",
+		);
+	});
+
+	it("Should not call console.warn when logRetryAttempt is not invoked", () => {
+		const warnSpy = vi.spyOn(console, "warn" satisfies keyof Console).mockImplementation(() => {});
+		resolveDefaultRetryStrategyOptions({ logRetryAttempt: "logToConsole" });
+
+		expect(warnSpy).not.toHaveBeenCalled();
+	});
+});
+
+describe("getDelayBetweenRetriesMs - Retry-After header present", () => {
+	const { getDelayBetweenRetriesMs } = resolveDefaultRetryStrategyOptions();
+
+	it("Should return the header value converted from seconds to milliseconds", () => {
+		const error = new KontentSdkError({
+			baseErrorData: { message: "Rate limited", url: url.toString(), retryStrategyOptions: undefined, retryAttempt: 0 },
+			details: {
+				reason: "invalidResponse",
+				kontentErrorResponse: undefined,
+				adapterResponse: {
+					status: 429,
+					statusText: "Too Many Requests",
+					responseHeaders: [{ name: "Retry-After" satisfies KnownHeaderName, value: "3" }],
+					url: new URL("https://domain.com"),
+					payload: null,
+				},
+			},
+		});
+
+		expect(getDelayBetweenRetriesMs(error)).toBe(3000);
+	});
+
+	it("Should return 0 when no Retry-After header is present", () => {
+		const error = new KontentSdkError({
+			baseErrorData: { message: "Rate limited", url: url.toString(), retryStrategyOptions: undefined, retryAttempt: 0 },
+			details: {
+				reason: "invalidResponse",
+				kontentErrorResponse: undefined,
+				adapterResponse: {
+					status: 429,
+					statusText: "Too Many Requests",
+					responseHeaders: [],
+					url: new URL("https://domain.com"),
+					payload: null,
+				},
+			},
+		});
+
+		expect(getDelayBetweenRetriesMs(error)).toBe(0);
+	});
+});
+
+describe("getDelayBetweenRetriesMs - maxRetryDelayMs clamp", () => {
+	it("Should clamp a delay larger than maxRetryDelayMs", () => {
+		const { getDelayBetweenRetriesMs } = resolveDefaultRetryStrategyOptions({ maxRetryDelayMs: 5000 });
+		const error = new KontentSdkError({
+			baseErrorData: { message: "Rate limited", url: url.toString(), retryStrategyOptions: undefined, retryAttempt: 0 },
+			details: {
+				reason: "invalidResponse",
+				kontentErrorResponse: undefined,
+				adapterResponse: {
+					status: 429,
+					statusText: "Too Many Requests",
+					responseHeaders: [{ name: "Retry-After" satisfies KnownHeaderName, value: "60" }],
+					url: new URL("https://domain.com"),
+					payload: null,
+				},
+			},
+		});
+
+		expect(getDelayBetweenRetriesMs(error)).toBe(5000);
+	});
+
+	it("Should not affect a delay smaller than maxRetryDelayMs", () => {
+		const { getDelayBetweenRetriesMs } = resolveDefaultRetryStrategyOptions({ maxRetryDelayMs: 5000 });
+		const error = new KontentSdkError({
+			baseErrorData: { message: "Rate limited", url: url.toString(), retryStrategyOptions: undefined, retryAttempt: 0 },
+			details: {
+				reason: "invalidResponse",
+				kontentErrorResponse: undefined,
+				adapterResponse: {
+					status: 429,
+					statusText: "Too Many Requests",
+					responseHeaders: [{ name: "Retry-After" satisfies KnownHeaderName, value: "3" }],
+					url: new URL("https://domain.com"),
+					payload: null,
+				},
+			},
+		});
+
+		expect(getDelayBetweenRetriesMs(error)).toBe(3000);
+	});
+});
+
+describe("runWithRetry - rate-limited request succeeds on retry", async () => {
+	const func = vi
+		.fn<(retryAttempt: number) => Promise<HttpResponse<null, null>>>()
+		.mockResolvedValueOnce({ success: false, error: rateLimitError })
+		.mockResolvedValueOnce(successResponse);
+
+	const result = await runWithRetry({
+		func,
+		retryStrategyOptions: resolveDefaultRetryStrategyOptions({ maxRetries: 3 }),
+		url,
+		abortSignal: undefined,
+	});
+
+	it("Should eventually succeed", () => {
+		expect(result.success).toBe(true);
+	});
+
+	it("Should call func exactly twice (one rate-limited attempt + one retry)", () => {
+		expect(func).toHaveBeenCalledTimes(2);
+	});
+});
+
+describe("runWithRetry - rate-limited request fails after max retries exceeded", async () => {
+	const func = vi
+		.fn<(retryAttempt: number) => Promise<HttpResponse<null, null>>>()
+		.mockResolvedValue({ success: false, error: rateLimitError });
+
+	const maxRetries = 2;
+
+	const result = await runWithRetry({
+		func,
+		retryStrategyOptions: resolveDefaultRetryStrategyOptions({ maxRetries }),
+		url,
+		abortSignal: undefined,
+	});
+
+	it("Should not succeed", () => {
+		expect(result.success).toBe(false);
+	});
+
+	it("Should call func maxRetries + 1 times before giving up", () => {
+		expect(func).toHaveBeenCalledTimes(maxRetries + 1);
+	});
+});
+
+describe("sleep - no abort signal", () => {
+	it("Should wait before the next retry with no abort signal", async () => {
+		const start = performance.now();
+		const retryInMs = 200;
+
+		await sleep(retryInMs);
+
+		const duration = Math.round(performance.now() - start);
+
+		expect(duration).toBeGreaterThanOrEqual(retryInMs);
+	});
+
+	it("Should not wait before the next retry with abort signal", async () => {
+		const abortController = new AbortController();
+		const start = performance.now();
+		const retryInMs = 200;
+		const abortAfterMs = 50;
+		const expectedDurationMin = abortAfterMs;
+
+		// some leeway for the test to pass
+		const expectedDurationMax = abortAfterMs * 4;
+
+		await Promise.all([
+			sleep(retryInMs, abortController.signal),
+			new Promise((resolve) => {
+				setTimeout(() => {
+					abortController.abort();
+					resolve(true);
+				}, abortAfterMs);
+			}),
+		]);
+
+		const duration = Math.round(performance.now() - start);
+
+		expect(abortController.signal.aborted).toBe(true);
+		expect(duration).toBeGreaterThanOrEqual(expectedDurationMin);
+		expect(duration).toBeLessThanOrEqual(expectedDurationMax);
+	});
+});
+
+describe("sleep - abort clears the pending timer", () => {
+	afterEach(() => {
+		vi.useRealTimers();
+	});
+
+	it("Should not leave a pending timer after the wait is aborted", async () => {
+		vi.useFakeTimers();
+		const abortController = new AbortController();
+
+		const waitPromise = sleep(60_000, abortController.signal);
+		abortController.abort();
+		await waitPromise;
+
+		expect(abortController.signal.aborted).toBe(true);
+		expect(vi.getTimerCount()).toBe(0);
+	});
+});
+
+type TestCase = RetryStrategyOptions & {
+	readonly title: string;
+	readonly expectedRetries: number;
+};
+
+const canRetryTestCases: readonly TestCase[] = [
+	{
+		title: "By default unhandled errors are not retried even if max retries is > 0",
+		canRetryAdapterError: resolveDefaultRetryStrategyOptions({}).canRetryAdapterError,
+		maxRetries: 5,
+		expectedRetries: 0,
+	},
+	{
+		title: "Can retry when unhandled errors are set to be retried via custom callback",
+		canRetryAdapterError: () => true,
+		maxRetries: 1,
+		expectedRetries: 1,
+	},
+	{
+		title: "Can retry, but should not retry because max retries is 0",
+		expectedRetries: 0,
+		maxRetries: 0,
+		canRetryAdapterError: () => true,
+	},
+	{
+		title: "Should retry 2 times",
+		expectedRetries: 2,
+		maxRetries: 2,
+		canRetryAdapterError: () => true,
+	},
+];
+
+for (const testCase of canRetryTestCases) {
+	describe(testCase.title, async () => {
+		const { error } = await getDefaultHttpService({
+			retryStrategy: testCase,
+			adapter: {
+				executeRequest: () => {
+					throw new Error("Testing retry policy");
+				},
+			},
+		}).request({
+			url: new URL("https://domain.com"),
+			method: "GET",
+		});
+
+		it(`Should retry '${testCase.expectedRetries}' times`, () => {
+			expect(error?.retryAttempt).toBe(testCase.expectedRetries);
+		});
+	});
+}

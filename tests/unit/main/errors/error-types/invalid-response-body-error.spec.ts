@@ -1,0 +1,35 @@
+import { describe, expect, it } from "vitest";
+import { getDefaultHttpService } from "../../../../../lib/main/http/http.service.js";
+import { AdapterParseError, type ErrorReason } from "../../../../../lib/main/models/error.models.js";
+
+describe("Parse failure", async () => {
+	const originalError = new Error("Failed to parse response");
+
+	const { error } = await getDefaultHttpService({
+		adapter: {
+			executeRequest: () => {
+				throw new AdapterParseError({ message: "Failed to parse response", error: originalError });
+			},
+		},
+	}).request({
+		url: "https://domain.com",
+		method: "GET",
+	});
+
+	it(`Error details should be of type '${"invalidResponseBody" satisfies ErrorReason}'`, () => {
+		expect(error?.details.reason).toBe("invalidResponseBody" satisfies ErrorReason);
+	});
+
+	it("Original error should be preserved", () => {
+		if (error?.details.reason === "invalidResponseBody") {
+			expect(error.details.originalError).toBeInstanceOf(AdapterParseError);
+			if (error.details.originalError instanceof AdapterParseError) {
+				expect(error.details.originalError.cause).toBe(originalError);
+			} else {
+				throw new Error("Original error is not an instance of AdapterParseError");
+			}
+		} else {
+			throw new Error("Error reason is not invalidResponseBody");
+		}
+	});
+});

@@ -1,0 +1,80 @@
+import { describe, expect, it, vi } from "vitest";
+import type { AdapterRequestOptions, AdapterResponse } from "../../../../lib/main/http/http.models.js";
+import { getDefaultHttpService } from "../../../../lib/main/http/http.service.js";
+import type { ErrorReason } from "../../../../lib/main/main_api.js";
+import type { JsonValue } from "../../../../lib/main/models/json.models.js";
+import { sleep } from "../../../../lib/main/utils/core.utils.js";
+
+describe("Abort signal forwarding", () => {
+	it("Request should forward abort signal", async () => {
+		const abortController = new AbortController();
+		const executeRequest = vi.fn(async (options: AdapterRequestOptions): Promise<AdapterResponse<JsonValue>> => {
+			return await Promise.resolve({
+				responseHeaders: [],
+				status: 200,
+				statusText: "Ok",
+				url: options.url,
+				payload: null,
+			});
+		});
+
+		const result = await getDefaultHttpService({
+			adapter: {
+				executeRequest,
+			},
+		}).request<null>({
+			url: "https://domain.com",
+			method: "GET",
+			abortSignal: abortController.signal,
+		});
+
+		expect(result.success).toBe(true);
+		expect(executeRequest).toHaveBeenCalledTimes(1);
+		expect(executeRequest.mock.calls[0]?.[0]?.abortSignal).toBe(abortController.signal);
+	});
+});
+
+describe("Abort signal cancellation", async () => {
+	const abortController = new AbortController();
+	const startTime = performance.now();
+	const executeRequestSleepMs = 500;
+	const abortAfterMs = 100;
+
+	// some leeway for the test to pass
+	const expectedDuration = abortAfterMs * 2 + executeRequestSleepMs;
+
+	const [{ error }] = await Promise.all([
+		getDefaultHttpService({
+			retryStrategy: {
+				maxRetries: 5,
+				canRetryAdapterError: () => true,
+			},
+			adapter: {
+				executeRequest: async (_options: AdapterRequestOptions): Promise<AdapterResponse<JsonValue>> => {
+					await sleep(executeRequestSleepMs);
+					throw new Error("Test error");
+				},
+			},
+		}).request<null>({
+			url: "https://domain.com",
+			method: "GET",
+			abortSignal: abortController.signal,
+		}),
+		new Promise((resolve) => {
+			setTimeout(() => {
+				abortController.abort();
+				resolve(true);
+			}, abortAfterMs);
+		}),
+	]);
+
+	const duration = performance.now() - startTime;
+
+	it("Error should be set and set to aborted state", () => {
+		expect(error?.details.reason).toBe<ErrorReason>("aborted");
+	});
+
+	it("Duration should be slightly higher than the abort after time", () => {
+		expect(duration).toBeLessThan(expectedDuration);
+	});
+});

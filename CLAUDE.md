@@ -30,6 +30,7 @@
 
 - Each package entry point owns one folder in `lib/` that contains its barrel `<entry>_api.ts` and all of its code: `main/` (`@kontent-ai/core-sdk`), `schema/` (`/schema`), `devkit/` (`/devkit`), `testkit/` (`/testkit`)
 - Other entry points may import `main/` internals directly (e.g. `../main/utils/core.utils.js`); `main/` must never import from the other entry folders
+- Unit tests mirror the entry folders: `tests/unit/<entry>/` (e.g. `tests/unit/main/`, `tests/unit/schema/`); inside `main/`, specs are grouped by topic (`errors/`, `headers/`, `queries/`, ...) because many suites span several modules; add `tests/unit/devkit/` or `tests/unit/testkit/` once those entries get specs
 
 ## Exports
 

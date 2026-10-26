@@ -1,0 +1,118 @@
+import { describe, expect, it } from "vitest";
+import { getDefaultHttpService } from "../../../../../lib/main/http/http.service.js";
+import type { JsonValue } from "../../../../../lib/main/main_api.js";
+import { createPagedFetchQuery } from "../../../../../lib/main/sdk/queries/paged-fetch-sdk-query.js";
+import type { GetNextPageData, QueryResponse } from "../../../../../lib/main/sdk/sdk-models.js";
+import { getNextPageUrl, getTestSdkInfo, preventInfinitePaging, stubFetchWithResponse } from "../../../../../lib/testkit/testkit.utils.js";
+
+describe("Async pages iterator with unlimited max count", async () => {
+	const maxPagesCount: number = 5;
+	let responseIndex: number = 0;
+
+	const expectedResponseUrls: readonly URL[] = Array.from({ length: maxPagesCount }, (_, index) => new URL(getNextPageUrl(index)));
+
+	// mock initial response
+	stubFetchWithResponse(() => Response.json(null));
+
+	const pagesIterator = createPagedFetchQuery({
+		getNextPageData: () => {
+			responseIndex++;
+
+			const data: ReturnType<GetNextPageData<null>> = preventInfinitePaging({
+				responseIndex,
+				maxPagesCount,
+				nextPageUrl: getNextPageUrl(responseIndex),
+			});
+
+			return data;
+		},
+
+		mapMetadata: () => null,
+		config: {
+			httpService: getDefaultHttpService(),
+			runtimeValidation: {
+				validateResponses: false,
+			},
+		},
+		sdkInfo: getTestSdkInfo(),
+		schema: undefined,
+		url: expectedResponseUrls?.[0] ?? "n/a",
+		mapError: (error) => error,
+		mapExtraResponseProps: () => ({}),
+		mapPagingExtraResponseProps: () => ({}),
+	}).pagesSafe();
+
+	const responses: QueryResponse<JsonValue>[] = [];
+
+	for await (const { success, response } of pagesIterator) {
+		if (success) {
+			responses.push(response);
+		} else {
+			break;
+		}
+
+		if (responses.length === maxPagesCount) {
+			break;
+		}
+	}
+
+	it(`Responses should be an array of length "${maxPagesCount}"`, () => {
+		expect(responses).toHaveLength(maxPagesCount);
+	});
+
+	it("Response urls should be correct & in the expected order", () => {
+		expect(responses.map((response) => response.meta.url)).toEqual(expectedResponseUrls);
+	});
+});
+
+describe("Async pages iterator fetches all pages when maxPagesCount is set to 0", async () => {
+	const totalPages: number = 5;
+	let responseIndex: number = 0;
+
+	const expectedResponseUrls: readonly URL[] = Array.from({ length: totalPages }, (_, index) => new URL(getNextPageUrl(index)));
+
+	stubFetchWithResponse(() => Response.json(null));
+
+	const pagesIterator = createPagedFetchQuery({
+		getNextPageData: () => {
+			responseIndex++;
+
+			return preventInfinitePaging({
+				responseIndex,
+				maxPagesCount: totalPages,
+				nextPageUrl: responseIndex < totalPages ? getNextPageUrl(responseIndex) : undefined,
+			});
+		},
+		mapMetadata: () => null,
+		config: {
+			httpService: getDefaultHttpService(),
+			runtimeValidation: {
+				validateResponses: false,
+			},
+		},
+		sdkInfo: getTestSdkInfo(),
+		schema: undefined,
+		url: expectedResponseUrls?.[0] ?? "n/a",
+		mapError: (error) => error,
+		mapExtraResponseProps: () => ({}),
+		mapPagingExtraResponseProps: () => ({}),
+	}).pagesSafe({ maxPagesCount: 0 });
+
+	const responses: QueryResponse<JsonValue>[] = [];
+
+	for await (const { success, response } of pagesIterator) {
+		if (success) {
+			responses.push(response);
+		} else {
+			break;
+		}
+	}
+
+	it(`All "${totalPages}" pages should be fetched without hitting a page limit`, () => {
+		expect(responses).toHaveLength(totalPages);
+	});
+
+	it("Response urls should be correct & in the expected order", () => {
+		expect(responses.map((response) => response.meta.url)).toEqual(expectedResponseUrls);
+	});
+});

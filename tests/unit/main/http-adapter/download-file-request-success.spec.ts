@@ -1,0 +1,32 @@
+import { describe, expect, it } from "vitest";
+import type { HttpStatusCode } from "../../../../lib/main/http/http.models.js";
+import { getDefaultHttpService } from "../../../../lib/main/http/http.service.js";
+import type { HttpMethod } from "../../../../lib/main/models/core.models.js";
+import { getFakeBlob, stubFetchWithResponse } from "../../../../lib/testkit/testkit.utils.js";
+
+const fakeBlob = getFakeBlob();
+
+describe("Download file - Success", async () => {
+	stubFetchWithResponse(() => new Response(fakeBlob));
+
+	const { success, response } = await getDefaultHttpService().downloadFile({
+		url: "https://domain.com/image.jpg",
+	});
+
+	it("Success should be true", () => {
+		expect(success).toBe(true);
+	});
+
+	it("Status should be 200", () => {
+		expect(response?.adapterResponse.status).toStrictEqual<HttpStatusCode>(200);
+	});
+
+	it("Method should be GET", () => {
+		expect(response?.method).toStrictEqual<HttpMethod>("GET");
+	});
+
+	it("Blob should be the same as the fake blob", () => {
+		expect(response?.payload).toBeInstanceOf(Blob);
+		expect(response?.payload).toStrictEqual(fakeBlob);
+	});
+});

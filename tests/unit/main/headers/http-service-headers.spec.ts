@@ -1,0 +1,168 @@
+import { describe, expect, it } from "vitest";
+import { coreSdkInfo } from "../../../../lib/main/core-sdk-info.js";
+import { getDefaultHttpService } from "../../../../lib/main/http/http.service.js";
+import type { Header, KnownHeaderName } from "../../../../lib/main/models/core.models.js";
+import { createSdkIdHeader, findHeaderByName } from "../../../../lib/main/utils/header.utils.js";
+import { stubFetchWithResponse } from "../../../../lib/testkit/testkit.utils.js";
+
+const sdkIdHeader = createSdkIdHeader(coreSdkInfo);
+
+describe("Default headers", async () => {
+	stubFetchWithResponse(() => Response.json({}));
+
+	const { success, response } = await getDefaultHttpService().request({
+		url: "https://domain.com",
+		method: "GET",
+	});
+
+	it("Success should be true", () => {
+		expect(success).toBe(true);
+	});
+
+	it("Response should not contain content type header for null body", () => {
+		expect(response?.requestHeaders.find((m) => m.name.toLowerCase() === "content-type")).toBeUndefined();
+	});
+
+	it(`Request should contain '${sdkIdHeader.name}' header`, () => {
+		expect(response?.requestHeaders.find((m) => m.name === ("X-KC-SDKID" satisfies KnownHeaderName))?.value).toStrictEqual(
+			sdkIdHeader.value,
+		);
+	});
+});
+
+describe(`SDK tracking header '${sdkIdHeader.name}'`, async () => {
+	const customSdkId = "x";
+
+	stubFetchWithResponse(() => Response.json({}));
+
+	const { success, response } = await getDefaultHttpService().request({
+		url: "https://domain.com",
+		method: "GET",
+		requestHeaders: [
+			{
+				name: "X-KC-SDKID" satisfies KnownHeaderName,
+				value: customSdkId,
+			},
+		],
+	});
+
+	it("Success should be true", () => {
+		expect(success).toBe(true);
+	});
+
+	it(`Request should contain only single '${sdkIdHeader.name}' header`, () => {
+		expect(
+			response?.requestHeaders.filter((m) => m.name.toLowerCase() === ("X-KC-SDKID" satisfies KnownHeaderName).toLowerCase()).length,
+		).toStrictEqual(1);
+	});
+
+	it(`Request should contain '${sdkIdHeader.name}' header`, () => {
+		expect(
+			response?.requestHeaders.find((m) => m.name.toLowerCase() === ("X-KC-SDKID" satisfies KnownHeaderName).toLowerCase())?.value,
+		).toStrictEqual(customSdkId);
+	});
+});
+
+describe("Custom Http Service & Request headers", async () => {
+	stubFetchWithResponse(() => Response.json({}));
+
+	const headerA: Header = {
+		name: "A",
+		value: "a",
+	};
+
+	const headerB: Header = {
+		name: "B",
+		value: "b",
+	};
+
+	const { response } = await getDefaultHttpService({
+		requestHeaders: [headerA],
+	}).request({
+		url: "https://domain.com",
+		method: "GET",
+		requestHeaders: [headerB],
+	});
+
+	it(`Request should contain header ${headerA.name}`, () => {
+		expect(response?.requestHeaders.find((m) => m.name === headerA.name)).toStrictEqual(headerA);
+	});
+
+	it(`Request should contain header ${headerB.name} `, () => {
+		expect(response?.requestHeaders.find((m) => m.name === headerB.name)).toStrictEqual(headerB);
+	});
+});
+
+describe("Duplicate header names across config and option headers", async () => {
+	const headerName = "Authorization" satisfies KnownHeaderName;
+	const configValue = "Bearer config-token";
+	const optionValue = "Bearer option-token";
+
+	stubFetchWithResponse(() => Response.json({}));
+
+	const { response } = await getDefaultHttpService({
+		requestHeaders: [{ name: headerName, value: configValue }],
+	}).request({
+		url: "https://domain.com",
+		method: "GET",
+		requestHeaders: [{ name: headerName, value: optionValue }],
+	});
+
+	it("Request should contain only a single header with that name", () => {
+		expect(response?.requestHeaders.filter((m) => m.name.toLowerCase() === headerName.toLowerCase()).length).toStrictEqual(1);
+	});
+
+	it("Option header value should win over config header value", () => {
+		expect(response?.requestHeaders.find((m) => m.name.toLowerCase() === headerName.toLowerCase())?.value).toStrictEqual(optionValue);
+	});
+});
+
+describe("Content-Type header handling", async () => {
+	const contentTypeHeader: Header = {
+		name: "Content-Type" satisfies KnownHeaderName,
+		value: "application/json",
+	};
+
+	stubFetchWithResponse(() => Response.json({}));
+
+	const { response } = await getDefaultHttpService().request({
+		url: "https://domain.com",
+		method: "POST",
+		body: {},
+		requestHeaders: [contentTypeHeader],
+	});
+
+	it("Request should contain only a single content type header", () => {
+		expect(response?.requestHeaders.filter((m) => m.name.toLowerCase() === "content-type").length).toStrictEqual(1);
+	});
+
+	it("Request should preserve provided content type header", () => {
+		expect(response?.requestHeaders.find((m) => m.name.toLowerCase() === "content-type")).toStrictEqual(contentTypeHeader);
+	});
+});
+
+describe("Content-Type header for blob bodies", async () => {
+	stubFetchWithResponse(() => Response.json({}));
+
+	const typedBlob = new Blob(["x"], { type: "image/png" });
+	const untypedBlob = new Blob(["x"]);
+
+	const { response: typedBlobResponse } = await getDefaultHttpService().uploadFile({
+		url: "https://domain.com",
+		method: "POST",
+		body: typedBlob,
+	});
+	const { response: untypedBlobResponse } = await getDefaultHttpService().uploadFile({
+		url: "https://domain.com",
+		method: "POST",
+		body: untypedBlob,
+	});
+
+	it("Should use the blob type as content type", () => {
+		expect(findHeaderByName(typedBlobResponse?.requestHeaders ?? [], "Content-Type")?.value).toBe(typedBlob.type);
+	});
+
+	it("Should fall back to 'application/octet-stream' when the blob has no type", () => {
+		expect(findHeaderByName(untypedBlobResponse?.requestHeaders ?? [], "Content-Type")?.value).toBe("application/octet-stream");
+	});
+});
