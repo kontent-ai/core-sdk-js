@@ -5,7 +5,7 @@ import type { JsonValue } from "../models/json.models.js";
 import { isDefined } from "../utils/core.utils.js";
 import { resolveSchema, type SchemaInput } from "../utils/schema.utils.js";
 import { unwrapOrThrow } from "../utils/try-catch.utils.js";
-import type { PagedFetchQuery, Query, SdkConfig } from "./sdk-models.js";
+import type { PagedFetchQuery, Query } from "./sdk-models.js";
 
 /**
  * Turns an iterator of safe results into an iterator of responses that throws on the first failure.
@@ -66,23 +66,17 @@ async function validatePayload<TPayload extends JsonValue>({
 }
 
 /**
- * Validates payloads against the schema when runtime response validation is enabled.
+ * Validates payloads against the schema when one is provided.
  * Returns the error for the first payload (in input order) that does not match the schema, or `undefined`
- * when validation is disabled, no schema is provided, or all payloads match.
+ * when no schema is provided or all payloads match.
  */
 export async function validatePayloads<TPayload extends JsonValue>({
-	runtimeValidation,
 	schema,
 	payloads,
 }: {
-	readonly runtimeValidation: SdkConfig["runtimeValidation"];
 	readonly schema: SchemaInput<TPayload>;
 	readonly payloads: readonly { readonly url: URL; readonly payload: TPayload }[];
 }): Promise<KontentSdkError | undefined> {
-	if (!runtimeValidation?.validateResponses) {
-		return undefined;
-	}
-
 	const resolvedSchema = await resolveSchema(schema);
 	if (!resolvedSchema) {
 		return undefined;

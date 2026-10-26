@@ -1,5 +1,5 @@
 import * as z from "@zod/mini";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import type { ErrorReason, KontentSdkError } from "../../../../../lib/main/models/error.models.js";
 import { createFetchQuery } from "../../../../../lib/main/sdk/queries/fetch-sdk-query.js";
 import type { FetchQuery } from "../../../../../lib/main/sdk/sdk-models.js";
@@ -15,7 +15,6 @@ const buildBaseQuery = (overrides?: { readonly url?: string }): FetchQuery<typeo
 		mapMetadata: () => ({}),
 		config: {
 			httpService: getTestHttpServiceWithJsonResponse({ jsonResponse, statusCode: 200 }),
-			runtimeValidation: { validateResponses: false },
 		},
 		sdkInfo: getTestSdkInfo(),
 		schema: undefined,
@@ -26,7 +25,6 @@ const buildBaseQuery = (overrides?: { readonly url?: string }): FetchQuery<typeo
 
 describe("transformFetchQuery - fetchSafe applies transform that adds extra property", async () => {
 	const transformedQuery = transformFetchQuery({
-		config: { runtimeValidation: { validateResponses: false } },
 		query: buildBaseQuery(),
 		transform: (response) => ({ ...response, payload: { ...response.payload, extra: extraValue } }),
 		transformSchema: undefined,
@@ -50,7 +48,6 @@ describe("transformFetchQuery - fetchSafe applies transform that adds extra prop
 
 describe("transformFetchQuery - fetch applies transform that adds extra property", async () => {
 	const transformedQuery = transformFetchQuery({
-		config: { runtimeValidation: { validateResponses: false } },
 		query: buildBaseQuery(),
 		transform: (response) => ({ ...response, payload: { ...response.payload, extra: extraValue } }),
 		transformSchema: undefined,
@@ -70,7 +67,6 @@ describe("transformFetchQuery - fetch applies transform that adds extra property
 
 describe("transformFetchQuery - fetch throws when transform throws", async () => {
 	const transformedQuery = transformFetchQuery({
-		config: { runtimeValidation: { validateResponses: false } },
 		query: buildBaseQuery(),
 		transform: () => {
 			throw new Error();
@@ -92,7 +88,6 @@ describe("transformFetchQuery - fetch throws when transform throws", async () =>
 
 describe("transformFetchQuery - fetchSafe returns failure when transform throws", async () => {
 	const transformedQuery = transformFetchQuery({
-		config: { runtimeValidation: { validateResponses: false } },
 		query: buildBaseQuery(),
 		transform: () => {
 			throw new Error();
@@ -114,7 +109,6 @@ describe("transformFetchQuery - fetchSafe returns failure when transform throws"
 
 describe("transformFetchQuery - fetchSafe propagates underlying query failure unchanged", async () => {
 	const transformedQuery = transformFetchQuery({
-		config: { runtimeValidation: { validateResponses: false } },
 		query: buildBaseQuery({ url: "not-a-valid-url" }),
 		transform: (response) => response,
 		transformSchema: undefined,
@@ -134,7 +128,6 @@ describe("transformFetchQuery - fetchSafe propagates underlying query failure un
 
 describe("transformFetchQuery - runtime validation passes when transformed payload matches schema", async () => {
 	const transformedQuery = transformFetchQuery({
-		config: { runtimeValidation: { validateResponses: true } },
 		query: buildBaseQuery(),
 		transform: (response) => response,
 		transformSchema: z.readonly(z.object({ name: z.string() })),
@@ -154,7 +147,6 @@ describe("transformFetchQuery - runtime validation passes when transformed paylo
 
 describe("transformFetchQuery - runtime validation fails when transformed payload mismatches schema", async () => {
 	const transformedQuery = transformFetchQuery({
-		config: { runtimeValidation: { validateResponses: true } },
 		query: buildBaseQuery(),
 		transform: (response) => response,
 		transformSchema: z.readonly(z.object({ name: z.string().check(z.minLength(50)) })),
@@ -172,9 +164,30 @@ describe("transformFetchQuery - runtime validation fails when transformed payloa
 	});
 });
 
+describe("transformFetchQuery - resolves a lazy transformSchema factory and validates against it", async () => {
+	const transformSchemaFactory = vi.fn(
+		async () => await Promise.resolve(z.readonly(z.object({ name: z.string().check(z.minLength(50)) }))),
+	);
+	const transformedQuery = transformFetchQuery({
+		query: buildBaseQuery(),
+		transform: (response) => response,
+		transformSchema: transformSchemaFactory,
+		mapError: (error) => error,
+	});
+
+	const { error } = await transformedQuery.fetchSafe();
+
+	it("Should return error with schemaMismatch reason", () => {
+		expect(error?.details.reason).toBe("schemaMismatch" satisfies ErrorReason);
+	});
+
+	it("Should resolve the factory once", () => {
+		expect(transformSchemaFactory).toHaveBeenCalledOnce();
+	});
+});
+
 describe("transformFetchQuery - skips validation when transformSchema is undefined", async () => {
 	const transformedQuery = transformFetchQuery({
-		config: { runtimeValidation: { validateResponses: true } },
 		query: buildBaseQuery(),
 		transform: (response) => response,
 		transformSchema: undefined,
@@ -194,7 +207,6 @@ describe("transformFetchQuery - skips validation when transformSchema is undefin
 
 describe("transformFetchQuery - accepts a Zod schema passed directly", async () => {
 	const transformedQuery = transformFetchQuery({
-		config: { runtimeValidation: { validateResponses: true } },
 		query: buildBaseQuery(),
 		transform: (response) => response,
 		transformSchema: z.readonly(z.object({ name: z.string() })),

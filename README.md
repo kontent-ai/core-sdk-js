@@ -34,7 +34,7 @@ The SDK includes a default implementation of the `HttpService` and `HttpAdapter`
 
 These implementations are designed to work out-of-the-box but are also fully customizable. Developers may replace them with custom versions to extend or override the default behavior, depending on specific application requirements.
 
-The `HttpService` returns response payloads as `JsonValue` (or `Blob` for downloads), because it cannot know their shape. Typed payloads come from the query helpers (`createFetchQuery`, `createPagedFetchQuery`, `createMutationQuery`), which can validate the payload against the query's schema when runtime validation is enabled.
+The `HttpService` returns response payloads as `JsonValue` (or `Blob` for downloads), because it cannot know their shape. Typed payloads come from the query helpers (`createFetchQuery`, `createPagedFetchQuery`, `createMutationQuery`), which validate the payload against the query's schema when one is provided.
 
 ---
 
@@ -145,7 +145,7 @@ if (!success) {
       console.error("Invalid body:", error.details.originalError);
       break;
     case "schemaMismatch":
-      // The response payload does not match the expected schema (only with runtime validation enabled)
+      // The response payload does not match the expected schema (only when the query provides a schema)
       console.error(
         "Unexpected response shape for",
         error.details.url,

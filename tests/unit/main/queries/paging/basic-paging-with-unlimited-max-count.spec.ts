@@ -28,9 +28,6 @@ describe("Basic paging query with unlimited max count", async () => {
 		mapMetadata: () => ({}),
 		config: {
 			httpService: getDefaultHttpService(),
-			runtimeValidation: {
-				validateResponses: false,
-			},
 		},
 		sdkInfo: getTestSdkInfo(),
 		schema: undefined,

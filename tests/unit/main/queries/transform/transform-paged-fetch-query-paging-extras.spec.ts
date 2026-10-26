@@ -38,7 +38,6 @@ const buildQueryWithPayloadDerivedExtras = (): PagedFetchQuery<PagePayload, Kont
 
 const buildTransformedQuery = () =>
 	transformPagedFetchQuery({
-		config: {},
 		query: buildQueryWithPayloadDerivedExtras(),
 		// here we convert the payload to uppercase to simulate a transformed response
 		transform: (responses) => responses.map((r) => ({ ...r, payload: { ...r.payload, name: r.payload.name.toUpperCase() } })),

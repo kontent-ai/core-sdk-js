@@ -6,7 +6,6 @@ describe("transformResponses - returns empty data when given no responses", asyn
 
 	const result = await transformResponses(
 		{
-			config: { runtimeValidation: { validateResponses: false } },
 			transform: (responses) => {
 				transformCalled = true;
 				return responses;

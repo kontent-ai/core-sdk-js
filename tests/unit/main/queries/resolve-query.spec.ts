@@ -35,7 +35,6 @@ describe("resolveQuery - valid response matching zod schema", async () => {
 		body: null,
 		config: {
 			httpService: getTestHttpServiceWithJsonResponse({ statusCode: 200, jsonResponse }),
-			runtimeValidation: { validateResponses: true },
 		},
 		schema,
 		sdkInfo: getTestSdkInfo(),
@@ -62,7 +61,6 @@ describe("resolveQuery - response not matching zod schema", async () => {
 		body: null,
 		config: {
 			httpService: getTestHttpServiceWithJsonResponse({ statusCode: 200, jsonResponse: { name: 123 } }),
-			runtimeValidation: { validateResponses: true },
 		},
 		schema,
 		sdkInfo: getTestSdkInfo(),
@@ -85,7 +83,6 @@ describe("resolveQuery - validation is skipped when schema is undefined", async 
 		body: null,
 		config: {
 			httpService: getTestHttpServiceWithJsonResponse({ statusCode: 200, jsonResponse }),
-			runtimeValidation: { validateResponses: true },
 		},
 		schema: undefined,
 		sdkInfo: getTestSdkInfo(),

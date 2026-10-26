@@ -44,9 +44,6 @@ describe("Query extra metadata", async () => {
 				statusCode: responseStatusCode,
 				continuationToken: responseContinuationToken,
 			}),
-			runtimeValidation: {
-				validateResponses: false,
-			},
 		},
 		sdkInfo: getTestSdkInfo(),
 		schema: undefined,

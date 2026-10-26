@@ -28,9 +28,6 @@ describe("Async pages iterator with max pages count", async () => {
 		mapMetadata: () => null,
 		config: {
 			httpService: getDefaultHttpService(),
-			runtimeValidation: {
-				validateResponses: false,
-			},
 		},
 		sdkInfo: getTestSdkInfo(),
 		schema: undefined,

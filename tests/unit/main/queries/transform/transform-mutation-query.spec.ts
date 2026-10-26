@@ -15,7 +15,6 @@ const buildBaseQuery = (overrides?: { readonly url?: string }): MutationQuery<ty
 		mapMetadata: () => ({}),
 		config: {
 			httpService: getTestHttpServiceWithJsonResponse({ jsonResponse, statusCode: 200 }),
-			runtimeValidation: { validateResponses: false },
 		},
 		sdkInfo: getTestSdkInfo(),
 		schema: undefined,
@@ -28,7 +27,6 @@ const buildBaseQuery = (overrides?: { readonly url?: string }): MutationQuery<ty
 
 describe("transformMutationQuery - executeSafe applies transform that adds extra property", async () => {
 	const transformedQuery = transformMutationQuery({
-		config: { runtimeValidation: { validateResponses: false } },
 		query: buildBaseQuery(),
 		transform: (response) => ({ ...response, payload: { ...response.payload, extra: extraValue } }),
 		transformSchema: undefined,
@@ -52,7 +50,6 @@ describe("transformMutationQuery - executeSafe applies transform that adds extra
 
 describe("transformMutationQuery - execute applies transform that adds extra property", async () => {
 	const transformedQuery = transformMutationQuery({
-		config: { runtimeValidation: { validateResponses: false } },
 		query: buildBaseQuery(),
 		transform: (response) => ({ ...response, payload: { ...response.payload, extra: extraValue } }),
 		transformSchema: undefined,
@@ -72,7 +69,6 @@ describe("transformMutationQuery - execute applies transform that adds extra pro
 
 describe("transformMutationQuery - execute throws when transform throws", async () => {
 	const transformedQuery = transformMutationQuery({
-		config: { runtimeValidation: { validateResponses: false } },
 		query: buildBaseQuery(),
 		transform: () => {
 			throw new Error();
@@ -94,7 +90,6 @@ describe("transformMutationQuery - execute throws when transform throws", async 
 
 describe("transformMutationQuery - executeSafe returns failure when transform throws", async () => {
 	const transformedQuery = transformMutationQuery({
-		config: { runtimeValidation: { validateResponses: false } },
 		query: buildBaseQuery(),
 		transform: () => {
 			throw new Error();
@@ -116,7 +111,6 @@ describe("transformMutationQuery - executeSafe returns failure when transform th
 
 describe("transformMutationQuery - executeSafe propagates underlying query failure unchanged", async () => {
 	const transformedQuery = transformMutationQuery({
-		config: { runtimeValidation: { validateResponses: false } },
 		query: buildBaseQuery({ url: "not-a-valid-url" }),
 		transform: (response) => response,
 		transformSchema: undefined,
@@ -136,7 +130,6 @@ describe("transformMutationQuery - executeSafe propagates underlying query failu
 
 describe("transformMutationQuery - runtime validation passes when transformed payload matches schema", async () => {
 	const transformedQuery = transformMutationQuery({
-		config: { runtimeValidation: { validateResponses: true } },
 		query: buildBaseQuery(),
 		transform: (response) => response,
 		transformSchema: z.readonly(z.object({ name: z.string() })),
@@ -156,7 +149,6 @@ describe("transformMutationQuery - runtime validation passes when transformed pa
 
 describe("transformMutationQuery - runtime validation fails when transformed payload mismatches schema", async () => {
 	const transformedQuery = transformMutationQuery({
-		config: { runtimeValidation: { validateResponses: true } },
 		query: buildBaseQuery(),
 		transform: (response) => response,
 		transformSchema: z.readonly(z.object({ name: z.string().check(z.minLength(50)) })),

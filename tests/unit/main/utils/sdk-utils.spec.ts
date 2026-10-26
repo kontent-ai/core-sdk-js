@@ -95,21 +95,17 @@ describe("validatePayloads", () => {
 	const invalidPayloadA = { url: new URL("https://example.com/1"), payload: { name: "a" } };
 	const invalidPayloadB = { url: new URL("https://example.com/2"), payload: { name: "b" } };
 
-	it.each([{ runtimeValidation: undefined }, { runtimeValidation: { validateResponses: false } }])(
-		"Should skip validation without resolving the schema when validation is disabled ($runtimeValidation)",
-		async ({ runtimeValidation }) => {
-			const schemaFactory = vi.fn(async () => await Promise.resolve(nameSchema));
+	it("Should resolve a lazy schema factory once and validate against it", async () => {
+		const schemaFactory = vi.fn(async () => await Promise.resolve(nameSchema));
 
-			const result = await validatePayloads({ runtimeValidation, schema: schemaFactory, payloads: [invalidPayloadA] });
+		const result = await validatePayloads({ schema: schemaFactory, payloads: [validPayload, invalidPayloadA] });
 
-			expect(result).toBeUndefined();
-			expect(schemaFactory).not.toHaveBeenCalled();
-		},
-	);
+		expect(result?.details.reason).toBe("schemaMismatch" satisfies ErrorReason);
+		expect(schemaFactory).toHaveBeenCalledOnce();
+	});
 
 	it("Should skip validation when no schema is provided", async () => {
 		const result = await validatePayloads({
-			runtimeValidation: { validateResponses: true },
 			schema: undefined,
 			payloads: [invalidPayloadA],
 		});
@@ -119,7 +115,6 @@ describe("validatePayloads", () => {
 
 	it("Should return undefined when all payloads match the schema", async () => {
 		const result = await validatePayloads({
-			runtimeValidation: { validateResponses: true },
 			schema: nameSchema,
 			payloads: [validPayload],
 		});
@@ -129,7 +124,6 @@ describe("validatePayloads", () => {
 
 	it("Should return the error of the first mismatching payload in input order", async () => {
 		const result = await validatePayloads({
-			runtimeValidation: { validateResponses: true },
 			schema: nameSchema,
 			payloads: [validPayload, invalidPayloadA, invalidPayloadB],
 		});
@@ -152,7 +146,6 @@ describe("validatePayloads", () => {
 		};
 
 		const result = await validatePayloads({
-			runtimeValidation: { validateResponses: true },
 			schema: handWrittenSchema,
 			payloads: [validPayload, invalidPayloadA],
 		});

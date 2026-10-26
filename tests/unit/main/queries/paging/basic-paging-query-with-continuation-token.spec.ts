@@ -45,9 +45,6 @@ describe("Basic paging query with continuation token", async () => {
 		mapMetadata: () => ({}),
 		config: {
 			httpService: getDefaultHttpService(),
-			runtimeValidation: {
-				validateResponses: false,
-			},
 		},
 		sdkInfo: getTestSdkInfo(),
 		schema: undefined,

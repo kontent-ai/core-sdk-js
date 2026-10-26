@@ -35,9 +35,6 @@ describe("Basic paging errors", async () => {
 					return await Promise.resolve(null);
 				},
 			}),
-			runtimeValidation: {
-				validateResponses: false,
-			},
 		},
 		sdkInfo: getTestSdkInfo(),
 		schema: undefined,

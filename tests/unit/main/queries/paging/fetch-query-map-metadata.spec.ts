@@ -32,9 +32,6 @@ describe("createFetchQuery mapMetadata", async () => {
 				jsonResponse: responsePayload,
 				statusCode: 200,
 			}),
-			runtimeValidation: {
-				validateResponses: false,
-			},
 		},
 		sdkInfo: getTestSdkInfo(),
 		mapMetadata: () => expectedMetadata,

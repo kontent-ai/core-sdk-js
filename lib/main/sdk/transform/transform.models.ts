@@ -1,10 +1,13 @@
 import type { KontentSdkError } from "../../models/error.models.js";
 import type { JsonValue } from "../../models/json.models.js";
 import type { SchemaInput } from "../../utils/schema.utils.js";
-import type { QueryResponse, SdkConfig } from "../sdk-models.js";
+import type { QueryResponse } from "../sdk-models.js";
 
 export type TransformBaseOptions<TTransformedPayload extends JsonValue, TError extends KontentSdkError> = {
-	readonly config: Pick<SdkConfig, "runtimeValidation">;
+	/**
+	 * Validates each transformed payload when defined; pass `undefined` to skip validation.
+	 * Prefer a lazy `() => import(...)` factory so schema code is only loaded for validated queries.
+	 */
 	readonly transformSchema: SchemaInput<TTransformedPayload>;
 	readonly mapError: (error: KontentSdkError) => TError;
 };

@@ -69,11 +69,10 @@ export async function transformResponses<
  * Validates the transformed payloads against `transformSchema`, returning the mapped error of the first mismatch.
  */
 async function validateTransformedResponses<TTransformedPayload extends JsonValue, TError extends KontentSdkError, TMeta, TExtra>(
-	{ config, transformSchema, mapError }: TransformBaseOptions<TTransformedPayload, TError>,
+	{ transformSchema, mapError }: TransformBaseOptions<TTransformedPayload, TError>,
 	responses: readonly QueryResponse<TTransformedPayload, TMeta, TExtra>[],
 ): Promise<TError | undefined> {
 	const validationError = await validatePayloads({
-		runtimeValidation: config.runtimeValidation,
 		schema: transformSchema,
 		payloads: responses.map(({ meta, payload }) => ({ url: meta.url, payload })),
 	});

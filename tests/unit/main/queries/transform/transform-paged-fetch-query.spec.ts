@@ -27,7 +27,6 @@ const buildBaseQuery = (options?: {
 				jsonResponse: async () => pages[index] ?? { name: "fallback" },
 				statusCode: 200,
 			}),
-			runtimeValidation: { validateResponses: false },
 		},
 		sdkInfo: getTestSdkInfo(),
 		schema: undefined,
@@ -49,7 +48,6 @@ const transformSchema = z.readonly(z.object({ name: z.string(), extra: z.string(
 
 describe("transformPagedFetchQuery - fetchPage applies transform that adds extra property", async () => {
 	const transformedQuery = transformPagedFetchQuery({
-		config: { runtimeValidation: { validateResponses: false } },
 		query: buildBaseQuery(),
 		transform: (responses) => responses.map((r) => ({ ...r, payload: { ...r.payload, extra: extraValue } })),
 		transformSchema: undefined,
@@ -69,7 +67,6 @@ describe("transformPagedFetchQuery - fetchPage applies transform that adds extra
 
 describe("transformPagedFetchQuery - fetchPage throws when transform throws", async () => {
 	const transformedQuery = transformPagedFetchQuery({
-		config: { runtimeValidation: { validateResponses: false } },
 		query: buildBaseQuery(),
 		transform: () => {
 			throw new Error();
@@ -87,7 +84,6 @@ describe("transformPagedFetchQuery - fetchPage throws when transform throws", as
 
 describe("transformPagedFetchQuery - fetchPageSafe applies transform that adds extra property", async () => {
 	const transformedQuery = transformPagedFetchQuery({
-		config: { runtimeValidation: { validateResponses: false } },
 		query: buildBaseQuery(),
 		transform: (responses) => responses.map((r) => ({ ...r, payload: { ...r.payload, extra: extraValue } })),
 		transformSchema: undefined,
@@ -107,7 +103,6 @@ describe("transformPagedFetchQuery - fetchPageSafe applies transform that adds e
 
 describe("transformPagedFetchQuery - fetchPageSafe propagates underlying failure unchanged", async () => {
 	const transformedQuery = transformPagedFetchQuery({
-		config: { runtimeValidation: { validateResponses: false } },
 		query: buildBaseQuery({ url: "not-a-valid-url" }),
 		transform: (responses) => responses,
 		transformSchema: undefined,
@@ -127,7 +122,6 @@ describe("transformPagedFetchQuery - fetchPageSafe propagates underlying failure
 
 describe("transformPagedFetchQuery - fetchPageSafe returns failure when transform throws", async () => {
 	const transformedQuery = transformPagedFetchQuery({
-		config: { runtimeValidation: { validateResponses: false } },
 		query: buildBaseQuery(),
 		transform: () => {
 			throw new Error();
@@ -149,7 +143,6 @@ describe("transformPagedFetchQuery - fetchPageSafe returns failure when transfor
 
 describe("transformPagedFetchQuery - fetchPage throws when transform returns empty array", async () => {
 	const transformedQuery = transformPagedFetchQuery({
-		config: { runtimeValidation: { validateResponses: false } },
 		query: buildBaseQuery(),
 		transform: () => [],
 		transformSchema: undefined,
@@ -165,7 +158,6 @@ describe("transformPagedFetchQuery - fetchPage throws when transform returns emp
 
 describe("transformPagedFetchQuery - fetchPageSafe returns failure when transform returns empty array", async () => {
 	const transformedQuery = transformPagedFetchQuery({
-		config: { runtimeValidation: { validateResponses: false } },
 		query: buildBaseQuery(),
 		transform: () => [],
 		transformSchema: undefined,
@@ -185,7 +177,6 @@ describe("transformPagedFetchQuery - fetchPageSafe returns failure when transfor
 
 describe("transformPagedFetchQuery - fetchAllPages applies transform across multiple pages", async () => {
 	const transformedQuery = transformPagedFetchQuery({
-		config: { runtimeValidation: { validateResponses: false } },
 		query: buildBaseQuery({ pages: multiPages }),
 		transform: (responses) => responses.map((r) => ({ ...r, payload: { ...r.payload, extra: extraValue } })),
 		transformSchema: undefined,
@@ -212,7 +203,6 @@ describe("transformPagedFetchQuery - fetchAllPages applies transform across mult
 
 describe("transformPagedFetchQuery - fetchAllPages throws when transform throws", async () => {
 	const transformedQuery = transformPagedFetchQuery({
-		config: { runtimeValidation: { validateResponses: false } },
 		query: buildBaseQuery({ pages: multiPages }),
 		transform: () => {
 			throw new Error();
@@ -230,7 +220,6 @@ describe("transformPagedFetchQuery - fetchAllPages throws when transform throws"
 
 describe("transformPagedFetchQuery - fetchAllPagesSafe applies transform across multiple pages", async () => {
 	const transformedQuery = transformPagedFetchQuery({
-		config: { runtimeValidation: { validateResponses: false } },
 		query: buildBaseQuery({ pages: multiPages }),
 		transform: (responses) => responses.map((r) => ({ ...r, payload: { ...r.payload, extra: extraValue } })),
 		transformSchema: undefined,
@@ -256,7 +245,6 @@ describe("transformPagedFetchQuery - fetchAllPagesSafe applies transform across 
 
 describe("transformPagedFetchQuery - fetchAllPagesSafe propagates underlying failure unchanged", async () => {
 	const transformedQuery = transformPagedFetchQuery({
-		config: { runtimeValidation: { validateResponses: false } },
 		query: buildBaseQuery({ url: "not-a-valid-url" }),
 		transform: (responses) => responses,
 		transformSchema: undefined,
@@ -276,7 +264,6 @@ describe("transformPagedFetchQuery - fetchAllPagesSafe propagates underlying fai
 
 describe("transformPagedFetchQuery - fetchAllPagesSafe returns failure when transform throws", async () => {
 	const transformedQuery = transformPagedFetchQuery({
-		config: { runtimeValidation: { validateResponses: false } },
 		query: buildBaseQuery({ pages: multiPages }),
 		transform: () => {
 			throw new Error();
@@ -298,7 +285,6 @@ describe("transformPagedFetchQuery - fetchAllPagesSafe returns failure when tran
 
 describe("transformPagedFetchQuery - pages async iterator applies transform across multiple pages", async () => {
 	const transformedQuery = transformPagedFetchQuery({
-		config: { runtimeValidation: { validateResponses: false } },
 		query: buildBaseQuery({ pages: multiPages }),
 		transform: (responses) => responses.map((r) => ({ ...r, payload: { ...r.payload, extra: extraValue } })),
 		transformSchema: undefined,
@@ -323,7 +309,6 @@ describe("transformPagedFetchQuery - pages async iterator applies transform acro
 
 describe("transformPagedFetchQuery - pages async iterator throws when transform throws", async () => {
 	const transformedQuery = transformPagedFetchQuery({
-		config: { runtimeValidation: { validateResponses: false } },
 		query: buildBaseQuery({ pages: multiPages }),
 		transform: () => {
 			throw new Error();
@@ -345,7 +330,6 @@ describe("transformPagedFetchQuery - pages async iterator throws when transform 
 
 describe("transformPagedFetchQuery - pagesSafe async iterator applies transform across multiple pages", async () => {
 	const transformedQuery = transformPagedFetchQuery({
-		config: { runtimeValidation: { validateResponses: false } },
 		query: buildBaseQuery({ pages: multiPages }),
 		transform: (responses) => responses.map((r) => ({ ...r, payload: { ...r.payload, extra: extraValue } })),
 		transformSchema: undefined,
@@ -376,7 +360,6 @@ describe("transformPagedFetchQuery - pagesSafe async iterator applies transform 
 
 describe("transformPagedFetchQuery - pagesSafe async iterator yields underlying failure", async () => {
 	const transformedQuery = transformPagedFetchQuery({
-		config: { runtimeValidation: { validateResponses: false } },
 		query: buildBaseQuery({ url: "not-a-valid-url" }),
 		transform: (responses) => responses,
 		transformSchema: undefined,
@@ -400,7 +383,6 @@ describe("transformPagedFetchQuery - pagesSafe async iterator yields underlying 
 
 describe("transformPagedFetchQuery - pagesSafe async iterator yields transform failure", async () => {
 	const transformedQuery = transformPagedFetchQuery({
-		config: { runtimeValidation: { validateResponses: false } },
 		query: buildBaseQuery({ pages: multiPages }),
 		transform: () => {
 			throw new Error();
@@ -423,7 +405,6 @@ describe("transformPagedFetchQuery - pagesSafe async iterator yields transform f
 
 describe("transformPagedFetchQuery - runtime validation passes when transformed payload matches schema", async () => {
 	const transformedQuery = transformPagedFetchQuery({
-		config: { runtimeValidation: { validateResponses: true } },
 		query: buildBaseQuery(),
 		transform: (responses) => responses.map((r) => ({ ...r, payload: { ...r.payload, extra: extraValue } })),
 		transformSchema,
@@ -443,7 +424,6 @@ describe("transformPagedFetchQuery - runtime validation passes when transformed 
 
 describe("transformPagedFetchQuery - runtime validation fails when transformed payload mismatches schema", async () => {
 	const transformedQuery = transformPagedFetchQuery({
-		config: { runtimeValidation: { validateResponses: true } },
 		query: buildBaseQuery(),
 		transform: (responses) => responses.map((r) => ({ ...r, payload: { ...r.payload, extra: extraValue } })),
 		transformSchema: z.readonly(z.object({ name: z.string(), extra: z.string().check(z.minLength(50)) })),
@@ -472,7 +452,6 @@ describe("transformPagedFetchQuery - runtime validation fails when transformed p
 
 describe("transformPagedFetchQuery - skips validation when transformSchema is undefined", async () => {
 	const transformedQuery = transformPagedFetchQuery({
-		config: { runtimeValidation: { validateResponses: true } },
 		query: buildBaseQuery(),
 		transform: (responses) => responses,
 		transformSchema: undefined,
@@ -494,7 +473,6 @@ describe("transformPagedFetchQuery - fetchAllPages invokes transform exactly onc
 	const recordedLengths: number[] = [];
 
 	const transformedQuery = transformPagedFetchQuery({
-		config: { runtimeValidation: { validateResponses: false } },
 		query: buildBaseQuery({ pages: multiPages }),
 		transform: (responses) => {
 			recordedLengths.push(responses.length);

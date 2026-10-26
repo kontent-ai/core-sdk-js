@@ -26,9 +26,6 @@ describe("Basic paging query with next page url", async () => {
 		mapMetadata: () => ({}),
 		config: {
 			httpService: getDefaultHttpService(),
-			runtimeValidation: {
-				validateResponses: false,
-			},
 		},
 		sdkInfo: getTestSdkInfo(),
 		schema: undefined,

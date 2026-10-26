@@ -29,9 +29,6 @@ const successfulBaseQueryConfig: Parameters<typeof createFetchQuery>[0] = {
 			statusCode: 200,
 			jsonResponse: null,
 		}),
-		runtimeValidation: {
-			validateResponses: false,
-		},
 	},
 	mapExtraResponseProps: () => ({}),
 	sdkInfo: getTestSdkInfo(),
@@ -50,9 +47,6 @@ const baseQueryConfig: Parameters<typeof createFetchQuery>[0] = {
 				},
 			},
 		}),
-		runtimeValidation: {
-			validateResponses: false,
-		},
 	},
 	mapExtraResponseProps: () => ({}),
 	sdkInfo: getTestSdkInfo(),

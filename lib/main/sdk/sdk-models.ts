@@ -39,19 +39,6 @@ export type SdkConfig<TExtendedConfig = unknown> = {
 	 * If provided, it will override the default base URL based on selected API mode.
 	 */
 	readonly baseUrl?: BaseUrl;
-
-	/**
-	 * Configuration for runtime validation against expected schema.
-	 */
-	readonly runtimeValidation?: {
-		/**
-		 * When enabled, the response data will be validated against the expected Standard Schema from which the types
-		 * this library are based on. This ensures that you are working with the correct data types.
-		 *
-		 * @default false
-		 */
-		readonly validateResponses: boolean;
-	};
 } & TExtendedConfig;
 
 export type Query<TError extends KontentSdkError = KontentSdkError> = {
@@ -177,6 +164,10 @@ type QueryMappers<TPayload extends JsonValue, TBody extends HttpRequestBody, TMe
 
 type QueryRequestBase<TPayload extends JsonValue, TBody extends HttpRequestBody, TMeta, TExtra, TError extends KontentSdkError> = {
 	readonly config: SdkConfig;
+	/**
+	 * Validates the response payload when defined; pass `undefined` to skip validation.
+	 * Prefer a lazy `() => import(...)` factory so schema code is only loaded for validated queries.
+	 */
 	readonly schema: SchemaInput<TPayload>;
 	readonly sdkInfo: SdkInfo;
 	readonly abortSignal?: AbortSignal | undefined;

@@ -30,9 +30,6 @@ describe("Async pages iterator with unlimited max count", async () => {
 		mapMetadata: () => null,
 		config: {
 			httpService: getDefaultHttpService(),
-			runtimeValidation: {
-				validateResponses: false,
-			},
 		},
 		sdkInfo: getTestSdkInfo(),
 		schema: undefined,
@@ -86,9 +83,6 @@ describe("Async pages iterator fetches all pages when maxPagesCount is set to 0"
 		mapMetadata: () => null,
 		config: {
 			httpService: getDefaultHttpService(),
-			runtimeValidation: {
-				validateResponses: false,
-			},
 		},
 		sdkInfo: getTestSdkInfo(),
 		schema: undefined,

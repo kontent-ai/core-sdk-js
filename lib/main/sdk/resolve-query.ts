@@ -82,7 +82,6 @@ async function executeQuery<TPayload extends JsonValue, TBody extends HttpReques
 	const response = trustQueryResponse<TPayload, TBody>(jsonResponse);
 
 	const validationError = await validatePayloads({
-		runtimeValidation: queryData.config.runtimeValidation,
 		schema: queryData.schema,
 		payloads: [{ url: response.adapterResponse.url, payload: response.payload }],
 	});
@@ -109,7 +108,7 @@ async function executeQuery<TPayload extends JsonValue, TBody extends HttpReques
 
 /**
  * Narrows the JSON response to the payload type of the query. This is the single place where the SDK trusts
- * the Kontent API contract: the payload is verified against the query schema only when runtime validation is enabled.
+ * the Kontent API contract: the payload is verified against the query schema only when the query provides one.
  */
 function trustQueryResponse<TPayload extends JsonValue, TBody extends HttpRequestBody>(
 	response: SuccessfulHttpResponse<JsonValue, TBody>,
