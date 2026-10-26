@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { getDefaultHttpService } from "../../../../lib/http/http.service.js";
-import { createPagedFetchQuery } from "../../../../lib/sdk/queries/paged-fetch-sdk-query.js";
+import { getDefaultHttpService } from "../../../../lib/public/http/http.service.js";
+import { createPagedFetchQuery } from "../../../../lib/public/sdk/queries/paged-fetch-sdk-query.js";
 import { getNextPageUrl, getTestSdkInfo, preventInfinitePaging, stubFetchWithResponse } from "../../../../lib/testkit/testkit.utils.js";
 
 describe("Basic paging query with next page url", async () => {

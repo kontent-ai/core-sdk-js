@@ -6,7 +6,7 @@ export default defineConfig({
 	overrides: [
 		{
 			// The public schemas entry re-exports schema modules by design, consumers opt in by importing "@kontent-ai/core-sdk/schema"
-			files: ["lib/schema_api.ts"],
+			files: ["lib/schema/schema_api.ts"],
 			rules: { "kontent/no-static-schema-import": "off" },
 		},
 	],

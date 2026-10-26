@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { getDefaultHttpService } from "../../../../lib/http/http.service.js";
-import { KontentSdkError } from "../../../../lib/models/error.models.js";
-import { createFetchQuery } from "../../../../lib/sdk/queries/fetch-sdk-query.js";
+import { getDefaultHttpService } from "../../../../lib/public/http/http.service.js";
+import { KontentSdkError } from "../../../../lib/public/models/error.models.js";
+import { createFetchQuery } from "../../../../lib/public/sdk/queries/fetch-sdk-query.js";
 import { getTestSdkInfo } from "../../../../lib/testkit/testkit.utils.js";
 
 class CustomSdkError extends KontentSdkError {

@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { isBlob, sleep } from "../../../lib/utils/core.utils.js";
+import { isBlob, sleep } from "../../../lib/public/utils/core.utils.js";
 
 describe("isBlob", () => {
 	it("Should return false for null", () => {

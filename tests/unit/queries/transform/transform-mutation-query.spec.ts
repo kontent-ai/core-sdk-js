@@ -1,11 +1,11 @@
 import * as z from "@zod/mini";
 import { describe, expect, it } from "vitest";
-import type { ErrorReason, KontentSdkError } from "../../../../lib/models/error.models.js";
-import { createMutationQuery } from "../../../../lib/sdk/queries/mutation-sdk-query.js";
-import type { MutationQuery } from "../../../../lib/sdk/sdk-models.js";
-import { transformMutationQuery } from "../../../../lib/sdk/transform/transform-mutation-query.js";
+import type { ErrorReason, KontentSdkError } from "../../../../lib/public/models/error.models.js";
+import { createMutationQuery } from "../../../../lib/public/sdk/queries/mutation-sdk-query.js";
+import type { MutationQuery } from "../../../../lib/public/sdk/sdk-models.js";
+import { transformMutationQuery } from "../../../../lib/public/sdk/transform/transform-mutation-query.js";
+import { tryCatchAsync } from "../../../../lib/public/utils/try-catch.utils.js";
 import { getTestHttpServiceWithJsonResponse, getTestSdkInfo } from "../../../../lib/testkit/testkit.utils.js";
-import { tryCatchAsync } from "../../../../lib/utils/try-catch.utils.js";
 
 const jsonResponse = { name: "test" };
 const extraValue = "added-by-transform";

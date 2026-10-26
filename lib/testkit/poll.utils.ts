@@ -1,5 +1,5 @@
-import { sleep } from "../utils/core.utils.js";
-import type { Failure, Success } from "../utils/try-catch.utils.js";
+import { sleep } from "../public/utils/core.utils.js";
+import type { Failure, Success } from "../public/utils/try-catch.utils.js";
 
 const defaultIntervalMs = 1000;
 const defaultTimeoutMs = 30000;

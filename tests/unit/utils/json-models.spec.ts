@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { jsonValueSchema } from "../../../lib/schema_api.js";
+import { jsonValueSchema } from "../../../lib/schema/schema_api.js";
 
 describe("JsonValue schema", () => {
 	it("Parsing number value should succeed", () => {

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import type { Header, KnownHeaderName } from "../../../lib/models/core.models.js";
-import { toFetchHeaders, toSdkHeaders } from "../../../lib/utils/header.utils.js";
+import type { Header, KnownHeaderName } from "../../../lib/public/models/core.models.js";
+import { toFetchHeaders, toSdkHeaders } from "../../../lib/public/utils/header.utils.js";
 
 describe("toSdkHeaders", () => {
 	it("Should convert single header to single Header object", () => {

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import type { HttpRequestBody } from "../../../../lib/http/http.models.js";
-import { getDefaultHttpService } from "../../../../lib/http/http.service.js";
-import type { ErrorReason } from "../../../../lib/models/error.models.js";
+import type { HttpRequestBody } from "../../../../lib/public/http/http.models.js";
+import { getDefaultHttpService } from "../../../../lib/public/http/http.service.js";
+import type { ErrorReason } from "../../../../lib/public/models/error.models.js";
 
 // Unserializable body
 const body: Record<string, unknown> = {};

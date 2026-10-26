@@ -1,9 +1,9 @@
 import { createServer, type Server } from "node:http";
 import type { AddressInfo } from "node:net";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
-import { getDefaultHttpAdapter } from "../../../lib/http/http.adapter.js";
-import type { KnownHeaderName } from "../../../lib/models/core.models.js";
-import { AdapterAbortError } from "../../../lib/models/error.models.js";
+import { getDefaultHttpAdapter } from "../../../lib/public/http/http.adapter.js";
+import type { KnownHeaderName } from "../../../lib/public/models/core.models.js";
+import { AdapterAbortError } from "../../../lib/public/models/error.models.js";
 
 const parseAbortMessage = "Request was aborted while parsing the response.";
 

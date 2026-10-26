@@ -2,8 +2,8 @@ import { existsSync } from "node:fs";
 import path from "node:path";
 import { loadEnvFile } from "node:process";
 import { fileURLToPath } from "node:url";
-import { getEnvironmentRequiredValue } from "../lib/devkit_api.js";
-import type { Header, KnownHeaderName } from "../lib/models/core.models.js";
+import { getEnvironmentRequiredValue } from "../lib/devkit/devkit_api.js";
+import type { Header, KnownHeaderName } from "../lib/public/models/core.models.js";
 
 export function getIntegrationTestConfig() {
 	loadEnvironmentVariables();

@@ -1,6 +1,6 @@
 import type { StandardSchemaV1 } from "@standard-schema/spec";
 import { describe, expect, it } from "vitest";
-import { AdapterAbortError, AdapterParseError, type BaseErrorData, KontentSdkError } from "../../../lib/models/error.models.js";
+import { AdapterAbortError, AdapterParseError, type BaseErrorData, KontentSdkError } from "../../../lib/public/models/error.models.js";
 
 const baseErrorData: BaseErrorData = {
 	message: "Something failed",

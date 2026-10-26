@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
-import type { AdapterResponse } from "../../../lib/http/http.models.js";
-import { getDefaultHttpService } from "../../../lib/http/http.service.js";
-import type { Header, KnownHeaderName } from "../../../lib/models/core.models.js";
-import { type ErrorReason, kontentAiErrorBrands } from "../../../lib/models/error.models.js";
-import type { JsonValue } from "../../../lib/models/json.models.js";
+import type { AdapterResponse } from "../../../lib/public/http/http.models.js";
+import { getDefaultHttpService } from "../../../lib/public/http/http.service.js";
+import type { Header, KnownHeaderName } from "../../../lib/public/models/core.models.js";
+import { type ErrorReason, kontentAiErrorBrands } from "../../../lib/public/models/error.models.js";
+import type { JsonValue } from "../../../lib/public/models/json.models.js";
 import { getFakeBlob } from "../../../lib/testkit/testkit.utils.js";
 
 describe("Custom adapter", () => {

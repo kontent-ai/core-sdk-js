@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
-import type { HttpStatusCode } from "../../lib/http/http.models.js";
-import { getDefaultHttpService } from "../../lib/http/http.service.js";
-import type { KontentSdkError } from "../../lib/public_api.js";
-import { createMutationQuery } from "../../lib/sdk/queries/mutation-sdk-query.js";
-import type { MutationQuery } from "../../lib/sdk/sdk-models.js";
-import { getTestSdkInfo, poll } from "../../lib/testkit_api.js";
+import type { HttpStatusCode } from "../../lib/public/http/http.models.js";
+import { getDefaultHttpService } from "../../lib/public/http/http.service.js";
+import type { KontentSdkError } from "../../lib/public/public_api.js";
+import { createMutationQuery } from "../../lib/public/sdk/queries/mutation-sdk-query.js";
+import type { MutationQuery } from "../../lib/public/sdk/sdk-models.js";
+import { getTestSdkInfo, poll } from "../../lib/testkit/testkit_api.js";
 import { getIntegrationTestConfig } from "../integration-tests.config.js";
 
 describe("Integration tests covering Fetch/Mutation queries against the Kontent.ai API", async () => {

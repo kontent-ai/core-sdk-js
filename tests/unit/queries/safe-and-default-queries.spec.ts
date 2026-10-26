@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { getDefaultHttpService } from "../../../lib/http/http.service.js";
-import { createPagedFetchQuery, type JsonValue, KontentSdkError } from "../../../lib/public_api.js";
-import { createFetchQuery } from "../../../lib/sdk/queries/fetch-sdk-query.js";
-import { createMutationQuery } from "../../../lib/sdk/queries/mutation-sdk-query.js";
-import type { FetchQuery, MutationQuery, PagedFetchQuery } from "../../../lib/sdk/sdk-models.js";
+import { getDefaultHttpService } from "../../../lib/public/http/http.service.js";
+import { createPagedFetchQuery, type JsonValue, KontentSdkError } from "../../../lib/public/public_api.js";
+import { createFetchQuery } from "../../../lib/public/sdk/queries/fetch-sdk-query.js";
+import { createMutationQuery } from "../../../lib/public/sdk/queries/mutation-sdk-query.js";
+import type { FetchQuery, MutationQuery, PagedFetchQuery } from "../../../lib/public/sdk/sdk-models.js";
 import { getTestHttpServiceWithJsonResponse, getTestSdkInfo } from "../../../lib/testkit/testkit.utils.js";
 
 type QueryTest = {

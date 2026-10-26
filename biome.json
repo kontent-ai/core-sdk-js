@@ -32,7 +32,7 @@
 	},
 	"overrides": [
 		{
-			"includes": ["lib/**", "!lib/schema/**", "!lib/schema_api.ts"],
+			"includes": ["lib/**", "!lib/schema/**"],
 			"linter": {
 				"rules": {
 					"style": {

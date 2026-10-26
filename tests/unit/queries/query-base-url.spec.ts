@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { inspectQuery } from "../../../lib/sdk/resolve-query.js";
+import { inspectQuery } from "../../../lib/public/sdk/resolve-query.js";
 import { getTestSdkInfo } from "../../../lib/testkit/testkit.utils.js";
 
 describe("Query base url with https protocol", () => {

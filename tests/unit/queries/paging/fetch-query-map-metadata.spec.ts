@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import type { KontentSdkError } from "../../../../lib/models/error.models.js";
-import { createFetchQuery } from "../../../../lib/sdk/queries/fetch-sdk-query.js";
+import type { KontentSdkError } from "../../../../lib/public/models/error.models.js";
+import { createFetchQuery } from "../../../../lib/public/sdk/queries/fetch-sdk-query.js";
 import { getTestHttpServiceWithJsonResponse, getTestSdkInfo } from "../../../../lib/testkit/testkit.utils.js";
 
 type ResponsePayload = {

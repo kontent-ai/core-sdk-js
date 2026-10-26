@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
-import type { Header, HttpMethod, KnownHeaderName } from "../../../lib/models/core.models.js";
-import type { KontentSdkError } from "../../../lib/public_api.js";
-import { createFetchQuery } from "../../../lib/sdk/queries/fetch-sdk-query.js";
+import type { Header, HttpMethod, KnownHeaderName } from "../../../lib/public/models/core.models.js";
+import type { KontentSdkError } from "../../../lib/public/public_api.js";
+import { createFetchQuery } from "../../../lib/public/sdk/queries/fetch-sdk-query.js";
+import { createSdkIdHeader } from "../../../lib/public/utils/header.utils.js";
 import { getTestHttpServiceWithJsonResponse, getTestSdkInfo } from "../../../lib/testkit/testkit.utils.js";
-import { createSdkIdHeader } from "../../../lib/utils/header.utils.js";
 
 describe("Query extra metadata", async () => {
 	const responseContinuationToken = "fake-continuation-token";

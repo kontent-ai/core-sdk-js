@@ -1,11 +1,11 @@
 import * as z from "@zod/mini";
 import { describe, expect, it } from "vitest";
-import type { ErrorReason, KontentSdkError } from "../../../../lib/models/error.models.js";
-import { createFetchQuery } from "../../../../lib/sdk/queries/fetch-sdk-query.js";
-import type { FetchQuery } from "../../../../lib/sdk/sdk-models.js";
-import { transformFetchQuery } from "../../../../lib/sdk/transform/transform-fetch-query.js";
+import type { ErrorReason, KontentSdkError } from "../../../../lib/public/models/error.models.js";
+import { createFetchQuery } from "../../../../lib/public/sdk/queries/fetch-sdk-query.js";
+import type { FetchQuery } from "../../../../lib/public/sdk/sdk-models.js";
+import { transformFetchQuery } from "../../../../lib/public/sdk/transform/transform-fetch-query.js";
+import { tryCatchAsync } from "../../../../lib/public/utils/try-catch.utils.js";
 import { getTestHttpServiceWithJsonResponse, getTestSdkInfo } from "../../../../lib/testkit/testkit.utils.js";
-import { tryCatchAsync } from "../../../../lib/utils/try-catch.utils.js";
 
 const jsonResponse = { name: "test" };
 const extraValue = "added-by-transform";

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import type { ErrorReason } from "../../../lib/models/error.models.js";
-import { resolveDefaultRetryStrategyOptions } from "../../../lib/utils/retry.utils.js";
-import { getEndpointUrl, parseUrl } from "../../../lib/utils/url.utils.js";
+import type { ErrorReason } from "../../../lib/public/models/error.models.js";
+import { resolveDefaultRetryStrategyOptions } from "../../../lib/public/utils/retry.utils.js";
+import { getEndpointUrl, parseUrl } from "../../../lib/public/utils/url.utils.js";
 
 describe("getEndpointUrl", () => {
 	it("Should combine baseUrl, environmentId and path with single slashes", () => {

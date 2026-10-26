@@ -1,5 +1,5 @@
 import * as z from "@zod/mini";
-import { nilUuid } from "../sdk/sdk-config.js";
+import { nilUuid } from "../public/sdk/sdk-config.js";
 
 export const kontentUuidSchema = z.union([z.uuid({ version: "v4" }), z.literal(nilUuid)]);
 

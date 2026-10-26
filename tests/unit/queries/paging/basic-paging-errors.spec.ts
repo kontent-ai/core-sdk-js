@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { type ErrorReason, KontentSdkError } from "../../../../lib/models/error.models.js";
-import { createPagedFetchQuery } from "../../../../lib/sdk/queries/paged-fetch-sdk-query.js";
+import { type ErrorReason, KontentSdkError } from "../../../../lib/public/models/error.models.js";
+import { createPagedFetchQuery } from "../../../../lib/public/sdk/queries/paged-fetch-sdk-query.js";
 import { getNextPageUrl, getTestHttpServiceWithJsonResponse, getTestSdkInfo } from "../../../../lib/testkit/testkit.utils.js";
 
 describe("Basic paging errors", async () => {

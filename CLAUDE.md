@@ -22,13 +22,18 @@
 ## Libraries
 
 - Use **ts-pattern** for non-trivial `switch`/`if-else` chains — anything beyond a simple 2-branch condition should use `match()` from `ts-pattern`
-- The main entry point (everything outside `lib/schema/**` and `lib/schema_api.ts`) must never import zod or expose zod types (enforced by biome `noRestrictedImports`); utilities that accept a schema from a caller (`resolveSchema`, `validatePayloads`) type it as `StandardSchemaV1` from `@standard-schema/spec` (`import type`), so consumers can pass a schema built with any Standard Schema library and this package never forces a schema library into their bundle
-- Shared Kontent.ai schemas use **Zod Mini** (`import * as z from "@zod/mini"`, functional API: `z.optional(...)`, `z.readonly(...)`, `.check(z.minLength(...))`) and live only in `lib/schema/**`, exported from `lib/schema_api.ts` (`@kontent-ai/core-sdk/schema`); `@zod/mini` is an optional peer dependency used only by that entry point and tests
+- The main entry point (everything outside `lib/schema/**`) must never import zod or expose zod types (enforced by biome `noRestrictedImports`); utilities that accept a schema from a caller (`resolveSchema`, `validatePayloads`) type it as `StandardSchemaV1` from `@standard-schema/spec` (`import type`), so consumers can pass a schema built with any Standard Schema library and this package never forces a schema library into their bundle
+- Shared Kontent.ai schemas use **Zod Mini** (`import * as z from "@zod/mini"`, functional API: `z.optional(...)`, `z.readonly(...)`, `.check(z.minLength(...))`) and live only in `lib/schema/**`, exported from `lib/schema/schema_api.ts` (`@kontent-ai/core-sdk/schema`); `@zod/mini` is an optional peer dependency used only by that entry point and tests
 - Payload types used by the main entry point (e.g. `ErrorResponseData`) are hand-written; their zod schema in `lib/schema/**` must be checked against them with `satisfies z.ZodMiniType<T>` so the two cannot drift
+
+## Structure
+
+- Each package entry point owns one folder in `lib/` that contains its barrel `<entry>_api.ts` and all of its code: `public/` (`@kontent-ai/core-sdk`), `schema/` (`/schema`), `devkit/` (`/devkit`), `testkit/` (`/testkit`)
+- Other entry points may import public internals directly (e.g. `../public/utils/core.utils.js`); `public/` must never import from the other entry folders
 
 ## Exports
 
-- All API queries and API-related models must be exported from `lib/public_api.ts` (shared zod schemas from `lib/schema_api.ts`) — nothing is part of the public API unless it appears there
+- All API queries and API-related models must be exported from `lib/public/public_api.ts` (shared zod schemas from `lib/schema/schema_api.ts`) — nothing is part of the public API unless it appears there
 
 # Tooling
 

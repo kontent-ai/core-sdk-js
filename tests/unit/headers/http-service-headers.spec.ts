@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { coreSdkInfo } from "../../../lib/core-sdk-info.js";
-import { getDefaultHttpService } from "../../../lib/http/http.service.js";
-import type { Header, KnownHeaderName } from "../../../lib/models/core.models.js";
+import { coreSdkInfo } from "../../../lib/public/core-sdk-info.js";
+import { getDefaultHttpService } from "../../../lib/public/http/http.service.js";
+import type { Header, KnownHeaderName } from "../../../lib/public/models/core.models.js";
+import { createSdkIdHeader, findHeaderByName } from "../../../lib/public/utils/header.utils.js";
 import { stubFetchWithResponse } from "../../../lib/testkit/testkit.utils.js";
-import { createSdkIdHeader, findHeaderByName } from "../../../lib/utils/header.utils.js";
 
 const sdkIdHeader = createSdkIdHeader(coreSdkInfo);
 

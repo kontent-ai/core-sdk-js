@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
-import type { KontentSdkError } from "../../../../lib/models/error.models.js";
-import { createPagedFetchQuery } from "../../../../lib/sdk/queries/paged-fetch-sdk-query.js";
-import type { PagedFetchQuery } from "../../../../lib/sdk/sdk-models.js";
-import { transformPagedFetchQuery } from "../../../../lib/sdk/transform/transform-paged-fetch-query.js";
+import type { KontentSdkError } from "../../../../lib/public/models/error.models.js";
+import { createPagedFetchQuery } from "../../../../lib/public/sdk/queries/paged-fetch-sdk-query.js";
+import type { PagedFetchQuery } from "../../../../lib/public/sdk/sdk-models.js";
+import { transformPagedFetchQuery } from "../../../../lib/public/sdk/transform/transform-paged-fetch-query.js";
 import { getTestHttpServiceWithJsonResponse, getTestSdkInfo } from "../../../../lib/testkit/testkit.utils.js";
 
 type PagePayload = { readonly name: string };

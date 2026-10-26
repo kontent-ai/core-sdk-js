@@ -19,20 +19,20 @@
 	},
 	"exports": {
 		".": {
-			"types": "./dist/public_api.d.ts",
-			"default": "./dist/public_api.js"
+			"types": "./dist/public/public_api.d.ts",
+			"default": "./dist/public/public_api.js"
 		},
 		"./devkit": {
-			"types": "./dist/devkit_api.d.ts",
-			"default": "./dist/devkit_api.js"
+			"types": "./dist/devkit/devkit_api.d.ts",
+			"default": "./dist/devkit/devkit_api.js"
 		},
 		"./testkit": {
-			"types": "./dist/testkit_api.d.ts",
-			"default": "./dist/testkit_api.js"
+			"types": "./dist/testkit/testkit_api.d.ts",
+			"default": "./dist/testkit/testkit_api.js"
 		},
 		"./schema": {
-			"types": "./dist/schema_api.d.ts",
-			"default": "./dist/schema_api.js"
+			"types": "./dist/schema/schema_api.d.ts",
+			"default": "./dist/schema/schema_api.js"
 		}
 	},
 	"type": "module",

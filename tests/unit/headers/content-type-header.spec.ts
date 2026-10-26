@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import type { Header, KnownHeaderName } from "../../../lib/models/core.models.js";
-import { isApplicationJsonResponseType } from "../../../lib/utils/header.utils.js";
+import type { Header, KnownHeaderName } from "../../../lib/public/models/core.models.js";
+import { isApplicationJsonResponseType } from "../../../lib/public/utils/header.utils.js";
 
 describe("isApplicationJsonResponseType", () => {
 	it("Should return true when Content-Type is application/json", () => {

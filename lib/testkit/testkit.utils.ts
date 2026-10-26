@@ -1,10 +1,10 @@
 import { vi } from "vitest";
-import type { HttpService, HttpStatusCode } from "../http/http.models.js";
-import { getDefaultHttpService } from "../http/http.service.js";
-import type { RetryStrategyOptions, SdkInfo } from "../models/core.models.js";
-import type { JsonValue } from "../models/json.models.js";
-import type { GetNextPageData } from "../sdk/sdk-models.js";
-import { createContinuationHeader } from "../utils/header.utils.js";
+import type { HttpService, HttpStatusCode } from "../public/http/http.models.js";
+import { getDefaultHttpService } from "../public/http/http.service.js";
+import type { RetryStrategyOptions, SdkInfo } from "../public/models/core.models.js";
+import type { JsonValue } from "../public/models/json.models.js";
+import type { GetNextPageData } from "../public/sdk/sdk-models.js";
+import { createContinuationHeader } from "../public/utils/header.utils.js";
 
 const upperBoundLimitForInfinitePaging = 50;
 

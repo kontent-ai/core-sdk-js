@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import type { AdapterResponse } from "../../../lib/http/http.models.js";
-import { getDefaultHttpService } from "../../../lib/http/http.service.js";
+import type { AdapterResponse } from "../../../lib/public/http/http.models.js";
+import { getDefaultHttpService } from "../../../lib/public/http/http.service.js";
 import {
 	AdapterAbortError,
 	AdapterParseError,
@@ -8,8 +8,7 @@ import {
 	type ErrorResponseData,
 	KontentSdkError,
 	kontentAiErrorBrands,
-} from "../../../lib/models/error.models.js";
-import { stubFetchWithResponse } from "../../../lib/testkit/testkit.utils.js";
+} from "../../../lib/public/models/error.models.js";
 import {
 	isAdapterAbortError,
 	isAdapterParseError,
@@ -18,7 +17,8 @@ import {
 	isKontentErrorResponseData,
 	isKontentSdkError,
 	toInvalidResponseMessage,
-} from "../../../lib/utils/error.utils.js";
+} from "../../../lib/public/utils/error.utils.js";
+import { stubFetchWithResponse } from "../../../lib/testkit/testkit.utils.js";
 
 describe("isAbortError", () => {
 	it("Should return false when error is null", () => {

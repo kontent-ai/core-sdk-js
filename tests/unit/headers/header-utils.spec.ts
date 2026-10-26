@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
-import type { Header, KnownHeaderName, SdkInfo } from "../../../lib/models/core.models.js";
+import type { Header, KnownHeaderName, SdkInfo } from "../../../lib/public/models/core.models.js";
 import {
 	createAuthorizationHeader,
 	createContinuationHeader,
 	createSdkIdHeader,
 	getRetryAfterHeaderValue,
-} from "../../../lib/utils/header.utils.js";
+} from "../../../lib/public/utils/header.utils.js";
 
 describe("createSdkIdHeader", () => {
 	it("Should return a header with name 'X-KC-SDKID'", () => {

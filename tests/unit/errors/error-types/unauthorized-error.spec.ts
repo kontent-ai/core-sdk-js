@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { getDefaultHttpService } from "../../../../lib/http/http.service.js";
-import type { ErrorReason } from "../../../../lib/models/error.models.js";
+import { getDefaultHttpService } from "../../../../lib/public/http/http.service.js";
+import type { ErrorReason } from "../../../../lib/public/models/error.models.js";
 
 describe("Unauthorized error", async () => {
 	const { error } = await getDefaultHttpService({

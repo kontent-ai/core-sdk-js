@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { transformResponses } from "../../../../lib/sdk/transform/transform-utils.js";
+import { transformResponses } from "../../../../lib/public/sdk/transform/transform-utils.js";
 
 describe("transformResponses - returns empty data when given no responses", async () => {
 	let transformCalled = false;
