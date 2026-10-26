@@ -39,6 +39,7 @@
 	"packageManager": "pnpm@11.22.0",
 	"sideEffects": false,
 	"scripts": {
+		"prepare": "pnpm run biome:fix",
 		"prepublishOnly": "pnpm run build && pnpm run test",
 		"build": "pnpm run lint && pnpm run clean && pnpm run build:ts && pnpm run update:version",
 		"build:ts": "tsc -p tsconfig.build.json",
