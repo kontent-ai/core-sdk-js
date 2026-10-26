@@ -12,7 +12,7 @@ import type { PagedFetchQuery, Query } from "./sdk-models.js";
  */
 export async function* unwrapResults<TResponse, TError extends KontentSdkError>(
 	results: AsyncIterable<SafeHttpResult<TResponse, TError>>,
-): AsyncGenerator<TResponse> {
+): AsyncGenerator<TResponse, undefined> {
 	for await (const result of results) {
 		yield unwrapOrThrow(result).response;
 	}

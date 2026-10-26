@@ -68,8 +68,10 @@ export type PagedFetchQuery<
 		config?: PagingConfig,
 	) => Promise<SafePagingQueryResult<QueryResponse<TPayload, TMeta, TExtra>, TError, TPagingExtra>>;
 	readonly fetchAllPages: (config?: PagingConfig) => Promise<PagingQueryResponse<QueryResponse<TPayload, TMeta, TExtra>, TPagingExtra>>;
-	readonly pagesSafe: (config?: PagingConfig) => AsyncGenerator<SafeHttpResult<QueryResponse<TPayload, TMeta, TExtra>, TError>>;
-	readonly pages: (config?: PagingConfig) => AsyncGenerator<QueryResponse<TPayload, TMeta, TExtra>>;
+	readonly pagesSafe: (
+		config?: PagingConfig,
+	) => AsyncGenerator<SafeHttpResult<QueryResponse<TPayload, TMeta, TExtra>, TError>, undefined>;
+	readonly pages: (config?: PagingConfig) => AsyncGenerator<QueryResponse<TPayload, TMeta, TExtra>, undefined>;
 };
 
 export type MutationQuery<

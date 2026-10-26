@@ -90,7 +90,7 @@ export function createPagedFetchQuery<TPayload extends JsonValue, TError extends
 
 async function* createPagingQueryIterator<TPayload extends JsonValue, TError extends KontentSdkError, TMeta, TExtra>(
 	data: PagingInput<TPayload, TError, TMeta, TExtra>,
-): AsyncGenerator<SafeHttpResult<QueryResponse<TPayload, TMeta, TExtra>, TError>> {
+): AsyncGenerator<SafeHttpResult<QueryResponse<TPayload, TMeta, TExtra>, TError>, undefined> {
 	let nextPage: NextPage = {};
 	let pageIndex: number = 0;
 

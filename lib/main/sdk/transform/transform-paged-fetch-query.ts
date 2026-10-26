@@ -43,7 +43,7 @@ export function transformPagedFetchQuery<
 
 	const pagesSafe = async function* (
 		config?: PagingConfig,
-	): AsyncGenerator<SafeHttpResult<QueryResponse<TTransformedPayload, TMeta, TExtra>, TError>> {
+	): AsyncGenerator<SafeHttpResult<QueryResponse<TTransformedPayload, TMeta, TExtra>, TError>, undefined> {
 		for await (const safeResult of query.pagesSafe(config)) {
 			const result = await transformSafeResult(singleOptions, safeResult);
 			yield result;
