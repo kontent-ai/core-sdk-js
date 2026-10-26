@@ -19,8 +19,8 @@
 	},
 	"exports": {
 		".": {
-			"types": "./dist/public/public_api.d.ts",
-			"default": "./dist/public/public_api.js"
+			"types": "./dist/main/main_api.d.ts",
+			"default": "./dist/main/main_api.js"
 		},
 		"./devkit": {
 			"types": "./dist/devkit/devkit_api.d.ts",

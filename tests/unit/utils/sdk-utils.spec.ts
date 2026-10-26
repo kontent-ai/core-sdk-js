@@ -1,10 +1,10 @@
 import type { StandardSchemaV1 } from "@standard-schema/spec";
 import * as z from "@zod/mini";
 import { describe, expect, it, vi } from "vitest";
-import type { ErrorReason } from "../../../lib/public/models/error.models.js";
-import type { JsonValue } from "../../../lib/public/public_api.js";
-import type { PagedFetchQuery } from "../../../lib/public/sdk/sdk-models.js";
-import { isPagingQuery, validatePayloads } from "../../../lib/public/sdk/sdk-utils.js";
+import type { JsonValue } from "../../../lib/main/main_api.js";
+import type { ErrorReason } from "../../../lib/main/models/error.models.js";
+import type { PagedFetchQuery } from "../../../lib/main/sdk/sdk-models.js";
+import { isPagingQuery, validatePayloads } from "../../../lib/main/sdk/sdk-utils.js";
 
 describe("isPagingQuery", () => {
 	it("Should return true for object with paging query shape", () => {

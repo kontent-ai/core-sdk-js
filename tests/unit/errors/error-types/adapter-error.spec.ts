@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { getDefaultHttpService } from "../../../../lib/public/http/http.service.js";
-import { type ErrorReason, KontentSdkError } from "../../../../lib/public/models/error.models.js";
+import { getDefaultHttpService } from "../../../../lib/main/http/http.service.js";
+import { type ErrorReason, KontentSdkError } from "../../../../lib/main/models/error.models.js";
 
 describe("Adapter error", async () => {
 	const { error } = await getDefaultHttpService({

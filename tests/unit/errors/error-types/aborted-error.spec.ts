@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { getDefaultHttpService } from "../../../../lib/public/http/http.service.js";
-import { AdapterAbortError, type ErrorReason } from "../../../../lib/public/models/error.models.js";
+import { getDefaultHttpService } from "../../../../lib/main/http/http.service.js";
+import { AdapterAbortError, type ErrorReason } from "../../../../lib/main/models/error.models.js";
 
 describe("Aborted error", async () => {
 	const originalError = new Error("Request was aborted");

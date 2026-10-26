@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { getDefaultHttpService } from "../../../lib/public/http/http.service.js";
-import type { HttpMethod } from "../../../lib/public/models/core.models.js";
+import { getDefaultHttpService } from "../../../lib/main/http/http.service.js";
+import type { HttpMethod } from "../../../lib/main/models/core.models.js";
 import { stubFetchWithResponse } from "../../../lib/testkit/testkit.utils.js";
 
 type ResponseData = {

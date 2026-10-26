@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { createMutationQuery, createPagedFetchQuery, type KontentSdkError, type Query } from "../../../lib/public/public_api.js";
-import { createFetchQuery } from "../../../lib/public/sdk/queries/fetch-sdk-query.js";
-import type { QueryInputData } from "../../../lib/public/sdk/sdk-models.js";
+import { createMutationQuery, createPagedFetchQuery, type KontentSdkError, type Query } from "../../../lib/main/main_api.js";
+import { createFetchQuery } from "../../../lib/main/sdk/queries/fetch-sdk-query.js";
+import type { QueryInputData } from "../../../lib/main/sdk/sdk-models.js";
 import { getTestHttpServiceWithJsonResponse, getTestSdkInfo } from "../../../lib/testkit/testkit.utils.js";
 
 const responseContinuationToken = "fake-continuation-token";

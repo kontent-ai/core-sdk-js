@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { getDefaultHttpAdapter } from "../../../lib/public/http/http.adapter.js";
-import type { KnownHeaderName } from "../../../lib/public/models/core.models.js";
-import { AdapterAbortError, AdapterParseError } from "../../../lib/public/models/error.models.js";
+import { getDefaultHttpAdapter } from "../../../lib/main/http/http.adapter.js";
+import type { KnownHeaderName } from "../../../lib/main/models/core.models.js";
+import { AdapterAbortError, AdapterParseError } from "../../../lib/main/models/error.models.js";
 import { stubFetchWithResponse } from "../../../lib/testkit/testkit.utils.js";
 
 const jsonContentTypeHeaders = { ["Content-Type" satisfies KnownHeaderName]: "application/json" };

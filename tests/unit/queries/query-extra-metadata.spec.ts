@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
-import type { Header, HttpMethod, KnownHeaderName } from "../../../lib/public/models/core.models.js";
-import type { KontentSdkError } from "../../../lib/public/public_api.js";
-import { createFetchQuery } from "../../../lib/public/sdk/queries/fetch-sdk-query.js";
-import { createSdkIdHeader } from "../../../lib/public/utils/header.utils.js";
+import type { KontentSdkError } from "../../../lib/main/main_api.js";
+import type { Header, HttpMethod, KnownHeaderName } from "../../../lib/main/models/core.models.js";
+import { createFetchQuery } from "../../../lib/main/sdk/queries/fetch-sdk-query.js";
+import { createSdkIdHeader } from "../../../lib/main/utils/header.utils.js";
 import { getTestHttpServiceWithJsonResponse, getTestSdkInfo } from "../../../lib/testkit/testkit.utils.js";
 
 describe("Query extra metadata", async () => {

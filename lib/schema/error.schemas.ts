@@ -1,5 +1,5 @@
 import * as z from "@zod/mini";
-import type { ErrorResponseData, ValidationError } from "../public/models/error.models.js";
+import type { ErrorResponseData, ValidationError } from "../main/models/error.models.js";
 
 export const validationErrorSchema = z.readonly(
 	z.object({

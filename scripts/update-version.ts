@@ -3,4 +3,4 @@ import { replaceSdkVersionPlaceholder } from "../lib/devkit/sdk-version.utils.js
 
 import packageJson from "../package.json" with { type: "json" };
 
-replaceSdkVersionPlaceholder("./dist/public/core-sdk-info.js", packageJson.version);
+replaceSdkVersionPlaceholder("./dist/main/core-sdk-info.js", packageJson.version);

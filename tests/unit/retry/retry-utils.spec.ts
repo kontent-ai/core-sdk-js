@@ -1,10 +1,10 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import type { HttpResponse } from "../../../lib/public/http/http.models.js";
-import { getDefaultHttpService } from "../../../lib/public/http/http.service.js";
-import type { KnownHeaderName, RetryStrategyOptions } from "../../../lib/public/models/core.models.js";
-import { KontentSdkError } from "../../../lib/public/models/error.models.js";
-import { sleep } from "../../../lib/public/utils/core.utils.js";
-import { resolveDefaultRetryStrategyOptions, runWithRetry } from "../../../lib/public/utils/retry.utils.js";
+import type { HttpResponse } from "../../../lib/main/http/http.models.js";
+import { getDefaultHttpService } from "../../../lib/main/http/http.service.js";
+import type { KnownHeaderName, RetryStrategyOptions } from "../../../lib/main/models/core.models.js";
+import { KontentSdkError } from "../../../lib/main/models/error.models.js";
+import { sleep } from "../../../lib/main/utils/core.utils.js";
+import { resolveDefaultRetryStrategyOptions, runWithRetry } from "../../../lib/main/utils/retry.utils.js";
 
 const url = new URL("https://domain.com");
 

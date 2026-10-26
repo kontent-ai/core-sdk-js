@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
-import type { HttpStatusCode } from "../../lib/public/http/http.models.js";
-import { getDefaultHttpService } from "../../lib/public/http/http.service.js";
-import type { KontentSdkError } from "../../lib/public/public_api.js";
-import { createMutationQuery } from "../../lib/public/sdk/queries/mutation-sdk-query.js";
-import type { MutationQuery } from "../../lib/public/sdk/sdk-models.js";
+import type { HttpStatusCode } from "../../lib/main/http/http.models.js";
+import { getDefaultHttpService } from "../../lib/main/http/http.service.js";
+import type { KontentSdkError } from "../../lib/main/main_api.js";
+import { createMutationQuery } from "../../lib/main/sdk/queries/mutation-sdk-query.js";
+import type { MutationQuery } from "../../lib/main/sdk/sdk-models.js";
 import { getTestSdkInfo, poll } from "../../lib/testkit/testkit_api.js";
 import { getIntegrationTestConfig } from "../integration-tests.config.js";
 

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import type { HttpStatusCode } from "../../../lib/public/http/http.models.js";
-import { getDefaultHttpService } from "../../../lib/public/http/http.service.js";
-import type { HttpMethod } from "../../../lib/public/models/core.models.js";
+import type { HttpStatusCode } from "../../../lib/main/http/http.models.js";
+import { getDefaultHttpService } from "../../../lib/main/http/http.service.js";
+import type { HttpMethod } from "../../../lib/main/models/core.models.js";
 import { getFakeBlob, stubFetchWithResponse } from "../../../lib/testkit/testkit.utils.js";
 
 const fakeBlob = getFakeBlob();

@@ -1,11 +1,11 @@
 import * as z from "@zod/mini";
 import { describe, expect, it } from "vitest";
-import type { ErrorReason, KontentSdkError } from "../../../../lib/public/models/error.models.js";
-import type { SafeHttpResult } from "../../../../lib/public/public_api.js";
-import { createPagedFetchQuery } from "../../../../lib/public/sdk/queries/paged-fetch-sdk-query.js";
-import type { PagedFetchQuery, QueryResponse } from "../../../../lib/public/sdk/sdk-models.js";
-import { transformPagedFetchQuery } from "../../../../lib/public/sdk/transform/transform-paged-fetch-query.js";
-import { tryCatchAsync } from "../../../../lib/public/utils/try-catch.utils.js";
+import type { SafeHttpResult } from "../../../../lib/main/main_api.js";
+import type { ErrorReason, KontentSdkError } from "../../../../lib/main/models/error.models.js";
+import { createPagedFetchQuery } from "../../../../lib/main/sdk/queries/paged-fetch-sdk-query.js";
+import type { PagedFetchQuery, QueryResponse } from "../../../../lib/main/sdk/sdk-models.js";
+import { transformPagedFetchQuery } from "../../../../lib/main/sdk/transform/transform-paged-fetch-query.js";
+import { tryCatchAsync } from "../../../../lib/main/utils/try-catch.utils.js";
 import { getTestHttpServiceWithJsonResponse, getTestSdkInfo } from "../../../../lib/testkit/testkit.utils.js";
 
 type PagePayload = { readonly name: string };

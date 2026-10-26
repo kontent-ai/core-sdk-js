@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
-import type { JsonValue } from "../../../../lib/public/models/json.models.js";
-import { createPagedFetchQuery } from "../../../../lib/public/sdk/queries/paged-fetch-sdk-query.js";
-import type { QueryResponse } from "../../../../lib/public/sdk/sdk-models.js";
+import type { JsonValue } from "../../../../lib/main/models/json.models.js";
+import { createPagedFetchQuery } from "../../../../lib/main/sdk/queries/paged-fetch-sdk-query.js";
+import type { QueryResponse } from "../../../../lib/main/sdk/sdk-models.js";
 import { getTestHttpServiceWithJsonResponse, getTestSdkInfo } from "../../../../lib/testkit/testkit.utils.js";
 
 const pageCount = 2;

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { getDefaultHttpService } from "../../../../lib/public/http/http.service.js";
-import { AdapterParseError, type ErrorReason } from "../../../../lib/public/models/error.models.js";
+import { getDefaultHttpService } from "../../../../lib/main/http/http.service.js";
+import { AdapterParseError, type ErrorReason } from "../../../../lib/main/models/error.models.js";
 
 describe("Parse failure", async () => {
 	const originalError = new Error("Failed to parse response");

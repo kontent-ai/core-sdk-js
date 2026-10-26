@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { getDefaultHttpService } from "../../../lib/public/http/http.service.js";
-import type { KnownHeaderName } from "../../../lib/public/models/core.models.js";
-import type { ErrorReason } from "../../../lib/public/models/error.models.js";
+import { getDefaultHttpService } from "../../../lib/main/http/http.service.js";
+import type { KnownHeaderName } from "../../../lib/main/models/core.models.js";
+import type { ErrorReason } from "../../../lib/main/models/error.models.js";
 import { stubFetchWithResponse } from "../../../lib/testkit/testkit.utils.js";
 
 const testUrl = "https://domain.com";

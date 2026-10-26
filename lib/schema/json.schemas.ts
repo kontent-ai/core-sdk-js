@@ -1,5 +1,5 @@
 import * as z from "@zod/mini";
-import type { JsonValue } from "../public/models/json.models.js";
+import type { JsonValue } from "../main/models/json.models.js";
 
 /**
  * Runtime validator for the core SDK `JsonValue` type.

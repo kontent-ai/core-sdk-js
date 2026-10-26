@@ -1,9 +1,9 @@
 import { describe, expect, it, vi } from "vitest";
-import type { AdapterRequestOptions, AdapterResponse } from "../../../lib/public/http/http.models.js";
-import { getDefaultHttpService } from "../../../lib/public/http/http.service.js";
-import type { JsonValue } from "../../../lib/public/models/json.models.js";
-import type { ErrorReason } from "../../../lib/public/public_api.js";
-import { sleep } from "../../../lib/public/utils/core.utils.js";
+import type { AdapterRequestOptions, AdapterResponse } from "../../../lib/main/http/http.models.js";
+import { getDefaultHttpService } from "../../../lib/main/http/http.service.js";
+import type { ErrorReason } from "../../../lib/main/main_api.js";
+import type { JsonValue } from "../../../lib/main/models/json.models.js";
+import { sleep } from "../../../lib/main/utils/core.utils.js";
 
 describe("Abort signal forwarding", () => {
 	it("Request should forward abort signal", async () => {

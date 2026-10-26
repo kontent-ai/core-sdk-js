@@ -1,7 +1,7 @@
 {
 	"$schema": "./node_modules/knip/schema.json",
 	"entry": [
-		"lib/public/public_api.ts!",
+		"lib/main/main_api.ts!",
 		"lib/devkit/devkit_api.ts!",
 		"lib/testkit/testkit_api.ts!",
 		"lib/schema/schema_api.ts!",

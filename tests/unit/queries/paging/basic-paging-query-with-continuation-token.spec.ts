@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { getDefaultHttpService } from "../../../../lib/public/http/http.service.js";
-import { extractContinuationToken } from "../../../../lib/public/public_api.js";
-import { createPagedFetchQuery } from "../../../../lib/public/sdk/queries/paged-fetch-sdk-query.js";
-import type { GetNextPageData } from "../../../../lib/public/sdk/sdk-models.js";
-import { createContinuationHeader, toFetchHeaders } from "../../../../lib/public/utils/header.utils.js";
+import { getDefaultHttpService } from "../../../../lib/main/http/http.service.js";
+import { extractContinuationToken } from "../../../../lib/main/main_api.js";
+import { createPagedFetchQuery } from "../../../../lib/main/sdk/queries/paged-fetch-sdk-query.js";
+import type { GetNextPageData } from "../../../../lib/main/sdk/sdk-models.js";
+import { createContinuationHeader, toFetchHeaders } from "../../../../lib/main/utils/header.utils.js";
 import { getTestSdkInfo, preventInfinitePaging, stubFetchWithResponse } from "../../../../lib/testkit/testkit.utils.js";
 
 describe("Basic paging query with continuation token", async () => {

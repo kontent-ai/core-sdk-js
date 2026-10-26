@@ -1,10 +1,10 @@
 import * as z from "@zod/mini";
 import { describe, expect, it, vi } from "vitest";
-import type { HttpService } from "../../../lib/public/http/http.models.js";
-import type { Header, KnownHeaderName } from "../../../lib/public/models/core.models.js";
-import type { ErrorReason } from "../../../lib/public/models/error.models.js";
-import { inspectQuery, resolveQuery } from "../../../lib/public/sdk/resolve-query.js";
-import { createAuthorizationHeader, createSdkIdHeader } from "../../../lib/public/utils/header.utils.js";
+import type { HttpService } from "../../../lib/main/http/http.models.js";
+import type { Header, KnownHeaderName } from "../../../lib/main/models/core.models.js";
+import type { ErrorReason } from "../../../lib/main/models/error.models.js";
+import { inspectQuery, resolveQuery } from "../../../lib/main/sdk/resolve-query.js";
+import { createAuthorizationHeader, createSdkIdHeader } from "../../../lib/main/utils/header.utils.js";
 import { getTestHttpServiceWithJsonResponse, getTestSdkInfo, stubFetchWithResponse } from "../../../lib/testkit/testkit.utils.js";
 
 describe("resolveQuery - invalid baseUrl host", async () => {

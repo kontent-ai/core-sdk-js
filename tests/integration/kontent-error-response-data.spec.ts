@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { getDefaultHttpService } from "../../lib/public/http/http.service.js";
-import { type ErrorReason, KontentSdkError } from "../../lib/public/models/error.models.js";
+import { getDefaultHttpService } from "../../lib/main/http/http.service.js";
+import { type ErrorReason, KontentSdkError } from "../../lib/main/models/error.models.js";
 import { getIntegrationTestConfig } from "../integration-tests.config.js";
 
 describe("Integration tests - Kontent error response data", async () => {

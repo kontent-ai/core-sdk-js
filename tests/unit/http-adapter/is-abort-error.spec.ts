@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { getDefaultHttpAdapter } from "../../../lib/public/http/http.adapter.js";
-import { getDefaultHttpService } from "../../../lib/public/http/http.service.js";
-import { AdapterAbortError, type ErrorReason } from "../../../lib/public/models/error.models.js";
+import { getDefaultHttpAdapter } from "../../../lib/main/http/http.adapter.js";
+import { getDefaultHttpService } from "../../../lib/main/http/http.service.js";
+import { AdapterAbortError, type ErrorReason } from "../../../lib/main/models/error.models.js";
 
 const executeRequestWithSignal = async (abortSignal: AbortSignal) =>
 	await getDefaultHttpAdapter().executeRequest({

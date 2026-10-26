@@ -1,6 +1,6 @@
 import * as z from "@zod/mini";
 import { describe, expect, it } from "vitest";
-import { resolveSchema } from "../../../lib/public/utils/schema.utils.js";
+import { resolveSchema } from "../../../lib/main/utils/schema.utils.js";
 
 describe("resolveSchema - returns undefined when input is undefined", async () => {
 	const resolved = await resolveSchema(undefined);
